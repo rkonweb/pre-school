@@ -95,46 +95,46 @@ export async function getTenantsAction(): Promise<Tenant[]> {
 }
 
 export async function createTenantAction(data: CreateTenantInput) {
-    // Map admin name to first/last
-    const nameParts = data.adminName.split(" ");
-    const firstName = nameParts[0] || "Admin";
-    const lastName = nameParts.slice(1).join(" ") || "";
-
-    // Primary contact number for owner
-    const mobile = data.adminPhone || data.contactPhone || `mock-${Date.now()}`;
-
-    // Get or Create Subscription Plan (Auto-Seeding)
-    let planId = "";
-    const planName = data.plan || "Growth";
-    const planSlug = planName.toLowerCase();
-
-    const existingPlan = await prisma.subscriptionPlan.findFirst({
-        where: { name: { equals: planName, mode: 'insensitive' } }
-    });
-
-    if (existingPlan) {
-        planId = existingPlan.id;
-    } else {
-        // Auto-create missing plan
-        const newPlan = await prisma.subscriptionPlan.create({
-            data: {
-                name: planName,
-                slug: planSlug,
-                price: planName === "Enterprise" ? 299 : planName === "Growth" ? 99 : 0,
-                description: `Auto-generated ${planName} Plan`,
-                tier: planName === "Enterprise" ? "enterprise" : planName === "Growth" ? "premium" : "basic",
-                limits: {
-                    maxStudents: planName === "Enterprise" ? 5000 : planName === "Growth" ? 1000 : 100,
-                    maxStaff: planName === "Enterprise" ? 500 : planName === "Growth" ? 100 : 20,
-                    maxStorageGB: planName === "Enterprise" ? 1000 : planName === "Growth" ? 100 : 10
-                } as any, // Cast to any if Json type issues arise, but usually fine
-                isActive: true
-            }
-        });
-        planId = newPlan.id;
-    }
-
     try {
+        // Map admin name to first/last
+        const nameParts = data.adminName.split(" ");
+        const firstName = nameParts[0] || "Admin";
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        // Primary contact number for owner
+        const mobile = data.adminPhone || data.contactPhone || `mock-${Date.now()}`;
+
+        // Get or Create Subscription Plan (Auto-Seeding)
+        let planId = "";
+        const planName = data.plan || "Growth";
+        const planSlug = planName.toLowerCase();
+
+        const existingPlan = await prisma.subscriptionPlan.findFirst({
+            where: { name: { equals: planName, mode: 'insensitive' } }
+        });
+
+        if (existingPlan) {
+            planId = existingPlan.id;
+        } else {
+            // Auto-create missing plan
+            const newPlan = await prisma.subscriptionPlan.create({
+                data: {
+                    name: planName,
+                    slug: planSlug,
+                    price: planName === "Enterprise" ? 299 : planName === "Growth" ? 99 : 0,
+                    description: `Auto-generated ${planName} Plan`,
+                    tier: planName === "Enterprise" ? "enterprise" : planName === "Growth" ? "premium" : "basic",
+                    limits: {
+                        maxStudents: planName === "Enterprise" ? 5000 : planName === "Growth" ? 1000 : 100,
+                        maxStaff: planName === "Enterprise" ? 500 : planName === "Growth" ? 100 : 20,
+                        maxStorageGB: planName === "Enterprise" ? 1000 : planName === "Growth" ? 100 : 10
+                    } as any, // Cast to any if Json type issues arise, but usually fine
+                    isActive: true
+                }
+            });
+            planId = newPlan.id;
+        }
+
         await prisma.$transaction(async (tx) => {
             const school = await (tx.school as any).create({
                 data: {
@@ -166,7 +166,7 @@ export async function createTenantAction(data: CreateTenantInput) {
                     currency: data.currency,
                     timezone: data.timezone,
                     dateFormat: data.dateFormat,
-                    modulesConfig: JSON.stringify(PLAN_FEATURES[data.plan || "Starter"])
+                    modulesConfig: JSON.stringify(PLAN_FEATURES[data.plan || "Starter"] || [])
                 }
             });
 
@@ -197,7 +197,7 @@ export async function createTenantAction(data: CreateTenantInput) {
         return { success: true };
     } catch (e: any) {
         console.error("Failed to create tenant", e);
-        return { success: false, error: e.message };
+        return { success: false, error: e.message || "Unknown error occurred" };
     }
 }
 

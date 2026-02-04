@@ -101,7 +101,7 @@ export default function OnboardSchoolPage() {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            await createTenantAction({
+            const result = await createTenantAction({
                 name: formData.schoolName,
                 subdomain: formData.subdomain,
                 brandColor: formData.brandColor,
@@ -140,12 +140,17 @@ export default function OnboardSchoolPage() {
                 dateFormat: formData.dateFormat,
                 modules: formData.modules
             });
+
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+
             router.refresh();
             router.push("/admin/tenants");
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
             setLoading(false);
-            alert("Failed to provision tenant.");
+            alert(`Failed to provision tenant: ${err.message}`);
         }
     };
 
