@@ -16,7 +16,7 @@ export async function getSubscriptionPlansAction() {
                     }
                 }
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { sortOrder: 'asc' }
         });
 
         if (plans.length === 0) {
@@ -164,6 +164,25 @@ export async function deleteSubscriptionPlanAction(id: string) {
         return { success: true };
     } catch (error: any) {
         console.error("deleteSubscriptionPlanAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function reorderSubscriptionPlansAction(items: { id: string, sortOrder: number }[]) {
+    try {
+        await prisma.$transaction(
+            items.map((item) =>
+                prisma.subscriptionPlan.update({
+                    where: { id: item.id },
+                    data: { sortOrder: item.sortOrder }
+                })
+            )
+        );
+        revalidatePath("/admin/subscriptions");
+        revalidatePath("/pricing");
+        return { success: true };
+    } catch (error: any) {
+        console.error("reorderSubscriptionPlansAction Error:", error);
         return { success: false, error: error.message };
     }
 }

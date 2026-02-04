@@ -6,7 +6,8 @@ import {
     createSubscriptionPlanAction,
     updateSubscriptionPlanAction,
     deleteSubscriptionPlanAction,
-    getSubscriptionStatsAction
+    getSubscriptionStatsAction,
+    reorderSubscriptionPlansAction
 } from "@/app/actions/subscription-actions";
 import { SubscriptionPlan } from "@/types/subscription";
 import { getSystemSettingsAction } from "@/app/actions/settings-actions";
@@ -25,11 +26,138 @@ import {
     Settings,
     Users,
     HardDrive,
-    MessageSquare,
     Box,
-    Coins
+    Coins,
+    GripVertical,
+    MoreHorizontal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// DnD Imports
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable Row Component
+function SortableRow({ plan, currency, onEdit, onDelete }: { plan: SubscriptionPlan, currency: string, onEdit: (p: SubscriptionPlan) => void, onDelete: (id: string) => void }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: plan.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 10 : 1,
+        position: isDragging ? 'relative' as const : undefined,
+    };
+
+    const formatPrice = (price: number) => {
+        if (price === 0) return "Free";
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency,
+            maximumFractionDigits: 0
+        }).format(price);
+    };
+
+    return (
+        <tr ref={setNodeRef} style={style} className={cn("group border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors", isDragging && "bg-white shadow-lg border-zinc-200")}>
+            <td className="pl-4 py-3 w-10">
+                <button {...attributes} {...listeners} className="cursor-grab hover:text-zinc-900 text-zinc-300 active:cursor-grabbing">
+                    <GripVertical className="h-4 w-4" />
+                </button>
+            </td>
+            <td className="px-4 py-3">
+                <div className="flex items-center gap-3">
+                    <div className={cn("p-2 rounded-lg bg-zinc-50 border border-zinc-100",
+                        plan.tier === 'premium' ? 'text-amber-500' :
+                            plan.tier === 'enterprise' ? 'text-purple-500' :
+                                plan.tier === 'basic' ? 'text-blue-500' : 'text-zinc-500'
+                    )}>
+                        {plan.tier === 'premium' ? <Zap className="h-4 w-4" /> :
+                            plan.tier === 'enterprise' ? <Crown className="h-4 w-4" /> :
+                                plan.tier === 'basic' ? <ShieldCheck className="h-4 w-4" /> :
+                                    <Ticket className="h-4 w-4" />}
+                    </div>
+                    <div>
+                        <div className="font-bold text-sm text-zinc-900">{plan.name}</div>
+                        {plan.isPopular && <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Popular</span>}
+                    </div>
+                </div>
+            </td>
+            <td className="px-4 py-3">
+                <div className="font-bold text-sm text-zinc-900">{formatPrice(plan.price)}</div>
+                <div className="text-xs text-zinc-400 capitalize">{plan.billingPeriod}</div>
+            </td>
+            <td className="px-4 py-3">
+                <div className="flex items-center gap-4 text-xs font-medium text-zinc-600">
+                    <div className="flex items-center gap-1.5" title="Max Students">
+                        <Users className="h-3.5 w-3.5 text-zinc-300" />
+                        {plan.limits.maxStudents}
+                    </div>
+                    <div className="flex items-center gap-1.5" title="Max Staff">
+                        <ShieldCheck className="h-3.5 w-3.5 text-zinc-300" />
+                        {plan.limits.maxStaff}
+                    </div>
+                    <div className="flex items-center gap-1.5" title="Storage">
+                        <HardDrive className="h-3.5 w-3.5 text-zinc-300" />
+                        {plan.limits.maxStorageGB}GB
+                    </div>
+                </div>
+            </td>
+            <td className="px-4 py-3">
+                <div className="flex flex-wrap gap-1 max-w-[200px]">
+                    {(plan.includedModules || []).slice(0, 3).map(m => (
+                        <span key={m} className="bg-zinc-100 text-zinc-600 text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 capitalize truncate max-w-[80px]">
+                            {ALL_MODULES.find(mod => mod.id === m)?.label || m}
+                        </span>
+                    ))}
+                    {(plan.includedModules?.length || 0) > 3 && (
+                        <span className="bg-zinc-100 text-zinc-400 text-[10px] px-1.5 py-0.5 rounded border border-zinc-200">
+                            +{(plan.includedModules?.length || 0) - 3}
+                        </span>
+                    )}
+                </div>
+            </td>
+            <td className="px-4 py-3">
+                <div className={cn("inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                    plan.isActive ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-zinc-50 text-zinc-400 border-zinc-100"
+                )}>
+                    {plan.isActive ? "Active" : "Inactive"}
+                </div>
+            </td>
+            <td className="px-4 py-3 text-right">
+                <div className="flex items-center justify-end gap-1">
+                    <button onClick={() => onEdit(plan)} className="p-1.5 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                        <Edit2 className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => onDelete(plan.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <Trash2 className="h-4 w-4" />
+                    </button>
+                </div>
+            </td>
+        </tr>
+    );
+}
 
 export default function SubscriptionManagementPage() {
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
@@ -63,6 +191,11 @@ export default function SubscriptionManagementPage() {
     // Form State
     const [formData, setFormData] = useState(initialForm);
 
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
     useEffect(() => {
         loadPlans();
     }, []);
@@ -86,6 +219,29 @@ export default function SubscriptionManagementPage() {
             console.error(error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (active.id !== over?.id) {
+            setPlans((items) => {
+                const oldIndex = items.findIndex((i) => i.id === active.id);
+                const newIndex = items.findIndex((i) => i.id === over?.id);
+                const newItems = arrayMove(items, oldIndex, newIndex);
+
+                // Optimistic update
+                const updates = newItems.map((item, index) => ({
+                    id: item.id,
+                    sortOrder: index
+                }));
+
+                // Call server action in background
+                reorderSubscriptionPlansAction(updates).catch(console.error);
+
+                return newItems;
+            });
         }
     };
 
@@ -165,16 +321,6 @@ export default function SubscriptionManagementPage() {
         }
     };
 
-    const getTierIcon = (tier: string) => {
-        switch (tier) {
-            case "free": return <Ticket className="h-5 w-5 text-zinc-500" />;
-            case "basic": return <ShieldCheck className="h-5 w-5 text-blue-500" />;
-            case "premium": return <Zap className="h-5 w-5 text-amber-500" />;
-            case "enterprise": return <Crown className="h-5 w-5 text-purple-600" />;
-            default: return <Ticket className="h-5 w-5" />;
-        }
-    };
-
     const formatPrice = (price: number) => {
         if (price === 0) return "Free";
         return new Intl.NumberFormat('en-US', {
@@ -226,93 +372,50 @@ export default function SubscriptionManagementPage() {
                     <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {plans.map((plan) => (
-                        <div key={plan.id} className="bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col group hover:border-blue-200 hover:shadow-md transition-all">
-                            {plan.isPopular && (
-                                <div className="bg-blue-600 text-white text-[10px] font-bold text-center py-1 uppercase tracking-wider">
-                                    Most Popular
-                                </div>
-                            )}
-                            <div className="p-6 flex-1 space-y-5">
-                                <div className="flex items-start justify-between">
-                                    <div className="p-2 rounded-lg bg-zinc-50 border border-zinc-100">
-                                        {getTierIcon(plan.tier)}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex flex-col items-end mr-2">
-                                            <span className="text-[10px] font-bold text-zinc-400 uppercase leading-none">Subscribers</span>
-                                            <span className="text-xs font-black text-zinc-900">{(plan as any).activeSubscribers || 0}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <button
-                                                onClick={() => openEditModal(plan)}
-                                                className="p-1.5 rounded-lg text-zinc-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                                            >
-                                                <Edit2 className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(plan.id)}
-                                                className="p-1.5 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                <div className="bg-white rounded-3xl border border-zinc-200 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/30">
+                        <h3 className="font-bold text-zinc-900 flex items-center gap-2">
+                            <Box className="h-4 w-4 text-zinc-400" />
+                            Manage Plans
+                        </h3>
+                        <span className="text-xs font-medium text-zinc-400">Drag to reorder public pricing page</span>
+                    </div>
 
-                                <div>
-                                    <h3 className="font-bold text-lg text-zinc-900">{plan.name}</h3>
-                                    <p className="text-sm text-zinc-500 mt-1 line-clamp-2">{plan.description}</p>
-                                </div>
-
-                                <div className="flex items-end gap-1">
-                                    <span className="text-3xl font-extrabold text-zinc-900">
-                                        {formatPrice(plan.price)}
-                                    </span>
-                                    {plan.price > 0 && <span className="text-sm font-medium text-zinc-400 mb-1">/mo</span>}
-                                </div>
-
-                                {/* Limits Grid */}
-                                <div className="grid grid-cols-3 gap-2 py-3 border-y border-zinc-100">
-                                    <div className="text-center space-y-1">
-                                        <div className="text-[10px] uppercase font-bold text-zinc-400">Students</div>
-                                        <div className="font-bold text-zinc-900 text-sm flex items-center justify-center gap-1">
-                                            <Users className="h-3 w-3 text-zinc-400" /> {plan.limits.maxStudents}
-                                        </div>
-                                    </div>
-                                    <div className="text-center space-y-1 border-l border-zinc-100">
-                                        <div className="text-[10px] uppercase font-bold text-zinc-400">Staff</div>
-                                        <div className="font-bold text-zinc-900 text-sm flex items-center justify-center gap-1">
-                                            <ShieldCheck className="h-3 w-3 text-zinc-400" /> {plan.limits.maxStaff}
-                                        </div>
-                                    </div>
-                                    <div className="text-center space-y-1 border-l border-zinc-100">
-                                        <div className="text-[10px] uppercase font-bold text-zinc-400">Storage</div>
-                                        <div className="font-bold text-zinc-900 text-sm flex items-center justify-center gap-1">
-                                            <HardDrive className="h-3 w-3 text-zinc-400" /> {plan.limits.maxStorageGB}GB
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <p className="text-[10px] font-bold text-zinc-400 uppercase mb-2">Included Modules</p>
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {(plan.includedModules || []).slice(0, 6).map(m => (
-                                            <span key={m} className="px-2 py-1 rounded-md bg-zinc-100 text-[10px] font-medium text-zinc-600 border border-zinc-200 capitalize">
-                                                {m}
-                                            </span>
-                                        ))}
-                                        {(plan.includedModules?.length || 0) > 6 && (
-                                            <span className="px-2 py-1 rounded-md bg-zinc-100 text-[10px] font-medium text-zinc-600 border border-zinc-200">
-                                                +{(plan.includedModules?.length || 0) - 6}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-zinc-100">
+                                    <th className="pl-4 py-3 w-10"></th>
+                                    <th className="px-4 py-3 text-xs font-bold text-zinc-400 uppercase tracking-wider">Plan Name</th>
+                                    <th className="px-4 py-3 text-xs font-bold text-zinc-400 uppercase tracking-wider">Pricing</th>
+                                    <th className="px-4 py-3 text-xs font-bold text-zinc-400 uppercase tracking-wider">Limits</th>
+                                    <th className="px-4 py-3 text-xs font-bold text-zinc-400 uppercase tracking-wider">Modules</th>
+                                    <th className="px-4 py-3 text-xs font-bold text-zinc-400 uppercase tracking-wider">Status</th>
+                                    <th className="px-4 py-3 text-xs font-bold text-zinc-400 uppercase tracking-wider text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <SortableContext
+                                    items={plans.map(p => p.id)}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    {plans.map((plan) => (
+                                        <SortableRow
+                                            key={plan.id}
+                                            plan={plan}
+                                            currency={currency}
+                                            onEdit={openEditModal}
+                                            onDelete={handleDelete}
+                                        />
+                                    ))}
+                                </SortableContext>
+                            </tbody>
+                        </table>
+                    </DndContext>
                 </div>
             )}
 
