@@ -1,11 +1,10 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 
-const prisma = new PrismaClient();
 
 export async function getJobDetailsAction(id: string) {
     try {
