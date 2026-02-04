@@ -11,7 +11,7 @@ export async function loginSuperAdminAction(password: string) {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
-            maxAge: 60 * 60 * 24 // 1 day
+            // No maxAge: Session cookie (expires on close)
         });
         return { success: true };
     }

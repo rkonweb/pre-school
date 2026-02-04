@@ -24,16 +24,19 @@ export function middleware(req: NextRequest) {
         return NextResponse.next();
     }
 
+    // 3. Protect Admin Routes (Strict Server-Side Check)
+    if (url.pathname.startsWith("/admin") && url.pathname !== "/admin/login") {
+        const adminSession = req.cookies.get("admin_session");
+        if (!adminSession) {
+            return NextResponse.redirect(new URL("/admin/login", req.url));
+        }
+    }
+
     // Rewrite Logic:
     // app.school.com/parent-login -> /app.school.com/parent-login
     // The page [schoolName] will receive "app.school.com" as the param.
 
-    console.log(`[Middleware] Handling ${hostname} request to ${url.pathname}`);
-
     // 1. Dashboard Routes (Maintain Tenant Context)
-    // Matches /parent, /parent/..., but NOT /parent-login (strictly)
-    // Actually /parent is typically redirected to /parent-login by the page itself if unauth, 
-    // but we need to route it to the [schoolName] folder so the page code runs.
     if (url.pathname === "/parent" || url.pathname.startsWith("/parent/")) {
         url.pathname = `/${hostname}${url.pathname}`;
         return NextResponse.rewrite(url);
