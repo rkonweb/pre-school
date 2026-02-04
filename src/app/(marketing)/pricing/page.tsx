@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getSubscriptionPlansAction } from "@/app/actions/subscription-actions";
 import { SubscriptionPlan } from "@/types/subscription";
+import { ALL_MODULES, MODULE_CATEGORIES } from "@/config/modules";
 import { CheckCircle2, Ticket, ShieldCheck, Zap, Crown, Star, ArrowRight, HelpCircle, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -140,6 +141,99 @@ export default function PricingPage() {
                             </div>
                         ))
                     )}
+                </div>
+            </section>
+
+            {/* Feature Comparison Table */}
+            <section className="container mx-auto px-4 pb-24">
+                <div className="max-w-6xl mx-auto rounded-[2.5rem] p-8 md:p-12 bg-white border border-slate-100 shadow-sm overflow-hidden">
+                    <h2 className="text-3xl font-black text-slate-900 text-center mb-4">Comprehensive Comparison</h2>
+                    <p className="text-slate-500 text-center mb-12 max-w-2xl mx-auto">
+                        Detailed breakdown of what's included in each plan so you can make an informed decision.
+                    </p>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th className="p-4 w-1/3 bg-slate-50 rounded-tl-2xl rounded-bl-2xl text-xs font-black text-slate-400 uppercase tracking-wider">Features</th>
+                                    {plans.map(plan => (
+                                        <th key={plan.id} className="p-4 text-center">
+                                            <div className="text-lg font-black text-slate-900">{plan.name}</div>
+                                            <div className="text-sm font-bold text-slate-400">{plan.price === 0 ? "Free" : `₹${plan.price}/mo`}</div>
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {/* Core Resources Row */}
+                                <tr className="group hover:bg-slate-50/50 transition-colors">
+                                    <td className="p-4 font-bold text-slate-700">Student Capacity</td>
+                                    {plans.map(plan => (
+                                        <td key={plan.id} className="p-4 text-center text-sm font-bold text-slate-900">
+                                            {plan.limits?.maxStudents}
+                                        </td>
+                                    ))}
+                                </tr>
+                                <tr className="group hover:bg-slate-50/50 transition-colors">
+                                    <td className="p-4 font-bold text-slate-700">Staff Capacity</td>
+                                    {plans.map(plan => (
+                                        <td key={plan.id} className="p-4 text-center text-sm font-bold text-slate-900">
+                                            {plan.limits?.maxStaff}
+                                        </td>
+                                    ))}
+                                </tr>
+                                <tr className="group hover:bg-slate-50/50 transition-colors">
+                                    <td className="p-4 font-bold text-slate-700">Cloud Storage</td>
+                                    {plans.map(plan => (
+                                        <td key={plan.id} className="p-4 text-center text-sm font-bold text-slate-900">
+                                            {plan.limits?.maxStorageGB} GB
+                                        </td>
+                                    ))}
+                                </tr>
+
+                                {/* Modules Loops */}
+                                {(Object.keys(MODULE_CATEGORIES) as Array<keyof typeof MODULE_CATEGORIES>).map((catKey) => {
+                                    const categoryModules = ALL_MODULES.filter(m => m.category === catKey);
+                                    if (categoryModules.length === 0) return null;
+
+                                    return (
+                                        <>
+                                            <tr key={catKey}>
+                                                <td colSpan={plans.length + 1} className="p-4 pt-10 pb-4">
+                                                    <span className="text-xs font-black text-[#E6A57E] uppercase tracking-widest bg-[#FFE2C2]/30 px-3 py-1 rounded-full">
+                                                        {MODULE_CATEGORIES[catKey]}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {categoryModules.map(mod => (
+                                                <tr key={mod.id} className="group hover:bg-slate-50/50 transition-colors">
+                                                    <td className="p-4">
+                                                        <div className="font-bold text-slate-700">{mod.label}</div>
+                                                        <div className="text-xs font-medium text-slate-400">{mod.description}</div>
+                                                    </td>
+                                                    {plans.map(plan => {
+                                                        const isIncluded = (plan.includedModules || []).includes(mod.id);
+                                                        return (
+                                                            <td key={plan.id} className="p-4 text-center">
+                                                                {isIncluded ? (
+                                                                    <div className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-[#D8F2C9] text-[#558B2F]">
+                                                                        <CheckCircle2 className="h-5 w-5" />
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="inline-block h-1.5 w-1.5 rounded-full bg-slate-200" />
+                                                                )}
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            ))}
+                                        </>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
