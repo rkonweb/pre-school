@@ -154,58 +154,59 @@ export default function CurriculumArchitectPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className="max-w-7xl mx-auto"
                         >
-                            <div className="mb-12">
-                                <h2 className="text-4xl font-black tracking-tight mb-2 text-zinc-900">Select Class <span className="text-zinc-300">Level</span></h2>
-                                <p className="text-zinc-500 text-lg">Choose a division to architect its 15-day rolling timeline.</p>
-                            </div>
+                            <div className="max-w-7xl mx-auto">
+                                <div className="mb-12">
+                                    <h2 className="text-4xl font-black tracking-tight mb-2 text-zinc-900">Select Class <span className="text-zinc-300">Level</span></h2>
+                                    <p className="text-zinc-500 text-lg">Choose a division to architect its 15-day rolling timeline.</p>
+                                </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {displayCurriculums.map((cls: any) => (
-                                    <motion.button
-                                        key={cls.id}
-                                        whileHover={{ y: -8, scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => {
-                                            setSelectedClass(cls);
-                                            setView("timeline");
-                                        }}
-                                        className="group relative h-80 rounded-[2.5rem] bg-white border border-zinc-100 p-8 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-xl hover:border-blue-100 transition-all"
-                                    >
-                                        {/* Glow Effect */}
-                                        <div
-                                            className="absolute -top-24 -right-24 h-48 w-48 blur-[100px] opacity-10 group-hover:opacity-20 transition-opacity"
-                                            style={{ backgroundColor: cls.color }}
-                                        />
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    {displayCurriculums.map((cls: any) => (
+                                        <motion.button
+                                            key={cls.id}
+                                            whileHover={{ y: -8, scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => {
+                                                setSelectedClass(cls);
+                                                setView("timeline");
+                                            }}
+                                            className="group relative h-80 rounded-[2.5rem] bg-white border border-zinc-100 p-8 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-xl hover:border-blue-100 transition-all"
+                                        >
+                                            {/* Glow Effect */}
+                                            <div
+                                                className="absolute -top-24 -right-24 h-48 w-48 blur-[100px] opacity-10 group-hover:opacity-20 transition-opacity"
+                                                style={{ backgroundColor: cls.color }}
+                                            />
 
-                                        <div className="relative">
-                                            <div className="h-16 w-16 rounded-3xl bg-zinc-50 flex items-center justify-center text-3xl mb-6 border border-zinc-100 group-hover:scale-110 transition-transform">
-                                                {getIcon(cls.slug)}
+                                            <div className="relative">
+                                                <div className="h-16 w-16 rounded-3xl bg-zinc-50 flex items-center justify-center text-3xl mb-6 border border-zinc-100 group-hover:scale-110 transition-transform">
+                                                    {getIcon(cls.slug)}
+                                                </div>
+                                                <h3 className="text-2xl font-black mb-2 text-zinc-900">{cls.name}</h3>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Live Architecture</span>
+                                                </div>
                                             </div>
-                                            <h3 className="text-2xl font-black mb-2 text-zinc-900">{cls.name}</h3>
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Live Architecture</span>
-                                            </div>
-                                        </div>
 
-                                        <div className="relative">
-                                            <div className="flex items-end justify-between mb-2">
-                                                <span className="text-3xl font-black tracking-tighter text-zinc-900">{cls.completion || 0}%</span>
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Completion</span>
+                                            <div className="relative">
+                                                <div className="flex items-end justify-between mb-2">
+                                                    <span className="text-3xl font-black tracking-tighter text-zinc-900">{cls.completion || 0}%</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Completion</span>
+                                                </div>
+                                                <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${cls.completion || 0}%` }}
+                                                        className="h-full rounded-full"
+                                                        style={{ backgroundColor: cls.color }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${cls.completion || 0}%` }}
-                                                    className="h-full rounded-full"
-                                                    style={{ backgroundColor: cls.color }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </motion.button>
-                                ))}
+                                        </motion.button>
+                                    ))}
+                                </div>
                             </div>
                         </motion.div>
                     )}
