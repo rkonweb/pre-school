@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Fragment } from "react";
+import { useRouter } from "next/navigation";
 import {
     Shield,
     Users,
@@ -136,10 +137,13 @@ export default function RolesClient({
     const [staffAccessChanges, setStaffAccessChanges] = useState<string[]>([]);
     const [isSavingStaffAccess, setIsSavingStaffAccess] = useState(false);
 
+    const router = useRouter();
+    const [allTeachers, setAllTeachers] = useState(initialTeachers);
+
     // Filter
     const [teacherSearch, setTeacherSearch] = useState("");
 
-    const teachers = initialTeachers.filter(t =>
+    const teachers = allTeachers.filter(t =>
         (t.firstName + " " + t.lastName).toLowerCase().includes(teacherSearch.toLowerCase()) ||
         t.email?.toLowerCase().includes(teacherSearch.toLowerCase())
     );
@@ -178,6 +182,7 @@ export default function RolesClient({
             setNewRoleName("");
             setNewRoleDesc("");
             setNewRolePermissions([]);
+            router.refresh();
         } else {
             toast.error(res.error || "Failed to save role");
         }
@@ -205,6 +210,7 @@ export default function RolesClient({
         if (res.success) {
             setRoles(roles.filter(r => r.id !== roleId));
             toast.success("Role deleted");
+            router.refresh();
         } else {
             toast.error(res.error);
         }
@@ -292,13 +298,13 @@ export default function RolesClient({
         const res = await assignRoleToUserAction(schoolSlug, userId, roleId === "none" ? null : roleId);
         if (res.success) {
             toast.success("Role assigned");
-            // Update local state to reflect change immediately without reload
-            // This is crucial for the dropdown to show the new value
-            // We need to update 'initialTeachers' prop which is tricky, or better:
-            // The 'teachers' variable is derived from props. 
-            // We should reload the page OR make 'teachers' a state.
-            // Converting 'teachers' to state is best.
-            window.location.reload(); // Simplest for now given complexity of prop vs state
+
+            // Optimistic update
+            setAllTeachers(prev => prev.map(t =>
+                t.id === userId ? { ...t, customRoleId: roleId === "none" ? null : roleId } : t
+            ));
+
+            router.refresh();
         } else {
             toast.error(res.error);
         }

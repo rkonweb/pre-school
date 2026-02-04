@@ -8,7 +8,9 @@ import {
     ShieldCheck,
     Settings as SettingsIcon,
     ChevronRight,
-    CreditCard
+    CreditCard,
+    Coins,
+    Fingerprint
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -24,6 +26,12 @@ export function SettingsSidebar() {
             href: `/s/${slug}/settings/identity`,
             icon: Building2,
             desc: "Branding & Logo"
+        },
+        {
+            label: "Biometric",
+            href: `/s/${slug}/settings/biometric`,
+            icon: Fingerprint,
+            desc: "Devices & Logs"
         },
         {
             label: "Location",
@@ -54,6 +62,12 @@ export function SettingsSidebar() {
             href: `/s/${slug}/settings/fees`,
             icon: CreditCard,
             desc: "Structure & Plans"
+        },
+        {
+            label: "Payroll",
+            href: `/s/${slug}/settings/payroll`,
+            icon: Coins,
+            desc: "Automated Rules"
         }
     ];
 

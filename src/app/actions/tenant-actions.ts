@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { Tenant, CreateTenantInput } from "@/types/tenant";
 import { revalidatePath } from "next/cache";
+import { calculateMRR, PLAN_FEATURES } from "@/config/subscription";
 
 export async function getTenantsAction(): Promise<Tenant[]> {
     // Fetch real data from DB
@@ -40,13 +41,55 @@ export async function getTenantsAction(): Promise<Tenant[]> {
             plan: planName,
             status: (sub?.status as any) || "TRIAL",
             students: school._count.students,
-            mrr: sub?.planId === "growth" ? 5999 : sub?.planId === "enterprise" ? 9999 : 2499,
+            mrr: calculateMRR(planName, (() => {
+                try {
+                    return (school as any).addonsConfig ? JSON.parse((school as any).addonsConfig) : [];
+                } catch (e) {
+                    return [];
+                }
+            })()),
             joinedDate: school.createdAt.toISOString(),
             region: "India",
             lastActive: school.updatedAt.toISOString(),
             website: school.website || `https://${school.slug}.antigravity.com`,
-            contactPhone: school.phone || admin?.mobile,
-            modules: ["attendance", "admissions", "classroom", "billing"]
+            contactPhone: school.phone || admin?.mobile || undefined,
+            contactEmail: school.email || undefined,
+            currency: (school as any).currency || undefined,
+            timezone: (school as any).timezone || undefined,
+            dateFormat: (school as any).dateFormat || undefined,
+            logo: school.logo || undefined,
+            motto: school.motto || undefined,
+            foundingYear: school.foundingYear || undefined,
+            address: school.address || undefined,
+            city: school.city || undefined,
+            state: school.state || undefined,
+            zip: school.zip || undefined,
+            country: school.country || undefined,
+            latitude: school.latitude || undefined,
+            longitude: school.longitude || undefined,
+            adminPhone: admin?.mobile || undefined,
+            adminDesignation: admin?.designation || undefined,
+            socialMedia: {
+                facebook: (school as any).facebook || undefined,
+                twitter: (school as any).twitter || undefined,
+                linkedin: (school as any).linkedin || undefined,
+                instagram: (school as any).instagram || undefined,
+                youtube: (school as any).youtube || undefined,
+            },
+            modules: (() => {
+                try {
+                    return (school as any).modulesConfig ? JSON.parse((school as any).modulesConfig) : [];
+                } catch (e) {
+                    return [];
+                }
+            })(),
+            addons: (() => {
+                try {
+                    return (school as any).addonsConfig ? JSON.parse((school as any).addonsConfig) : [];
+                } catch (e) {
+                    return [];
+                }
+            })()
         };
     });
 }
@@ -67,7 +110,7 @@ export async function createTenantAction(data: CreateTenantInput) {
 
     try {
         await prisma.$transaction(async (tx) => {
-            const school = await tx.school.create({
+            const school = await (tx.school as any).create({
                 data: {
                     name: data.name,
                     slug: data.subdomain,
@@ -96,7 +139,8 @@ export async function createTenantAction(data: CreateTenantInput) {
                     // Config
                     currency: data.currency,
                     timezone: data.timezone,
-                    dateFormat: data.dateFormat
+                    dateFormat: data.dateFormat,
+                    modulesConfig: JSON.stringify(PLAN_FEATURES[data.plan || "Starter"])
                 }
             });
 
@@ -156,20 +200,131 @@ export async function deleteTenantAction(id: string) {
 
 export async function updateTenantAction(id: string, data: any) {
     try {
-        await prisma.school.update({
-            where: { id },
-            data: {
-                ...data
-            }
+        const { modules, addons, socialMedia, plan, ...rest } = data;
+
+        // Map plan name back to planId pattern
+        let planId = "plan_start_001";
+        if (plan === "Growth") planId = "plan_growth_001";
+        if (plan === "Enterprise") planId = "plan_ent_001";
+
+        await prisma.$transaction(async (tx) => {
+            // 1. Update School details
+            await tx.school.update({
+                where: { id },
+                data: {
+                    ...rest,
+                    facebook: socialMedia?.facebook,
+                    twitter: socialMedia?.twitter,
+                    linkedin: socialMedia?.linkedin,
+                    instagram: socialMedia?.instagram,
+                    youtube: socialMedia?.youtube,
+                    modulesConfig: modules ? JSON.stringify(modules) : undefined,
+                    addonsConfig: addons ? JSON.stringify(addons) : undefined
+                }
+            });
+
+            // 2. Update Subscription Plan if exists
+            await tx.subscription.updateMany({
+                where: { schoolId: id },
+                data: { planId }
+            });
         });
+
         revalidatePath("/admin/tenants");
         return { success: true };
     } catch (e: any) {
+        console.error("Update Tenant Error:", e);
         return { success: false, error: e.message };
     }
 }
 
-export async function getTenantByIdAction(id: string) {
-    const tenants = await getTenantsAction();
-    return tenants.find(t => t.id === id);
+export async function getTenantByIdAction(id: string): Promise<Tenant | undefined> {
+    try {
+        const school = await prisma.school.findUnique({
+            where: { id },
+            include: {
+                users: {
+                    where: { role: "ADMIN" },
+                    take: 1
+                },
+                subscription: true,
+                _count: {
+                    select: { students: true }
+                }
+            }
+        });
+
+        if (!school) return undefined;
+
+        const admin = school.users[0];
+        const sub = school.subscription;
+
+        let planName: "Starter" | "Growth" | "Enterprise" = "Starter";
+        if (sub?.planId?.includes("growth")) planName = "Growth";
+        if (sub?.planId?.includes("enterprise")) planName = "Enterprise";
+
+        return {
+            id: school.id,
+            name: school.name,
+            subdomain: school.slug,
+            brandColor: school.brandColor || "#0F172A",
+            adminName: admin ? `${admin.firstName || ''} ${admin.lastName || ''}`.trim() || "Admin" : "No Admin",
+            email: admin?.email || admin?.mobile || "N/A",
+            plan: planName,
+            status: (sub?.status as any) || "TRIAL",
+            students: school._count.students,
+            mrr: calculateMRR(planName, (() => {
+                try {
+                    return (school as any).addonsConfig ? JSON.parse((school as any).addonsConfig) : [];
+                } catch (e) {
+                    return [];
+                }
+            })()),
+            joinedDate: school.createdAt.toISOString(),
+            region: "India",
+            lastActive: school.updatedAt.toISOString(),
+            website: school.website || `https://${school.slug}.antigravity.com`,
+            contactPhone: school.phone || admin?.mobile || undefined,
+            contactEmail: school.email || undefined,
+            currency: (school as any).currency || undefined,
+            timezone: (school as any).timezone || undefined,
+            dateFormat: (school as any).dateFormat || undefined,
+            logo: school.logo || undefined,
+            motto: school.motto || undefined,
+            foundingYear: school.foundingYear || undefined,
+            address: school.address || undefined,
+            city: school.city || undefined,
+            state: school.state || undefined,
+            zip: school.zip || undefined,
+            country: school.country || undefined,
+            latitude: school.latitude || undefined,
+            longitude: school.longitude || undefined,
+            adminPhone: admin?.mobile || undefined,
+            adminDesignation: admin?.designation || undefined,
+            socialMedia: {
+                facebook: (school as any).facebook || undefined,
+                twitter: (school as any).twitter || undefined,
+                linkedin: (school as any).linkedin || undefined,
+                instagram: (school as any).instagram || undefined,
+                youtube: (school as any).youtube || undefined,
+            },
+            modules: (() => {
+                try {
+                    return (school as any).modulesConfig ? JSON.parse((school as any).modulesConfig) : [];
+                } catch (e) {
+                    return [];
+                }
+            })(),
+            addons: (() => {
+                try {
+                    return (school as any).addonsConfig ? JSON.parse((school as any).addonsConfig) : [];
+                } catch (e) {
+                    return [];
+                }
+            })()
+        };
+    } catch (e) {
+        console.error("Error in getTenantByIdAction:", e);
+        return undefined;
+    }
 }

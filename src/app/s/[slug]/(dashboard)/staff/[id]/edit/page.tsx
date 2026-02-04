@@ -14,7 +14,6 @@ export default async function EditStaffPage({ params }: { params: Promise<{ slug
     // Fetch Roles
     const { getRolesAction } = await import("@/app/actions/role-actions");
     const rolesRes = await getRolesAction(slug);
-    const roles = rolesRes.success ? rolesRes.roles : [];
 
     const { data: designations } = await getMasterDataAction("DESIGNATION");
     const { data: departments } = await getMasterDataAction("DEPARTMENT");
@@ -26,7 +25,9 @@ export default async function EditStaffPage({ params }: { params: Promise<{ slug
     // Fetch Classrooms for Access Control
     const { getClassroomsAction } = await import("@/app/actions/classroom-actions");
     const classroomsRes = await getClassroomsAction(slug);
+
     const classrooms = classroomsRes.success && classroomsRes.data ? classroomsRes.data : [];
+    const roles = rolesRes.success ? rolesRes.roles : [];
 
     return (
         <EditStaffPageClient

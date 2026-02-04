@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation"; // Added import
 import {
     MapPin,
     Mail,
@@ -33,6 +34,7 @@ interface LocationFormProps {
 const libraries: ("places")[] = ["places"];
 
 export function LocationForm({ slug, initialData }: LocationFormProps) {
+    const router = useRouter();
     const [formData, setFormData] = useState(initialData || {});
     const [isSaving, setIsSaving] = useState(false);
     const [isSavingKey, setIsSavingKey] = useState(false);
@@ -63,9 +65,9 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
             googleMapsApiKey: formData.googleMapsApiKey
         });
         if (res.success) {
-            toast.success("Maps API Key saved. Reloading services...");
+            toast.success("Maps API Key saved. Refreshing services...");
             // Force reload to pick up new key
-            setTimeout(() => window.location.reload(), 1500);
+            router.refresh();
         } else {
             toast.error(res.error || "Failed to save API key");
         }
@@ -88,7 +90,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
             <p className="text-sm text-zinc-500 max-w-md mx-auto">
                 The provided Google Maps API key appears to be invalid or restricted. Please check your credentials.
             </p>
-            <button onClick={() => window.location.reload()} className="px-6 py-3 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase">Retry Connection</button>
+            <button onClick={() => router.refresh()} className="px-6 py-3 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase">Retry Connection</button>
         </div>
     );
 

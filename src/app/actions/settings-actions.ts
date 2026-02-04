@@ -139,7 +139,13 @@ export async function getSchoolSettingsAction(slug: string) {
                 currency: school.currency || "INR",
                 academicYearStart: school.academicYearStart,
                 academicYearEnd: school.academicYearEnd,
-                workingDays: school.workingDays ? JSON.parse(school.workingDays) : ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                workingDays: (() => {
+                    try {
+                        return school.workingDays ? JSON.parse(school.workingDays) : ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+                    } catch (e) {
+                        return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+                    }
+                })(),
                 schoolTimings: school.schoolTimings || "9:00 AM - 3:00 PM",
                 zip: school.zip,
                 pincode: school.zip,
@@ -147,7 +153,7 @@ export async function getSchoolSettingsAction(slug: string) {
             }
         };
     } catch (error: any) {
-        console.error("getSchoolSettingsAction Error:", error);
+        console.error("getSchoolSettingsAction Error for slug:", slug, error);
         return { success: false, error: error.message };
     }
 }

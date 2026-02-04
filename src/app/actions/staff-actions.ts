@@ -360,7 +360,8 @@ export async function addSalaryRevisionAction(userId: string, data: {
     tax?: number,
     pf?: number,
     insurance?: number,
-    otherDeductions?: number,
+    customAdditions?: string,
+    customDeductions?: string,
     netSalary?: number
 }) {
     try {
@@ -379,7 +380,8 @@ export async function addSalaryRevisionAction(userId: string, data: {
                 tax: Number(data.tax || 0),
                 pf: Number(data.pf || 0),
                 insurance: Number(data.insurance || 0),
-                otherDeductions: Number(data.otherDeductions || 0),
+                customAdditions: data.customAdditions,
+                customDeductions: data.customDeductions,
                 netSalary: Number(data.netSalary || 0)
             }
         });

@@ -21,7 +21,7 @@ interface RegionalConfigProps {
 }
 
 export function RegionalConfig({ slug, initialData }: RegionalConfigProps) {
-    const [formData, setFormData] = useState(initialData);
+    const [formData, setFormData] = useState(initialData || {});
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {

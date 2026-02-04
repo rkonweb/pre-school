@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { StaffClassAccess } from "@/components/dashboard/staff/StaffClassAccess";
+import { StaffLibraryHistory } from "@/components/dashboard/staff/StaffLibraryHistory";
 
 interface EditStaffPageClientProps {
     slug: string;
@@ -72,6 +73,12 @@ export function EditStaffPageClient({ slug, roles, designations, departments, em
                         salaryRevisions={initialData?.salaryRevisions || []}
                     />
                 </div>
+
+                <StaffLibraryHistory
+                    staffId={staffId}
+                    schoolSlug={slug}
+                    currency={initialData.school?.currency || "USD"} // Assuming initialData usually has school info nested, if not default
+                />
             </div>
         </div>
     );

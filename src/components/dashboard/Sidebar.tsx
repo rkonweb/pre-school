@@ -21,7 +21,10 @@ import {
     LucideIcon,
     NotebookPen,
     LogOut,
-    Shield
+    Shield,
+    Banknote,
+    Bus,
+    FileSpreadsheet
 } from "lucide-react";
 import { useState } from "react";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
@@ -34,7 +37,7 @@ type NavItem = {
     children?: { name: string; href: string; icon: LucideIcon }[];
 };
 
-export function Sidebar({ schoolName, logo, user }: { schoolName?: string; logo?: string | null; user?: any }) {
+export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoolName?: string; logo?: string | null; user?: any, enabledModules?: string[] }) {
     const pathname = usePathname();
     const params = useParams();
     const router = useRouter();
@@ -98,6 +101,7 @@ export function Sidebar({ schoolName, logo, user }: { schoolName?: string; logo?
             children: [
                 { name: "All Students", href: `/s/${slug}/students`, icon: Users }, // Key: students or students.profiles
                 { name: "Attendance", href: `/s/${slug}/students/attendance`, icon: Clock }, // Key: students.attendance
+                { name: "Progress Reports", href: `/s/${slug}/students/reports`, icon: FileSpreadsheet }, // Key: students.reports
             ]
         },
         { name: "Classroom", href: `/s/${slug}/classroom`, icon: BookOpen }, // Key: academics.classes (using classes permission for classroom view)
@@ -112,10 +116,13 @@ export function Sidebar({ schoolName, logo, user }: { schoolName?: string; logo?
             children: [
                 { name: "Staff Directory", href: `/s/${slug}/staff`, icon: Users }, // Key: staff.directory
                 { name: "Attendance", href: `/s/${slug}/staff/attendance`, icon: Clock }, // Key: staff.attendance
+                { name: "Payroll", href: `/s/${slug}/staff/payroll`, icon: Banknote }, // Key: staff.payroll
             ]
         },
         { name: "Billing", href: `/s/${slug}/billing`, icon: CreditCard }, // Key: billing
         { name: "Inventory", href: `/s/${slug}/inventory`, icon: Package }, // Key: inventory
+        { name: "Transport", href: `/s/${slug}/transport`, icon: Bus }, // Key: transport
+        { name: "Library", href: `/s/${slug}/library`, icon: BookOpen }, // Key: library
         { name: "Communication", href: `/s/${slug}/communication`, icon: MessageCircle }, // Key: communication
         { name: "Roles & Permissions", href: `/s/${slug}/roles`, icon: Shield }, // Key: settings (grouped with settings usually, or separate 'roles')
         { name: "Settings", href: `/s/${slug}/settings`, icon: Settings }, // Key: settings
@@ -136,15 +143,24 @@ export function Sidebar({ schoolName, logo, user }: { schoolName?: string; logo?
         "Staff": "staff", // Parent
         "Staff Directory": "staff.directory",
         "Staff Attendance": "staff.attendance", // Fix name match in loop
+        "Payroll": "staff.payroll",
         "Billing": "billing",
         "Inventory": "inventory",
+        "Transport": "transport",
+        "Library": "library",
         "Communication": "communication",
         "Roles & Permissions": "settings", // Only admins/settings access should see roles
         "Settings": "settings"
     };
 
-    // Correcting the check for specific sub-items names if they duplicate (e.g. "Attendance")
     // In map logic below we can use specific handling or just ensure unique names or rely on context
+
+    // Check if module is enabled at SCHOOL level
+    const isModuleEnabled = (permissionKey: string) => {
+        if (!permissionKey) return true;
+        if (!Array.isArray(enabledModules) || enabledModules.length === 0) return true;
+        return enabledModules.includes(permissionKey) || enabledModules.some(m => typeof m === 'string' && permissionKey.startsWith(m + "."));
+    };
 
     const navigation = rawNavigation.reduce((acc: NavItem[], item) => {
         // 1. Check parent permission
@@ -153,6 +169,10 @@ export function Sidebar({ schoolName, logo, user }: { schoolName?: string; logo?
         // Let's check generic first.
 
         const permKey = navPermissionMap[item.name];
+
+        // Check school-level permission first
+        if (permKey && !isModuleEnabled(permKey)) return acc;
+
         const hasDirectAccess = permKey ? checkAccess(permKey) : false;
 
         if (item.children) {
@@ -167,6 +187,9 @@ export function Sidebar({ schoolName, logo, user }: { schoolName?: string; logo?
                     childKey = "staff.attendance";
                 }
                 else childKey = navPermissionMap[child.name];
+
+                // Check school-level for child
+                if (!isModuleEnabled(childKey)) return false;
 
                 return checkAccess(childKey);
             });

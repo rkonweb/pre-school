@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { getTenantByIdAction, updateTenantAction } from "@/app/actions/tenant-actions";
+import { getSystemSettingsAction } from "@/app/actions/settings-actions";
 import { Tenant } from "@/types/tenant";
 import {
     Building2,
@@ -22,12 +23,27 @@ import {
     Instagram,
     Youtube,
     Calendar,
-    Type
+    Type,
+    MessageSquare,
+    Smartphone,
+    Fingerprint,
+    Zap,
+    Crown,
+    Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PLAN_FEATURES, ADDONS, PLAN_PRICES, calculateMRR, PLANS } from "@/config/subscription";
 
-export default function EditTenantPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = use(params);
+const CURRENCY_SYMBOLS: Record<string, string> = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    INR: "₹"
+};
+
+export default function EditTenantPage() {
+    const params = useParams();
+    const id = params.id as string;
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -74,6 +90,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
         timezone: "UTC-5 (EST)",
         dateFormat: "MM/DD/YYYY",
         modules: [] as string[],
+        addons: [] as string[],
         status: "ACTIVE" as any
     });
 
@@ -81,9 +98,10 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
         const load = async () => {
             try {
                 const tenant = await getTenantByIdAction(id);
+                const settingsRes = await getSystemSettingsAction();
+
                 if (tenant) {
                     setFormData({
-                        // Map existing tenant data to form structure
                         schoolName: tenant.name,
                         subdomain: tenant.subdomain || "",
                         brandColor: tenant.brandColor || "#2563eb",
@@ -115,10 +133,11 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
                         adminDesignation: tenant.adminDesignation || "",
 
                         plan: tenant.plan,
-                        currency: tenant.currency || "USD",
-                        timezone: tenant.timezone || "UTC-5 (EST)",
+                        currency: tenant.currency || (settingsRes.success ? settingsRes.data.currency : "USD"),
+                        timezone: tenant.timezone || (settingsRes.success ? settingsRes.data.timezone : "UTC-5 (EST)"),
                         dateFormat: tenant.dateFormat || "MM/DD/YYYY",
                         modules: tenant.modules || [],
+                        addons: tenant.addons || [],
                         status: tenant.status
                     });
                 } else {
@@ -131,7 +150,10 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
                 setIsLoading(false);
             }
         };
-        load();
+
+        if (id) {
+            load();
+        }
     }, [id, router]);
 
     const handleNext = () => setStep(s => s + 1);
@@ -177,6 +199,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
                 timezone: formData.timezone,
                 dateFormat: formData.dateFormat,
                 modules: formData.modules,
+                addons: formData.addons,
                 status: formData.status
             });
             router.refresh();
@@ -636,30 +659,32 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
 
                         <div className="grid md:grid-cols-3 gap-6 mb-8">
                             {/* Plan Cards */}
-                            {[
-                                { name: "Starter", price: "$299", color: "blue", features: ["Up to 100 Students", "Basic Reporting", "Email Support"] },
-                                { name: "Growth", price: "$599", color: "indigo", features: ["Up to 500 Students", "Advanced Analytics", "Priority Support", "Branded App"] },
-                                { name: "Enterprise", price: "Custom", color: "zinc", features: ["Unlimited Students", "Dedicated Manager", "SLA", "API Access"] }
-                            ].map((plan) => (
+                            {PLANS.map((plan) => (
                                 <div
-                                    key={plan.name}
-                                    onClick={() => setFormData({ ...formData, plan: plan.name as any })}
+                                    key={plan.id}
+                                    onClick={() => {
+                                        const newModules = PLAN_FEATURES[plan.id] || [];
+                                        setFormData({ ...formData, plan: plan.id as any, modules: newModules });
+                                    }}
                                     className={cn(
                                         "relative rounded-2xl border-2 p-6 cursor-pointer transition-all hover:scale-105",
-                                        formData.plan === plan.name ? `border-${plan.color}-600 bg-${plan.color}-50/30` : "border-zinc-100 bg-white hover:border-zinc-200"
+                                        formData.plan === plan.id ? `border-${plan.color}-600 bg-${plan.color}-50/30` : "border-zinc-100 bg-white hover:border-zinc-200"
                                     )}
                                 >
-                                    {formData.plan === plan.name && (
-                                        <div className={`absolute -top-3 left-1/2 -translate-x-1/2 bg-${plan.color}-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider`}>
+                                    {formData.plan === plan.id && (
+                                        <div className={cn(
+                                            "absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider",
+                                            plan.id === "Growth" ? "bg-indigo-600" : plan.id === "Enterprise" ? "bg-zinc-900" : "bg-blue-600"
+                                        )}>
                                             Selected
                                         </div>
                                     )}
                                     <h3 className="text-lg font-bold text-zinc-900">{plan.name}</h3>
-                                    <div className="text-3xl font-extrabold mt-2 text-zinc-900">{plan.price}<span className="text-sm font-medium text-zinc-500">/mo</span></div>
+                                    <div className="text-3xl font-extrabold mt-2 text-zinc-900">{CURRENCY_SYMBOLS[formData.currency] || "$"}{plan.price}<span className="text-sm font-medium text-zinc-500">/mo</span></div>
                                     <ul className="mt-6 space-y-3">
                                         {plan.features.map(f => (
                                             <li key={f} className="flex items-center gap-2 text-xs font-medium text-zinc-600">
-                                                <CheckCircle2 className={`h-4 w-4 text-${plan.color}-600`} />
+                                                <CheckCircle2 className={cn("h-4 w-4", plan.id === "Growth" ? "text-indigo-600" : plan.id === "Enterprise" ? "text-zinc-600" : "text-blue-600")} />
                                                 {f}
                                             </li>
                                         ))}
@@ -668,29 +693,218 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
                             ))}
                         </div>
 
+                        {/* Real-time MRR Calculator Widget */}
+                        <div className="bg-zinc-900 rounded-[32px] p-8 mb-8 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-in zoom-in-95 duration-500">
+                            <div>
+                                <div className="flex items-center gap-2 text-blue-400 mb-2">
+                                    <Crown className="h-4 w-4" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Billing Estimates</span>
+                                </div>
+                                <h4 className="text-4xl font-black">
+                                    {CURRENCY_SYMBOLS[formData.currency] || "$"}{calculateMRR(formData.plan, formData.addons)}
+                                    <span className="text-lg font-medium text-zinc-500 ml-2">/month (MRR)</span>
+                                </h4>
+                                <p className="text-zinc-400 text-sm mt-1">Based on {formData.plan} plan + {formData.addons.length} active add-ons</p>
+                            </div>
+                            <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                                <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center">
+                                    <Zap className="h-6 w-6 text-white" />
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs font-bold text-zinc-500 uppercase">Subscription Status</p>
+                                    <p className="text-md font-black text-emerald-400">{formData.status}</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100 mb-8">
-                            <h4 className="font-bold text-zinc-900 text-sm mb-4 uppercase">Enabled Modules</h4>
-                            <div className="grid md:grid-cols-4 gap-4">
-                                {["Attendance", "Billing", "Communication", "Curriculum", "Inventory", "Admissions", "Transport", "Library"].map((mod) => (
-                                    <label key={mod} className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 hover:bg-zinc-50 cursor-pointer transition-colors">
+                            <div className="flex items-center justify-between mb-6">
+                                <h4 className="font-bold text-zinc-900 text-sm uppercase">Institutional Modules & Features</h4>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setFormData(p => ({ ...p, modules: ["admissions", "students", "students.profiles", "students.attendance", "academics", "academics.curriculum", "academics.timetable", "academics.classes", "diary", "staff", "staff.directory", "staff.attendance", "staff.payroll", "billing", "inventory", "communication", "settings"] }))}
+                                        className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase"
+                                    >
+                                        Enable All
+                                    </button>
+                                    <span className="text-zinc-300">|</span>
+                                    <button
+                                        onClick={() => setFormData(p => ({ ...p, modules: [] }))}
+                                        className="text-[10px] font-bold text-zinc-400 hover:text-zinc-600 uppercase"
+                                    >
+                                        Disable All
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {[
+                                    { id: "admissions", label: "Admissions", desc: "Lead tracking & enrollment" },
+                                    {
+                                        id: "students", label: "Students", desc: "Student profiles & records", sub: [
+                                            { id: "students.profiles", label: "Identity & Profiles" },
+                                            { id: "students.attendance", label: "Daily Attendance" }
+                                        ]
+                                    },
+                                    {
+                                        id: "academics", label: "Academics", desc: "Courses & scheduling", sub: [
+                                            { id: "academics.curriculum", label: "Curriculum Manager" },
+                                            { id: "academics.timetable", label: "Timetable & Rotations" },
+                                            { id: "academics.classes", label: "Classroom Allocation" }
+                                        ]
+                                    },
+                                    { id: "diary", label: "Digital Diary", desc: "Daily logs & parent updates" },
+                                    {
+                                        id: "staff", label: "Staff & HR", desc: "Employee management", sub: [
+                                            { id: "staff.directory", label: "Staff Directory" },
+                                            { id: "staff.attendance", label: "Punch Records" },
+                                            { id: "staff.payroll", label: "Payroll Automation" }
+                                        ]
+                                    },
+                                    { id: "billing", label: "Billing & Fees", desc: "Fee collection & invoicing" },
+                                    { id: "inventory", label: "Inventory", desc: "Stock & asset tracking" },
+                                    { id: "communication", label: "Communication", desc: "Messaging & broadcast" },
+                                    { id: "settings", label: "System Config", desc: "Roles & global settings" },
+                                ].map((mod) => (
+                                    <div key={mod.id} className={cn(
+                                        "p-5 rounded-2xl border transition-all duration-300",
+                                        formData.modules.includes(mod.id) ? "bg-blue-50/50 border-blue-200 shadow-sm" : "bg-white border-zinc-100 grayscale opacity-60 hover:grayscale-0 hover:opacity-100"
+                                    )}>
+                                        <label className="flex items-start gap-3 cursor-pointer">
+                                            <div className={cn(
+                                                "mt-1 h-5 w-5 rounded-lg border flex items-center justify-center transition-all",
+                                                formData.modules.includes(mod.id) ? "bg-blue-600 border-blue-600 shadow-md shadow-blue-600/20" : "border-zinc-300 bg-white"
+                                            )}>
+                                                {formData.modules.includes(mod.id) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={formData.modules.includes(mod.id)}
+                                                onChange={(e) => {
+                                                    const isChecked = e.target.checked;
+                                                    let newModules = [...formData.modules];
+
+                                                    if (isChecked) {
+                                                        newModules.push(mod.id);
+                                                        // Automatically enable all sub-modules if parent is enabled
+                                                        if (mod.sub) {
+                                                            mod.sub.forEach(s => {
+                                                                if (!newModules.includes(s.id)) newModules.push(s.id);
+                                                            });
+                                                        }
+                                                    } else {
+                                                        newModules = newModules.filter(x => x !== mod.id);
+                                                        // Automatically disable all sub-modules if parent is disabled
+                                                        if (mod.sub) {
+                                                            const subIds = mod.sub.map(s => s.id);
+                                                            newModules = newModules.filter(x => !subIds.includes(x));
+                                                        }
+                                                    }
+                                                    setFormData(p => ({ ...p, modules: newModules }));
+                                                }}
+                                            />
+                                            <div className="flex-1">
+                                                <span className="block text-sm font-bold text-zinc-900">{mod.label}</span>
+                                                <span className="block text-[10px] text-zinc-500 font-medium leading-relaxed mt-0.5">{mod.desc}</span>
+                                            </div>
+                                        </label>
+
+                                        {mod.sub && (
+                                            <div className="mt-4 pt-4 border-t border-blue-100/50 space-y-2.5">
+                                                {mod.sub.map(sub => (
+                                                    <label key={sub.id} className="flex items-center gap-2.5 cursor-pointer group">
+                                                        <div className={cn(
+                                                            "h-4 w-4 rounded-md border flex items-center justify-center transition-all",
+                                                            formData.modules.includes(sub.id) ? "bg-blue-500 border-blue-500" : "border-zinc-200 bg-zinc-50 group-hover:border-zinc-300"
+                                                        )}>
+                                                            {formData.modules.includes(sub.id) && <CheckCircle2 className="h-2.5 w-2.5 text-white" />}
+                                                        </div>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="hidden"
+                                                            checked={formData.modules.includes(sub.id)}
+                                                            onChange={(e) => {
+                                                                const isChecked = e.target.checked;
+                                                                let newModules = [...formData.modules];
+
+                                                                if (isChecked) {
+                                                                    newModules.push(sub.id);
+                                                                    // Ensure parent is enabled
+                                                                    if (!newModules.includes(mod.id)) newModules.push(mod.id);
+                                                                } else {
+                                                                    newModules = newModules.filter(x => x !== sub.id);
+                                                                    // If last sub-module is disabled, should we disable parent? 
+                                                                    // Usually better to keep parent enabled as it's the group choice.
+                                                                }
+                                                                setFormData(p => ({ ...p, modules: newModules }));
+                                                            }}
+                                                        />
+                                                        <span className={cn(
+                                                            "text-[11px] font-bold transition-colors",
+                                                            formData.modules.includes(sub.id) ? "text-blue-700" : "text-zinc-400 group-hover:text-zinc-600"
+                                                        )}>
+                                                            {sub.label}
+                                                        </span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* STEP 4.2: ADD-ONS */}
+                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100 mb-8">
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h4 className="font-bold text-zinc-900 text-lg uppercase flex items-center gap-2">
+                                        <Star className="h-5 w-5 text-amber-400" /> Premium Add-ons
+                                    </h4>
+                                    <p className="text-xs text-zinc-500 font-medium">Elevate the institutional experience with specialized integrations.</p>
+                                </div>
+                                <div className="px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
+                                    <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider">Expand Capabilities</span>
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {ADDONS.map((addon) => (
+                                    <div
+                                        key={addon.id}
+                                        onClick={() => {
+                                            const newAddons = formData.addons.includes(addon.id)
+                                                ? formData.addons.filter(i => i !== addon.id)
+                                                : [...formData.addons, addon.id];
+                                            setFormData({ ...formData, addons: newAddons });
+                                        }}
+                                        className={cn(
+                                            "flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer",
+                                            formData.addons.includes(addon.id)
+                                                ? "bg-zinc-900 border-zinc-900 text-white shadow-xl scale-[1.02]"
+                                                : "bg-white border-zinc-100 hover:border-zinc-200 text-zinc-600"
+                                        )}
+                                    >
                                         <div className={cn(
-                                            "h-5 w-5 rounded border flex items-center justify-center transition-colors",
-                                            formData.modules.includes(mod.toLowerCase()) ? "bg-blue-600 border-blue-600" : "border-zinc-300 bg-white"
+                                            "h-12 w-12 rounded-xl flex items-center justify-center transition-colors",
+                                            formData.addons.includes(addon.id) ? "bg-white/10" : "bg-zinc-50"
                                         )}>
-                                            {formData.modules.includes(mod.toLowerCase()) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                                            <addon.icon className={cn("h-6 w-6", formData.addons.includes(addon.id) ? "text-white" : "text-zinc-400")} />
                                         </div>
-                                        <input
-                                            type="checkbox"
-                                            className="hidden"
-                                            checked={formData.modules.includes(mod.toLowerCase())}
-                                            onChange={(e) => {
-                                                const m = mod.toLowerCase();
-                                                if (e.target.checked) setFormData(p => ({ ...p, modules: [...p.modules, m] }));
-                                                else setFormData(p => ({ ...p, modules: p.modules.filter(x => x !== m) }));
-                                            }}
-                                        />
-                                        <span className="text-sm font-medium text-zinc-700">{mod}</span>
-                                    </label>
+                                        <div className="flex-1">
+                                            <h5 className="font-bold text-sm leading-tight">{addon.label}</h5>
+                                            <p className={cn("text-[10px] font-medium mt-1", formData.addons.includes(addon.id) ? "text-zinc-400" : "text-zinc-500")}>
+                                                {addon.desc}
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className={cn("text-xs font-black", formData.addons.includes(addon.id) ? "text-blue-400" : "text-zinc-900")}>
+                                                +{CURRENCY_SYMBOLS[formData.currency] || "$"}{addon.price}
+                                            </p>
+                                            <p className="text-[8px] font-bold uppercase tracking-widest opacity-50">Monthly</p>
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>

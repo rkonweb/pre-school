@@ -15,6 +15,7 @@ export default function ConfigSettingsPage() {
     useEffect(() => {
         async function load() {
             const res = await getSchoolSettingsAction(slug);
+            console.log("DEBUG: ConfigSettingsPage load success:", res.success);
             if (res.success) setSchoolData(res.data);
             setIsLoading(false);
         }

@@ -113,7 +113,7 @@ export async function getStaffAttendanceAction(schoolSlug: string, date?: string
     }
 }
 
-async function getAttendanceScope(userId: string): Promise<{ type: 'ALL' | 'OWN' | 'SELECTED' | 'NONE', ids?: string[] }> {
+export async function getAttendanceScope(userId: string): Promise<{ type: 'ALL' | 'OWN' | 'SELECTED' | 'NONE', ids?: string[] }> {
     const user = await prisma.user.findUnique({
         where: { id: userId },
         include: { customRole: true } as any

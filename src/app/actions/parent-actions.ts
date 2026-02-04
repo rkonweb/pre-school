@@ -20,7 +20,9 @@ export async function getSchoolBySlugAction(slug: string) {
                 address: true,
                 phone: true,
                 email: true,
-                website: true
+                website: true,
+                modulesConfig: true,
+                addonsConfig: true
             }
         });
 
@@ -311,7 +313,7 @@ export async function getParentDashboardDataAction(slug: string, phone: string) 
 
         // 3. Fetch Messages
         const convRes = await getParentConversationsAction(phone);
-        const conversations = convRes.success ? convRes.conversations : [];
+        const conversations = (convRes.success ? convRes.conversations : []) || [];
         const unreadMessages = conversations.reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0);
 
         console.log(`[DASHBOARD_PERF] Completed in ${Date.now() - start}ms`);

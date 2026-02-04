@@ -32,12 +32,12 @@ export default async function DashboardLayout({
         redirect(`/school-login`);
     }
 
-    const user = userRes.data;
+    const user = userRes.data as any;
 
     // ============================================
     // AUTHORIZATION CHECK - Verify user belongs to this school
     // ============================================
-    if (user.school?.slug !== slug) {
+    if (user.role !== "SUPER_ADMIN" && user.school?.slug !== slug) {
         // User doesn't belong to this school
         redirect(`/school-login`);
     }
@@ -45,14 +45,15 @@ export default async function DashboardLayout({
     // ============================================
     // LOAD SCHOOL DATA
     // ============================================
-    const school = await prisma.school.findUnique({
+    const school = (await prisma.school.findUnique({
         where: { slug },
         select: {
             name: true,
             logo: true,
-            brandColor: true
-        }
-    });
+            brandColor: true,
+            modulesConfig: true
+        } as any
+    })) as any;
 
     if (!school) {
         notFound();
@@ -69,7 +70,19 @@ export default async function DashboardLayout({
                 "--brand-color-rgb": brandColorRgb
             } as any}
         >
-            <Sidebar schoolName={school.name} logo={school.logo} user={user} />
+            <Sidebar
+                schoolName={school.name}
+                logo={school.logo}
+                user={user}
+                enabledModules={(() => {
+                    try {
+                        return school.modulesConfig ? JSON.parse(school.modulesConfig) : [];
+                    } catch (e) {
+                        console.error("Layout Config Parse Error:", e);
+                        return [];
+                    }
+                })()}
+            />
             <div className="flex flex-1 flex-col overflow-hidden">
                 <Header />
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">

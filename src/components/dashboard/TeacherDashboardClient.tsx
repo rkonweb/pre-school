@@ -28,23 +28,26 @@ export function TeacherDashboardClient() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        async function loadData() {
-            try {
-                const res = await getTeacherOverviewAction(slug, teacherId);
-                if (res.success) {
-                    setData(res.data);
-                } else {
-                    console.error("Dashboard Load Error:", res.error);
-                    setError(res.error || "Unknown error");
-                }
-            } catch (err: any) {
-                console.error("Client Error:", err);
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
+    const loadData = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const res = await getTeacherOverviewAction(slug, teacherId);
+            if (res.success) {
+                setData(res.data);
+            } else {
+                console.error("Dashboard Load Error:", res.error);
+                setError(res.error || "Unknown error");
             }
+        } catch (err: any) {
+            console.error("Client Error:", err);
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
         }
+    };
+
+    useEffect(() => {
         loadData();
     }, [slug, teacherId]);
 
@@ -65,7 +68,7 @@ export function TeacherDashboardClient() {
                     <p className="text-zinc-500 max-w-md">{error}</p>
                 </div>
                 <button
-                    onClick={() => window.location.reload()}
+                    onClick={loadData}
                     className="px-4 py-2 bg-zinc-900 text-white rounded-xl font-bold text-sm"
                 >
                     Try Again

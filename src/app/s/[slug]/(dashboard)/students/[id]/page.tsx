@@ -30,10 +30,12 @@ import {
     Trophy,
     Plus,
     X,
-    MoreHorizontal
+    MoreHorizontal,
+    BookOpen
 } from "lucide-react";
 import { cn, getCurrencySymbol } from "@/lib/utils";
 import { getStudentAction, updateStudentAction, deleteStudentAction, searchStudentsAction, connectSiblingAction, disconnectSiblingAction } from "@/app/actions/student-actions";
+import { getStudentLibraryHistoryAction } from "@/app/actions/library-actions";
 import { getStudentAttendanceAction, markAttendanceAction } from "@/app/actions/attendance-actions";
 import { getStudentReportsAction, createReportCardAction } from "@/app/actions/report-actions";
 import { getStudentFeesAction, createFeeAction, recordPaymentAction, getFeeStructuresAction, deleteFeeAction, updateFeeAction } from "@/app/actions/fee-actions";
@@ -89,7 +91,7 @@ export default function StudentDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [mode, setMode] = useState<"view" | "edit">("view");
-    const [activeTab, setActiveTab] = useState<"profile" | "attendance" | "reports" | "fees">("profile");
+    const [activeTab, setActiveTab] = useState<"profile" | "attendance" | "reports" | "fees" | "library">("profile");
 
     const [student, setStudent] = useState<any>(null);
     const [siblings, setSiblings] = useState<any[]>([]);
@@ -99,6 +101,7 @@ export default function StudentDetailPage() {
     const [attendance, setAttendance] = useState<any[]>([]);
     const [reports, setReports] = useState<any[]>([]);
     const [fees, setFees] = useState<any[]>([]);
+    const [libraryTransactions, setLibraryTransactions] = useState<any[]>([]);
 
     const [isAddAttendanceOpen, setIsAddAttendanceOpen] = useState(false);
     const [isAddReportOpen, setIsAddReportOpen] = useState(false);
@@ -132,7 +135,8 @@ export default function StudentDetailPage() {
                 withTimeout(getStudentAttendanceAction(id), "Attendance"),
                 withTimeout(getStudentReportsAction(id), "Reports"),
                 withTimeout(getStudentFeesAction(id), "Fees"),
-                withTimeout(getMasterDataAction("SECTION", null), "Sections")
+                withTimeout(getMasterDataAction("SECTION", null), "Sections"),
+                withTimeout(getStudentLibraryHistoryAction(id), "Library")
             ]);
 
             if (studentRes.success && studentRes.student) {
@@ -154,6 +158,8 @@ export default function StudentDetailPage() {
             setReports(reportsRes.success ? reportsRes.data || [] : []);
             setFees(feesRes?.success ? feesRes.data || [] : []);
             setSections(sectionsRes?.success ? sectionsRes.data || [] : []);
+            const libraryRes = await getStudentLibraryHistoryAction(id);
+            setLibraryTransactions(libraryRes.success ? libraryRes.data || [] : []);
 
         } catch (error) {
             console.error("Load Data Error:", error);
@@ -325,11 +331,19 @@ export default function StudentDetailPage() {
                     { id: "profile", label: "Profile", icon: User },
                     { id: "attendance", label: "Attendance", icon: Activity },
                     { id: "fees", label: "Fees", icon: Briefcase },
-                    { id: "reports", label: "Reports", icon: ClipboardList }
+                    { id: "reports", label: "Reports", icon: ClipboardList },
+                    { id: "progress", label: "Progress", icon: TrendingUp },
+                    { id: "library", label: "Library", icon: BookOpen } // Imported BookOpen or use Book
                 ].map((tab: any) => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => {
+                            if (tab.id === 'progress') {
+                                router.push(`/s/${slug}/students/${id}/progress`);
+                            } else {
+                                setActiveTab(tab.id as any);
+                            }
+                        }}
                         className={cn(
                             "flex-1 min-w-[100px] py-3.5 rounded-[22px] flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
                             activeTab === tab.id ? "bg-white text-blue-600 shadow-sm" : "text-zinc-500 hover:text-zinc-900"
@@ -711,6 +725,62 @@ export default function StudentDetailPage() {
                                     <p className="text-zinc-400 font-bold">No progress reports published yet.</p>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === "library" && (
+                    <div className="space-y-8">
+                        <div>
+                            <h3 className="text-2xl font-black text-zinc-900">Library History</h3>
+                            <p className="text-sm font-medium text-zinc-500 mt-1">Book borrowing and return records.</p>
+                        </div>
+
+                        <div className="bg-white rounded-[40px] border border-zinc-100 shadow-xl overflow-hidden">
+                            <table className="w-full text-left">
+                                <thead className="bg-zinc-50/50 border-b border-zinc-100">
+                                    <tr>
+                                        <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Book Information</th>
+                                        <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Issued Date</th>
+                                        <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status</th>
+                                        <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Fine</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-50">
+                                    {libraryTransactions.map((tx) => (
+                                        <tr key={tx.id} className="hover:bg-zinc-50/50 transition-all">
+                                            <td className="px-8 py-6">
+                                                <div className="font-bold text-zinc-900">{tx.book?.title || "Unknown Title"}</div>
+                                                <div className="text-xs text-zinc-500">{tx.book?.author || "Unknown Author"}</div>
+                                            </td>
+                                            <td className="px-8 py-6 text-sm font-medium text-zinc-700">
+                                                {new Date(tx.issuedDate).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <span className={cn(
+                                                    "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                                    tx.status === "ISSUED" ? "bg-amber-100 text-amber-600" :
+                                                        tx.status === "RETURNED" ? "bg-emerald-100 text-emerald-600" :
+                                                            "bg-zinc-100 text-zinc-500"
+                                                )}>
+                                                    {tx.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6 text-sm font-bold text-red-600">
+                                                {tx.fineAmount > 0 ? getCurrencySymbol(student.school?.currency) + tx.fineAmount : "-"}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {libraryTransactions.length === 0 && (
+                                        <tr>
+                                            <td colSpan={4} className="px-8 py-20 text-center">
+                                                <BookOpen className="h-10 w-10 text-zinc-200 mx-auto mb-4" />
+                                                <p className="text-zinc-400 font-bold">No library history found.</p>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 )}

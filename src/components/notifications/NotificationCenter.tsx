@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, X, Check, CheckCheck, Sparkles, Calendar, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ interface NotificationCenterProps {
 }
 
 export default function NotificationCenter({ userId }: NotificationCenterProps) {
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -161,11 +163,17 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
 
 function NotificationCard({ notification, onMarkAsRead, getIcon, getColor }: any) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const router = useRouter();
 
     const handleClick = () => {
         if (!notification.isRead) onMarkAsRead(notification.id);
         if (notification.actionUrl) {
-            window.location.href = notification.actionUrl;
+            // Check if it's an absolute URL (http/https)
+            if (notification.actionUrl.startsWith('http')) {
+                window.open(notification.actionUrl, '_blank');
+            } else {
+                router.push(notification.actionUrl);
+            }
         } else {
             setIsExpanded(!isExpanded);
         }

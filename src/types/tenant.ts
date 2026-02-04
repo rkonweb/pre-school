@@ -19,6 +19,7 @@ export interface Tenant {
     timezone?: string;
     dateFormat?: string;
     modules?: string[];
+    addons?: string[];
 
     // Identity Extras
     logo?: string;

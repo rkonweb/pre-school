@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
@@ -49,10 +50,26 @@ model School {
   diaryEntries      DiaryEntry[]
   feeStructures     FeeStructure[]
   leavePolicies     LeavePolicy[]
+  payrolls          Payroll[]
   roles             Role[]
   students          Student[]
   subscription      Subscription?
   users             User[]
+  payrollSettings   PayrollSettings?
+  modulesConfig     String?        @default("[]")
+  addonsConfig      String?        @default("[]")
+  biometricLogs     BiometricLog[]
+  libraryBooks      LibraryBook[]
+  libraryTransactions LibraryTransaction[]
+  librarySettings   LibrarySettings?
+  
+  // Transport
+  transportVehicles TransportVehicle[]
+  transportDrivers  TransportDriver[]
+  transportRoutes   TransportRoute[]
+  
+  // Academics & Progress
+  exams             Exam[]
 }
 
 model Admission {
@@ -155,11 +172,18 @@ model User {
   managedStaff             StaffAccess[]     @relation("ManagerMapping")
   staffAttendance          StaffAttendance[]
   customRole               Role?             @relation(fields: [customRoleId], references: [id])
+  biometricId              String?           @unique
   school                   School?           @relation(fields: [schoolId], references: [id])
+  payslips                 Payslip[]
+  libraryTransactions      LibraryTransaction[]
 
-  @@index([schoolId])
   @@index([role])
   @@index([status])
+  transportDriver TransportDriver?
+  
+  // Progress & Exams
+  createdExams    Exam[]
+  recordedHealth  StudentHealthRecord[]
 }
 
 model LeavePolicy {
@@ -239,7 +263,9 @@ model SalaryRevision {
   tax             Float    @default(0)
   pf              Float    @default(0)
   insurance       Float    @default(0)
-  otherDeductions Float    @default(0)
+  otherDeductions String?   // For legacy support or simple notes
+  customAdditions String?   // JSON Array of {label, amount}
+  customDeductions String?  // JSON Array of {label, amount}
   netSalary       Float    @default(0)
   userId          String
   createdAt       DateTime @default(now())
@@ -285,6 +311,7 @@ model Student {
   emergencyContactName  String?
   emergencyContactPhone String?
   classroomId           String?
+  transportProfile      StudentTransportProfile?
   schoolId              String
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
@@ -297,6 +324,12 @@ model Student {
   reports               ReportCard[]
   school                School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   classroom             Classroom?       @relation(fields: [classroomId], references: [id])
+  libraryTransactions   LibraryTransaction[]
+
+  // Progress Module
+  examResults           ExamResult[]
+  healthRecords         StudentHealthRecord[]
+  activityRecords       StudentActivityRecord[]
 
   @@index([schoolId])
   @@index([classroomId])
@@ -614,6 +647,7 @@ model Notification {
   updatedAt   DateTime  @updatedAt
 
   @@index([userId, isRead])
+  @@index([createdAt])
 }
 
 model PushSubscription {
@@ -678,6 +712,8 @@ model Message {
   readAt         DateTime?
   createdAt      DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }
 
 model DiaryEntry {
@@ -769,4 +805,372 @@ model StaffAccess {
   manager   User     @relation("ManagerMapping", fields: [managerId], references: [id], onDelete: Cascade)
 
   @@unique([managerId, staffId])
+}
+
+model Payroll {
+  id            String    @id @default(cuid())
+  month         Int       // 1-12
+  year          Int
+  schoolId      String
+  status        String    @default("DRAFT") // DRAFT, PROCESSED, PAID
+  generatedAt   DateTime  @default(now())
+  processedAt   DateTime?
+  totalAmount   Float     @default(0)
+  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  payslips      Payslip[]
+
+  @@unique([schoolId, month, year])
+}
+
+model Payslip {
+  id              String   @id @default(cuid())
+  payrollId       String
+  userId          String
+  
+  // Earnings
+  basic           Float    @default(0)
+  hra             Float    @default(0)
+  allowances      Float    @default(0) 
+  bonus           Float    @default(0)
+  
+  // Deductions
+  tax             Float    @default(0)
+  pf              Float    @default(0) 
+  insurance       Float    @default(0)
+  leaveDeduction  Float    @default(0)
+  otherDeductions Float    @default(0) 
+  customAdditions String?   // JSON Array of {label, amount}
+  customDeductions String?  // JSON Array of {label, amount}
+  
+  // Summary
+  grossSalary     Float    @default(0)
+  netSalary       Float    @default(0)
+  
+  // Context
+  totalDays       Int      @default(0)
+  presentDays     Float    @default(0)
+  absentDays      Float    @default(0)
+  leaveDays       Float    @default(0)
+  
+  month           Int
+  year            Int
+  status          String   @default("UNPAID") // UNPAID, PAID
+  paidAt          DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  payroll         Payroll  @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+}
+
+model PayrollSettings {
+  id                  String   @id @default(cuid())
+  schoolId           String   @unique
+  
+  // Automated Incentives
+  fullAttendanceBonus Float    @default(0)
+  punctualityBonus    Float    @default(0)
+  
+  // Late Coming Rules
+  lateThreshold       Int      @default(3)      // Days allowed late
+  latePenalty         Float    @default(0)      // Deduction per late day after threshold
+  
+  // Overtime / Extras
+  overtimeRate        Float    @default(0)      // Per hour
+  
+  // Work Rules
+  workDaysPerWeek     Int      @default(6)
+  standardWorkHours   Float    @default(8)
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  school              School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+}
+
+model BiometricLog {
+  id           String   @id @default(cuid())
+  deviceId     String
+  deviceUserId String
+  timestamp    DateTime
+  status       Int      // 0=CheckIn, 1=CheckOut, 255=Unspecified
+  verifyMode   Int?     // 1=Finger, 15=Face, etc.
+  processed    Boolean  @default(false)
+  raw          String?  // Store full raw string if needed
+  schoolId     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  school       School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceId, deviceUserId, timestamp])
+  @@index([schoolId])
+  @@index([schoolId, timestamp])
+}
+
+model LibraryBook {
+  id          String   @id @default(cuid())
+  title       String
+  author      String
+  isbn        String?
+  publisher   String?
+  category    String?
+  coverUrl    String?
+  copies      Int      @default(1)
+  shelfNo     String?
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  transactions LibraryTransaction[]
+
+  @@index([schoolId])
+  @@index([title])
+  @@index([isbn])
+}
+
+// --- Transport Module ---
+
+model TransportVehicle {
+  id                String   @id @default(cuid())
+  registrationNumber String
+  model             String?
+  capacity          Int
+  schoolId          String
+  school            School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  status            String   @default("ACTIVE") // ACTIVE, MAINTENANCE, INACTIVE
+  gpsDeviceId       String?  // For future integration
+  
+  routes            TransportRoute[]
+  maintenanceLogs   TransportMaintenance[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([schoolId, registrationNumber])
+  @@index([schoolId])
+}
+
+model TransportDriver {
+  id              String   @id @default(cuid())
+  name            String
+  licenseNumber   String
+  phone           String
+  schoolId        String
+  school          School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  status          String   @default("ACTIVE") // ACTIVE, ON_LEAVE, INACTIVE
+  
+  // Optional link to Staff if driver is an employee
+  userId          String?  @unique
+  user            User?    @relation(fields: [userId], references: [id])
+
+  routes          TransportRoute[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([schoolId])
+}
+
+model TransportRoute {
+  id          String   @id @default(cuid())
+  name        String   // e.g., "Route 1 - North City"
+  description String?
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  
+  vehicleId   String?
+  vehicle     TransportVehicle? @relation(fields: [vehicleId], references: [id])
+  
+  driverId    String?
+  driver      TransportDriver? @relation(fields: [driverId], references: [id])
+
+  stops       TransportStop[]
+  students    StudentTransportProfile[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([schoolId])
+}
+
+model TransportStop {
+  id            String   @id @default(cuid())
+  name          String
+  routeId       String
+  route         TransportRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  
+  sequenceOrder Int      // 1, 2, 3...
+  latitude      Float?
+  longitude     Float?
+  pickupTime    String?  // "07:30 AM"
+  dropTime      String?  // "03:30 PM"
+  
+  pickupStudents StudentTransportProfile[] @relation("PickupStop")
+  dropStudents   StudentTransportProfile[] @relation("DropStop")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([routeId])
+}
+
+model StudentTransportProfile {
+  id            String   @id @default(cuid())
+  studentId     String   @unique
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  routeId       String
+  route         TransportRoute @relation(fields: [routeId], references: [id])
+  
+  pickupStopId  String?
+  pickupStop    TransportStop? @relation("PickupStop", fields: [pickupStopId], references: [id])
+  
+  dropStopId    String?
+  dropStop      TransportStop? @relation("DropStop", fields: [dropStopId], references: [id])
+  
+  transportFee  Float    @default(0)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([routeId])
+}
+
+model TransportMaintenance {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  vehicle     TransportVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  type        String   // SERVICE, REPAIR, FUEL, OTHER
+  cost        Float
+  date        DateTime
+  description String?
+  fileUrl     String?  // Invoice/Bill
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([vehicleId])
+}
+
+model LibraryTransaction {
+  id          String   @id @default(cuid())
+  bookId      String
+  book        LibraryBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  
+  // Polymorphic-like relationship
+  studentId   String?
+  student     Student? @relation(fields: [studentId], references: [id])
+  staffId     String?
+  staff       User?    @relation(fields: [staffId], references: [id])
+  
+  issuedDate  DateTime @default(now())
+  dueDate     DateTime
+  returnedDate DateTime?
+  status      String   @default("ISSUED") // ISSUED, RETURNED, OVERDUE, LOST
+  fineAmount  Float    @default(0)
+  
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId])
+  @@index([bookId])
+  @@index([studentId])
+  @@index([staffId])
+  @@index([status])
+}
+
+model LibrarySettings {
+  id          String   @id @default(cuid())
+  schoolId    String   @unique
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  
+  maxBooksStudent Int @default(2)
+  maxBooksStaff   Int @default(5)
+  maxDaysStudent  Int @default(7)
+  maxDaysStaff    Int @default(14)
+  finePerDay      Float @default(10)
+}
+
+model Exam {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  date          DateTime
+  type          String   @default("TERM") // TERM, TEST, ETC
+  category      String   @default("ACADEMIC") // ACADEMIC, SPORTS, ARTS, CO_CURRICULAR
+  classrooms    String   @default("[]") // JSON Array of classroom IDs
+  subjects      String   @default("[]") // JSON Array of subject names
+  maxMarks      Float    @default(100)
+  gradingSystem String   @default("MARKS") // MARKS, GRADES
+  schoolId      String
+  createdById   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  results       ExamResult[]
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdBy     User     @relation(fields: [createdById], references: [id])
+
+  @@index([schoolId])
+}
+
+model ExamResult {
+  id        String   @id @default(cuid())
+  marks     Float?
+  grade     String?
+  remarks   String?
+  subject   String? 
+  examId    String
+  studentId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, studentId, subject])
+  @@index([studentId])
+}
+
+model StudentHealthRecord {
+  id             String   @id @default(cuid())
+  height         Float?
+  weight         Float?
+  bmi            Float?
+  visionLeft     String?
+  visionRight    String?
+  hearingLeft    String?
+  hearingRight   String?
+  dentalStatus   String?
+  generalHealth  String?
+  bloodPressure  String?
+  pulseRate      Int?
+  recordedAt     DateTime @default(now())
+  recordedById   String?
+  studentId      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  recordedBy     User?    @relation(fields: [recordedById], references: [id])
+
+  @@index([studentId])
+}
+
+model StudentActivityRecord {
+  id          String   @id @default(cuid())
+  title       String
+  category    String // SPORTS, ARTS, CLUB, ETC
+  type        String // PARTICIPATION, AWARD
+  date        DateTime
+  description String?
+  achievement String? // "First Place", "Gold Medal"
+  studentId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
 }

@@ -215,6 +215,11 @@ export async function updateStudentAction(schoolSlug: string, id: string, data: 
             ...updateData
         } = data;
 
+        // Sanitize classroomId
+        if (updateData.classroomId === "" || updateData.classroomId === "unassigned") {
+            updateData.classroomId = null;
+        }
+
         const student = await (prisma as any).student.update({
             where: { id },
             data: {

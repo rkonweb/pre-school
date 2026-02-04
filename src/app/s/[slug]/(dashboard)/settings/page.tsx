@@ -11,7 +11,9 @@ import {
     Zap,
     Shield,
     Globe,
-    LogOut
+    LogOut,
+    CreditCard,
+    Fingerprint
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -51,6 +53,15 @@ export default function SettingsHubPage() {
             accent: "blue"
         },
         {
+            title: "Biometric Integration",
+            desc: "Manage device connections, user mapping, and live attendance logs.",
+            href: `/s/${slug}/settings/biometric`,
+            icon: Fingerprint,
+            color: "text-purple-600",
+            bg: "bg-purple-50",
+            accent: "purple"
+        },
+        {
             title: "Location & Physicality",
             desc: "Manage branch addresses, contact details, and map coordinates.",
             href: `/s/${slug}/settings/location`,
@@ -76,6 +87,15 @@ export default function SettingsHubPage() {
             color: "text-rose-600",
             bg: "bg-rose-50",
             accent: "rose"
+        },
+        {
+            title: "Payroll & Disbursement",
+            desc: "Configure automated incentives, late thresholds, and salary rules.",
+            href: `/s/${slug}/settings/payroll`,
+            icon: CreditCard,
+            color: "text-blue-600",
+            bg: "bg-blue-50",
+            accent: "blue"
         },
         {
             title: "Regional Operations",

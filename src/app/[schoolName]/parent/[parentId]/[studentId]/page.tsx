@@ -208,6 +208,18 @@ export default function StudentDetailsPage() {
     const classroom = student?.classroom;
     const teacher = classroom?.teacher;
 
+    // Module Visibility Helpers
+    const isModuleEnabled = (permissionKey: string) => {
+        if (!schoolContext?.modulesConfig) return true; // Default to true if not set (legacy)
+        try {
+            const enabled = JSON.parse(schoolContext.modulesConfig);
+            if (!Array.isArray(enabled)) return true;
+            return enabled.includes(permissionKey);
+        } catch (e) {
+            return true;
+        }
+    };
+
     return (
         <div className="flex flex-col h-[100dvh] bg-[#F1F5F9] overflow-hidden text-slate-900 selection:bg-blue-100 selection:text-blue-900 font-sans">
             {/* MOBILE-FIRST FLOATING HEADER */}
@@ -299,12 +311,20 @@ export default function StudentDetailsPage() {
                                     </motion.div>
                                 </div>
 
-                                {/* HORIZONTAL SHORTCUTS */}
+                                { /* HORIZONTAL SHORTCUTS */}
                                 <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 flex-nowrap">
-                                    <ShortcutButton icon={BookOpen} label="HW" color="bg-blue-100 text-blue-600" onClick={() => setActiveTab("homework")} />
-                                    <ShortcutButton icon={Clock} label="Log" color="bg-emerald-100 text-emerald-600" onClick={() => setActiveTab("attendance")} />
-                                    <ShortcutButton icon={BellRing} label="News" color="bg-amber-100 text-amber-600" onClick={() => setActiveTab("notifications")} />
-                                    <ShortcutButton icon={Trophy} label="Rank" color="bg-purple-100 text-purple-600" onClick={() => setActiveTab("reports")} />
+                                    {isModuleEnabled("diary") && (
+                                        <ShortcutButton icon={BookOpen} label="HW" color="bg-blue-100 text-blue-600" onClick={() => setActiveTab("homework")} />
+                                    )}
+                                    {isModuleEnabled("students.attendance") && (
+                                        <ShortcutButton icon={Clock} label="Log" color="bg-emerald-100 text-emerald-600" onClick={() => setActiveTab("attendance")} />
+                                    )}
+                                    {isModuleEnabled("communication") && (
+                                        <ShortcutButton icon={BellRing} label="News" color="bg-amber-100 text-amber-600" onClick={() => setActiveTab("notifications")} />
+                                    )}
+                                    {isModuleEnabled("academics.reports") && (
+                                        <ShortcutButton icon={Trophy} label="Rank" color="bg-purple-100 text-purple-600" onClick={() => setActiveTab("reports")} />
+                                    )}
                                 </div>
 
                                 {/* FEED SECTION */}
@@ -358,23 +378,25 @@ export default function StudentDetailsPage() {
                                     )}
 
                                     {/* Action Banner for Shortcuts */}
-                                    <motion.div
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => setActiveTab("timetable")}
-                                        className="bg-zinc-900 rounded-[2.2rem] p-6 text-white relative overflow-hidden mt-2"
-                                    >
-                                        <div className="absolute -right-4 -bottom-4 opacity-10">
-                                            <Clock className="h-24 w-24" />
-                                        </div>
-                                        <div className="relative z-10 flex items-center justify-between">
-                                            <div>
-                                                <p className="text-[9px] font-black uppercase text-emerald-400 mb-1">Schedule Sync</p>
-                                                <h4 className="text-xl font-black">Today's Timeline</h4>
-                                                <p className="text-[10px] text-slate-400 font-bold mt-1">3 Periods • 1 Activity Room</p>
+                                    {isModuleEnabled("academics.timetable") && (
+                                        <motion.div
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => setActiveTab("timetable")}
+                                            className="bg-zinc-900 rounded-[2.2rem] p-6 text-white relative overflow-hidden mt-2"
+                                        >
+                                            <div className="absolute -right-4 -bottom-4 opacity-10">
+                                                <Clock className="h-24 w-24" />
                                             </div>
-                                            <ChevronRight className="h-6 w-6 text-slate-600" />
-                                        </div>
-                                    </motion.div>
+                                            <div className="relative z-10 flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-[9px] font-black uppercase text-emerald-400 mb-1">Schedule Sync</p>
+                                                    <h4 className="text-xl font-black">Today's Timeline</h4>
+                                                    <p className="text-[10px] text-slate-400 font-bold mt-1">3 Periods • 1 Activity Room</p>
+                                                </div>
+                                                <ChevronRight className="h-6 w-6 text-slate-600" />
+                                            </div>
+                                        </motion.div>
+                                    )}
 
                                     {/* Quick Contacts Island */}
                                     <div className="bg-white rounded-[2.2rem] p-6 border border-slate-100 flex items-center justify-between">
@@ -1069,9 +1091,15 @@ export default function StudentDetailsPage() {
             <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[420px] z-[100]">
                 <div className="bg-slate-900/95 backdrop-blur-2xl rounded-[3rem] p-2.5 shadow-2xl shadow-indigo-500/20 border border-white/10 flex items-center justify-around">
                     <BottomNavItem id="home" label="Home" icon={LayoutDashboard} active={activeTab} onClick={setActiveTab} />
-                    <BottomNavItem id="diary" label="Diary" icon={MessageSquare} active={activeTab} onClick={setActiveTab} badge={diaryEntries.length} />
-                    <BottomNavItem id="fees" label="Fees" icon={CreditCard} active={activeTab} onClick={setActiveTab} />
-                    <BottomNavItem id="timetable" label="Time" icon={CalendarDays} active={activeTab} onClick={setActiveTab} />
+                    {isModuleEnabled("diary") && (
+                        <BottomNavItem id="diary" label="Diary" icon={MessageSquare} active={activeTab} onClick={setActiveTab} badge={diaryEntries.length} />
+                    )}
+                    {isModuleEnabled("billing") && (
+                        <BottomNavItem id="fees" label="Fees" icon={CreditCard} active={activeTab} onClick={setActiveTab} />
+                    )}
+                    {isModuleEnabled("academics.timetable") && (
+                        <BottomNavItem id="timetable" label="Time" icon={CalendarDays} active={activeTab} onClick={setActiveTab} />
+                    )}
                     <BottomNavItem id="profile" label="Me" icon={UserCircle2} active={activeTab} onClick={setActiveTab} />
                 </div>
             </nav>
