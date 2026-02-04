@@ -103,10 +103,36 @@ export async function createTenantAction(data: CreateTenantInput) {
     // Primary contact number for owner
     const mobile = data.adminPhone || data.contactPhone || `mock-${Date.now()}`;
 
-    // Map plan name to ID
-    let planId = "plan_start_001";
-    if (data.plan === "Growth") planId = "plan_growth_001";
-    if (data.plan === "Enterprise") planId = "plan_ent_001";
+    // Get or Create Subscription Plan (Auto-Seeding)
+    let planId = "";
+    const planName = data.plan || "Growth";
+    const planSlug = planName.toLowerCase();
+
+    const existingPlan = await prisma.subscriptionPlan.findFirst({
+        where: { name: { equals: planName, mode: 'insensitive' } }
+    });
+
+    if (existingPlan) {
+        planId = existingPlan.id;
+    } else {
+        // Auto-create missing plan
+        const newPlan = await prisma.subscriptionPlan.create({
+            data: {
+                name: planName,
+                slug: planSlug,
+                price: planName === "Enterprise" ? 299 : planName === "Growth" ? 99 : 0,
+                description: `Auto-generated ${planName} Plan`,
+                tier: planName === "Enterprise" ? "enterprise" : planName === "Growth" ? "premium" : "basic",
+                limits: {
+                    maxStudents: planName === "Enterprise" ? 5000 : planName === "Growth" ? 1000 : 100,
+                    maxStaff: planName === "Enterprise" ? 500 : planName === "Growth" ? 100 : 20,
+                    maxStorageGB: planName === "Enterprise" ? 1000 : planName === "Growth" ? 100 : 10
+                } as any, // Cast to any if Json type issues arise, but usually fine
+                isActive: true
+            }
+        });
+        planId = newPlan.id;
+    }
 
     try {
         await prisma.$transaction(async (tx) => {
