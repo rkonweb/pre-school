@@ -20,8 +20,8 @@ export function middleware(req: NextRequest) {
     // Add your production domains here
     const allowedDomains = ["localhost", "bodhiboard.com", "www.bodhiboard.com", "vercel.app", "bodhiboard.in", "www.bodhiboard.in"];
 
-    // Check if current hostname is allowed
-    const isMainDomain = allowedDomains.some(domain => hostname.includes(domain));
+    // Check if current hostname is allowed (localhost on any port is allowed)
+    const isMainDomain = hostname === "localhost" || allowedDomains.some(domain => hostname.includes(domain));
 
     if (isMainDomain) {
         return NextResponse.next();
