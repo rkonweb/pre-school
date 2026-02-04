@@ -1,10 +1,11 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 
-async function seedHomepage() {
-    console.log('🌊 Seeding homepage with Refreshing Summer Fun content...');
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
+export async function GET() {
     try {
+        console.log('🌊 Seeding homepage with Refreshing Summer Fun content...');
+
         // Hero Section
         await prisma.homepageContent.upsert({
             where: { sectionKey: 'hero' },
@@ -169,18 +170,17 @@ async function seedHomepage() {
             }
         });
 
-        console.log('✅ Homepage content seeded successfully!');
-        console.log('🎨 Using Refreshing Summer Fun color palette (teal, navy, sky, yellow, orange)');
+        return NextResponse.json({
+            success: true,
+            message: 'Homepage content seeded successfully with Refreshing Summer Fun design!'
+        });
+
     } catch (error) {
         console.error('❌ Error seeding homepage:', error);
-        throw error;
-    } finally {
-        await prisma.$disconnect();
+        return NextResponse.json({
+            success: false,
+            error: 'Failed to seed homepage content',
+            details: String(error)
+        }, { status: 500 });
     }
 }
-
-seedHomepage()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    });
