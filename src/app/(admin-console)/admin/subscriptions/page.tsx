@@ -10,6 +10,7 @@ import {
 } from "@/app/actions/subscription-actions";
 import { SubscriptionPlan } from "@/types/subscription";
 import { getSystemSettingsAction } from "@/app/actions/settings-actions";
+import { ALL_MODULES, MODULE_CATEGORIES } from "@/config/modules";
 import {
     Plus,
     Trash2,
@@ -61,17 +62,6 @@ export default function SubscriptionManagementPage() {
 
     // Form State
     const [formData, setFormData] = useState(initialForm);
-
-    const availableModules = [
-        "attendance",
-        "admissions",
-        "billing",
-        "communication",
-        "curriculum",
-        "transport",
-        "library",
-        "inventory"
-    ];
 
     useEffect(() => {
         loadPlans();
@@ -458,27 +448,43 @@ export default function SubscriptionManagementPage() {
                                 <h4 className="text-xs font-bold text-zinc-900 uppercase flex items-center gap-2">
                                     <Settings className="h-4 w-4" /> Enabled Modules
                                 </h4>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    {availableModules.map(mod => (
-                                        <label key={mod} className="flex items-center gap-2 p-3 rounded-xl border border-zinc-100 hover:bg-zinc-50 cursor-pointer transition-colors">
-                                            <div className={cn(
-                                                "h-4 w-4 rounded border flex items-center justify-center transition-colors",
-                                                formData.includedModules.includes(mod) ? "bg-blue-600 border-blue-600" : "border-zinc-300 bg-white"
-                                            )}>
-                                                {formData.includedModules.includes(mod) && <CheckCircle2 className="h-3 w-3 text-white" />}
+
+                                <div className="space-y-6">
+                                    {(Object.keys(MODULE_CATEGORIES) as Array<keyof typeof MODULE_CATEGORIES>).map(catKey => {
+                                        const categoryModules = ALL_MODULES.filter(m => m.category === catKey);
+                                        if (categoryModules.length === 0) return null;
+
+                                        return (
+                                            <div key={catKey} className="space-y-2">
+                                                <h5 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{MODULE_CATEGORIES[catKey]}</h5>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {categoryModules.map(mod => (
+                                                        <label key={mod.id} className="flex items-start gap-3 p-3 rounded-xl border border-zinc-100 hover:bg-zinc-50 cursor-pointer transition-colors group">
+                                                            <div className={cn(
+                                                                "mt-0.5 h-4 w-4 rounded border flex items-center justify-center transition-colors shrink-0",
+                                                                formData.includedModules.includes(mod.id) ? "bg-blue-600 border-blue-600" : "border-zinc-300 bg-white group-hover:border-zinc-400"
+                                                            )}>
+                                                                {formData.includedModules.includes(mod.id) && <CheckCircle2 className="h-3 w-3 text-white" />}
+                                                            </div>
+                                                            <input
+                                                                type="checkbox"
+                                                                className="hidden"
+                                                                checked={formData.includedModules.includes(mod.id)}
+                                                                onChange={(e) => {
+                                                                    if (e.target.checked) setFormData(p => ({ ...p, includedModules: [...p.includedModules, mod.id] }));
+                                                                    else setFormData(p => ({ ...p, includedModules: p.includedModules.filter(x => x !== mod.id) }));
+                                                                }}
+                                                            />
+                                                            <div className="space-y-0.5">
+                                                                <span className="text-xs font-bold text-zinc-700 block">{mod.label}</span>
+                                                                <span className="text-[10px] text-zinc-400 block leading-snug">{mod.description}</span>
+                                                            </div>
+                                                        </label>
+                                                    ))}
+                                                </div>
                                             </div>
-                                            <input
-                                                type="checkbox"
-                                                className="hidden"
-                                                checked={formData.includedModules.includes(mod)}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) setFormData(p => ({ ...p, includedModules: [...p.includedModules, mod] }));
-                                                    else setFormData(p => ({ ...p, includedModules: p.includedModules.filter(x => x !== mod) }));
-                                                }}
-                                            />
-                                            <span className="text-xs font-medium text-zinc-700 capitalize">{mod}</span>
-                                        </label>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
 
