@@ -8,6 +8,14 @@ export function middleware(req: NextRequest) {
     // Remove port (e.g. localhost:3000 -> localhost)
     hostname = hostname.split(":")[0];
 
+    // 3. Protect Admin Routes (Strict Server-Side Check - HIGHEST PRIORITY)
+    if (url.pathname.startsWith("/admin") && url.pathname !== "/admin/login") {
+        const adminSession = req.cookies.get("admin_session");
+        if (!adminSession) {
+            return NextResponse.redirect(new URL("/admin/login", req.url));
+        }
+    }
+
     // Allowed Main Domains (No rewrite needed)
     // Add your production domains here
     const allowedDomains = ["localhost", "bodhiboard.com", "www.bodhiboard.com", "vercel.app"];
@@ -16,11 +24,6 @@ export function middleware(req: NextRequest) {
     const isMainDomain = allowedDomains.some(domain => hostname.includes(domain));
 
     if (isMainDomain) {
-        return NextResponse.next();
-    }
-
-    // Exclude Public Files
-    if (url.pathname.includes(".") || url.pathname.startsWith("/api")) {
         return NextResponse.next();
     }
 
