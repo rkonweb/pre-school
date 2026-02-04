@@ -20,7 +20,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dnd-kit": "^0.0.2",
-    "framer-motion": "10.18.0",
+    "framer-motion": "^6.5.1",
     "lucide-react": "0.468.0",
     "next": "15.5.11",
     "papaparse": "^5.5.3",
