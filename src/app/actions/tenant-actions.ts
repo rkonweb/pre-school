@@ -124,11 +124,9 @@ export async function createTenantAction(data: CreateTenantInput) {
                     price: planName === "Enterprise" ? 299 : planName === "Growth" ? 99 : 0,
                     description: `Auto-generated ${planName} Plan`,
                     tier: planName === "Enterprise" ? "enterprise" : planName === "Growth" ? "premium" : "basic",
-                    limits: {
-                        maxStudents: planName === "Enterprise" ? 5000 : planName === "Growth" ? 1000 : 100,
-                        maxStaff: planName === "Enterprise" ? 500 : planName === "Growth" ? 100 : 20,
-                        maxStorageGB: planName === "Enterprise" ? 1000 : planName === "Growth" ? 100 : 10
-                    } as any, // Cast to any if Json type issues arise, but usually fine
+                    maxStudents: planName === "Enterprise" ? 5000 : planName === "Growth" ? 1000 : 100,
+                    maxStaff: planName === "Enterprise" ? 500 : planName === "Growth" ? 100 : 20,
+                    maxStorageGB: planName === "Enterprise" ? 1000 : planName === "Growth" ? 100 : 10,
                     isActive: true
                 }
             });
