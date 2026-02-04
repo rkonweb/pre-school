@@ -1,24 +1,104 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* REFRESHING SUMMER FUN PALETTE */
+  /* Core Brand Colors */
+  --summer-navy: #0C3449;
+  /* Deep Blue/Black Text */
+  --summer-teal: #2D9CB8;
+  /* Primary Brand Color */
+  --summer-sky: #92Cce1;
+  /* Light/Secondary Backgrounds */
+  --summer-yellow: #FCC11A;
+  /* Accents / badges */
+  --summer-orange: #FF8800;
+  /* CTAs / Highlights */
+
+  /* Semantic Mappings */
+  --background: #FFFFFF;
+  --foreground: var(--summer-navy);
+  /* Deep Navy text for premium feel */
+
+  --primary: var(--summer-teal);
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #F0F9FF;
+  /* Very light sky tint */
+  --secondary-foreground: var(--summer-navy);
+
+  --accent: #FFFAF0;
+  /* Warm tint */
+  --accent-foreground: var(--summer-orange);
+
+  --card: #FFFFFF;
+  --card-foreground: var(--summer-navy);
+
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+
+  --highlight: var(--summer-orange);
+  --muted: #64748B;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+
+  --color-highlight: var(--highlight);
+  --color-muted: var(--muted);
+
+  /* Expose raw palette for specific use cases */
+  --color-navy: var(--summer-navy);
+  --color-teal: var(--summer-teal);
+  --color-sky: var(--summer-sky);
+  --color-yellow: var(--summer-yellow);
+  --color-orange: var(--summer-orange);
+
   --font-sans: var(--font-inter);
   --font-heading: var(--font-outfit);
 
-  --color-brand: var(--brand-color, #2563eb);
-  --color-brand-soft: color-mix(in srgb, var(--brand-color, #2563eb) 10%, transparent);
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-fade-in-up: fadeInUp 0.5s ease-out forwards;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -26,6 +106,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
+  overflow-x: hidden;
 }
 
 h1,
@@ -35,4 +116,28 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(146, 204, 225, 0.3);
+  /* Sky Blue border tint */
+  box-shadow: 0 4px 6px -1px rgba(12, 52, 73, 0.05), 0 2px 4px -1px rgba(12, 52, 73, 0.03);
+  /* Navy shadow tint */
+}
+
+/* Selection Color */
+::selection {
+  background: var(--summer-teal);
+  color: white;
 }

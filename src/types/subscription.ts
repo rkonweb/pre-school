@@ -17,6 +17,7 @@ export interface SubscriptionPlan {
     isActive: boolean;
     isPopular?: boolean;
     tier: "free" | "basic" | "premium" | "enterprise";
+    sortOrder: number;
     createdAt: string;
 }
 

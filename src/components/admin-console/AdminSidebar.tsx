@@ -11,7 +11,8 @@ import {
     LogOut,
     Globe,
     Database,
-    CreditCard
+    CreditCard,
+    FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutSuperAdminAction } from "@/app/actions/admin-auth-actions";
@@ -20,6 +21,7 @@ const navigation = [
     { name: "Console Overview", href: "/admin/dashboard", icon: BarChart3 },
     { name: "Tenant Management", href: "/admin/tenants", icon: Building2 },
     { name: "Master Data", href: "/admin/dashboard/master-data", icon: Database },
+    { name: "CMS", href: "/admin/cms", icon: FileText },
     { name: "Curriculum Architect", href: "/admin/curriculum/architect", icon: Layers },
     { name: "Global Monitor", href: "/admin/curriculum/monitor", icon: Globe },
     { name: "System Config", href: "/admin/settings", icon: Settings },

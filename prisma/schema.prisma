@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -184,6 +184,9 @@ model User {
   // Progress & Exams
   createdExams    Exam[]
   recordedHealth  StudentHealthRecord[]
+  
+  // CMS
+  blogPosts       BlogPost[]
 }
 
 model LeavePolicy {
@@ -1174,4 +1177,166 @@ model StudentActivityRecord {
   student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
+}
+
+// CMS & Marketing
+model CMSPage {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String
+  isPublished Boolean  @default(false)
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogImage         String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String
+  coverImage  String?
+  authorId    String
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  tags        String   @default("[]")
+
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogImage         String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  author      User     @relation(fields: [authorId], references: [id])
+}
+
+model JobPosting {
+  id          String   @id @default(cuid())
+  title       String
+  department  String
+  location    String
+  type        String
+  description String
+  requirements String?
+  isOpen      Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  applications JobApplication[]
+}
+
+model JobApplication {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String
+  phone       String
+  resumeUrl   String?
+  coverLetter String?
+  linkedin    String?
+  portfolio   String?
+  status      String   @default("PENDING") // PENDING, REVIEWING, INTERVIEW, OFFER, REJECTED
+  
+  jobId       String
+  job         JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([jobId])
+  @@index([email])
+}
+
+// Homepage CMS
+model HomepageContent {
+  id          String   @id @default(cuid())
+  sectionKey  String   @unique // e.g., "hero", "features", "pricing", "cta"
+  title       String?
+  subtitle    String?
+  content     String   // JSON string for flexible content
+  isEnabled   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Features Page CMS
+model FeaturesPageContent {
+  id          String   @id @default(cuid())
+  sectionKey  String   @unique // e.g., "hero", "highlight", "features"
+  title       String?
+  subtitle    String?
+  content     String   // JSON string for flexible content
+  isEnabled   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Pricing Page CMS
+model PricingPageContent {
+  id          String   @id @default(cuid())
+  sectionKey  String   @unique // e.g., "hero", "faq"
+  title       String?
+  subtitle    String?
+  content     String   // JSON string
+  isEnabled   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Careers Page CMS
+model CareersPageContent {
+  id          String   @id @default(cuid())
+  sectionKey  String   @unique // e.g., "hero", "values"
+  title       String?
+  subtitle    String?
+  content     String   // JSON string
+  isEnabled   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Contact Page CMS
+model ContactPageContent {
+  id          String   @id @default(cuid())
+  sectionKey  String   @unique // e.g., "hero", "info"
+  title       String?
+  subtitle    String?
+  content     String   // JSON string
+  isEnabled   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Blog Page CMS (Settings/Layout)
+model BlogPageContent {
+  id          String   @id @default(cuid())
+  sectionKey  String   @unique // e.g., "hero", "sidebar"
+  title       String?
+  subtitle    String?
+  content     String   // JSON string
+  isEnabled   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

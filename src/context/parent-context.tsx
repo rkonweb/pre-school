@@ -19,11 +19,11 @@ const ParentContext = createContext<ParentContextType | undefined>(undefined);
 
 export function ParentProvider({
     children,
-    schoolName,
+    slug,
     phone
 }: {
     children: React.ReactNode;
-    schoolName: string;
+    slug: string;
     phone: string;
 }) {
     const [school, setSchool] = useState<any>(null);
@@ -35,14 +35,14 @@ export function ParentProvider({
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchData = useCallback(async () => {
-        if (!phone || !schoolName) {
+        if (!phone || !slug) {
             setIsLoading(false);
             return;
         }
 
         try {
             setIsLoading(true);
-            const res = await getParentDashboardDataAction(schoolName, phone);
+            const res = await getParentDashboardDataAction(slug, phone);
 
             if (res.success) {
                 setSchool(res.school);
@@ -64,7 +64,7 @@ export function ParentProvider({
         } finally {
             setIsLoading(false);
         }
-    }, [schoolName, phone]);
+    }, [slug, phone]);
 
     // Initial Fetch
     useEffect(() => {

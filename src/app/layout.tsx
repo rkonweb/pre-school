@@ -47,7 +47,7 @@ export default function RootLayout({
         className={`${outfit.variable} ${inter.variable} antialiased`}
       >
         {children}
-        <Toaster position="top-right" richColors />
+        {/* <Toaster position="top-right" richColors /> */}
       </body>
     </html>
   );

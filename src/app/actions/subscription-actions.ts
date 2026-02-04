@@ -7,15 +7,6 @@ import { revalidatePath } from "next/cache";
 export async function getSubscriptionPlansAction() {
     try {
         const plans = await prisma.subscriptionPlan.findMany({
-            include: {
-                _count: {
-                    select: {
-                        subscriptions: {
-                            where: { status: "ACTIVE" }
-                        }
-                    }
-                }
-            },
             orderBy: { sortOrder: 'asc' }
         });
 
@@ -52,15 +43,17 @@ export async function getSubscriptionPlansAction() {
 
         return plans.map(p => ({
             ...p,
-            features: JSON.parse(p.features || "[]"),
-            includedModules: JSON.parse(p.includedModules || "[]"),
+            description: p.description || "",
+            createdAt: p.createdAt.toISOString(),
+            updatedAt: p.updatedAt.toISOString(),
+            features: JSON.parse(p.features || "[]") as string[],
+            includedModules: JSON.parse(p.includedModules || "[]") as string[],
             limits: {
                 maxStudents: p.maxStudents,
                 maxStaff: p.maxStaff,
                 maxStorageGB: p.maxStorageGB
-            },
-            activeSubscribers: p._count.subscriptions
-        }));
+            }
+        })) as SubscriptionPlanType[];
     } catch (error: any) {
         console.error("getSubscriptionPlansAction Error:", error);
         return [];
