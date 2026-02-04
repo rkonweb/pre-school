@@ -18,7 +18,7 @@ export function middleware(req: NextRequest) {
 
     // Allowed Main Domains (No rewrite needed)
     // Add your production domains here
-    const allowedDomains = ["localhost", "bodhiboard.com", "www.bodhiboard.com", "vercel.app"];
+    const allowedDomains = ["localhost", "bodhiboard.com", "www.bodhiboard.com", "vercel.app", "bodhiboard.in", "www.bodhiboard.in"];
 
     // Check if current hostname is allowed
     const isMainDomain = allowedDomains.some(domain => hostname.includes(domain));
@@ -27,11 +27,13 @@ export function middleware(req: NextRequest) {
         return NextResponse.next();
     }
 
-    // 3. Protect Admin Routes (Strict Server-Side Check)
-    if (url.pathname.startsWith("/admin") && url.pathname !== "/admin/login") {
-        const adminSession = req.cookies.get("admin_session");
-        if (!adminSession) {
-            return NextResponse.redirect(new URL("/admin/login", req.url));
+    // 4. Protect School/Parent Routes (Strict Server-Side Check)
+    // Matches /s/anything... but likely not parent routes as they are rewritten?
+    // Let's protect /s/* (School Dashboards)
+    if (url.pathname.startsWith("/s/")) {
+        const userSession = req.cookies.get("userId");
+        if (!userSession) {
+            return NextResponse.redirect(new URL("/school-login", req.url));
         }
     }
 

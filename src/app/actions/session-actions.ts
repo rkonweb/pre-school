@@ -52,7 +52,7 @@ export async function setUserSessionAction(userId: string) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7 // 7 days
+        // No maxAge: Session cookie (expires on close)
     });
     return { success: true };
 }
