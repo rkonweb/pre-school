@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
     BarChart3,
     Building2,
@@ -14,6 +14,7 @@ import {
     CreditCard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logoutSuperAdminAction } from "@/app/actions/admin-auth-actions";
 
 const navigation = [
     { name: "Console Overview", href: "/admin/dashboard", icon: BarChart3 },
@@ -27,6 +28,12 @@ const navigation = [
 
 export function AdminSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+
+    async function handleLogout() {
+        await logoutSuperAdminAction();
+        router.push("/admin/login");
+    }
 
     return (
         <div className="flex h-screen w-72 flex-col bg-white border-r border-zinc-200">
@@ -65,7 +72,11 @@ export function AdminSidebar() {
                         <p className="truncate text-xs font-bold text-zinc-900">Root User</p>
                         <p className="truncate text-[10px] text-zinc-500">access-level: 0</p>
                     </div>
-                    <button className="text-zinc-400 hover:text-zinc-600 transition-colors">
+                    <button
+                        onClick={handleLogout}
+                        className="text-zinc-400 hover:text-zinc-600 transition-colors"
+                        title="Logout"
+                    >
                         <LogOut className="h-4 w-4" />
                     </button>
                 </div>
