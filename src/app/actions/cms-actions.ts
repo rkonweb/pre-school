@@ -83,11 +83,20 @@ export async function deleteCMSPageAction(id: string) {
 
 // --- Blog Posts ---
 
+// For public pages - only published posts
 export async function getBlogPostsAction() {
     return withRetry(() => prisma.blogPost.findMany({
         include: { author: { select: { firstName: true, lastName: true } } },
         orderBy: { createdAt: 'desc' },
         where: { isPublished: true }
+    }));
+}
+
+// For admin CMS - ALL posts including drafts
+export async function getAllBlogPostsAction() {
+    return withRetry(() => prisma.blogPost.findMany({
+        include: { author: { select: { firstName: true, lastName: true } } },
+        orderBy: { createdAt: 'desc' }
     }));
 }
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
-    getBlogPostsAction,
+    getAllBlogPostsAction,
     getBlogPageContentAction,
     upsertBlogSectionAction
 } from "@/app/actions/cms-actions";
@@ -64,7 +64,7 @@ export default function BlogCMSPage() {
     const loadData = async () => {
         setLoading(true);
         const [postsData, sectionsData] = await Promise.all([
-            getBlogPostsAction(),
+            getAllBlogPostsAction(),
             getBlogPageContentAction()
         ]);
         setPosts(postsData);
