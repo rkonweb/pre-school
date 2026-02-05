@@ -82,9 +82,15 @@ export default function ContactCMSPage() {
 
     const loadSections = async () => {
         setLoading(true);
-        const data = await getContactPageContentAction();
-        setSections(data);
-        setLoading(false);
+        try {
+            const data = await getContactPageContentAction();
+            setSections(data);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to load sections. Ensure database migrations are applied.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleEdit = (section: ContactSection) => {

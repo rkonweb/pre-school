@@ -126,9 +126,15 @@ export default function HomepageCMSPage() {
 
     const loadSections = async () => {
         setLoading(true);
-        const data = await getHomepageContentAction();
-        setSections(data);
-        setLoading(false);
+        try {
+            const data = await getHomepageContentAction();
+            setSections(data);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to load sections. Ensure database migrations are applied.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleEdit = (section: HomepageSection) => {

@@ -108,9 +108,15 @@ export default function PricingPageCMS() {
 
     const loadSections = async () => {
         setLoading(true);
-        const data = await getPricingPageContentAction();
-        setSections(data);
-        setLoading(false);
+        try {
+            const data = await getPricingPageContentAction();
+            setSections(data);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to load sections. Ensure database migrations are applied.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleEdit = (section: PricingSection) => {
