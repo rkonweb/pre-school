@@ -9,7 +9,24 @@ import { format } from "date-fns"
 export const dynamic = 'force-dynamic';
 
 export default async function CMSPagesIndex() {
-    const pages = await getCMSPagesAction()
+    let pages: Awaited<ReturnType<typeof getCMSPagesAction>> = [];
+    let error: string | null = null;
+
+    try {
+        pages = await getCMSPagesAction();
+    } catch (e) {
+        console.error("[CMS Pages] Failed to load pages:", e);
+        error = "Failed to load pages. Database connection error.";
+    }
+
+    if (error) {
+        return (
+            <div className="p-8 text-center">
+                <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Pages</h1>
+                <p className="text-zinc-600">{error}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
