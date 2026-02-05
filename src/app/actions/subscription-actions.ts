@@ -68,6 +68,25 @@ export async function getSubscriptionPlansAction() {
             return getSubscriptionPlansAction();
         }
 
+        // Auto-repair: Check if any plans have empty modules and fix them
+        const moduleDefaults: Record<string, string[]> = {
+            'free': ['students', 'staff', 'settings', 'attendance'],
+            'basic': ['students', 'staff', 'settings', 'attendance', 'admissions', 'billing', 'academics', 'diary', 'communication'],
+            'premium': ['students', 'staff', 'settings', 'attendance', 'admissions', 'billing', 'academics', 'diary', 'communication', 'inventory', 'transport', 'library']
+        };
+
+        for (const plan of plans) {
+            const modules = JSON.parse(plan.includedModules || '[]');
+            if (modules.length === 0 && plan.tier && moduleDefaults[plan.tier]) {
+                // Update this plan with correct modules
+                await prisma.subscriptionPlan.update({
+                    where: { id: plan.id },
+                    data: { includedModules: JSON.stringify(moduleDefaults[plan.tier]) }
+                });
+                plan.includedModules = JSON.stringify(moduleDefaults[plan.tier]);
+            }
+        }
+
         return plans.map(p => ({
             ...p,
             description: p.description || "",
