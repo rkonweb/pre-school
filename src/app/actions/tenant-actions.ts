@@ -104,6 +104,24 @@ export async function createTenantAction(data: CreateTenantInput) {
         // Primary contact number for owner
         const mobile = data.adminPhone || data.contactPhone || `mock-${Date.now()}`;
 
+        // Global Phone Uniqueness Check for admin phone
+        if (mobile && !mobile.startsWith('mock-')) {
+            const { validatePhoneUniqueness } = await import("./phone-validation");
+            const phoneCheck = await validatePhoneUniqueness(mobile);
+            if (!phoneCheck.isValid) {
+                return { success: false, error: phoneCheck.error };
+            }
+        }
+
+        // Check school contact phone if different from admin phone
+        if (data.contactPhone && data.contactPhone !== mobile) {
+            const { validatePhoneUniqueness } = await import("./phone-validation");
+            const phoneCheck = await validatePhoneUniqueness(data.contactPhone);
+            if (!phoneCheck.isValid) {
+                return { success: false, error: phoneCheck.error };
+            }
+        }
+
         // Get or Create Subscription Plan (Auto-Seeding)
         let planId = "";
         const planName = data.plan || "Growth";

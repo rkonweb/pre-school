@@ -101,13 +101,11 @@ export async function registerSchoolAction(data: {
         // Validation
         if (!data.mobile) return { success: false, error: "Mobile number is required" };
 
-        // Check if mobile already exists
-        const existingUser = await prisma.user.findUnique({
-            where: { mobile: data.mobile }
-        });
-
-        if (existingUser) {
-            return { success: false, error: "User already registered with this mobile number." };
+        // Global Phone Uniqueness Check
+        const { validatePhoneUniqueness } = await import("./phone-validation");
+        const phoneCheck = await validatePhoneUniqueness(data.mobile);
+        if (!phoneCheck.isValid) {
+            return { success: false, error: phoneCheck.error };
         }
 
         // Generate Slug

@@ -88,7 +88,14 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
         const joiningDate = formData.get("joiningDate") as string;
         const avatarStr = formData.get("avatar") as string; // Placeholder
 
-        // Additional Fields
+        // Global Phone Uniqueness Check
+        if (mobile) {
+            const { validatePhoneUniqueness } = await import("./phone-validation");
+            const phoneCheck = await validatePhoneUniqueness(mobile);
+            if (!phoneCheck.isValid) {
+                return { success: false, error: phoneCheck.error };
+            }
+        }
         const gender = formData.get("gender") as string;
         const dateOfBirth = formData.get("dateOfBirth") as string;
         const bloodGroup = formData.get("bloodGroup") as string;
@@ -232,6 +239,15 @@ export async function updateStaffAction(id: string, formData: FormData) {
         const designation = formData.get("designation") as string;
         const department = formData.get("department") as string;
         const joiningDate = formData.get("joiningDate") as string;
+
+        // Global Phone Uniqueness Check (exclude current user)
+        if (mobile) {
+            const { validatePhoneUniqueness } = await import("./phone-validation");
+            const phoneCheck = await validatePhoneUniqueness(mobile, id);
+            if (!phoneCheck.isValid) {
+                return { success: false, error: phoneCheck.error };
+            }
+        }
 
         // Additional Fields
         const gender = formData.get("gender") as string;
