@@ -22,21 +22,16 @@ export async function POST(request: NextRequest) {
 
         // Check for GCS Credentials
         if (!GCS_CONFIG.credentials) {
-            // FALLBACK: Local Upload
-            const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-            await mkdir(uploadsDir, { recursive: true });
-
-            const timestamp = Date.now();
-            const sanitizedName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-            const localFilename = `${timestamp}_${sanitizedName}`;
-            const filePath = path.join(uploadsDir, localFilename);
-
-            await writeFile(filePath, buffer);
+            // FALLBACK: Return Base64 string directly
+            // On Vercel (serverless), local file writes are ephemeral and won't work.
+            // By returning the base64 string, we allow the CMS to save the image data 
+            // directly into the database 'content' JSON column.
 
             return NextResponse.json({
                 success: true,
-                url: `/uploads/${localFilename}`,
-                isLocal: true
+                url: file, // Return the full data:image/... string
+                isLocal: false,
+                isBase64: true
             });
         }
 
