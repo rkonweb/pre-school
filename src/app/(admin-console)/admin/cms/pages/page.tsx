@@ -6,6 +6,8 @@ import { Plus, Edit, Trash2, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
 
+export const dynamic = 'force-dynamic';
+
 export default async function CMSPagesIndex() {
     const pages = await getCMSPagesAction()
 
