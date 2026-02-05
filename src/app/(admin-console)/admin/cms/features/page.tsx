@@ -396,10 +396,9 @@ export default function FeaturesPageCMS() {
                                             {section.subtitle && (
                                                 <p className="text-slate-600 mb-3">{section.subtitle}</p>
                                             )}
-                                            <div className="bg-slate-50 p-4 rounded-xl">
-                                                <pre className="text-xs text-slate-600 overflow-x-auto">
-                                                    {section.content.substring(0, 200)}...
-                                                </pre>
+
+                                            <div className="mt-4">
+                                                <SectionPreview section={section} />
                                             </div>
                                         </div>
 
@@ -547,4 +546,73 @@ export default function FeaturesPageCMS() {
             )}
         </div>
     );
+}
+
+function SectionPreview({ section }: { section: FeaturesSection }) {
+    try {
+        const data = JSON.parse(section.content);
+
+        if (section.sectionKey === 'hero') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+                    <div className="flex gap-2 items-center">
+                        <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Hero</span>
+                        {data.badge && <span className="text-xs font-bold text-slate-600 bg-white px-2 py-0.5 rounded border">{data.badge}</span>}
+                    </div>
+                    <div className="text-sm font-medium text-slate-800 line-clamp-2" dangerouslySetInnerHTML={{ __html: data.headline || "" }} />
+                    <div className="text-xs text-slate-500 line-clamp-1">{data.description}</div>
+                </div>
+            );
+        }
+
+        if (section.sectionKey === 'highlight') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <div className="text-sm font-bold text-slate-900">{data.title}</div>
+                            <p className="text-xs text-slate-500 mt-1 line-clamp-1">{data.description}</p>
+                        </div>
+                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold whitespace-nowrap">
+                            {data.features?.length || 0} Points
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        if (section.sectionKey === 'features') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-bold text-slate-900">Feature Cards Grid</span>
+                        <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">
+                            {data.features?.length || 0} Cards
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {data.features?.slice(0, 4).map((f: any, i: number) => (
+                            <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-white border rounded shadow-sm max-w-[150px]">
+                                <div className="w-2 h-2 rounded-full bg-indigo-400 shrink-0" />
+                                <span className="text-xs font-medium text-slate-700 truncate">{f.title}</span>
+                            </div>
+                        ))}
+                        {(data.features?.length || 0) > 4 && (
+                            <span className="text-xs text-slate-400 flex items-center px-1">+{data.features.length - 4} more</span>
+                        )}
+                    </div>
+                    {data.ctaCard && (
+                        <div className="mt-3 pt-3 border-t border-slate-200 flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-500 uppercase">CTA Card:</span>
+                            <span className="text-xs text-slate-700 truncate">{data.ctaCard.title}</span>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        return <div className="text-slate-400 italic text-sm">Preview not available</div>;
+    } catch (e) {
+        return <div className="text-red-400 text-xs bg-red-50 p-2 rounded">Invalid JSON content</div>;
+    }
 }

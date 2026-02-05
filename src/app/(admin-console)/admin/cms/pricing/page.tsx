@@ -241,7 +241,10 @@ export default function PricingPageCMS() {
                             <div className="p-6 flex justify-between items-center">
                                 <div>
                                     <h3 className="text-xl font-bold text-slate-900">{section.title || section.sectionKey}</h3>
-                                    <p className="text-sm text-slate-500">{section.subtitle}</p>
+                                    <p className="text-sm text-slate-500 mb-3">{section.subtitle}</p>
+                                    <div className="mt-2">
+                                        <SectionPreview section={section} />
+                                    </div>
                                 </div>
                                 <div className="flex gap-2">
                                     <button onClick={() => handleToggle(section.id, section.isEnabled)} className="p-2 hover:bg-slate-100 rounded-lg">
@@ -305,4 +308,55 @@ export default function PricingPageCMS() {
             )}
         </div>
     );
+}
+
+function SectionPreview({ section }: { section: PricingSection }) {
+    try {
+        const data = JSON.parse(section.content);
+
+        if (section.sectionKey === 'hero') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+                    <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Hero</span>
+                    <div className="text-sm font-medium text-slate-800 line-clamp-2" dangerouslySetInnerHTML={{ __html: data.headline || "" }} />
+                </div>
+            );
+        }
+
+        if (section.sectionKey === 'plans') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-900">Pricing Plans Settings</span>
+                    <div className="text-xs text-slate-500 flex gap-2">
+                        {data.showPopularBadge && <span>• Badge: {data.popularBadgeText}</span>}
+                        {data.billingToggle && <span>• Monthly/Yearly Toggle</span>}
+                    </div>
+                </div>
+            );
+        }
+
+        if (section.sectionKey === 'comparison') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1">
+                    <div className="text-sm font-bold text-slate-900">Feature Comparison</div>
+                    <div className="text-xs text-slate-500">{data.showTable ? "Table Visible" : "Table Hidden"}</div>
+                </div>
+            );
+        }
+
+        if (section.sectionKey === 'faq') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-900">FAQ List</span>
+                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">
+                        {data.questions?.length || 0} Questions
+                    </span>
+                </div>
+            );
+        }
+
+        return <div className="text-slate-400 italic text-sm">Preview not available</div>;
+    } catch (e) {
+        return <div className="text-red-400 text-xs bg-red-50 p-2 rounded">Invalid JSON content</div>;
+    }
 }

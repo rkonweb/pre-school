@@ -195,7 +195,8 @@ export default function ContactCMSPage() {
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h3 className="text-xl font-black text-slate-900">{section.title}</h3>
-                                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{section.sectionKey}</p>
+                                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">{section.sectionKey}</p>
+                                    <SectionPreview section={section} />
                                 </div>
                                 <button onClick={() => handleEdit(section)} className="p-3 bg-slate-100 rounded-xl hover:bg-indigo-100 hover:text-indigo-600 transition-colors">
                                     <Edit2 className="h-5 w-5" />
@@ -254,4 +255,35 @@ export default function ContactCMSPage() {
             )}
         </div>
     );
+}
+
+function SectionPreview({ section }: { section: ContactSection }) {
+    try {
+        const data = JSON.parse(section.content);
+
+        if (section.sectionKey === 'info') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+                    <div className="text-sm font-medium text-slate-800">{data.title}</div>
+                    <div className="flex gap-4 text-xs text-slate-500">
+                        {data.email?.addresses && <span>• {data.email.addresses.length} Emails</span>}
+                        {data.headquarters && <span>• HQ Address Configured</span>}
+                    </div>
+                </div>
+            );
+        }
+
+        if (section.sectionKey === 'form') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1">
+                    <div className="text-sm font-bold text-slate-900">Form Settings</div>
+                    <div className="text-xs text-slate-500">Button: {data.submitButtonText}</div>
+                </div>
+            );
+        }
+
+        return <div className="text-slate-400 italic text-sm">Preview not available</div>;
+    } catch (e) {
+        return <div className="text-red-400 text-xs bg-red-50 p-2 rounded">Invalid JSON content</div>;
+    }
 }

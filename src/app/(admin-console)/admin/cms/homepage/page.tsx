@@ -343,10 +343,8 @@ export default function HomepageCMSPage() {
                                             {section.subtitle && (
                                                 <p className="text-slate-600 mb-3">{section.subtitle}</p>
                                             )}
-                                            <div className="bg-slate-50 p-4 rounded-xl">
-                                                <pre className="text-xs text-slate-600 overflow-x-auto">
-                                                    {section.content.substring(0, 200)}...
-                                                </pre>
+                                            <div className="mt-4">
+                                                <SectionPreview section={section} />
                                             </div>
                                         </div>
 
@@ -494,4 +492,53 @@ export default function HomepageCMSPage() {
             )}
         </div>
     );
+}
+
+function SectionPreview({ section }: { section: HomepageSection }) {
+    try {
+        const data = JSON.parse(section.content);
+
+        if (section.sectionKey === 'hero') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Hero</span>
+                    <div className="text-sm font-medium text-slate-800 line-clamp-2" dangerouslySetInnerHTML={{ __html: data.headline || "" }} />
+                </div>
+            );
+        }
+
+        if (section.sectionKey === 'features') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-between items-center">
+                    <span className="text-sm font-bold text-slate-900">Features Grid</span>
+                    <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">
+                        {data.features?.length || 0} Items
+                    </span>
+                </div>
+            );
+        }
+
+        if (section.sectionKey === 'pricing') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1">
+                    <div className="text-sm font-bold text-slate-900">Pricing Section</div>
+                    {data.badge && <div className="text-xs text-slate-500">Badge: {data.badge}</div>}
+                    <div className="text-xs text-slate-500">{data.showPlans ? "Showing Database Plans" : "Plans Hidden"}</div>
+                </div>
+            );
+        }
+
+        if (section.sectionKey === 'cta') {
+            return (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1">
+                    <div className="text-sm font-bold text-slate-900">Call to Action</div>
+                    <div className="text-xs text-slate-500">Button: {data.buttonText}</div>
+                </div>
+            );
+        }
+
+        return <div className="text-slate-400 italic text-sm">Preview not available</div>;
+    } catch (e) {
+        return <div className="text-red-400 text-xs bg-red-50 p-2 rounded">Invalid JSON content</div>;
+    }
 }
