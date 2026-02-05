@@ -25,11 +25,16 @@ export default function AdminLayout({
                 return;
             }
 
-            const isAuthenticated = await isSuperAdminAuthenticated();
-            if (!isAuthenticated) {
+            try {
+                const isAuthenticated = await isSuperAdminAuthenticated();
+                if (!isAuthenticated) {
+                    router.push("/admin/login");
+                } else {
+                    setIsAuthorized(true);
+                }
+            } catch (error) {
+                console.error("Auth check failed:", error);
                 router.push("/admin/login");
-            } else {
-                setIsAuthorized(true);
             }
         };
 
