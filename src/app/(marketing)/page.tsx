@@ -1,9 +1,7 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getSubscriptionPlansAction } from "@/app/actions/subscription-actions";
 import { getHomepageContentAction } from "@/app/actions/cms-actions";
+import { Metadata } from "next";
 import { SubscriptionPlan } from "@/types/subscription";
 import {
     CheckCircle2, Ticket, ShieldCheck, Zap, Crown,
@@ -24,17 +22,35 @@ interface HomepageSection {
     sortOrder: number;
 }
 
-export default function Home() {
-    const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-    const [sections, setSections] = useState<HomepageSection[]>([]);
-    const [loading, setLoading] = useState(true);
+export async function generateMetadata(): Promise<Metadata> {
+    const sections = await getHomepageContentAction();
+    const seoSection = sections.find(s => s.sectionKey === "seo");
 
-    useEffect(() => {
-        Promise.all([
-            getSubscriptionPlansAction().then(data => setPlans(data.slice(0, 3))),
-            getHomepageContentAction().then(data => setSections(data.filter(s => s.isEnabled)))
-        ]).finally(() => setLoading(false));
-    }, []);
+    if (seoSection) {
+        try {
+            const data = JSON.parse(seoSection.content);
+            return {
+                title: data.metaTitle,
+                description: data.metaDescription,
+                openGraph: {
+                    images: data.ogImage ? [{ url: data.ogImage }] : []
+                }
+            };
+        } catch (e) { console.error("SEO Parse Error", e); }
+    }
+    return {};
+}
+
+export default async function Home() {
+    const plansPromise = getSubscriptionPlansAction();
+    const sectionsPromise = getHomepageContentAction();
+
+    const [allPlans, allSections] = await Promise.all([plansPromise, sectionsPromise]);
+
+    const plans = allPlans.slice(0, 3);
+    const sections = allSections.filter(s => s.isEnabled);
+
+    // const [loading, setLoading] = useState(true); // Removed for Server Component
 
     const getSection = (key: string) => sections.find(s => s.sectionKey === key);
     const parseContent = (section: HomepageSection | undefined) => {
@@ -105,16 +121,7 @@ export default function Home() {
         return icons[iconName] || Star;
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="h-8 w-8 rounded-full border-4 border-slate-200 border-t-teal animate-spin" />
-                    <div className="text-sm font-bold text-navy/40 uppercase tracking-widest">Loading experience...</div>
-                </div>
-            </div>
-        );
-    }
+    // Loading check removed (Server Component auto-suspends or awaits)
 
     // Skeleton Visuals for Bento Grid
     const SkeletonBilling = () => (

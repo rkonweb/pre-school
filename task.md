@@ -44,3 +44,7 @@
 
 - [x] **CMS Integration Checks**
     - [x] Ensure all new designs still pull data from `cms-actions.ts`.
+
+- [x] **SEO Implementation**
+    - [x] CMS: Add "SEO Meta Tags" to Homepage, Features, Pricing, Contact.
+    - [x] Public: Refactor all pages to Server Components with `generateMetadata`.

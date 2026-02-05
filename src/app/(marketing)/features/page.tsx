@@ -1,7 +1,5 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { getFeaturesPageContentAction } from "@/app/actions/cms-actions";
+import { Metadata } from "next";
 import {
     Users, CreditCard, MessageCircle, Calendar, BookOpen,
     Bus, Utensils, BarChart3, Zap, CheckCircle2,
@@ -22,15 +20,30 @@ interface FeaturesSection {
     isEnabled: boolean;
 }
 
-export default function FeaturesPage() {
-    const [sections, setSections] = useState<FeaturesSection[]>([]);
-    const [loading, setLoading] = useState(true);
+export async function generateMetadata(): Promise<Metadata> {
+    const sections = await getFeaturesPageContentAction();
+    const seoSection = sections.find(s => s.sectionKey === "seo");
 
-    useEffect(() => {
-        getFeaturesPageContentAction()
-            .then((data: FeaturesSection[]) => setSections(data.filter(s => s.isEnabled)))
-            .finally(() => setLoading(false));
-    }, []);
+    if (seoSection) {
+        try {
+            const data = JSON.parse(seoSection.content);
+            return {
+                title: data.metaTitle,
+                description: data.metaDescription,
+                openGraph: {
+                    images: data.ogImage ? [{ url: data.ogImage }] : []
+                }
+            };
+        } catch (e) { console.error("SEO Parse Error", e); }
+    }
+    return {};
+}
+
+export default async function FeaturesPage() {
+    const allSections = await getFeaturesPageContentAction();
+    const sections = allSections.filter(s => s.isEnabled);
+
+    // const [loading, setLoading] = useState(true); // Removed for Server Component
 
     const getSection = (key: string) => sections.find(s => s.sectionKey === key);
     const parseContent = (section: FeaturesSection | undefined) => {
@@ -109,13 +122,7 @@ export default function FeaturesPage() {
     };
 
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-white flex items-center justify-center">
-                <div className="h-8 w-8 rounded-full border-4 border-slate-200 border-t-teal animate-spin" />
-            </div>
-        );
-    }
+    // Loading removed
 
     return (
         <div className="bg-white font-sans text-slate-900">

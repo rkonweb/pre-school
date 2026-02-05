@@ -1,18 +1,49 @@
-"use client";
 
-import { Mail, MapPin, Phone, MessageSquare, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { getContactPageContentAction } from "@/app/actions/cms-actions";
+import { Mail, MapPin } from "lucide-react";
+import ContactForm from "./contact-form";
+import { Metadata } from "next";
 
-export default function ContactPage() {
-    const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-    const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
+export async function generateMetadata(): Promise<Metadata> {
+    const sections = await getContactPageContentAction();
+    const seoSection = sections.find((s: any) => s.sectionKey === "seo");
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus("submitting");
-        // Simulate API call
-        setTimeout(() => setStatus("success"), 1500);
+    if (seoSection) {
+        try {
+            const data = JSON.parse(seoSection.content);
+            return {
+                title: data.metaTitle,
+                description: data.metaDescription,
+                openGraph: {
+                    images: data.ogImage ? [{ url: data.ogImage }] : []
+                }
+            };
+        } catch (e) { console.error("SEO Parse Error", e); }
+    }
+    return {};
+}
+
+export default async function ContactPage() {
+    const sections = await getContactPageContentAction();
+
+    const getSection = (key: string) => sections.find((s: any) => s.sectionKey === key);
+    const parseContent = (section: any) => {
+        if (!section) return null;
+        try { return JSON.parse(section.content); } catch { return null; }
     };
+
+    const infoSection = getSection("info");
+    const infoContent = parseContent(infoSection) || {
+        title: "Let's start a conversation.",
+        description: "Whether you're a small daycare or a large school network, we're here to help you transform your operations.",
+        headquarters: { title: "Visit Us", address: "123 Education Lane\nBangalore, IN 560001" },
+        email: { title: "Email Us", addresses: ["hello@bodhiboard.com", "support@bodhiboard.com"] }
+    };
+
+    const formSection = getSection("form");
+    const formContent = parseContent(formSection);
+
+    const addresses = infoContent.email?.addresses || [];
 
     return (
         <div className="bg-white font-sans text-navy">
@@ -27,9 +58,9 @@ export default function ContactPage() {
                         <div className="inline-block px-5 py-2 bg-white text-navy rounded-full text-[10px] font-black uppercase tracking-[0.25em] mb-10 shadow-xl">
                             Contact Us
                         </div>
-                        <h1 className="text-5xl md:text-8xl font-black mb-10 tracking-tighter leading-[1]">Let's start a conversation.</h1>
+                        <h1 className="text-5xl md:text-8xl font-black mb-10 tracking-tighter leading-[1]">{infoContent.title}</h1>
                         <p className="text-xl md:text-2xl text-white/40 font-bold uppercase tracking-widest max-w-lg mb-12">
-                            Whether you're a small daycare or a large school network, we're here to help you transform your operations.
+                            {infoContent.description}
                         </p>
 
                         <div className="space-y-10">
@@ -38,9 +69,10 @@ export default function ContactPage() {
                                     <Mail className="h-8 w-8 text-teal group-hover:text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-xl mb-1 tracking-tight">Email Us</h3>
-                                    <p className="text-white/40 font-bold">hello@bodhiboard.com</p>
-                                    <p className="text-white/40 font-bold">support@bodhiboard.com</p>
+                                    <h3 className="font-black text-xl mb-1 tracking-tight">{infoContent.email?.title || "Email Us"}</h3>
+                                    {addresses.map((addr: string, i: number) => (
+                                        <p key={i} className="text-white/40 font-bold">{addr}</p>
+                                    ))}
                                 </div>
                             </div>
                             <div className="flex items-start gap-8 group">
@@ -48,9 +80,8 @@ export default function ContactPage() {
                                     <MapPin className="h-8 w-8 text-orange group-hover:text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-xl mb-1 tracking-tight">Visit Us</h3>
-                                    <p className="text-white/40 font-bold">123 Education Lane</p>
-                                    <p className="text-white/40 font-bold">Bangalore, IN 560001</p>
+                                    <h3 className="font-black text-xl mb-1 tracking-tight">{infoContent.headquarters?.title || "Visit Us"}</h3>
+                                    <p className="text-white/40 font-bold whitespace-pre-line">{infoContent.headquarters?.address}</p>
                                 </div>
                             </div>
                         </div>
@@ -65,62 +96,7 @@ export default function ContactPage() {
 
                 {/* Right: Form */}
                 <div className="bg-white p-12 lg:p-24 flex items-center justify-center">
-                    <div className="w-full max-w-lg">
-                        {status === "success" ? (
-                            <div className="bg-teal/5 p-12 rounded-[3rem] border border-teal/10 text-center animate-fade-in-up shadow-2xl shadow-teal/5">
-                                <div className="h-20 w-20 bg-teal text-white rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-teal/20">
-                                    <MessageSquare className="h-10 w-10" />
-                                </div>
-                                <h3 className="text-3xl font-black text-navy mb-4 tracking-tight">Message Sent!</h3>
-                                <p className="text-navy/50 font-bold uppercase tracking-widest text-sm">We'll get back to you as soon as possible.</p>
-                                <button onClick={() => setStatus("idle")} className="mt-10 text-xs font-black text-teal uppercase tracking-widest hover:text-navy transition-colors">Send another message</button>
-                            </div>
-                        ) : (
-                            <form onSubmit={handleSubmit} className="space-y-8">
-                                <div>
-                                    <label className="block text-[10px] font-black text-navy uppercase tracking-[0.25em] mb-3 ml-1">Full Name</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-teal/5 focus:outline-none focus:ring-4 focus:ring-teal/10 focus:bg-white transition-all font-bold text-navy placeholder:text-navy/20 shadow-inner"
-                                        placeholder="Jane Doe"
-                                        value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black text-navy uppercase tracking-[0.25em] mb-3 ml-1">Email Address</label>
-                                    <input
-                                        type="email"
-                                        required
-                                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-teal/5 focus:outline-none focus:ring-4 focus:ring-teal/10 focus:bg-white transition-all font-bold text-navy placeholder:text-navy/20 shadow-inner"
-                                        placeholder="jane@school.com"
-                                        value={formData.email}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black text-navy uppercase tracking-[0.25em] mb-3 ml-1">Message</label>
-                                    <textarea
-                                        required
-                                        rows={4}
-                                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-teal/5 focus:outline-none focus:ring-4 focus:ring-teal/10 focus:bg-white transition-all font-bold text-navy placeholder:text-navy/20 shadow-inner resize-none"
-                                        placeholder="Tell us about your school..."
-                                        value={formData.message}
-                                        onChange={e => setFormData({ ...formData, message: e.target.value })}
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={status === "submitting"}
-                                    className="w-full h-20 bg-orange text-white rounded-[1.25rem] font-black text-xl uppercase tracking-[0.2em] hover:scale-105 hover:shadow-2xl hover:shadow-orange/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                                >
-                                    {status === "submitting" ? "Sending..." : "Send Message"}
-                                    <ArrowRight className="h-6 w-6" />
-                                </button>
-                            </form>
-                        )}
-                    </div>
+                    <ContactForm formContent={formContent} />
                 </div>
             </div>
         </div>

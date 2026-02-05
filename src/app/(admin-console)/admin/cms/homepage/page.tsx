@@ -9,7 +9,7 @@ import {
 } from "@/app/actions/cms-actions";
 import {
     Eye, EyeOff, Edit2, Trash2, Plus, Save, X,
-    Home, Sparkles, Grid3x3, DollarSign, Megaphone
+    Home, Sparkles, Grid3x3, DollarSign, Megaphone, Search
 } from "lucide-react";
 import { toast } from "sonner";
 import ContentEditor from "./content-editor";
@@ -91,6 +91,18 @@ const SECTION_TEMPLATES = [
             buttonText: "Start Your Free Trial",
             buttonLink: "/signup",
             features: ["No credit card required", "Cancel anytime"]
+        }, null, 2)
+    },
+    {
+        key: "seo",
+        name: "SEO Meta Tags",
+        icon: Search,
+        defaultTitle: "Search Engine Optimization",
+        defaultSubtitle: "Manage title, description, and social share image",
+        defaultContent: JSON.stringify({
+            metaTitle: "Pre-School Management Software",
+            metaDescription: "The happiest way to run your preschool.",
+            ogImage: ""
         }, null, 2)
     }
 ];

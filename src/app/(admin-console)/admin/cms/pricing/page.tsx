@@ -8,7 +8,7 @@ import {
 } from "@/app/actions/cms-actions";
 import {
     Eye, EyeOff, Edit2, Save, X, Plus, Trash2,
-    Sparkles, HelpCircle, CreditCard, Layout
+    Sparkles, HelpCircle, CreditCard, Layout, Search
 } from "lucide-react";
 import { toast } from "sonner";
 import ContentEditor from "./content-editor";
@@ -75,6 +75,18 @@ const SECTION_TEMPLATES = [
                 { "q": "What happens if I exceed my student limit?", "a": "We will notify you when you approach your limit." },
                 { "q": "Is my data secure?", "a": "Security is our top priority. We use industry-standard encryption." }
             ]
+        }, null, 2)
+    },
+    {
+        key: "seo",
+        name: "SEO Meta Tags",
+        icon: Search,
+        defaultTitle: "Search Engine Optimization",
+        defaultSubtitle: "Manage title, description, and social share image",
+        defaultContent: JSON.stringify({
+            metaTitle: "Pricing | Pre-School Management Software",
+            metaDescription: "Transparent pricing for every school size.",
+            ogImage: ""
         }, null, 2)
     }
 ];

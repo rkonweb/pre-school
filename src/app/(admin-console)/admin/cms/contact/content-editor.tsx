@@ -120,6 +120,27 @@ export default function ContentEditor({ sectionKey, initialContent, onChange }: 
         );
     }
 
+    if (sectionKey === "seo") {
+        return (
+            <div className="space-y-4">
+                <Input label="Meta Title" value={parsed.metaTitle} onChange={(v) => updateField("metaTitle", v)} placeholder="Browser Tab Title" />
+
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-1">Meta Description</label>
+                    <textarea
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" // Indigo focus
+                        rows={3}
+                        value={parsed.metaDescription || ""}
+                        onChange={(e) => updateField("metaDescription", e.target.value)}
+                        placeholder="Short summary for search engines"
+                    />
+                </div>
+
+                <Input label="Share Image URL (OG Image)" value={parsed.ogImage} onChange={(v) => updateField("ogImage", v)} placeholder="https://..." />
+            </div>
+        );
+    }
+
     return (
         <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg">
             <p className="text-sm">No visual editor available for this section type. Please use the Raw JSON mode.</p>

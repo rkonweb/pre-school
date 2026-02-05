@@ -6,7 +6,7 @@ import {
     upsertContactSectionAction
 } from "@/app/actions/cms-actions";
 import {
-    Edit2, Save, X, Plus, MapPin, Mail, MessageSquare
+    Edit2, Save, X, Plus, MapPin, Mail, MessageSquare, Search
 } from "lucide-react";
 import { toast } from "sonner";
 import ContentEditor from "./content-editor";
@@ -51,6 +51,18 @@ const SECTION_TEMPLATES = [
         defaultContent: JSON.stringify({
             submitButtonText: "Send Message",
             successMessage: "Thanks! We'll be in touch."
+        }, null, 2)
+    },
+    {
+        key: "seo",
+        name: "SEO Meta Tags",
+        icon: Search,
+        defaultTitle: "Search Engine Optimization",
+        defaultSubtitle: "Manage title, description, and social share image",
+        defaultContent: JSON.stringify({
+            metaTitle: "Contact Us | Pre-School Management Software",
+            metaDescription: "Get in touch with our team.",
+            ogImage: ""
         }, null, 2)
     }
 ];
