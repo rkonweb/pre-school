@@ -12,6 +12,7 @@ import {
     Home, Sparkles, Grid3x3, DollarSign, Megaphone
 } from "lucide-react";
 import { toast } from "sonner";
+import ContentEditor from "./content-editor";
 
 interface HomepageSection {
     id: string;
@@ -105,6 +106,7 @@ export default function HomepageCMSPage() {
         content: "",
         sortOrder: 0
     });
+    const [viewMode, setViewMode] = useState<"visual" | "json">("visual");
 
     useEffect(() => {
         loadSections();
@@ -210,8 +212,8 @@ export default function HomepageCMSPage() {
                                 onClick={() => !exists && handleAddNew(template)}
                                 disabled={exists}
                                 className={`p-4 rounded-xl border-2 transition-all ${exists
-                                        ? "bg-slate-100 border-slate-200 opacity-50 cursor-not-allowed"
-                                        : "bg-white border-blue-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-1"
+                                    ? "bg-slate-100 border-slate-200 opacity-50 cursor-not-allowed"
+                                    : "bg-white border-blue-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-1"
                                     }`}
                             >
                                 <Icon className="h-8 w-8 mx-auto mb-2 text-blue-600" />
@@ -271,15 +273,40 @@ export default function HomepageCMSPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">
-                                            Content (JSON)
-                                        </label>
-                                        <textarea
-                                            value={formData.content}
-                                            onChange={e => setFormData({ ...formData, content: e.target.value })}
-                                            rows={12}
-                                            className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                                        />
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="block text-sm font-bold text-slate-700">
+                                                Content
+                                            </label>
+                                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                                <button
+                                                    onClick={() => setViewMode("visual")}
+                                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "visual" ? "bg-white shadow text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                                                >
+                                                    Visual Editor
+                                                </button>
+                                                <button
+                                                    onClick={() => setViewMode("json")}
+                                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "json" ? "bg-white shadow text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                                                >
+                                                    Raw JSON
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {viewMode === "visual" ? (
+                                            <ContentEditor
+                                                sectionKey={formData.sectionKey}
+                                                initialContent={formData.content}
+                                                onChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}
+                                            />
+                                        ) : (
+                                            <textarea
+                                                value={formData.content}
+                                                onChange={e => setFormData({ ...formData, content: e.target.value })}
+                                                rows={12}
+                                                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                                            />
+                                        )}
                                     </div>
 
                                     <div className="flex gap-3">
@@ -410,15 +437,40 @@ export default function HomepageCMSPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">
-                                    Content (JSON)
-                                </label>
-                                <textarea
-                                    value={formData.content}
-                                    onChange={e => setFormData({ ...formData, content: e.target.value })}
-                                    rows={12}
-                                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                                />
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-sm font-bold text-slate-700">
+                                        Content
+                                    </label>
+                                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                                        <button
+                                            onClick={() => setViewMode("visual")}
+                                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "visual" ? "bg-white shadow text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                                        >
+                                            Visual Editor
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode("json")}
+                                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "json" ? "bg-white shadow text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                                        >
+                                            Raw JSON
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {viewMode === "visual" ? (
+                                    <ContentEditor
+                                        sectionKey={formData.sectionKey}
+                                        initialContent={formData.content}
+                                        onChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}
+                                    />
+                                ) : (
+                                    <textarea
+                                        value={formData.content}
+                                        onChange={e => setFormData({ ...formData, content: e.target.value })}
+                                        rows={12}
+                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                                    />
+                                )}
                             </div>
 
                             <div className="flex gap-3 pt-4">
