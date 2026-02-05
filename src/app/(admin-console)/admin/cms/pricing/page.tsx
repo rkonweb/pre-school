@@ -11,6 +11,7 @@ import {
     Sparkles, HelpCircle, CreditCard, Layout
 } from "lucide-react";
 import { toast } from "sonner";
+import ContentEditor from "./content-editor";
 
 interface PricingSection {
     id: string;
@@ -89,6 +90,7 @@ export default function PricingPageCMS() {
         content: "",
         sortOrder: 0
     });
+    const [viewMode, setViewMode] = useState<"visual" | "json">("visual");
 
     useEffect(() => { loadSections(); }, []);
 
@@ -198,11 +200,38 @@ export default function PricingPageCMS() {
                                     onChange={e => setFormData({ ...formData, subtitle: e.target.value })}
                                     placeholder="Subtitle"
                                 />
-                                <textarea
-                                    className="w-full p-3 border rounded-xl font-mono text-sm h-64"
-                                    value={formData.content}
-                                    onChange={e => setFormData({ ...formData, content: e.target.value })}
-                                />
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-bold text-slate-700">Content</label>
+                                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                                            <button
+                                                onClick={() => setViewMode("visual")}
+                                                className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "visual" ? "bg-white shadow text-green-600" : "text-slate-500 hover:text-slate-700"}`}
+                                            >
+                                                Visual
+                                            </button>
+                                            <button
+                                                onClick={() => setViewMode("json")}
+                                                className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "json" ? "bg-white shadow text-green-600" : "text-slate-500 hover:text-slate-700"}`}
+                                            >
+                                                JSON
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {viewMode === "visual" ? (
+                                        <ContentEditor
+                                            sectionKey={formData.sectionKey}
+                                            initialContent={formData.content}
+                                            onChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}
+                                        />
+                                    ) : (
+                                        <textarea
+                                            className="w-full p-3 border rounded-xl font-mono text-sm h-64"
+                                            value={formData.content}
+                                            onChange={e => setFormData({ ...formData, content: e.target.value })}
+                                        />
+                                    )}
+                                </div>
                                 <div className="flex gap-2">
                                     <button onClick={handleSave} className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700"><Save className="inline mr-2 h-4 w-4" /> Save</button>
                                     <button onClick={() => setEditingSection(null)} className="px-6 border py-3 rounded-xl font-bold hover:bg-slate-50">Cancel</button>
@@ -235,7 +264,38 @@ export default function PricingPageCMS() {
                         <h3 className="text-2xl font-bold">Add New Section</h3>
                         <input className="w-full p-3 border rounded-xl bg-slate-50" value={formData.sectionKey} disabled />
                         <input className="w-full p-3 border rounded-xl font-bold" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Title" />
-                        <textarea className="w-full p-3 border rounded-xl font-mono text-sm h-64" value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} />
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-bold text-slate-700">Content</label>
+                                <div className="flex bg-slate-100 p-1 rounded-lg">
+                                    <button
+                                        onClick={() => setViewMode("visual")}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "visual" ? "bg-white shadow text-green-600" : "text-slate-500 hover:text-slate-700"}`}
+                                    >
+                                        Visual
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode("json")}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === "json" ? "bg-white shadow text-green-600" : "text-slate-500 hover:text-slate-700"}`}
+                                    >
+                                        JSON
+                                    </button>
+                                </div>
+                            </div>
+                            {viewMode === "visual" ? (
+                                <ContentEditor
+                                    sectionKey={formData.sectionKey}
+                                    initialContent={formData.content}
+                                    onChange={(newContent) => setFormData(prev => ({ ...prev, content: newContent }))}
+                                />
+                            ) : (
+                                <textarea
+                                    className="w-full p-3 border rounded-xl font-mono text-sm h-64"
+                                    value={formData.content}
+                                    onChange={e => setFormData({ ...formData, content: e.target.value })}
+                                />
+                            )}
+                        </div>
                         <div className="flex gap-2">
                             <button onClick={handleSave} className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">Create</button>
                             <button onClick={() => setEditingSection(null)} className="flex-1 border py-3 rounded-xl font-bold">Cancel</button>
