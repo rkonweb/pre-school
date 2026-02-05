@@ -11,11 +11,38 @@ export async function getSubscriptionPlansAction() {
         });
 
         if (plans.length === 0) {
-            // Seed default plans
+            // Seed default plans with ALL module IDs from config
             const defaults = [
-                { id: 'plan_free', name: 'Free Trial', slug: 'free', price: 0, tier: 'free', students: 25, staff: 5, modules: ['attendance', 'admissions'] },
-                { id: 'plan_starter', name: 'Starter', slug: 'starter', price: 299, tier: 'basic', students: 100, staff: 20, modules: ['attendance', 'admissions', 'billing', 'communication'] },
-                { id: 'plan_growth', name: 'Growth', slug: 'growth', price: 599, tier: 'premium', students: 500, staff: 100, modules: ['attendance', 'admissions', 'billing', 'communication', 'transport', 'curriculum'] },
+                {
+                    id: 'plan_free',
+                    name: 'FREE',
+                    slug: 'free',
+                    price: 0,
+                    tier: 'free',
+                    students: 25,
+                    staff: 5,
+                    modules: ['students', 'staff', 'settings', 'attendance']
+                },
+                {
+                    id: 'plan_growth',
+                    name: 'Growth',
+                    slug: 'growth',
+                    price: 1999,
+                    tier: 'basic',
+                    students: 200,
+                    staff: 30,
+                    modules: ['students', 'staff', 'settings', 'attendance', 'admissions', 'billing', 'academics', 'diary', 'communication']
+                },
+                {
+                    id: 'plan_premium',
+                    name: 'Premium',
+                    slug: 'premium',
+                    price: 4999,
+                    tier: 'premium',
+                    students: 1000,
+                    staff: 100,
+                    modules: ['students', 'staff', 'settings', 'attendance', 'admissions', 'billing', 'academics', 'diary', 'communication', 'inventory', 'transport', 'library']
+                },
             ];
 
             for (const d of defaults) {
