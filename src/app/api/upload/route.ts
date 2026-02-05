@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToGCS } from '@/lib/gcs-upload';
+import { GCS_CONFIG } from '@/lib/gcs-config';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
 
 export async function POST(request: NextRequest) {
     try {
@@ -16,6 +19,26 @@ export async function POST(request: NextRequest) {
         // Convert base64 to buffer
         const base64Data = file.replace(/^data:.*?;base64,/, '');
         const buffer = Buffer.from(base64Data, 'base64');
+
+        // Check for GCS Credentials
+        if (!GCS_CONFIG.credentials) {
+            // FALLBACK: Local Upload
+            const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+            await mkdir(uploadsDir, { recursive: true });
+
+            const timestamp = Date.now();
+            const sanitizedName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const localFilename = `${timestamp}_${sanitizedName}`;
+            const filePath = path.join(uploadsDir, localFilename);
+
+            await writeFile(filePath, buffer);
+
+            return NextResponse.json({
+                success: true,
+                url: `/uploads/${localFilename}`,
+                isLocal: true
+            });
+        }
 
         // Upload to GCS
         const result = await uploadToGCS(

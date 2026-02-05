@@ -155,7 +155,8 @@ export default function MediaUploader({ type, onUploadComplete, onCancel }: Medi
             clearInterval(progressInterval);
 
             if (!response.ok) {
-                throw new Error('Upload failed');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || response.statusText || 'Upload failed');
             }
 
             const data = await response.json();
@@ -231,10 +232,16 @@ export default function MediaUploader({ type, onUploadComplete, onCancel }: Medi
                 <div className="space-y-4">
                     {/* Preview */}
                     <div className="relative rounded-2xl overflow-hidden bg-zinc-900">
-                        {type === "PHOTO" ? (
-                            <img src={preview} alt="Preview" className="w-full h-64 object-cover" />
+                        {preview ? (
+                            type === "PHOTO" ? (
+                                <img src={preview} alt="Preview" className="w-full h-64 object-cover" />
+                            ) : (
+                                <video src={preview} controls className="w-full h-64" />
+                            )
                         ) : (
-                            <video src={preview} controls className="w-full h-64" />
+                            <div className="w-full h-64 flex items-center justify-center text-zinc-500">
+                                <Loader2 className="h-8 w-8 animate-spin" />
+                            </div>
                         )}
 
                         {!isUploading && (
