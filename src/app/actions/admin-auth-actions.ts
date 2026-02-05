@@ -19,8 +19,15 @@ export async function loginSuperAdminAction(password: string) {
 }
 
 export async function isSuperAdminAuthenticated() {
-    const cookieStore = await cookies();
-    return cookieStore.get("admin_session")?.value === "true";
+    try {
+        const cookieStore = await cookies();
+        const result = cookieStore.get("admin_session")?.value === "true";
+        console.log("[AUTH] isSuperAdminAuthenticated called, result:", result);
+        return result;
+    } catch (error) {
+        console.error("[AUTH] Error in isSuperAdminAuthenticated:", error);
+        return false; // Fail safely
+    }
 }
 
 export async function logoutSuperAdminAction() {
