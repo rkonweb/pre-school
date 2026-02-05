@@ -50,8 +50,6 @@ export default async function Home() {
     const plans = allPlans.slice(0, 3);
     const sections = allSections.filter(s => s.isEnabled);
 
-    // const [loading, setLoading] = useState(true); // Removed for Server Component
-
     const getSection = (key: string) => sections.find(s => s.sectionKey === key);
     const parseContent = (section: HomepageSection | undefined) => {
         if (!section) return null;
@@ -70,7 +68,8 @@ export default async function Home() {
         subheadline: "Streamline admissions, automate billing, and delight parents with a platform built for the future of education.",
         primaryCTA: { text: "Start Free Trial", link: "/signup" },
         secondaryCTA: { text: "Watch Demo", link: "/demo" },
-        socialProof: { rating: 4.9, text: "average rating" }
+        socialProof: { rating: 4.9, text: "average rating" },
+        headerImage: "/images/teacher-hero.png"
     };
 
     const featuresSection = getSection("features");
@@ -120,8 +119,6 @@ export default async function Home() {
         const icons: Record<string, any> = { CreditCard, Smartphone, BarChart3, Heart, Lock, Globe, Users };
         return icons[iconName] || Star;
     };
-
-    // Loading check removed (Server Component auto-suspends or awaits)
 
     // Skeleton Visuals for Bento Grid
     const SkeletonBilling = () => (
@@ -189,193 +186,74 @@ export default async function Home() {
 
     return (
         <div className="isolate bg-white font-sans text-slate-900">
-            {/* 1. HERO SECTION */}
+            {/* 1. HERO SECTION (Full Width Banner) */}
             {(!heroSection || heroSection.isEnabled) && (
-                <section className="relative pt-32 pb-24 md:pt-48 md:pb-32 overflow-hidden">
-                    {/* Background Grid */}
-                    <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-50" />
+                <section className="relative w-full min-h-[90vh] flex items-center overflow-hidden">
+                    {/* Background Image with Parallax-like feel */}
+                    <div
+                        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transform scale-105 animate-slow-zoom"
+                        style={{ backgroundImage: `url('${heroContent.headerImage || '/images/teacher-hero.png'}')` }}
+                    >
+                        {/* Gradient Overlay for Text Readability */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-navy/95 via-navy/80 to-transparent"></div>
+                    </div>
 
-                    {/* Glow */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -z-10 w-[800px] h-[500px] bg-teal/10 rounded-full blur-[120px]" />
+                    <div className="container mx-auto px-4 relative z-10 pt-20">
+                        <div className="max-w-3xl">
+                            {/* Animated Badge */}
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-xl mb-8 animate-fade-in-up">
+                                <Sparkles className="h-4 w-4 text-yellow animate-pulse" />
+                                <span className="text-sm font-bold tracking-widest uppercase">{heroContent.badge}</span>
+                            </div>
 
-                    <div className="container mx-auto px-4 text-center relative z-10">
-                        {/* Badge */}
-                        <div className="inline-flex items-center gap-2 rounded-full border border-teal/10 bg-white px-4 py-1.5 text-sm font-bold text-teal mb-8 animate-fade-in-up shadow-sm">
-                            <span className="flex h-2.5 w-2.5 rounded-full bg-yellow animate-pulse shadow-[0_0_8px_rgba(252,193,26,0.8)]"></span>
-                            {heroContent.badge}
-                        </div>
+                            {/* Headline with Staggered Animation */}
+                            <h1
+                                className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-tight tracking-tighter mb-8 animate-fade-in-up delay-100 drop-shadow-xl"
+                                dangerouslySetInnerHTML={{ __html: heroContent.headline }}
+                            />
 
-                        {/* Headline */}
-                        <h1
-                            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-navy mb-8 leading-[1.1] max-w-5xl mx-auto"
-                            dangerouslySetInnerHTML={{ __html: heroContent.headline }}
-                        />
+                            {/* Subheadline */}
+                            <p className="text-xl md:text-2xl text-white/80 font-medium leading-relaxed mb-12 max-w-2xl animate-fade-in-up delay-200 drop-shadow-md">
+                                {heroContent.subheadline}
+                            </p>
 
-                        {/* Subheadline */}
-                        <p className="mx-auto max-w-2xl text-xl text-navy/60 leading-relaxed font-semibold mb-12">
-                            {heroContent.subheadline}
-                        </p>
+                            {/* CTAs */}
+                            <div className="flex flex-col sm:flex-row gap-5 animate-fade-in-up delay-300">
+                                <Link
+                                    href={heroContent.primaryCTA.link}
+                                    className="h-16 px-12 rounded-full bg-orange text-white font-black text-xl flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(255,136,0,0.4)] hover:bg-orange/90 hover:scale-105 transition-all duration-300 group"
+                                >
+                                    {heroContent.primaryCTA.text}
+                                    <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                                <Link
+                                    href={heroContent.secondaryCTA.link}
+                                    className="h-16 px-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-black text-xl flex items-center justify-center gap-3 hover:bg-white/20 transition-all duration-300"
+                                >
+                                    <Play className="h-5 w-5 fill-white" />
+                                    {heroContent.secondaryCTA.text}
+                                </Link>
+                            </div>
 
-                        {/* CTAs */}
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-                            <Link
-                                className="h-16 px-10 rounded-full bg-orange text-white font-black text-xl flex items-center justify-center gap-2 shadow-xl shadow-orange/25 hover:bg-orange/90 hover:scale-105 transition-all duration-300"
-                                href={heroContent.primaryCTA.link}
-                            >
-                                {heroContent.primaryCTA.text}
-                                <ArrowRight className="h-6 w-6" />
-                            </Link>
-                            <Link
-                                className="h-16 px-10 rounded-full bg-white text-navy border border-sky/30 font-black text-xl flex items-center justify-center gap-2 hover:bg-sky/10 transition-all duration-300"
-                                href={heroContent.secondaryCTA.link}
-                            >
-                                <Play className="h-5 w-5 fill-navy" />
-                                {heroContent.secondaryCTA.text}
-                            </Link>
-                        </div>
-
-                        {/* HIGH FIDELITY DASHBOARD MOCKUP */}
-                        <div className="relative mx-auto max-w-6xl mt-16 animate-float">
-                            <div className="rounded-2xl bg-navy/5 p-2 ring-1 ring-inset ring-navy/10 lg:-m-4 lg:rounded-3xl lg:p-6 backdrop-blur-sm">
-                                <div className="rounded-2xl bg-white shadow-[0_32px_64px_-16px_rgba(12,52,73,0.15)] ring-1 ring-navy/10 overflow-hidden border border-teal/10">
-                                    {/* Browser Bar */}
-                                    <div className="flex items-center gap-4 border-b border-teal/5 bg-slate-50/50 backdrop-blur px-6 py-4">
-                                        <div className="flex space-x-2">
-                                            <div className="h-3.5 w-3.5 rounded-full bg-red-400" />
-                                            <div className="h-3.5 w-3.5 rounded-full bg-yellow" />
-                                            <div className="h-3.5 w-3.5 rounded-full bg-teal" />
-                                        </div>
-                                        <div className="flex-1 flex justify-center">
-                                            <div className="hidden md:flex items-center gap-2 bg-white border border-teal/10 px-4 py-1.5 rounded-lg text-xs font-bold text-navy/30 shadow-sm w-1/3 justify-center tracking-tight">
-                                                <Lock className="h-3 w-3" /> bodhiboard.com
-                                            </div>
-                                        </div>
+                            {/* Trust Badge / Additional Social Proof */}
+                            <div className="mt-16 flex items-center gap-4 animate-fade-in-up delay-500">
+                                <div className="flex -space-x-3">
+                                    {[1, 2, 3, 4].map(i => (
+                                        <div key={i} className={`h-10 w-10 rounded-full border-2 border-navy bg-slate-200 bg-[url('https://i.pravatar.cc/100?img=${i + 10}')] bg-cover`} />
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="flex gap-0.5">
+                                        {[1, 2, 3, 4, 5].map(i => <Star key={i} className="h-4 w-4 fill-yellow text-yellow" />)}
                                     </div>
-                                    {/* App UI */}
-                                    <div className="flex aspect-[16/10] bg-white text-left">
-                                        {/* Sidebar */}
-                                        <div className="hidden md:flex w-72 flex-col border-r border-teal/5 bg-slate-50/30 p-6 gap-3">
-                                            <div className="flex items-center gap-3 px-2 mb-10">
-                                                <div className="h-10 w-10 bg-teal rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-teal/20 transition-transform hover:scale-110">B</div>
-                                                <span className="font-black text-navy text-xl tracking-tight">BodhiBoard</span>
-                                            </div>
-                                            {["Dashboard", "Students", "Attendance", "Billing", "Staff", "Reports"].map((item, i) => (
-                                                <div key={item} className={cn("px-4 py-3 rounded-xl text-sm font-black flex items-center justify-between transition-all cursor-pointer", i === 0 ? "bg-teal text-white shadow-lg shadow-teal/20" : "text-navy/40 hover:bg-teal/5 hover:text-teal")}>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={cn("h-1.5 w-1.5 rounded-full", i === 0 ? "bg-white" : "bg-navy/20")} />
-                                                        {item}
-                                                    </div>
-                                                    {i === 3 && <span className="text-[10px] bg-yellow text-navy px-1.5 py-0.5 rounded-md">New</span>}
-                                                </div>
-                                            ))}
-
-                                            <div className="mt-auto p-5 bg-white rounded-2xl border border-teal/5 shadow-sm">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-10 w-10 rounded-full bg-sky/20 border-2 border-white shadow-sm" />
-                                                    <div>
-                                                        <div className="text-xs font-black text-navy">Sarah Admin</div>
-                                                        <div className="text-[10px] text-navy/40 font-bold tracking-widest uppercase mt-0.5">Director</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Main Content */}
-                                        <div className="flex-1 p-8 md:p-12 overflow-hidden relative">
-                                            <div className="flex items-center justify-between mb-10">
-                                                <div>
-                                                    <h3 className="text-3xl font-black text-navy tracking-tight">Dashboard</h3>
-                                                    <p className="text-sm text-navy/40 font-bold mt-1 tracking-tight">Welcome back, Sarah! Here's your overview.</p>
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <button className="h-12 w-12 text-navy/20 hover:text-teal hover:bg-teal/5 border border-teal/5 rounded-2xl flex items-center justify-center transition-all bg-white shadow-sm">
-                                                        <Search className="h-6 w-6" />
-                                                    </button>
-                                                    <button className="h-12 w-12 text-teal bg-teal/5 border border-teal/10 rounded-2xl flex items-center justify-center transition-all shadow-sm relative">
-                                                        <Bell className="h-6 w-6" />
-                                                        <span className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-orange border-2 border-white rounded-full" />
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {/* Stats Row */}
-                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                                                {[
-                                                    { l: "Students", v: "142", c: "text-teal", bg: "bg-teal/10", ic: Users },
-                                                    { l: "Present", v: "128", c: "text-orange", bg: "bg-orange/10", ic: Calendar },
-                                                    { l: "Revenue", v: "₹8.4L", c: "text-navy", bg: "bg-navy/5", ic: CreditCard },
-                                                    { l: "Inquiries", v: "12", c: "text-yellow-dark", bg: "bg-yellow/10", ic: Sparkles },
-                                                ].map((stat, i) => (
-                                                    <div key={i} className="bg-white p-5 rounded-2xl border border-teal/5 shadow-sm flex flex-col gap-3 group hover:border-teal/20 transition-all cursor-pointer">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="text-[10px] font-black text-navy/30 uppercase tracking-widest">{stat.l}</div>
-                                                            <div className={cn("p-1.5 rounded-lg", stat.bg)}>
-                                                                <stat.ic className={cn("h-4 w-4", stat.c)} />
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-3xl font-black text-navy tracking-tight">{stat.v}</div>
-                                                        <div className={cn("text-[9px] font-black px-2 py-1 w-fit rounded-lg tracking-tight", stat.bg, stat.c)}>+12.5% this month</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-
-                                            {/* Charts Row */}
-                                            <div className="grid lg:grid-cols-3 gap-8 h-full pb-20">
-                                                <div className="col-span-2 bg-white p-8 rounded-3xl border border-teal/5 shadow-sm">
-                                                    <div className="flex items-center justify-between mb-8">
-                                                        <h4 className="font-black text-navy tracking-tight">Campus Attendance</h4>
-                                                        <div className="flex gap-2">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <div className="h-2 w-2 rounded-full bg-teal" />
-                                                                <span className="text-[10px] font-bold text-navy/40">Present</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <div className="h-2 w-2 rounded-full bg-orange/40" />
-                                                                <span className="text-[10px] font-bold text-navy/40">Absent</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="h-56 flex items-end justify-between gap-3 px-4">
-                                                        {[60, 80, 45, 90, 75, 85, 95].map((h, i) => (
-                                                            <div key={i} className="w-full bg-teal/5 rounded-t-xl relative group transition-all" style={{ height: `${h}%` }}>
-                                                                <div className="absolute bottom-0 w-full bg-teal rounded-t-xl transition-all duration-700 shadow-[0_-8px_16px_rgba(45,156,184,0.1)]" style={{ height: `${h * 0.8}%` }} />
-                                                                <div className="opacity-0 group-hover:opacity-100 absolute -top-12 left-1/2 -translate-x-1/2 bg-navy text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-xl transition-all z-20">{(h / 100 * 150).toFixed(0)}</div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    <div className="flex justify-between mt-4 text-[10px] font-black text-navy/20 px-4 uppercase tracking-widest">
-                                                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="bg-navy p-8 rounded-3xl shadow-2xl flex flex-col relative overflow-hidden">
-                                                    <div className="absolute top-0 right-0 w-32 h-32 bg-teal/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                                                    <h4 className="font-black text-white mb-6 relative z-10">Real-time Feed</h4>
-                                                    <div className="space-y-5 relative z-10">
-                                                        {[
-                                                            { u: "Sarah J.", a: "marked attendance", t: "2m ago", c: "bg-teal" },
-                                                            { u: "Mike T.", a: "generated invoice", t: "15m ago", c: "bg-orange" },
-                                                            { u: "System", a: "backup completed", t: "1h ago", c: "bg-sky" }
-                                                        ].map((act, i) => (
-                                                            <div key={i} className="flex gap-4 items-center">
-                                                                <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-lg", act.c)}>{act.u.charAt(0)}</div>
-                                                                <div className="flex-1">
-                                                                    <div className="text-xs font-black text-white tracking-tight">{act.u}</div>
-                                                                    <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-0.5">{act.a}</div>
-                                                                </div>
-                                                                <div className="text-[9px] text-white/60 font-black px-1.5 py-1 rounded-lg bg-white/5">{act.t}</div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    <button className="mt-auto w-full py-3 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black rounded-xl transition-all border border-white/5 uppercase tracking-widest">History</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <p className="text-white/60 text-xs font-bold uppercase tracking-widest mt-1">Trusted by 500+ Schools</p>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Decorative Elements */}
+                    <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent z-10" />
                 </section>
             )}
 

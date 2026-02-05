@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2, HelpCircle } from "lucide-react";
+import MediaUploader from "@/components/upload/MediaUploader";
 
 interface ContentEditorProps {
     sectionKey: string;
@@ -14,43 +15,16 @@ export default function ContentEditor({ sectionKey, initialContent, onChange }: 
     const [jsonError, setJsonError] = useState<string | null>(null);
 
     useEffect(() => {
-        try {
-            const data = JSON.parse(initialContent);
-            setParsed(data);
-            setJsonError(null);
-        } catch (e) {
-            setJsonError("Invalid JSON content. Please fix in raw mode or reset.");
-        }
-    }, []); // Only parse on mount to avoid cursor jumping, or handle careful updates?
-    // Actually, if we want two-way binding with parent's string, we need to watch initialContent.
-    // BUT, if we update parent string, and parent passes it back, we re-parse.
-    // This causes focus loss.
-    // Better: Parent manages string. We manage internal object state, and push string to parent.
-    // We only re-parse if sectionKey changes.
-
-    useEffect(() => {
-        try {
-            const data = JSON.parse(initialContent);
-            // Only update parsed if it's drastically different? 
-            // Or just trust internal state?
-            // Let's rely on internal state and only init once.
-            // But if user cancels and re-opens? Key changes.
-        } catch (e) { }
-    }, [sectionKey]);
-
-    // Actually, simple approach:
-    // Manage local object state.
-    // On change, JSON.stringify and call onChange.
-
-    useEffect(() => {
         if (initialContent) {
             try {
                 setParsed(JSON.parse(initialContent));
+                setJsonError(null);
             } catch (e) {
                 setParsed({}); // Fallback
+                setJsonError("Invalid JSON content");
             }
         }
-    }, [sectionKey]); // Reset when section changes
+    }, [sectionKey]); // Reset when section changes. We ignore initialContent changes to avoid overwriting edits if parent updates.
 
     const updateField = (key: string, value: any) => {
         const newData = { ...parsed, [key]: value };
@@ -74,7 +48,34 @@ export default function ContentEditor({ sectionKey, initialContent, onChange }: 
 
     if (sectionKey === "hero") {
         return (
-            <div className="space-y-4">
+            <div className="space-y-6">
+                <div className="border p-4 rounded-xl bg-slate-50 space-y-4">
+                    <h4 className="font-bold text-sm text-slate-900 border-b pb-2">Header Image (Full Width Banner)</h4>
+
+                    {parsed.headerImage ? (
+                        <div className="relative rounded-xl overflow-hidden group">
+                            <img src={parsed.headerImage} alt="Header Banner" className="w-full h-48 object-cover" />
+                            <button
+                                onClick={() => updateField("headerImage", "")}
+                                className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                            <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+                                Current Banner
+                            </div>
+                        </div>
+                    ) : (
+                        <div>
+                            <p className="text-sm text-slate-500 mb-3">Upload a high-quality landscape image (1920x1080 recommended)</p>
+                            <MediaUploader
+                                type="PHOTO"
+                                onUploadComplete={(url) => updateField("headerImage", url)}
+                            />
+                        </div>
+                    )}
+                </div>
+
                 <Input label="Badge Text" value={parsed.badge} onChange={(v) => updateField("badge", v)} placeholder="e.g. LOVED BY 500+ SCHOOLS" />
 
                 <div className="space-y-1">

@@ -60,6 +60,20 @@
   animation: fadeInUp 0.5s ease-out forwards;
 }
 
+@keyframes slowZoom {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-slow-zoom {
+  animation: slowZoom 20s linear infinite alternate;
+}
+
 /* Global Styles */
 * {
   box-sizing: border-box;
