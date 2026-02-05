@@ -87,7 +87,7 @@ export default function ContactCMSPage() {
         try {
             // Race against 15s timeout
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("Request timed out")), 15000)
+                setTimeout(() => reject(new Error("Request timed out")), 25000)
             );
 
             const data = await Promise.race([

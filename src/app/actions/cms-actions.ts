@@ -13,18 +13,30 @@ interface CMSUpsertData {
 }
 
 
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function withRetry<T>(fn: () => Promise<T>, retries = 2, delay = 1000): Promise<T> {
+    try {
+        return await fn();
+    } catch (error) {
+        if (retries === 0) throw error;
+        await wait(delay);
+        return withRetry(fn, retries - 1, delay * 2);
+    }
+}
+
 // --- CMS Pages ---
 
 export async function getCMSPagesAction() {
-    return await prisma.cMSPage.findMany({
+    return withRetry(() => prisma.cMSPage.findMany({
         orderBy: { updatedAt: 'desc' }
-    });
+    }));
 }
 
 export async function getCMSPageBySlugAction(slug: string) {
-    return await prisma.cMSPage.findUnique({
+    return withRetry(() => prisma.cMSPage.findUnique({
         where: { slug, isPublished: true }
-    });
+    }));
 }
 
 export async function createCMSPageAction(data: { title: string, slug: string, content: string, metaTitle?: string, metaDescription?: string }) {
@@ -72,18 +84,18 @@ export async function deleteCMSPageAction(id: string) {
 // --- Blog Posts ---
 
 export async function getBlogPostsAction() {
-    return await prisma.blogPost.findMany({
+    return withRetry(() => prisma.blogPost.findMany({
         include: { author: { select: { firstName: true, lastName: true } } },
         orderBy: { createdAt: 'desc' },
         where: { isPublished: true }
-    });
+    }));
 }
 
 export async function getBlogPostBySlugAction(slug: string) {
-    return await prisma.blogPost.findUnique({
+    return withRetry(() => prisma.blogPost.findUnique({
         where: { slug },
         include: { author: { select: { firstName: true, lastName: true } } }
-    });
+    }));
 }
 
 export async function createBlogPostAction(data: any, authorId?: string) {
@@ -130,9 +142,9 @@ export async function deleteBlogPostAction(id: string) {
 // --- Job Postings ---
 
 export async function getJobPostingsAction() {
-    return await prisma.jobPosting.findMany({
+    return withRetry(() => prisma.jobPosting.findMany({
         orderBy: { createdAt: 'desc' }
-    });
+    }));
 }
 
 export async function createJobPostingAction(data: any) {
@@ -171,15 +183,15 @@ export async function deleteJobPostingAction(id: string) {
 // --- Homepage Content ---
 
 export async function getHomepageContentAction() {
-    return await prisma.homepageContent.findMany({
+    return withRetry(() => prisma.homepageContent.findMany({
         orderBy: { sortOrder: 'asc' }
-    });
+    }));
 }
 
 export async function getHomepageSectionAction(sectionKey: string) {
-    return await prisma.homepageContent.findUnique({
+    return withRetry(() => prisma.homepageContent.findUnique({
         where: { sectionKey }
-    });
+    }));
 }
 
 export async function upsertHomepageSectionAction(data: {
@@ -246,15 +258,15 @@ export async function toggleHomepageSectionAction(id: string, isEnabled: boolean
 // --- Features Page Content ---
 
 export async function getFeaturesPageContentAction() {
-    return await prisma.featuresPageContent.findMany({
+    return withRetry(() => prisma.featuresPageContent.findMany({
         orderBy: { sortOrder: 'asc' }
-    });
+    }));
 }
 
 export async function getFeaturesSectionAction(sectionKey: string) {
-    return await prisma.featuresPageContent.findUnique({
+    return withRetry(() => prisma.featuresPageContent.findUnique({
         where: { sectionKey }
-    });
+    }));
 }
 
 export async function upsertFeaturesSectionAction(data: {
@@ -321,7 +333,7 @@ export async function toggleFeaturesSectionAction(id: string, isEnabled: boolean
 // --- Pricing Page Content ---
 
 export async function getPricingPageContentAction() {
-    return await prisma.pricingPageContent.findMany({ orderBy: { sortOrder: 'asc' } });
+    return withRetry(() => prisma.pricingPageContent.findMany({ orderBy: { sortOrder: 'asc' } }));
 }
 
 export async function upsertPricingSectionAction(data: CMSUpsertData) {
@@ -364,7 +376,7 @@ export async function togglePricingSectionAction(id: string, isEnabled: boolean)
 // --- Careers Page Content ---
 
 export async function getCareersPageContentAction() {
-    return await prisma.careersPageContent.findMany({ orderBy: { sortOrder: 'asc' } });
+    return withRetry(() => prisma.careersPageContent.findMany({ orderBy: { sortOrder: 'asc' } }));
 }
 
 export async function upsertCareersSectionAction(data: CMSUpsertData) {
@@ -399,7 +411,7 @@ export async function toggleCareersSectionAction(id: string, isEnabled: boolean)
 // --- Blog Page Content ---
 
 export async function getBlogPageContentAction() {
-    return await prisma.blogPageContent.findMany({ orderBy: { sortOrder: 'asc' } });
+    return withRetry(() => prisma.blogPageContent.findMany({ orderBy: { sortOrder: 'asc' } }));
 }
 
 export async function upsertBlogSectionAction(data: CMSUpsertData) {
@@ -425,7 +437,7 @@ export async function upsertBlogSectionAction(data: CMSUpsertData) {
 // --- Contact Page Content ---
 
 export async function getContactPageContentAction() {
-    return await prisma.contactPageContent.findMany({ orderBy: { sortOrder: 'asc' } });
+    return withRetry(() => prisma.contactPageContent.findMany({ orderBy: { sortOrder: 'asc' } }));
 }
 
 export async function upsertContactSectionAction(data: CMSUpsertData) {
