@@ -111,11 +111,20 @@ export default function PricingPageCMS() {
     const loadSections = async () => {
         setLoading(true);
         try {
-            const data = await getPricingPageContentAction();
+            // Race against 15s timeout
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Request timed out")), 15000)
+            );
+
+            const data = await Promise.race([
+                getPricingPageContentAction(),
+                timeoutPromise
+            ]) as PricingSection[];
+
             setSections(data);
         } catch (error) {
             console.error(error);
-            toast.error("Failed to load sections. Ensure database migrations are applied.");
+            toast.error("Failed to load sections. Connection timed out or database error.");
         } finally {
             setLoading(false);
         }

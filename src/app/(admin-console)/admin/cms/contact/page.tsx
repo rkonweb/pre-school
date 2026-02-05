@@ -85,11 +85,20 @@ export default function ContactCMSPage() {
     const loadSections = async () => {
         setLoading(true);
         try {
-            const data = await getContactPageContentAction();
+            // Race against 15s timeout
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Request timed out")), 15000)
+            );
+
+            const data = await Promise.race([
+                getContactPageContentAction(),
+                timeoutPromise
+            ]) as ContactSection[];
+
             setSections(data);
         } catch (error) {
             console.error(error);
-            toast.error("Failed to load sections. Ensure database migrations are applied.");
+            toast.error("Failed to load sections. Connection timed out or database error.");
         } finally {
             setLoading(false);
         }

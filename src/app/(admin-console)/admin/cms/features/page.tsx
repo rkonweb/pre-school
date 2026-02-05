@@ -182,11 +182,20 @@ export default function FeaturesPageCMS() {
     const loadSections = async () => {
         setLoading(true);
         try {
-            const data = await getFeaturesPageContentAction();
+            // Race against 15s timeout
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Request timed out")), 15000)
+            );
+
+            const data = await Promise.race([
+                getFeaturesPageContentAction(),
+                timeoutPromise
+            ]) as FeaturesSection[];
+
             setSections(data);
         } catch (error) {
             console.error(error);
-            toast.error("Failed to load sections. Ensure database migrations are applied.");
+            toast.error("Failed to load sections. Connection timed out or database error.");
         } finally {
             setLoading(false);
         }

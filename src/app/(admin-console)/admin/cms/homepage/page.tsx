@@ -129,11 +129,20 @@ export default function HomepageCMSPage() {
     const loadSections = async () => {
         setLoading(true);
         try {
-            const data = await getHomepageContentAction();
+            // Race against 15s timeout
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Request timed out")), 15000)
+            );
+
+            const data = await Promise.race([
+                getHomepageContentAction(),
+                timeoutPromise
+            ]) as HomepageSection[]; // Cast because race returns unknown type union
+
             setSections(data);
         } catch (error) {
             console.error(error);
-            toast.error("Failed to load sections. Ensure database migrations are applied.");
+            toast.error("Failed to load sections. Connection timed out or database error.");
         } finally {
             setLoading(false);
         }
