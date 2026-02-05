@@ -11,6 +11,8 @@ import {
 import { toast } from "sonner";
 import ContentEditor from "./content-editor";
 
+export const dynamic = "force-dynamic";
+
 interface ContactSection {
     id: string;
     sectionKey: string;
