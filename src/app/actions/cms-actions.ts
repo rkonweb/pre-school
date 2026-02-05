@@ -113,14 +113,25 @@ export async function createBlogPostAction(data: any, authorId?: string) {
 
         if (!finalAuthorId) {
             // Find the first ADMIN user to assign as author
-            const adminUser = await prisma.user.findFirst({
+            let adminUser = await prisma.user.findFirst({
                 where: { role: 'ADMIN' }
             });
-            if (adminUser) {
-                finalAuthorId = adminUser.id;
-            } else {
-                return { success: false, error: 'No Admin user found to assign as author. (Please ensure at least one ADMIN user exists in Users table)' };
+
+            // If no admin user exists, create a default one for blog authorship
+            if (!adminUser) {
+                adminUser = await prisma.user.create({
+                    data: {
+                        mobile: '0000000000',
+                        firstName: 'Bodhi',
+                        lastName: 'Board',
+                        email: 'admin@bodhiboard.in',
+                        role: 'ADMIN',
+                        status: 'ACTIVE'
+                    }
+                });
             }
+
+            finalAuthorId = adminUser.id;
         }
 
         const post = await prisma.blogPost.create({
