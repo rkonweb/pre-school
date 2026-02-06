@@ -25,8 +25,14 @@ import {
     createMasterDataAction,
     updateMasterDataAction,
     deleteMasterDataAction,
-    getMasterDataStatsAction
+    getMasterDataStatsAction,
+    bulkCreateMasterDataAction,
+    getAllMasterDataForExportAction
 } from "@/app/actions/master-data-actions";
+import Papa from "papaparse";
+import * as XLSX from "xlsx";
+import { Download, Upload, FileSpreadsheet } from "lucide-react";
+import { toast } from "sonner";
 
 const DATA_TYPES = [
     { id: "GRADE", label: "Grades", icon: GraduationCap, description: "Academic levels for enrollment" },
@@ -219,6 +225,13 @@ export default function MasterDataPage() {
                     </div>
                 </div>
             </div>
+
+            <BulkActions
+                data={data}
+                selectedType={selectedType}
+                parentId={selectedParentId}
+                onRefresh={loadData}
+            />
 
             {/* Content Panel: Heading (Nav) on Left, Data on Right */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -515,6 +528,174 @@ export default function MasterDataPage() {
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
+    const [isImporting, setIsImporting] = useState(false);
+
+    const handleExport = async () => {
+        const toastId = toast.loading("Preparing full system export...");
+
+        try {
+            // Fetch ALL data from server
+            const res = await getAllMasterDataForExportAction();
+
+            if (!res.success || !res.data) {
+                toast.error("Failed to fetch export data", { id: toastId });
+                return;
+            }
+
+            const allData = res.data;
+            const wb = XLSX.utils.book_new();
+
+            // 1. Group data by Type
+            const groupedData: Record<string, any[]> = {};
+            allData.forEach((item: any) => {
+                const type = item.type || "Uncategorized";
+                if (!groupedData[type]) groupedData[type] = [];
+                groupedData[type].push({
+                    Name: item.name,
+                    Code: item.code || "",
+                    ID: item.id, // Helpful for reference
+                    ParentID: item.parentId || ""
+                });
+            });
+
+            // 2. Create a Sheet for each Type
+            Object.keys(groupedData).sort().forEach(type => {
+                const sheetName = type.substring(0, 31); // Excel limit 31 chars
+                const ws = XLSX.utils.json_to_sheet(groupedData[type]);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+
+            // 3. Generate File
+            const fileName = `FULL_MasterData_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+
+            toast.success(`Export complete! (${allData.length} records)`, { id: toastId });
+
+        } catch (err) {
+            console.error("Export Error", err);
+            toast.error("Export failed", { id: toastId });
+        }
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsImporting(true);
+        const reader = new FileReader();
+
+        reader.onload = async (event) => {
+            try {
+                const bstr = event.target?.result;
+                let parsedData: any[] = [];
+
+                if (file.name.endsWith(".csv")) {
+                    // CSV Parsing
+                    Papa.parse(file, {
+                        header: true,
+                        complete: (results) => {
+                            processImport(results.data);
+                        },
+                        error: (err: any) => {
+                            toast.error("Failed to parse CSV");
+                            setIsImporting(false);
+                        }
+                    });
+                    return; // Async handled in callback
+                } else {
+                    // Excel Parsing
+                    const wb = XLSX.read(bstr, { type: "binary" });
+                    const wsname = wb.SheetNames[0];
+                    const ws = wb.Sheets[wsname];
+                    parsedData = XLSX.utils.sheet_to_json(ws);
+                    await processImport(parsedData);
+                }
+            } catch (error) {
+                console.error("File Read Error", error);
+                toast.error("Failed to read file");
+                setIsImporting(false);
+            }
+        };
+
+        if (file.name.endsWith(".csv")) {
+            reader.readAsText(file);
+        } else {
+            reader.readAsBinaryString(file); // For XLSX
+        }
+
+        // Reset input
+        e.target.value = "";
+    };
+
+    const processImport = async (rawData: any[]) => {
+        // Normalize Validation
+        const cleanData = rawData
+            .map((row: any) => {
+                // Support various header formats
+                const name = row.Name || row.name || row.NAME;
+                const code = row.Code || row.code || row.CODE;
+                return { name, code };
+            })
+            .filter((item: any) => item.name && typeof item.name === 'string' && item.name.trim() !== "");
+
+        if (cleanData.length === 0) {
+            toast.error("No valid data found in file. Ensure 'Name' column exists.");
+            setIsImporting(false);
+            return;
+        }
+
+        if (!confirm(`Ready to import ${cleanData.length} items to ${selectedType}?`)) {
+            setIsImporting(false);
+            return;
+        }
+
+        const res = await bulkCreateMasterDataAction(selectedType, parentId || null, cleanData);
+
+        if (res.success) {
+            toast.success(`Successfully imported ${res.count} items`);
+            onRefresh();
+        } else {
+            toast.error(res.error || "Import failed");
+        }
+        setIsImporting(false);
+    };
+
+    return (
+        <div className="bg-white rounded-3xl border border-zinc-200 p-6 flex items-center justify-between shadow-sm">
+            <div>
+                <h3 className="font-bold text-lg text-zinc-900">Bulk Operations</h3>
+                <p className="text-sm text-zinc-500">Import or Export {selectedType} data.</p>
+            </div>
+            <div className="flex gap-4">
+                <button
+                    onClick={handleExport}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-sm transition-all"
+                >
+                    <Download className="h-4 w-4" />
+                    Export XLSX
+                </button>
+                <div className="relative">
+                    <input
+                        type="file"
+                        accept=".csv, .xlsx, .xls"
+                        onChange={handleFileUpload}
+                        disabled={isImporting}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                    <button
+                        disabled={isImporting}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 font-bold text-sm transition-all disabled:opacity-50"
+                    >
+                        {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        {isImporting ? "Importing..." : "Bulk Upload"}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

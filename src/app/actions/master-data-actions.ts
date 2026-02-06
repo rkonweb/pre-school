@@ -105,6 +105,7 @@ export async function deleteMasterDataAction(id: string) {
     }
 }
 
+
 export async function getMasterDataStatsAction() {
     try {
         // @ts-ignore
@@ -113,5 +114,54 @@ export async function getMasterDataStatsAction() {
     } catch (error: any) {
         console.error("Fetch stats error:", error);
         return { success: false, count: 0 };
+    }
+}
+
+export async function bulkCreateMasterDataAction(type: string, parentId: string | null, items: { name: string; code?: string }[]) {
+    try {
+        if (!items || items.length === 0) return { success: true, count: 0 };
+
+        console.log(`Bulk importing ${items.length} items for type ${type} (Parent: ${parentId})`);
+
+        // Filter duplicates within the payload
+        const uniqueItems = Array.from(new Set(items.map(i => i.name)))
+            .map(name => items.find(i => i.name === name)!);
+
+        // Optimization: Find existing names to avoid unique constraint errors (if name is unique per type/parent)
+        // Usually MasterData doesn't strictly enforce DB-level constraints on (type, name, parentId) but it's good practice.
+        // We will just attempt to create them.
+
+        // @ts-ignore
+        const result = await (prisma as any).masterData.createMany({
+            data: uniqueItems.map(item => ({
+                type,
+                name: item.name,
+                code: item.code || item.name.substring(0, 3).toUpperCase(),
+                parentId: parentId || null
+            })),
+            skipDuplicates: true // Works on some DBs, ignored on others if no unique constraint
+        });
+
+        revalidatePath("/admin/dashboard/master-data");
+        return { success: true, count: result.count };
+    } catch (error: any) {
+        console.error("Bulk Create Error:", error);
+        return { success: false, error: error.message || "Bulk import failed" };
+    }
+}
+
+export async function getAllMasterDataForExportAction() {
+    try {
+        // @ts-ignore
+        const allData = await (prisma as any).masterData.findMany({
+            orderBy: [
+                { type: 'asc' },
+                { name: 'asc' }
+            ]
+        });
+        return { success: true, data: allData };
+    } catch (error: any) {
+        console.error("Export Fetch Error:", error);
+        return { success: false, error: error.message };
     }
 }
