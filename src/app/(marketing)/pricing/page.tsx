@@ -4,7 +4,9 @@ import { getSubscriptionPlansAction } from "@/app/actions/subscription-actions";
 import { SubscriptionPlan } from "@/types/subscription";
 import { ALL_MODULES, MODULE_CATEGORIES } from "@/config/modules";
 import { CheckCircle2, HelpCircle, ArrowRight, X, Sparkles, Zap } from "lucide-react";
+import { PricingCarousel } from "@/components/pricing/PricingCarousel";
 import { Metadata } from "next";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
     title: "Pricing | BodhiBoard - Simple & Transparent Pricing",
@@ -20,123 +22,30 @@ export default async function PricingPage() {
     return (
         <div className="bg-slate-50 font-sans text-navy selection:bg-sky/30">
             {/* Hero Section */}
-            <section className="relative pt-32 pb-40 overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-[600px] bg-white bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(45,156,184,0.1),rgba(255,255,255,0))]" />
+            <section className="relative pt-32 pb-44 overflow-hidden">
+                {/* Dynamic Background Elements */}
+                <div className="absolute top-0 left-0 w-full h-[800px] bg-white bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(45,156,184,0.15),rgba(255,255,255,0))]" />
+                <div className="absolute -top-24 -left-24 w-96 h-96 bg-teal/10 rounded-full blur-[100px] animate-pulse" />
+                <div className="absolute top-1/2 -right-24 w-64 h-64 bg-blue-600/5 rounded-full blur-[80px]" />
 
                 <div className="container mx-auto px-4 text-center relative z-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-navy text-white shadow-xl text-xs font-black uppercase tracking-[0.2em] mb-8">
-                        <Sparkles className="h-3.5 w-3.5 text-yellow animate-pulse" />
-                        Simple Pricing
+                    <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-navy text-white shadow-2xl text-xs font-black uppercase tracking-[0.2em] mb-10 hover:scale-105 transition-transform cursor-default select-none animate-bounce-subtle">
+                        <Sparkles className="h-4 w-4 text-yellow-400" />
+                        Simple & Transparent
                     </div>
-                    <h1 className="text-5xl md:text-8xl font-black text-navy mb-8 tracking-tighter leading-[1]">
+                    <h1 className="text-6xl md:text-9xl font-black text-navy mb-10 tracking-tighter leading-[0.9] drop-shadow-sm">
                         Simple pricing,<br />
-                        <span className="text-teal">transparent value</span>.
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal to-blue-600">transparent value</span>.
                     </h1>
-                    <p className="text-xl md:text-2xl text-navy/40 font-bold uppercase tracking-widest max-w-2xl mx-auto mb-10">
-                        Everything you need to run a modern preschool. No hidden fees.
+                    <p className="text-2xl md:text-3xl text-navy/40 font-bold uppercase tracking-[0.2em] max-w-3xl mx-auto mb-12">
+                        Everything you need to run a modern preschool.<br className="hidden md:block" /> No hidden fees. No surprises.
                     </p>
                 </div>
             </section>
 
-            {/* Pricing Cards */}
-            <section className="container mx-auto px-4 -mt-20 relative z-20 pb-24">
-                <div className="grid gap-6 md:grid-cols-3 max-w-7xl mx-auto">
-                    {sortedPlans.map((plan, index) => {
-                        const isMiddle = index === 1 && sortedPlans.length === 3;
-                        const isPopular = plan.isPopular || isMiddle;
-
-                        return (
-                            <div
-                                key={plan.id}
-                                className={`relative flex flex-col p-8 rounded-[3rem] transition-all duration-500 group ${isPopular
-                                        ? "bg-navy text-white shadow-[0_40px_80px_-15px_rgba(12,52,73,0.3)] ring-1 ring-navy scale-105 md:-translate-y-6 z-10"
-                                        : "bg-white text-navy shadow-2xl shadow-navy/5 border border-teal/5 hover:-translate-y-2"
-                                    }`}
-                            >
-                                {isPopular && (
-                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-teal text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] shadow-2xl flex items-center gap-2">
-                                        <Zap className="h-3.5 w-3.5 fill-white" /> Recommended
-                                    </div>
-                                )}
-
-                                <div className="mb-6">
-                                    <h3 className={`text-2xl font-black mb-2 tracking-tight ${isPopular ? "text-white" : "text-navy"}`}>
-                                        {plan.name}
-                                    </h3>
-                                    <p className={`text-sm font-bold uppercase tracking-widest ${isPopular ? "text-teal" : "text-navy/30"}`}>
-                                        {plan.description || `${plan.tier} tier plan`}
-                                    </p>
-                                </div>
-
-                                <div className="mb-8 flex items-baseline gap-1">
-                                    <span className={`text-6xl font-black tracking-tighter ${isPopular ? "text-white" : "text-navy"}`}>
-                                        {plan.price === 0 ? "Free" : `₹${plan.price}`}
-                                    </span>
-                                    {plan.price > 0 && (
-                                        <span className={`text-sm font-black uppercase tracking-widest ${isPopular ? "text-teal/40" : "text-navy/20"}`}>
-                                            /mo
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Plan Limits */}
-                                <div className={`mb-6 p-4 rounded-2xl ${isPopular ? "bg-white/5" : "bg-slate-50"}`}>
-                                    <div className="grid grid-cols-2 gap-4 text-center">
-                                        <div>
-                                            <div className={`text-2xl font-black ${isPopular ? "text-white" : "text-navy"}`}>
-                                                {plan.limits?.maxStudents || 25}
-                                            </div>
-                                            <div className={`text-[10px] font-bold uppercase tracking-widest ${isPopular ? "text-white/40" : "text-navy/30"}`}>
-                                                Students
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className={`text-2xl font-black ${isPopular ? "text-white" : "text-navy"}`}>
-                                                {plan.limits?.maxStaff || 5}
-                                            </div>
-                                            <div className={`text-[10px] font-bold uppercase tracking-widest ${isPopular ? "text-white/40" : "text-navy/30"}`}>
-                                                Staff
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Features from plan.features */}
-                                <div className="space-y-3 mb-10 flex-1">
-                                    {(plan.features || []).slice(0, 6).map((feature, i) => (
-                                        <div key={i} className="flex items-start gap-3 text-sm font-bold">
-                                            <div className={`mt-0.5 rounded-full p-0.5 ${isPopular ? "bg-teal/20 text-teal" : "bg-teal/10 text-teal"}`}>
-                                                <CheckCircle2 className="h-4 w-4" />
-                                            </div>
-                                            <span className={isPopular ? "text-white/60" : "text-navy/50"}>{feature}</span>
-                                        </div>
-                                    ))}
-
-                                    {/* Show module count */}
-                                    <div className="flex items-start gap-3 text-sm font-bold pt-2">
-                                        <div className={`mt-0.5 rounded-full p-0.5 ${isPopular ? "bg-teal/20 text-teal" : "bg-teal/10 text-teal"}`}>
-                                            <CheckCircle2 className="h-4 w-4" />
-                                        </div>
-                                        <span className={isPopular ? "text-white/60" : "text-navy/50"}>
-                                            {(plan.includedModules || []).length} Modules Included
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <Link
-                                    href="/signup"
-                                    className={`w-full rounded-[1.25rem] py-5 text-center text-sm font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-xl ${isPopular
-                                            ? "bg-teal text-white hover:bg-teal/90 shadow-teal/20"
-                                            : "bg-navy text-white hover:bg-navy/90 shadow-navy/20"
-                                        }`}
-                                >
-                                    {plan.price === 0 ? "Start Free" : "Select Plan"}
-                                    <ArrowRight className="h-4 w-4" />
-                                </Link>
-                            </div>
-                        );
-                    })}
-                </div>
+            {/* Pricing Cards Carousel */}
+            <section className="-mt-24 pb-24 relative z-20">
+                <PricingCarousel plans={sortedPlans} />
             </section>
 
             {/* Feature Comparison Table */}
@@ -149,18 +58,21 @@ export default async function PricingPage() {
                         </p>
                     </div>
 
-                    <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden ring-1 ring-slate-100">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white/50 shadow-2xl shadow-navy/5 overflow-hidden ring-1 ring-white/60 relative">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50 border-b border-teal/5">
-                                        <th className="p-8 w-1/2 text-[10px] font-black text-navy/30 uppercase tracking-[0.2em]">
+                                <thead className="sticky top-0 z-40 bg-white/90 backdrop-blur-2xl border-b border-slate-100 shadow-sm">
+                                    <tr>
+                                        <th className="p-8 w-1/3 text-[10px] font-black text-navy/40 uppercase tracking-[0.3em]">
                                             Module Breakdown
                                         </th>
                                         {sortedPlans.map(plan => (
-                                            <th key={plan.id} className="p-8 text-center bg-white/50">
-                                                <div className="text-xs font-black text-navy uppercase tracking-widest">{plan.name}</div>
-                                                <div className="text-[10px] text-navy/30 font-bold mt-1">
+                                            <th key={plan.id} className={cn(
+                                                "p-8 text-center transition-all duration-300",
+                                                plan.isPopular ? "bg-navy text-white" : "text-navy"
+                                            )}>
+                                                <div className="text-sm font-black uppercase tracking-widest">{plan.name}</div>
+                                                <div className={cn("text-[10px] font-bold mt-2", plan.isPopular ? "text-teal" : "text-teal")}>
                                                     {plan.price === 0 ? "Free" : `₹${plan.price}/mo`}
                                                 </div>
                                             </th>
@@ -175,33 +87,42 @@ export default async function PricingPage() {
                                         return (
                                             <Fragment key={catKey}>
                                                 <tr>
-                                                    <td colSpan={sortedPlans.length + 1} className="px-6 py-3 bg-slate-50/30">
-                                                        <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest">
+                                                    <td colSpan={sortedPlans.length + 1} className="px-8 py-4 bg-navy/5 border-y border-navy/5">
+                                                        <span className="text-[10px] font-extrabold text-navy uppercase tracking-[0.3em] flex items-center gap-2">
+                                                            <Sparkles className="h-3 w-3 text-teal" />
                                                             {MODULE_CATEGORIES[catKey]}
                                                         </span>
                                                     </td>
                                                 </tr>
                                                 {categoryModules.map(mod => (
-                                                    <tr key={mod.id} className="group hover:bg-slate-50/50 transition-colors">
+                                                    <tr key={mod.id} className="group hover:bg-slate-50 transition-colors">
                                                         <td className="p-8">
-                                                            <div className="font-black text-navy text-sm tracking-tight">{mod.label}</div>
-                                                            <div className="text-[10px] text-navy/40 font-bold uppercase tracking-widest mt-1">
+                                                            <div className="font-extrabold text-navy text-sm tracking-tight group-hover:text-teal transition-colors duration-300">{mod.label}</div>
+                                                            <div className="text-[10px] text-navy/40 font-bold uppercase tracking-widest mt-1 group-hover:text-navy/60 transition-colors">
                                                                 {mod.description}
                                                             </div>
                                                         </td>
                                                         {sortedPlans.map(plan => {
                                                             const isIncluded = (plan.includedModules || []).includes(mod.id);
                                                             return (
-                                                                <td key={plan.id} className="p-8 text-center">
-                                                                    {isIncluded ? (
-                                                                        <div className="inline-flex items-center justify-center p-1.5 rounded-full bg-teal/10 text-teal">
-                                                                            <CheckCircle2 className="h-5 w-5" />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="inline-flex items-center justify-center p-1 rounded-full">
-                                                                            <X className="h-4 w-4 text-navy/10" />
-                                                                        </div>
-                                                                    )}
+                                                                <td key={plan.id} className={cn(
+                                                                    "p-8 text-center transition-all duration-300",
+                                                                    plan.isPopular ? "bg-navy/[0.03]" : ""
+                                                                )}>
+                                                                    <div className="flex justify-center">
+                                                                        {isIncluded ? (
+                                                                            <div className={cn(
+                                                                                "inline-flex items-center justify-center p-2 rounded-full shadow-lg transition-transform duration-500 group-hover:scale-125",
+                                                                                plan.isPopular ? "bg-teal text-white shadow-teal/40" : "bg-teal/10 text-teal"
+                                                                            )}>
+                                                                                <CheckCircle2 className="h-4 w-4" />
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="inline-flex items-center justify-center p-2 rounded-full opacity-10 grayscale">
+                                                                                <X className="h-4 w-4 text-navy" />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </td>
                                                             );
                                                         })}

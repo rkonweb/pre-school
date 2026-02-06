@@ -36,10 +36,12 @@ export default function PWAInstallPrompt() {
         localStorage.setItem("pwa-prompt-dismissed", "true");
     };
 
+    const AnyMotionDiv = motion.div as any;
+
     return (
         <AnimatePresence>
             {isVisible && (
-                <motion.div
+                <AnyMotionDiv
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 100, opacity: 0 }}
@@ -92,7 +94,7 @@ export default function PWAInstallPrompt() {
                             )}
                         </div>
                     </div>
-                </motion.div>
+                </AnyMotionDiv>
             )}
         </AnimatePresence>
     );

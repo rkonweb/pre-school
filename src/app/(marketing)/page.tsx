@@ -312,11 +312,25 @@ export default async function Home() {
             )}
 
             {/* 4. PRICING */}
-            <section id="pricing" className="py-32 bg-white border-t border-slate-200">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-20">
-                        <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">Simple, transparent pricing.</h2>
-                        <p className="text-xl text-slate-600 max-w-2xl mx-auto font-medium">No hidden fees. No long-term contracts.</p>
+            <section id="pricing" className="py-32 bg-white relative overflow-hidden">
+                {/* Background Glows */}
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-teal/30 to-transparent" />
+                <div className="absolute top-1/2 left-0 w-96 h-96 bg-teal/5 rounded-full blur-[100px] -translate-x-1/2" />
+                <div className="absolute top-1/2 right-0 w-96 h-96 bg-blue-600/5 rounded-full blur-[100px] translate-x-1/2" />
+
+                <div className="container mx-auto px-4 relative z-10">
+                    <div className="text-center mb-24">
+                        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-navy text-white shadow-2xl text-[10px] font-black uppercase tracking-[0.2em] mb-10 animate-bounce-subtle">
+                            <Sparkles className="h-4 w-4 text-yellow-400" />
+                            Simple & Transparent
+                        </div>
+                        <h2 className="text-5xl md:text-8xl font-black text-navy mb-8 tracking-tighter leading-[0.9]">
+                            Simple, <br className="md:hidden" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal to-blue-600">transparent pricing</span>.
+                        </h2>
+                        <p className="text-xl text-navy/40 max-w-2xl mx-auto font-bold uppercase tracking-[0.2em]">
+                            No hidden fees. No long-term contracts.
+                        </p>
                     </div>
 
                     <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
@@ -327,55 +341,83 @@ export default async function Home() {
                                 <div
                                     key={plan.id}
                                     className={cn(
-                                        "relative flex flex-col rounded-[2rem] p-8 transition-all duration-500",
+                                        "relative flex flex-col rounded-[3rem] p-10 transition-all duration-700 ease-out group/card",
                                         plan.isPopular
-                                            ? "bg-navy text-white shadow-2xl shadow-navy/20 border border-navy z-10 scale-105 md:-translate-y-4"
-                                            : "bg-white border border-teal/10 hover:border-teal/30 hover:shadow-xl shadow-sm"
+                                            ? "bg-navy text-white shadow-[0_40px_80px_-15px_rgba(45,156,184,0.25)] ring-2 ring-teal/20 z-10 scale-105 md:-translate-y-4"
+                                            : "bg-white border border-teal/5 hover:border-teal/10 hover:shadow-2xl shadow-sm grayscale-[0.3] hover:grayscale-0 text-navy"
                                     )}
                                 >
                                     {plan.isPopular && (
-                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-teal text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-xl flex items-center gap-2">
-                                            <Sparkles className="h-3 w-3 fill-white" /> Recommended
+                                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal to-blue-600 text-white px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(45,156,184,0.4)] flex items-center gap-2 z-20 animate-float">
+                                            <Zap className="h-3.5 w-3.5 fill-white" /> Most Popular
                                         </div>
                                     )}
 
-                                    <div className="mb-6">
-                                        <h3 className={cn("text-2xl font-black mb-2 tracking-tight", plan.isPopular ? "text-white" : "text-navy")}>{plan.name}</h3>
-                                        <p className={cn("text-sm font-bold uppercase tracking-widest leading-relaxed", plan.isPopular ? "text-teal" : "text-navy/40")}>{plan.description}</p>
+                                    <div className="mb-10 text-center">
+                                        <h3 className={cn("text-4xl font-black mb-3 tracking-tighter", plan.isPopular ? "text-white" : "text-navy")}>
+                                            {plan.name}
+                                        </h3>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.2em]", plan.isPopular ? "text-teal" : "text-navy/30")}>
+                                            {plan.description || `${plan.tier} Plan`}
+                                        </p>
                                     </div>
 
-                                    <div className="mb-8">
-                                        <div className="flex items-baseline gap-1">
-                                            <span className={cn("text-5xl font-black tracking-tighter", plan.isPopular ? "text-white" : "text-navy")}>
-                                                {plan.price === 0 ? "Free" : `₹${plan.price}`}
+                                    <div className="mb-10 flex items-baseline justify-center gap-1 group/price">
+                                        <span className={cn("text-7xl font-black tracking-tighter transition-transform group-hover/price:scale-105 duration-500", plan.isPopular ? "text-white" : "text-navy")}>
+                                            {plan.price === 0 ? "Free" : `₹${plan.price}`}
+                                        </span>
+                                        {plan.price > 0 && (
+                                            <span className={cn("text-sm font-black uppercase tracking-widest opacity-40", plan.isPopular ? "text-teal" : "text-navy")}>
+                                                /mo
                                             </span>
-                                            {plan.price > 0 && <span className={cn("text-base font-black uppercase tracking-widest", plan.isPopular ? "text-teal/60" : "text-navy/20")}>/mo</span>}
+                                        )}
+                                    </div>
+
+                                    <div className={cn("mb-10 p-8 rounded-[2rem] bg-opacity-5 backdrop-blur-md transition-colors duration-500", plan.isPopular ? "bg-white border border-white/10" : "bg-slate-50 border border-slate-100")}>
+                                        <div className="grid grid-cols-2 gap-6 text-center divide-x divide-white/10">
+                                            <div className="px-2">
+                                                <div className={cn("text-3xl font-black mb-1", plan.isPopular ? "text-white" : "text-navy")}>
+                                                    {plan.limits?.maxStudents || 25}
+                                                </div>
+                                                <div className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40", plan.isPopular ? "text-white" : "text-navy")}>
+                                                    Students
+                                                </div>
+                                            </div>
+                                            <div className="px-2">
+                                                <div className={cn("text-3xl font-black mb-1", plan.isPopular ? "text-white" : "text-navy")}>
+                                                    {plan.limits?.maxStaff || 5}
+                                                </div>
+                                                <div className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40", plan.isPopular ? "text-white" : "text-navy")}>
+                                                    Staff
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 mb-10 flex-1">
-                                        <div className={cn("flex items-center gap-3 text-sm font-black uppercase tracking-widest", plan.isPopular ? "text-white" : "text-navy")}>
-                                            <Users className={cn("h-5 w-5", plan.isPopular ? "text-teal" : "text-teal")} />
-                                            <span>{plan.limits?.maxStudents} Students</span>
-                                        </div>
-                                        {plan.features.slice(0, 5).map((feature, idx) => (
-                                            <div key={idx} className={cn("flex items-start gap-3 text-sm font-semibold", plan.isPopular ? "text-teal/70" : "text-navy/50")}>
-                                                <CheckCircle2 className={cn("h-5 w-5 shrink-0", plan.isPopular ? "text-teal" : "text-teal")} />
-                                                {feature}
+                                    <div className="space-y-5 mb-12 flex-1">
+                                        <p className={cn("text-center text-[10px] font-black uppercase tracking-[0.3em] mb-6 opacity-40", plan.isPopular ? "text-white" : "text-navy")}>Key Features</p>
+                                        {(plan.features || []).slice(0, 5).map((feature, i) => (
+                                            <div key={i} className="flex items-start gap-5 text-sm font-bold group/feat">
+                                                <div className={cn("mt-0 rounded-full p-1.5 transition-all duration-300 group-hover/feat:scale-110", plan.isPopular ? "bg-teal text-white shadow-lg shadow-teal/40" : "bg-teal/10 text-teal")}>
+                                                    <CheckCircle2 className="h-4 w-4" />
+                                                </div>
+                                                <span className={cn("transition-colors duration-300", plan.isPopular ? "text-white/70 group-hover/feat:text-white" : "text-navy/50 group-hover/feat:text-navy")}>{feature}</span>
                                             </div>
                                         ))}
                                     </div>
 
                                     <Link
-                                        href="/signup"
+                                        href="/pricing"
                                         className={cn(
-                                            "w-full h-14 rounded-2xl flex items-center justify-center font-black text-base transition-all duration-300 uppercase tracking-widest shadow-lg",
+                                            "w-full rounded-[1.5rem] py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-2xl group/btn relative overflow-hidden",
                                             plan.isPopular
-                                                ? "bg-teal text-white hover:bg-teal/90 shadow-teal/20"
-                                                : "bg-navy text-white hover:bg-navy/90 shadow-navy/10"
+                                                ? "bg-teal text-white hover:bg-teal/90 shadow-teal/30 hover:shadow-teal/50"
+                                                : "bg-navy text-white hover:bg-navy/90 shadow-navy/20"
                                         )}
                                     >
-                                        Select {plan.name}
+                                        <span className="relative z-10">View More Details</span>
+                                        <ArrowRight className="h-4 w-4 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
+                                        <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover/btn:translate-x-0 transition-transform duration-500" />
                                     </Link>
                                 </div>
                             ))

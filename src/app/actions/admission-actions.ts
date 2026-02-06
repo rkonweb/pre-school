@@ -288,6 +288,7 @@ export async function updateComprehensiveAdmissionAction(token: string, data: an
 }
 
 export async function approveAdmissionAction(slug: string, id: string, classroomId: string, grade: string) {
+    console.log(`[APPROVE] Action triggered for Admission: ${id}, Grade: ${grade}, Classroom: ${classroomId}`);
     try {
         const admission = await (prisma as any).admission.findUnique({
             where: { id },
@@ -295,10 +296,14 @@ export async function approveAdmissionAction(slug: string, id: string, classroom
 
         if (!admission) return { success: false, error: "Admission not found" };
 
-        // 1. Update Admission Stage
+        // 1. Update Admission Stage & Persist Enrollment Choice
+        // We update enrolledGrade so page reload keeps the state.
         await (prisma as any).admission.update({
             where: { id },
-            data: { stage: "ENROLLED" }
+            data: {
+                stage: "ENROLLED",
+                enrolledGrade: grade
+            }
         });
 
         // 2. Extract first/last name (naive split)
@@ -307,27 +312,43 @@ export async function approveAdmissionAction(slug: string, id: string, classroom
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Unknown";
 
         // 3. Create Student record
-        await (prisma as any).student.create({
-            data: {
-                firstName,
-                lastName,
-                age: admission.studentAge,
-                gender: admission.studentGender,
-                dateOfBirth: admission.dateOfBirth,
-                grade: grade,
-                classroomId: classroomId,
-                parentName: admission.parentName || (admission.fatherName ? admission.fatherName : admission.motherName),
-                parentMobile: admission.parentPhone || admission.fatherPhone || admission.motherPhone,
-                parentEmail: admission.parentEmail || admission.fatherEmail || admission.motherEmail,
-                bloodGroup: admission.bloodGroup,
-                medicalConditions: admission.medicalConditions,
-                allergies: admission.allergies,
-                emergencyContactName: admission.emergencyContactName,
-                emergencyContactPhone: admission.emergencyContactPhone,
-                schoolId: admission.schoolId,
-                status: "ACTIVE"
+        try {
+            await (prisma as any).student.create({
+                data: {
+                    firstName,
+                    lastName,
+                    age: admission.studentAge,
+                    gender: admission.studentGender,
+                    dateOfBirth: admission.dateOfBirth,
+                    grade: grade,
+                    classroomId: classroomId,
+                    parentName: admission.parentName || (admission.fatherName ? admission.fatherName : admission.motherName),
+                    parentMobile: admission.parentPhone || admission.fatherPhone || admission.motherPhone,
+                    parentEmail: admission.parentEmail || admission.fatherEmail || admission.motherEmail,
+                    bloodGroup: admission.bloodGroup,
+                    medicalConditions: admission.medicalConditions,
+                    allergies: admission.allergies,
+                    emergencyContactName: admission.emergencyContactName,
+                    emergencyContactPhone: admission.emergencyContactPhone,
+                    schoolId: admission.schoolId,
+                    status: "ACTIVE"
+                }
+            });
+        } catch (dbError: any) {
+            console.error("[APPROVE] Student Creation Failed:", dbError);
+            // If student creation fails, revert admission stage? Or just warn?
+            // Reverting for consistency
+            await (prisma as any).admission.update({
+                where: { id },
+                data: { stage: "INTERVIEW" } // Revert to previous stage
+            });
+
+            // Check for unique constraint violation
+            if (dbError.code === 'P2002') {
+                return { success: false, error: "A student with this parent mobile/email already exists." };
             }
-        });
+            return { success: false, error: "Failed to create Student record. Database error." };
+        }
 
         revalidatePath(`/s/${slug}/admissions`);
         revalidatePath(`/s/${slug}/admissions/${id}`);

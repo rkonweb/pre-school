@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getTenantByIdAction, updateTenantAction } from "@/app/actions/tenant-actions";
 import { getSystemSettingsAction } from "@/app/actions/settings-actions";
-import { Tenant } from "@/types/tenant";
+import { getSubscriptionPlansAction } from "@/app/actions/subscription-actions";
+import { SubscriptionPlan } from "@/types/subscription";
 import {
     Building2,
     MapPin,
@@ -24,21 +25,37 @@ import {
     Youtube,
     Calendar,
     Type,
-    MessageSquare,
-    Smartphone,
-    Fingerprint,
     Zap,
     Crown,
     Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PLAN_FEATURES, ADDONS, PLAN_PRICES, calculateMRR, PLANS } from "@/config/subscription";
+import { PLAN_FEATURES, ADDONS, calculateMRR } from "@/config/subscription";
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
     USD: "$",
     EUR: "€",
     GBP: "£",
     INR: "₹"
+};
+
+const EXCHANGE_RATES: Record<string, number> = {
+    INR: 1,
+    USD: 0.012, // 1 INR = 0.012 USD (approx)
+    EUR: 0.011, // 1 INR = 0.011 EUR
+    GBP: 0.0095 // 1 INR = 0.0095 GBP
+};
+
+const convertPrice = (priceInInr: number, currency: string) => {
+    const rate = EXCHANGE_RATES[currency] || 1;
+    const converted = priceInInr * rate;
+
+    // Rounding logic for cleaner numbers
+    if (currency === "INR") return Math.round(converted);
+
+    // For other currencies, round to nearest 0.99 or whole number logic if needed
+    // Simple rounding for now:
+    return Math.ceil(converted);
 };
 
 export default function EditTenantPage() {
@@ -48,6 +65,7 @@ export default function EditTenantPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [step, setStep] = useState(1);
+    const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
 
     // Initial state
     const [formData, setFormData] = useState({
@@ -97,8 +115,13 @@ export default function EditTenantPage() {
     useEffect(() => {
         const load = async () => {
             try {
-                const tenant = await getTenantByIdAction(id);
-                const settingsRes = await getSystemSettingsAction();
+                const [tenant, settingsRes, plansData] = await Promise.all([
+                    getTenantByIdAction(id),
+                    getSystemSettingsAction(),
+                    getSubscriptionPlansAction()
+                ]);
+
+                setPlans(plansData);
 
                 if (tenant) {
                     setFormData({
@@ -659,32 +682,42 @@ export default function EditTenantPage() {
 
                         <div className="grid md:grid-cols-3 gap-6 mb-8">
                             {/* Plan Cards */}
-                            {PLANS.map((plan) => (
+                            {plans.map((plan) => (
                                 <div
                                     key={plan.id}
                                     onClick={() => {
-                                        const newModules = PLAN_FEATURES[plan.id] || [];
-                                        setFormData({ ...formData, plan: plan.id as any, modules: newModules });
+                                        setFormData({ ...formData, plan: plan.name as any, modules: plan.includedModules });
                                     }}
                                     className={cn(
                                         "relative rounded-2xl border-2 p-6 cursor-pointer transition-all hover:scale-105",
-                                        formData.plan === plan.id ? `border-${plan.color}-600 bg-${plan.color}-50/30` : "border-zinc-100 bg-white hover:border-zinc-200"
+                                        formData.plan === plan.name ?
+                                            (plan.tier === "premium" ? "border-indigo-600 bg-indigo-50/30" :
+                                                plan.tier === "enterprise" ? "border-zinc-900 bg-zinc-50/30" :
+                                                    "border-blue-600 bg-blue-50/30")
+                                            : "border-zinc-100 bg-white hover:border-zinc-200"
                                     )}
                                 >
-                                    {formData.plan === plan.id && (
+                                    {formData.plan === plan.name && (
                                         <div className={cn(
                                             "absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider",
-                                            plan.id === "Growth" ? "bg-indigo-600" : plan.id === "Enterprise" ? "bg-zinc-900" : "bg-blue-600"
+                                            plan.tier === "premium" ? "bg-indigo-600" : plan.tier === "enterprise" ? "bg-zinc-900" : "bg-blue-600"
                                         )}>
                                             Selected
                                         </div>
                                     )}
                                     <h3 className="text-lg font-bold text-zinc-900">{plan.name}</h3>
-                                    <div className="text-3xl font-extrabold mt-2 text-zinc-900">{CURRENCY_SYMBOLS[formData.currency] || "$"}{plan.price}<span className="text-sm font-medium text-zinc-500">/mo</span></div>
+                                    <div className="text-3xl font-extrabold mt-2 text-zinc-900">
+                                        {CURRENCY_SYMBOLS[formData.currency] || "$"}{convertPrice(plan.price, formData.currency)}
+                                        {plan.price > 0 && <span className="text-sm font-medium text-zinc-500">/mo</span>}
+                                    </div>
                                     <ul className="mt-6 space-y-3">
-                                        {plan.features.map(f => (
-                                            <li key={f} className="flex items-center gap-2 text-xs font-medium text-zinc-600">
-                                                <CheckCircle2 className={cn("h-4 w-4", plan.id === "Growth" ? "text-indigo-600" : plan.id === "Enterprise" ? "text-zinc-600" : "text-blue-600")} />
+                                        {plan.features.slice(0, 4).map((f, i) => (
+                                            <li key={i} className="flex items-center gap-2 text-xs font-medium text-zinc-600">
+                                                <CheckCircle2 className={cn("h-4 w-4",
+                                                    plan.tier === "premium" ? "text-indigo-600" :
+                                                        plan.tier === "enterprise" ? "text-zinc-600" :
+                                                            "text-blue-600"
+                                                )} />
                                                 {f}
                                             </li>
                                         ))}
@@ -701,7 +734,7 @@ export default function EditTenantPage() {
                                     <span className="text-[10px] font-black uppercase tracking-[0.2em]">Billing Estimates</span>
                                 </div>
                                 <h4 className="text-4xl font-black">
-                                    {CURRENCY_SYMBOLS[formData.currency] || "$"}{calculateMRR(formData.plan, formData.addons)}
+                                    {CURRENCY_SYMBOLS[formData.currency] || "$"}{convertPrice(calculateMRR(formData.plan, formData.addons), formData.currency)}
                                     <span className="text-lg font-medium text-zinc-500 ml-2">/month (MRR)</span>
                                 </h4>
                                 <p className="text-zinc-400 text-sm mt-1">Based on {formData.plan} plan + {formData.addons.length} active add-ons</p>
@@ -834,8 +867,6 @@ export default function EditTenantPage() {
                                                                     if (!newModules.includes(mod.id)) newModules.push(mod.id);
                                                                 } else {
                                                                     newModules = newModules.filter(x => x !== sub.id);
-                                                                    // If last sub-module is disabled, should we disable parent? 
-                                                                    // Usually better to keep parent enabled as it's the group choice.
                                                                 }
                                                                 setFormData(p => ({ ...p, modules: newModules }));
                                                             }}

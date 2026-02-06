@@ -26,7 +26,73 @@
   --input: #E2E8F0;
   --highlight: var(--summer-orange);
   --muted: #64748B;
+  /* VIBRANT ORGANIC MOBILE TOKENS */
+  --vibrant-pink: #FF6B9D;
+  --vibrant-purple: #9D6BFF;
+  --vibrant-indigo: #6B7BFF;
+  --vibrant-cyan: #6BFFE3;
+  --vibrant-green: #A8FF6B;
+  --vibrant-yellow: #FFD46B;
+
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.4);
 }
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes springIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-spring-in {
+  animation: springIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.mobile-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(12, 52, 73, 0.08);
+}
+
+.timeline-line {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--summer-teal), var(--vibrant-purple), transparent);
+  opacity: 0.3;
+}
+
+/* Global Styles */
 
 @keyframes float {
 

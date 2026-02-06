@@ -128,7 +128,7 @@ export async function createTenantAction(data: CreateTenantInput) {
         const planSlug = planName.toLowerCase();
 
         const existingPlan = await prisma.subscriptionPlan.findFirst({
-            where: { name: { equals: planName, mode: 'insensitive' } }
+            where: { name: planName }
         });
 
         if (existingPlan) {
@@ -244,10 +244,16 @@ export async function updateTenantAction(id: string, data: any) {
     try {
         const { modules, addons, socialMedia, plan, ...rest } = data;
 
-        // Map plan name back to planId pattern
-        let planId = "plan_start_001";
-        if (plan === "Growth") planId = "plan_growth_001";
-        if (plan === "Enterprise") planId = "plan_ent_001";
+        // Lookup plan dynamically
+        let planId = "plan_start_001"; // Fallback default?? Or undefined?
+        if (plan) {
+            const existingPlan = await prisma.subscriptionPlan.findFirst({
+                where: { name: plan }
+            });
+            if (existingPlan) {
+                planId = existingPlan.id;
+            }
+        }
 
         await prisma.$transaction(async (tx) => {
             // 1. Update School details

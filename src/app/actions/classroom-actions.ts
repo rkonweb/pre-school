@@ -19,6 +19,7 @@ export async function getClassroomsAction(schoolSlug: string) {
         const userRes = await getCurrentUserAction();
         if (userRes.success && userRes.data) {
             const currentUser = userRes.data;
+
             if (currentUser.role === "STAFF") {
                 const accessItems = await prisma.classAccess.findMany({
                     where: { userId: currentUser.id, canRead: true },

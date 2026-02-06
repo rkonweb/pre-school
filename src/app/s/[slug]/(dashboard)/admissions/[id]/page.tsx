@@ -25,7 +25,8 @@ import {
     Edit3,
     Eye,
     Copy,
-    ExternalLink
+    ExternalLink,
+    X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -55,7 +56,8 @@ export default function AdmissionDetailPage() {
     const [mode, setMode] = useState<"view" | "edit">("view");
     const [formData, setFormData] = useState<any>(null);
     const [grades, setGrades] = useState<any[]>([]);
-    const [sections, setSections] = useState<any[]>([]);
+    const [filteredSections, setFilteredSections] = useState<any[]>([]); // For Dropdown (Master Data Sections)
+    const [allClassrooms, setAllClassrooms] = useState<any[]>([]); // For Lookup (Classroom Entities)
     const [selectedGrade, setSelectedGrade] = useState("");
     const [selectedSection, setSelectedSection] = useState("");
 
@@ -70,6 +72,27 @@ export default function AdmissionDetailPage() {
         loadData();
         fetchInitialData();
     }, [id]);
+
+    // SECTION FIlTERING
+    useEffect(() => {
+        if (!selectedGrade || grades.length === 0) {
+            setFilteredSections([]);
+            return;
+        }
+
+        const gradeObj = grades.find(g => g.name === selectedGrade);
+        if (gradeObj) {
+            // Fetch Sections (Master Data) linked to this Grade
+            getMasterDataAction("SECTION", gradeObj.id).then((res: any) => {
+                if (res.success) {
+                    setFilteredSections(res.data);
+                } else {
+                    setFilteredSections([]);
+                }
+            });
+        }
+    }, [selectedGrade, grades]);
+
 
     // Cascading Effects
     useEffect(() => {
@@ -99,7 +122,7 @@ export default function AdmissionDetailPage() {
     }, [formData?.state, states]);
 
     const fetchInitialData = async () => {
-        const [gradesRes, sectionsRes, countriesRes] = await Promise.all([
+        const [gradesRes, classroomsRes, countriesRes] = await Promise.all([
             getMasterDataAction("GRADE", null),
             getClassroomsAction(slug),
             getMasterDataAction("COUNTRY", null)
@@ -107,7 +130,9 @@ export default function AdmissionDetailPage() {
         if (gradesRes.success && Array.isArray((gradesRes as any).data)) {
             setGrades((gradesRes as any).data);
         }
-        setSections((sectionsRes as any).success ? (sectionsRes as any).data : []);
+        setAllClassrooms((classroomsRes as any).success ? (classroomsRes as any).data : []);
+        // Note: We don't set 'sections' here anymore, as it's dependent on Grade
+
         if (countriesRes.success) setCountries((countriesRes as any).data);
     };
 
@@ -225,21 +250,59 @@ export default function AdmissionDetailPage() {
         setIsSaving(false);
     };
 
-    const handleApproveAdmission = async () => {
+    // Helper for fuzzy matching
+    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    const findMatchingClassroom = (grade: string, section: string, classrooms: any[]) => {
+        if (!grade || !section) return null;
+        const targetSlug = normalize(`${grade}${section}`);
+
+        return classrooms.find(c => {
+            const classSlug = normalize(c.name);
+            return classSlug === targetSlug || (classSlug.includes(normalize(grade)) && classSlug.endsWith(normalize(section)));
+        });
+    };
+
+    const handleApproveAdmission = async (e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
         if (!selectedGrade || !selectedSection) {
             alert("Please select both Grade and Section for enrollment.");
             return;
         }
 
-        if (!confirm("Confirm Approval? This will create a formal Student record and mark the admission as Enrolled.")) return;
+        if (allClassrooms.length === 0) {
+            alert("Setup Required: No classrooms found. Please go to Classroom Registry to create them.");
+            return;
+        }
+
+        const matchingClass = findMatchingClassroom(selectedGrade, selectedSection, allClassrooms);
+        const targetName = `${selectedGrade} - ${selectedSection}`;
+
+        if (!matchingClass) {
+            alert(`Classroom "${targetName}" not found. Create it in Registry first.`);
+            return;
+        }
+
+        if (!confirm("Confirm Approval? This will create a Formal Student Record.")) return;
 
         setIsSaving(true);
-        const res = await approveAdmissionAction(slug, id, selectedSection, selectedGrade);
-        if (res.success) {
-            alert("Application Approved! Student record created.");
-            loadData();
-        } else {
-            alert(res.error || "Approval failed");
+        try {
+            const res = await approveAdmissionAction(slug, id, matchingClass.id, selectedGrade);
+            if (res.success) {
+                toast.success("Success! Student Enrolled.");
+                alert("Student Enrolled Successfully!"); // Force feedback
+                loadData();
+            } else {
+                console.error("Approval Response Error:", res.error);
+                alert(`Approval Failed: ${res.error}`);
+            }
+        } catch (err: any) {
+            console.error("Unexpected Approval Error:", err);
+            alert(`Unexpected Error: ${err.message || err}`);
         }
         setIsSaving(false);
     };
@@ -822,22 +885,54 @@ export default function AdmissionDetailPage() {
                                         </select>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-indigo-200 uppercase tracking-widest px-1">Assign Section</label>
+                                    <label className="text-[10px] font-black text-indigo-200 uppercase tracking-widest px-1">Assign Section</label>
+                                    <div className="space-y-1">
                                         <select
                                             value={selectedSection}
                                             onChange={e => setSelectedSection(e.target.value)}
                                             className="w-full bg-white/10 border-white/20 rounded-2xl py-4 px-6 font-bold text-white transition-all outline-none focus:ring-2 focus:ring-white/50 appearance-none"
                                         >
                                             <option value="" className="text-zinc-900">Select Section</option>
-                                            {sections.map(s => (
-                                                <option key={s.id} value={s.id} className="text-zinc-900">{s.name}</option>
-                                            ))}
+                                            {filteredSections && filteredSections.length > 0 ? (
+                                                filteredSections.map(s => (
+                                                    <option key={s.id} value={s.name} className="text-zinc-900">{s.name}</option>
+                                                ))
+                                            ) : (
+                                                <option value="" disabled className="text-zinc-400">
+                                                    {selectedGrade ? "No Sections Found" : "Select Grade First"}
+                                                </option>
+                                            )}
                                         </select>
+                                        {selectedSection && selectedGrade && (
+                                            (() => {
+                                                // Don't show error if data isn't loaded yet
+                                                if (allClassrooms.length === 0) return null;
+
+                                                const match = findMatchingClassroom(selectedGrade, selectedSection, allClassrooms);
+                                                const targetName = `${selectedGrade} - ${selectedSection}`;
+
+                                                if (!match) {
+                                                    return (
+                                                        <p className="text-[10px] font-bold text-red-200 bg-red-500/20 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                                                            <X className="h-3 w-3" />
+                                                            Classroom "{targetName}" not found. Create it in Registry first.
+                                                        </p>
+                                                    );
+                                                }
+                                                // Success indicator (Optional but helpful)
+                                                return (
+                                                    <p className="text-[10px] font-bold text-emerald-200 bg-emerald-500/20 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                                                        <CheckCircle2 className="h-3 w-3" />
+                                                        Linked to classroom: {match.name}
+                                                    </p>
+                                                );
+                                            })()
+                                        )}
                                     </div>
                                 </div>
 
                                 <button
+                                    type="button"
                                     onClick={handleApproveAdmission}
                                     disabled={isSaving}
                                     className="w-full h-14 bg-white text-indigo-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-xl shadow-indigo-900/10"

@@ -5,46 +5,39 @@ import { revalidatePath } from "next/cache";
 
 export async function getSystemSettingsAction() {
     try {
-        const settings: any[] = await prisma.$queryRawUnsafe(`SELECT * FROM SystemSettings WHERE id = 'global'`);
+        let settings = await prisma.systemSettings.findUnique({
+            where: { id: 'global' }
+        });
 
-        if (settings.length === 0) {
-            const defaultSettings = {
-                id: 'global',
-                timezone: "UTC+05:30 (India Standard Time)",
-                currency: "INR",
-                mfaEnabled: 1,
-                sessionTimeout: 0,
-                allowedDomains: "*",
-                smtpHost: "",
-                smtpPort: 587,
-                smtpUser: "",
-                smtpPass: "",
-                smtpSender: "noreply@pre-school.com",
-                backupEnabled: 1,
-                backupFrequency: "DAILY",
-                maintenanceMode: 0
-            };
-            await prisma.$executeRawUnsafe(
-                `INSERT INTO SystemSettings (id, timezone, currency, mfaEnabled, sessionTimeout, allowedDomains, smtpHost, smtpPort, smtpUser, smtpPass, smtpSender, backupEnabled, backupFrequency, maintenanceMode, updatedAt) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
-                defaultSettings.id, defaultSettings.timezone, defaultSettings.currency,
-                defaultSettings.mfaEnabled, defaultSettings.sessionTimeout, defaultSettings.allowedDomains,
-                defaultSettings.smtpHost, defaultSettings.smtpPort, defaultSettings.smtpUser,
-                defaultSettings.smtpPass, defaultSettings.smtpSender, defaultSettings.backupEnabled,
-                defaultSettings.backupFrequency, defaultSettings.maintenanceMode
-            );
-            return { success: true, data: { ...defaultSettings, mfaEnabled: true, sessionTimeout: false, backupEnabled: true, maintenanceMode: false } };
+        if (!settings) {
+            settings = await prisma.systemSettings.create({
+                data: {
+                    id: 'global',
+                    timezone: "UTC+05:30 (India Standard Time)",
+                    currency: "INR",
+                    mfaEnabled: true,
+                    sessionTimeout: false,
+                    allowedDomains: "*",
+                    smtpHost: "",
+                    smtpPort: 587,
+                    smtpUser: "",
+                    smtpPass: "",
+                    smtpSender: "noreply@pre-school.com",
+                    backupEnabled: true,
+                    backupFrequency: "DAILY",
+                    maintenanceMode: false
+                }
+            });
         }
 
-        const s = settings[0];
         return {
             success: true,
             data: {
-                ...s,
-                mfaEnabled: Boolean(s.mfaEnabled),
-                sessionTimeout: Boolean(s.sessionTimeout),
-                backupEnabled: Boolean(s.backupEnabled),
-                maintenanceMode: Boolean(s.maintenanceMode)
+                ...settings,
+                mfaEnabled: settings.mfaEnabled,
+                sessionTimeout: settings.sessionTimeout,
+                backupEnabled: settings.backupEnabled,
+                maintenanceMode: settings.maintenanceMode
             }
         };
     } catch (error: any) {
@@ -55,33 +48,40 @@ export async function getSystemSettingsAction() {
 
 export async function saveSystemSettingsAction(data: any) {
     try {
-        await prisma.$executeRawUnsafe(`
-            INSERT INTO SystemSettings (
-                id, timezone, currency, mfaEnabled, sessionTimeout, allowedDomains, 
-                smtpHost, smtpPort, smtpUser, smtpPass, smtpSender, 
-                backupEnabled, backupFrequency, maintenanceMode, updatedAt
-            )
-            VALUES ('global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-            ON CONFLICT(id) DO UPDATE SET
-                timezone = excluded.timezone,
-                currency = excluded.currency,
-                mfaEnabled = excluded.mfaEnabled,
-                sessionTimeout = excluded.sessionTimeout,
-                allowedDomains = excluded.allowedDomains,
-                smtpHost = excluded.smtpHost,
-                smtpPort = excluded.smtpPort,
-                smtpUser = excluded.smtpUser,
-                smtpPass = excluded.smtpPass,
-                smtpSender = excluded.smtpSender,
-                backupEnabled = excluded.backupEnabled,
-                backupFrequency = excluded.backupFrequency,
-                maintenanceMode = excluded.maintenanceMode,
-                updatedAt = datetime('now')
-        `,
-            data.timezone, data.currency, data.mfaEnabled ? 1 : 0, data.sessionTimeout ? 1 : 0, data.allowedDomains,
-            data.smtpHost, Number(data.smtpPort), data.smtpUser, data.smtpPass, data.smtpSender,
-            data.backupEnabled ? 1 : 0, data.backupFrequency, data.maintenanceMode ? 1 : 0
-        );
+        await prisma.systemSettings.upsert({
+            where: { id: 'global' },
+            create: {
+                id: 'global',
+                timezone: data.timezone,
+                currency: data.currency,
+                mfaEnabled: Boolean(data.mfaEnabled),
+                sessionTimeout: Boolean(data.sessionTimeout),
+                allowedDomains: data.allowedDomains,
+                smtpHost: data.smtpHost,
+                smtpPort: Number(data.smtpPort),
+                smtpUser: data.smtpUser,
+                smtpPass: data.smtpPass,
+                smtpSender: data.smtpSender,
+                backupEnabled: Boolean(data.backupEnabled),
+                backupFrequency: data.backupFrequency,
+                maintenanceMode: Boolean(data.maintenanceMode)
+            },
+            update: {
+                timezone: data.timezone,
+                currency: data.currency,
+                mfaEnabled: Boolean(data.mfaEnabled),
+                sessionTimeout: Boolean(data.sessionTimeout),
+                allowedDomains: data.allowedDomains,
+                smtpHost: data.smtpHost,
+                smtpPort: Number(data.smtpPort),
+                smtpUser: data.smtpUser,
+                smtpPass: data.smtpPass,
+                smtpSender: data.smtpSender,
+                backupEnabled: Boolean(data.backupEnabled),
+                backupFrequency: data.backupFrequency,
+                maintenanceMode: Boolean(data.maintenanceMode)
+            }
+        });
         revalidatePath("/admin/settings");
         return { success: true };
     } catch (error: any) {

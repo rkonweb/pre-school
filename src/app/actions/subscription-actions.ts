@@ -4,9 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { CreateSubscriptionPlanInput, SubscriptionPlan as SubscriptionPlanType } from "@/types/subscription";
 import { revalidatePath } from "next/cache";
 
-export async function getSubscriptionPlansAction() {
+export async function getSubscriptionPlansAction(retries = 0) {
     try {
         const plans = await prisma.subscriptionPlan.findMany({
+            where: { isActive: true },
             orderBy: { sortOrder: 'asc' }
         });
 
@@ -45,6 +46,8 @@ export async function getSubscriptionPlansAction() {
                 },
             ];
 
+            if (retries > 0) return []; // Prevent infinite recursion
+
             for (const d of defaults) {
                 await prisma.subscriptionPlan.create({
                     data: {
@@ -65,7 +68,7 @@ export async function getSubscriptionPlansAction() {
                     }
                 });
             }
-            return getSubscriptionPlansAction();
+            return getSubscriptionPlansAction(retries + 1);
         }
 
         // Auto-repair: Check if any plans have empty modules and fix them

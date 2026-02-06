@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
     getSubscriptionPlansAction,
     createSubscriptionPlanAction,
@@ -337,13 +338,13 @@ export default function SubscriptionManagementPage() {
                     <h1 className="text-3xl font-black tracking-tighter text-zinc-900">BILLING <span className="text-blue-600">CONSOLE</span></h1>
                     <p className="text-zinc-500 font-medium mt-1">Real-time revenue metrics and plan management.</p>
                 </div>
-                <button
-                    onClick={openCreateModal}
+                <Link
+                    href="/admin/subscriptions/new"
                     className="flex items-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-zinc-900/20 hover:bg-zinc-800 transition-all active:scale-95"
                 >
                     <Plus className="h-4 w-4" />
                     Create New Plan
-                </button>
+                </Link>
             </div>
 
             {/* Stats Overview */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,6 +10,8 @@ import {
     CheckCircle2,
     ArrowRight,
     ArrowLeft,
+    ChevronLeft,
+    ChevronRight,
     UploadCloud,
     Globe,
     ShieldCheck,
@@ -30,13 +32,67 @@ import { cn } from "@/lib/utils";
 import { createTenantAction } from "@/app/actions/tenant-actions";
 import { getSubscriptionPlansAction } from "@/app/actions/subscription-actions";
 import { SubscriptionPlan } from "@/types/subscription";
-import { useEffect } from "react";
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    INR: "₹"
+};
+
+const EXCHANGE_RATES: Record<string, number> = {
+    INR: 1,
+    USD: 0.012, // 1 INR = 0.012 USD (approx)
+    EUR: 0.011, // 1 INR = 0.011 EUR
+    GBP: 0.0095 // 1 INR = 0.0095 GBP
+};
+
+const convertPrice = (priceInInr: number, currency: string) => {
+    const rate = EXCHANGE_RATES[currency] || 1;
+    const converted = priceInInr * rate;
+
+    // Rounding logic for cleaner numbers
+    if (currency === "INR") return Math.round(converted);
+
+    // For other currencies, round to nearest 0.99 or whole number logic if needed
+    // Simple rounding for now:
+    return Math.ceil(converted);
+};
 
 export default function OnboardSchoolPage() {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+
+    // Carousel State
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    const handleScroll = () => {
+        if (scrollRef.current) {
+            const container = scrollRef.current;
+            const scrollLeft = container.scrollLeft;
+            // Approximate card width + gap is around 336px
+            const index = Math.round(scrollLeft / 330);
+            setActiveIndex(Math.min(Math.max(0, index), plans.length - 1));
+        }
+    };
+
+    const scrollToIndex = (index: number) => {
+        if (scrollRef.current) {
+            const container = scrollRef.current;
+            const child = container.children[index] as HTMLElement;
+            if (child) {
+                child.scrollIntoView({
+                    behavior: 'smooth',
+                    inline: 'center',
+                    block: 'nearest'
+                });
+            }
+            setActiveIndex(index);
+        }
+    };
 
     useEffect(() => {
         getSubscriptionPlansAction().then(data => {
@@ -593,85 +649,129 @@ export default function OnboardSchoolPage() {
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-3 gap-6 mb-8">
-                            {/* Dynamic Plan Cards */}
-                            {plans.map((plan) => (
-                                <div
-                                    key={plan.id}
-                                    onClick={() => setFormData({
-                                        ...formData,
-                                        plan: plan.name,
-                                        modules: plan.includedModules || []
-                                    })}
+                        {/* Carousel Dots */}
+                        <div className="flex justify-center gap-2 mb-6">
+                            {plans.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => scrollToIndex(idx)}
                                     className={cn(
-                                        "relative rounded-2xl border-2 p-6 cursor-pointer transition-all hover:scale-105",
-                                        formData.plan === plan.name ? "border-blue-600 bg-blue-50/30" : "border-zinc-100 bg-white hover:border-zinc-200"
+                                        "h-2 rounded-full transition-all duration-300",
+                                        activeIndex === idx ? "w-8 bg-blue-600" : "w-2 bg-zinc-300 hover:bg-zinc-400"
                                     )}
-                                >
-                                    {formData.plan === plan.name && (
-                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                            Selected
-                                        </div>
-                                    )}
-                                    <h3 className="text-lg font-bold text-zinc-900">{plan.name}</h3>
-                                    <div className="text-3xl font-extrabold mt-2 text-zinc-900">
-                                        {plan.price === 0 ? "Free" : `$${plan.price}`}
-                                        {plan.price > 0 && <span className="text-sm font-medium text-zinc-500">/mo</span>}
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-2 py-4 my-4 border-y border-zinc-200/50">
-                                        <div className="text-center">
-                                            <div className="text-[10px] text-zinc-500 uppercase font-bold">Students</div>
-                                            <div className="text-sm font-bold text-zinc-900">{plan.limits?.maxStudents || 0}</div>
-                                        </div>
-                                        <div className="text-center border-l border-zinc-200/50">
-                                            <div className="text-[10px] text-zinc-500 uppercase font-bold">Staff</div>
-                                            <div className="text-sm font-bold text-zinc-900">{plan.limits?.maxStaff || 0}</div>
-                                        </div>
-                                        <div className="text-center border-l border-zinc-200/50">
-                                            <div className="text-[10px] text-zinc-500 uppercase font-bold">Storage</div>
-                                            <div className="text-sm font-bold text-zinc-900">{plan.limits?.maxStorageGB || 0}GB</div>
-                                        </div>
-                                    </div>
-
-                                    <ul className="space-y-2">
-                                        {plan.features.slice(0, 3).map((f, i) => (
-                                            <li key={i} className="flex items-center gap-2 text-xs font-medium text-zinc-600">
-                                                <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                                                {f}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
+                                    aria-label={`Go to plan ${idx + 1}`}
+                                />
                             ))}
                         </div>
 
-                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100">
-                            <h4 className="font-bold text-zinc-900 text-sm mb-4 uppercase">Enabled Modules</h4>
-                            <div className="grid md:grid-cols-4 gap-4">
-                                {["Attendance", "Billing", "Communication", "Curriculum", "Inventory", "Admissions", "Transport", "Library"].map((mod) => (
-                                    <label key={mod} className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 hover:bg-zinc-50 cursor-pointer transition-colors">
-                                        <div className={cn(
-                                            "h-5 w-5 rounded border flex items-center justify-center transition-colors",
-                                            formData.modules.includes(mod.toLowerCase()) ? "bg-blue-600 border-blue-600" : "border-zinc-300 bg-white"
-                                        )}>
-                                            {formData.modules.includes(mod.toLowerCase()) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                        <div className="relative group">
+                            {/* Left Navigation Arrow */}
+                            <button
+                                onClick={() => scrollToIndex(Math.max(0, activeIndex - 1))}
+                                disabled={activeIndex === 0}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 w-12 h-12 bg-white rounded-full shadow-lg border border-zinc-100 flex items-center justify-center text-zinc-900 hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition-all duration-300"
+                            >
+                                <ChevronLeft className="h-6 w-6 stroke-[3]" />
+                            </button>
+
+                            {/* Right Navigation Arrow */}
+                            <button
+                                onClick={() => scrollToIndex(Math.min(plans.length - 1, activeIndex + 1))}
+                                disabled={activeIndex === plans.length - 1}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 w-12 h-12 bg-white rounded-full shadow-lg border border-zinc-100 flex items-center justify-center text-zinc-900 hover:scale-110 disabled:opacity-0 disabled:pointer-events-none transition-all duration-300"
+                            >
+                                <ChevronRight className="h-6 w-6 stroke-[3]" />
+                            </button>
+
+                            <div
+                                ref={scrollRef}
+                                onScroll={handleScroll}
+                                className="flex gap-4 overflow-x-auto py-8 -mx-4 px-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overscroll-x-contain"
+                            >
+                                {/* Dynamic Plan Cards */}
+                                {plans.map((plan, index) => (
+                                    <div
+                                        key={plan.id}
+                                        onClick={() => {
+                                            setFormData({
+                                                ...formData,
+                                                plan: plan.name,
+                                                modules: plan.includedModules || []
+                                            });
+                                            scrollToIndex(index);
+                                        }}
+                                        className={cn(
+                                            "relative rounded-3xl border-2 p-6 cursor-pointer transition-all duration-500 ease-out min-w-[320px] max-w-[320px] flex-shrink-0 snap-center flex flex-col",
+                                            formData.plan === plan.name
+                                                ? "border-blue-600 bg-blue-50/20 shadow-xl shadow-blue-600/10 scale-100 opacity-100 z-10"
+                                                : "border-zinc-100 bg-white hover:border-zinc-200 shadow-sm scale-90 opacity-60 hover:opacity-100 hover:scale-95"
+                                        )}
+                                    >
+                                        {formData.plan === plan.name && (
+                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                                                Selected
+                                            </div>
+                                        )}
+                                        <h3 className="text-xl font-black text-zinc-900 text-center">{plan.name}</h3>
+                                        <div className="text-4xl font-black mt-4 text-zinc-900 text-center">
+                                            {plan.price === 0 ? "Free" : `${CURRENCY_SYMBOLS[formData.currency] || "$"}${convertPrice(plan.price, formData.currency)}`}
+                                            {plan.price > 0 && <span className="text-sm font-bold text-zinc-400">/mo</span>}
                                         </div>
-                                        <input
-                                            type="checkbox"
-                                            className="hidden"
-                                            checked={formData.modules.includes(mod.toLowerCase())}
-                                            onChange={(e) => {
-                                                const m = mod.toLowerCase();
-                                                if (e.target.checked) setFormData(p => ({ ...p, modules: [...p.modules, m] }));
-                                                else setFormData(p => ({ ...p, modules: p.modules.filter(x => x !== m) }));
-                                            }}
-                                        />
-                                        <span className="text-sm font-medium text-zinc-700">{mod}</span>
-                                    </label>
+
+                                        {/* Limits Grid */}
+                                        <div className="grid grid-cols-3 gap-2 py-6 my-6 border-y border-zinc-100">
+                                            <div className="text-center">
+                                                <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider mb-1">Students</div>
+                                                <div className="text-lg font-black text-zinc-900">{plan.limits?.maxStudents || 0}</div>
+                                            </div>
+                                            <div className="text-center border-l border-zinc-100">
+                                                <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider mb-1">Staff</div>
+                                                <div className="text-lg font-black text-zinc-900">{plan.limits?.maxStaff || 0}</div>
+                                            </div>
+                                            <div className="text-center border-l border-zinc-100">
+                                                <div className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider mb-1">Storage</div>
+                                                <div className="text-lg font-black text-zinc-900">{(plan.limits as any)?.maxStorageGB || 0}GB</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Modules List (Previously Table) */}
+                                        <div className="space-y-3 flex-1">
+                                            <p className="text-xs font-bold text-zinc-900 uppercase">Included Modules</p>
+                                            <ul className="space-y-3">
+                                                {["Admissions", "Attendance", "Billing", "Communication", "Inventory", "Transport", "Curriculum"].map((mod) => {
+                                                    const hasModule = plan.includedModules?.includes(mod.toLowerCase());
+                                                    return (
+                                                        <li key={mod} className={cn("flex items-center gap-3 text-sm font-medium", hasModule ? "text-zinc-700" : "text-zinc-300")}>
+                                                            {hasModule ? (
+                                                                <CheckCircle2 className={cn("h-5 w-5 shrink-0", plan.name === "Premium" ? "text-emerald-500" : "text-blue-600")} />
+                                                            ) : (
+                                                                <div className="h-5 w-5 rounded-full border-2 border-zinc-100 shrink-0" />
+                                                            )}
+                                                            {mod}
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+
+                                        <div className="mt-8 pt-6 border-t border-zinc-100">
+                                            <button className={cn(
+                                                "w-full py-3 rounded-xl font-bold text-sm transition-all",
+                                                formData.plan === plan.name
+                                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                                                    : "bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+                                            )}>
+                                                {formData.plan === plan.name ? "Selected Plan" : "Select Plan"}
+                                            </button>
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>
+
+
+
+
                     </div>
                 )}
             </main>

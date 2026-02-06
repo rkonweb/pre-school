@@ -99,6 +99,7 @@ export default function MasterDataPage() {
     const getParentType = (type: string) => {
         if (type === "STATE") return "COUNTRY";
         if (type === "CITY") return "STATE";
+        if (type === "SECTION") return "GRADE";
         return null;
     };
 
