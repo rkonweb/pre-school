@@ -340,7 +340,7 @@ export default function SubscriptionManagementPage() {
                 </div>
                 <Link
                     href="/admin/subscriptions/new"
-                    className="flex items-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-zinc-900/20 hover:bg-zinc-800 transition-all active:scale-95"
+                    className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 px-6 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-zinc-900/20 hover:bg-zinc-800 transition-all active:scale-95"
                 >
                     <Plus className="h-4 w-4" />
                     Create New Plan
@@ -625,3 +625,4 @@ export default function SubscriptionManagementPage() {
         </div>
     );
 }
+

@@ -105,6 +105,15 @@ export default function SettingsHubPage() {
             color: "text-indigo-600",
             bg: "bg-indigo-50",
             accent: "indigo"
+        },
+        {
+            title: "Connectors & APIs",
+            desc: "Manage system integrations like WhatsApp, SMS gateways, and Payment providers.",
+            href: `/s/${slug}/settings/integrations`,
+            icon: Zap,
+            color: "text-orange-600",
+            bg: "bg-orange-50",
+            accent: "orange"
         }
     ];
 

@@ -14,7 +14,7 @@ export default function NotFound() {
                     <div className="pt-4">
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition-all"
+                            className="inline-flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-black transition-all"
                         >
                             <MoveLeft className="h-4 w-4" />
                             Back to Home
@@ -25,3 +25,4 @@ export default function NotFound() {
         </div>
     );
 }
+

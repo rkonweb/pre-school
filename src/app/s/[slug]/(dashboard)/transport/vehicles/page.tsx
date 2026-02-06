@@ -1,42 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import {
     getVehiclesAction,
-    createVehicleAction,
-    updateVehicleAction,
     deleteVehicleAction
 } from "@/app/actions/transport-actions";
 import {
     Bus,
     Plus,
-    Edit,
     Trash,
     Loader2,
-    X,
-    MoreVertical,
-    Tool
+    Search,
+    ArrowRight,
+    ArrowLeft
 } from "lucide-react";
+import { addDays, isBefore } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export default function VehiclesPage() {
     const params = useParams();
+    const router = useRouter();
     const slug = params.slug as string;
     const [vehicles, setVehicles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-
-    // Modal State
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingVehicle, setEditingVehicle] = useState<any>(null);
-    const [formData, setFormData] = useState({
-        registrationNumber: "",
-        model: "",
-        capacity: "30",
-        status: "ACTIVE"
-    });
-    const [submitting, setSubmitting] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         fetchVehicles();
@@ -45,217 +35,196 @@ export default function VehiclesPage() {
     async function fetchVehicles() {
         setLoading(true);
         const res = await getVehiclesAction(slug);
-        if (res.success) {
+        if (res.success && res.data) {
             setVehicles(res.data);
         }
         setLoading(false);
     }
 
-    function handleOpenModal(vehicle: any = null) {
-        if (vehicle) {
-            setEditingVehicle(vehicle);
-            setFormData({
-                registrationNumber: vehicle.registrationNumber,
-                model: vehicle.model || "",
-                capacity: String(vehicle.capacity),
-                status: vehicle.status
-            });
-        } else {
-            setEditingVehicle(null);
-            setFormData({
-                registrationNumber: "",
-                model: "",
-                capacity: "30",
-                status: "ACTIVE"
-            });
-        }
-        setIsModalOpen(true);
-    }
-
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        setSubmitting(true);
-        try {
-            let res;
-            if (editingVehicle) {
-                res = await updateVehicleAction(editingVehicle.id, formData, slug);
-            } else {
-                res = await createVehicleAction(formData, slug);
-            }
-
-            if (res.success) {
-                toast.success(editingVehicle ? "Vehicle updated" : "Vehicle added");
-                setIsModalOpen(false);
-                fetchVehicles();
-            } else {
-                toast.error(res.error || "Operation failed");
-            }
-        } catch (error) {
-            toast.error("An error occurred");
-        } finally {
-            setSubmitting(false);
-        }
-    }
+    const filteredVehicles = useMemo(() => {
+        return vehicles.filter(v =>
+            v.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            v.model?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [vehicles, searchTerm]);
 
     async function handleDelete(id: string) {
-        if (!confirm("Are you sure? This will remove the vehicle.")) return;
+        if (!confirm("Are you sure? This will remove the vehicle from the fleet permanently.")) return;
         const res = await deleteVehicleAction(id, slug);
         if (res.success) {
-            toast.success("Vehicle deleted");
+            toast.success("Vehicle removed from fleet");
             fetchVehicles();
         } else {
-            toast.error(res.error || "Failed to delete");
+            toast.error(res.error || "Decommission failed");
         }
     }
 
+    const getExpiryStatus = (dateStr: string) => {
+        if (!dateStr) return "MISSING";
+        const date = new Date(dateStr);
+        const now = new Date();
+        const thirtyDaysLater = addDays(now, 30);
+
+        if (isBefore(date, now)) return "EXPIRED";
+        if (isBefore(date, thirtyDaysLater)) return "EXPIRING_SOON";
+        return "VALID";
+    };
+
     return (
-        <div className="mx-auto max-w-7xl space-y-8 p-6 md:p-8">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-black text-zinc-900">Vehicle Management</h1>
-                    <p className="text-zinc-500">Add and manage your transport fleet.</p>
+        <div className="flex flex-col gap-8 pb-20">
+            {/* Standardized Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="flex items-center gap-6">
+                    <button
+                        onClick={() => router.push(`/s/${slug}/transport`)}
+                        className="group flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white transition-all hover:border-zinc-900 active:scale-95 shadow-sm"
+                    >
+                        <ArrowLeft className="h-5 w-5 text-zinc-500 group-hover:text-zinc-900" />
+                    </button>
+                    <div>
+                        <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+                            Vehicle List
+                        </h1>
+                        <p className="text-sm text-zinc-500 font-medium mt-1">
+                            Manage your school's fleet and check vehicle status.
+                        </p>
+                    </div>
                 </div>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-xl"
+                <Link
+                    href={`/s/${slug}/transport/vehicles/new`}
+                    className="h-12 px-8 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-zinc-200 hover:bg-black hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     Add Vehicle
-                </button>
+                </Link>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            {/* Controls */}
+            <div className="flex flex-col gap-6">
+                <div className="relative group max-w-2xl">
+                    <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 group-focus-within:text-brand transition-colors" />
+                    <input
+                        type="text"
+                        placeholder="Search by registration number or model..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full h-12 rounded-2xl border border-zinc-200 bg-white pl-11 pr-4 text-sm font-medium focus:ring-2 focus:ring-brand outline-none transition-all shadow-sm dark:bg-zinc-950 dark:border-zinc-800"
+                    />
                 </div>
-            ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {vehicles.length === 0 ? (
-                        <div className="col-span-full py-12 text-center text-zinc-500">
-                            No vehicles found. Add one to get started.
+
+                {/* Asset Matrix */}
+                <div className="rounded-[32px] border border-zinc-200 bg-white shadow-xl shadow-zinc-200/40 overflow-hidden dark:bg-zinc-950 dark:border-zinc-800">
+                    {loading ? (
+                        <div className="flex h-[40vh] items-center justify-center flex-col gap-4">
+                            <Loader2 className="h-8 w-8 animate-spin text-brand" />
+                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest italic tracking-[3px]">Loading vehicles...</p>
+                        </div>
+                    ) : filteredVehicles.length === 0 ? (
+                        <div className="py-24 text-center">
+                            <div className="mx-auto h-20 w-20 rounded-[24px] bg-zinc-50 flex items-center justify-center mb-6 dark:bg-zinc-900">
+                                <Bus className="h-8 w-8 text-zinc-200" />
+                            </div>
+                            <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight dark:text-zinc-50">No Vehicles Found</h3>
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2 max-w-xs mx-auto leading-relaxed">Add your first vehicle to start managing the fleet.</p>
                         </div>
                     ) : (
-                        vehicles.map((vehicle) => (
-                            <div key={vehicle.id} className="group relative flex flex-col justify-between rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-100 transition-all hover:scale-[1.01] hover:shadow-md">
-                                <div className="space-y-4">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                                                <Bus className="h-6 w-6" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-zinc-900">{vehicle.registrationNumber}</h3>
-                                                <p className="text-xs font-medium text-zinc-500">{vehicle.model || "Unknown Model"}</p>
-                                            </div>
-                                        </div>
-                                        <div className={cn(
-                                            "rounded-full px-2 py-1 text-[10px] font-bold uppercase",
-                                            vehicle.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700" :
-                                                vehicle.status === "MAINTENANCE" ? "bg-amber-100 text-amber-700" : "bg-zinc-100 text-zinc-500"
-                                        )}>
-                                            {vehicle.status}
-                                        </div>
-                                    </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm border-collapse">
+                                <thead className="bg-zinc-50/50 text-zinc-400 uppercase text-[10px] font-black tracking-widest border-b border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800">
+                                    <tr>
+                                        <th className="px-8 py-5">Vehicle Info</th>
+                                        <th className="px-8 py-5">Capacity</th>
+                                        <th className="px-8 py-5">Status</th>
+                                        <th className="px-8 py-5">Documents</th>
+                                        <th className="px-8 py-5 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                                    {filteredVehicles.map((vehicle) => {
+                                        const complianceStatus = [
+                                            getExpiryStatus(vehicle.insuranceExpiry),
+                                            getExpiryStatus(vehicle.pollutionExpiry),
+                                            getExpiryStatus(vehicle.fitnessExpiry),
+                                            getExpiryStatus(vehicle.permitExpiry)
+                                        ];
 
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
-                                        <div className="rounded-lg bg-zinc-50 p-2 text-center">
-                                            <span className="block text-[10px] font-bold uppercase text-zinc-400">Capacity</span>
-                                            <span className="font-bold text-zinc-900">{vehicle.capacity} Seats</span>
-                                        </div>
-                                        <div className="rounded-lg bg-zinc-50 p-2 text-center">
-                                            <span className="block text-[10px] font-bold uppercase text-zinc-400">Routes</span>
-                                            <span className="font-bold text-zinc-900">{vehicle._count?.routes || 0}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                        const isCritical = complianceStatus.some(s => s === "EXPIRED");
 
-                                <div className="mt-6 flex items-center justify-end gap-2 border-t border-zinc-50 pt-4 opacity-0 transition-opacity group-hover:opacity-100">
-                                    <button
-                                        onClick={() => handleOpenModal(vehicle)}
-                                        className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
-                                    >
-                                        <Edit className="h-3.5 w-3.5" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(vehicle.id)}
-                                        className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
-                                    >
-                                        <Trash className="h-3.5 w-3.5" />
-                                    </button>
-                                </div>
-                            </div>
-                        ))
+                                        return (
+                                            <tr key={vehicle.id} className="group hover:bg-zinc-50/80 transition-all dark:hover:bg-zinc-900/50">
+                                                <td className="px-8 py-6">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                                                            <Bus className="h-5 w-5" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-black text-zinc-900 uppercase tracking-tight text-base dark:text-zinc-50">
+                                                                {vehicle.registrationNumber}
+                                                            </div>
+                                                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">
+                                                                {vehicle.model || "Normal"}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <div className="space-y-1">
+                                                        <div className="text-sm font-black text-zinc-900 dark:text-zinc-50">{vehicle.capacity} Seats</div>
+                                                        <div className="text-[9px] font-black text-zinc-300 uppercase tracking-widest">Capacity</div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <span className={cn(
+                                                        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm",
+                                                        isCritical
+                                                            ? "bg-red-50 text-red-600 border-red-100 dark:bg-red-500/10 dark:border-red-500/20"
+                                                            : "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20"
+                                                    )}>
+                                                        <div className={cn("h-1 w-1 rounded-full", isCritical ? "bg-red-600 animate-pulse" : "bg-emerald-600")} />
+                                                        {isCritical ? "Issue Found" : "Ready"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <div className="flex gap-1.5">
+                                                        {complianceStatus.map((s, idx) => (
+                                                            <div
+                                                                key={idx}
+                                                                className={cn(
+                                                                    "h-2 w-6 rounded-full shadow-inner ring-1 ring-inset ring-black/5",
+                                                                    s === "VALID" ? "bg-emerald-400" :
+                                                                        s === "EXPIRING_SOON" ? "bg-amber-400" :
+                                                                            "bg-red-500"
+                                                                )}
+                                                                title={s}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <Link
+                                                            href={`/s/${slug}/transport/vehicles/${vehicle.id}`}
+                                                            className="h-9 w-9 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand hover:shadow-lg transition-all shadow-sm dark:bg-zinc-900 dark:border-zinc-800"
+                                                        >
+                                                            <ArrowRight className="h-4 w-4" />
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => handleDelete(vehicle.id)}
+                                                            className="h-9 w-9 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-red-600 hover:border-red-200 hover:shadow-lg transition-all shadow-sm dark:bg-zinc-900 dark:border-zinc-800"
+                                                        >
+                                                            <Trash className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
-            )}
-
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4 backdrop-blur-sm">
-                    <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-                        <div className="mb-6 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-zinc-900">
-                                {editingVehicle ? "Edit Vehicle" : "Add Vehicle"}
-                            </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="rounded-full p-2 hover:bg-zinc-100">
-                                <X className="h-5 w-5 text-zinc-500" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="mb-1 block text-sm font-medium text-zinc-700">Registration Number</label>
-                                <input
-                                    required
-                                    type="text"
-                                    className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
-                                    value={formData.registrationNumber}
-                                    onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium text-zinc-700">Model</label>
-                                    <input
-                                        type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
-                                        value={formData.model}
-                                        onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium text-zinc-700">Capacity</label>
-                                    <input
-                                        required
-                                        type="number"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
-                                        value={formData.capacity}
-                                        onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="mb-1 block text-sm font-medium text-zinc-700">Status</label>
-                                <select
-                                    className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
-                                    value={formData.status}
-                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                >
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="MAINTENANCE">Maintenance</option>
-                                    <option value="INACTIVE">Inactive</option>
-                                </select>
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={submitting}
-                                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 disabled:opacity-50"
-                            >
-                                {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                                {editingVehicle ? "Update Vehicle" : "Add Vehicle"}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            </div>
         </div>
     );
 }

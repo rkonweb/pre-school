@@ -12,8 +12,15 @@ import {
     Settings2,
     X,
     LayoutGrid,
-    Check
+    Check,
+    Bus,
+    Clock,
+    TrendingUp,
+    AlertCircle,
+    ChevronRight,
+    Search
 } from "lucide-react";
+import { AuraAI } from "./AuraAI";
 import {
     DndContext,
     closestCenter,
@@ -46,6 +53,8 @@ interface DashboardWidget {
 
 const DEFAULT_WIDGETS: DashboardWidget[] = [
     { id: "stats-grid", title: "Summary Stats", type: "stats", enabled: true },
+    { id: "transport-ops", title: "Transport Ops", type: "events", enabled: true },
+    { id: "academic-performance", title: "Academic Insights", type: "chart", enabled: true },
     { id: "recent-activity", title: "Recent Activity", type: "list", enabled: true },
     { id: "upcoming-events", title: "Upcoming Events", type: "events", enabled: true },
     { id: "revenue-collection", title: "Revenue Breakdown", type: "list", enabled: true },
@@ -169,7 +178,9 @@ export function DashboardClient() {
     }
 
     return (
-        <div className="flex flex-col gap-8 pb-20">
+        <div className="flex flex-col gap-10 pb-20">
+            {/* AI Assistant - Aura */}
+            <AuraAI insights={statsData?.aiInsights || []} />
             {/* Header Area */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -186,7 +197,7 @@ export function DashboardClient() {
                     className={cn(
                         "flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-xl shadow-zinc-200/50 active:scale-95",
                         isConfiguring
-                            ? "bg-zinc-900 text-white hover:bg-black"
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
                             : "bg-white text-zinc-600 border border-zinc-200 hover:border-blue-600 hover:text-blue-600"
                     )}
                 >
@@ -198,18 +209,15 @@ export function DashboardClient() {
             {/* Config Overlay / Modal */}
             <AnimatePresence>
                 {isConfiguring && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="bg-zinc-900 text-white p-6 rounded-[32px] shadow-2xl space-y-4"
+                    <div
+                        className="bg-white border border-zinc-200 text-zinc-900 p-6 rounded-[32px] shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-4 duration-300"
                     >
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-black flex items-center gap-2">
                                 <LayoutGrid className="h-5 w-5 text-blue-500" />
                                 Toggle Dashboard Widgets
                             </h2>
-                            <button onClick={() => setIsConfiguring(false)} className="text-zinc-500 hover:text-white">
+                            <button onClick={() => setIsConfiguring(false)} className="text-zinc-400 hover:text-zinc-900">
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
@@ -221,8 +229,8 @@ export function DashboardClient() {
                                     className={cn(
                                         "px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-between gap-2 border-2",
                                         w.enabled
-                                            ? "bg-blue-500/10 border-blue-500 text-blue-500"
-                                            : "bg-white/5 border-white/10 text-zinc-500 hover:border-white/20"
+                                            ? "bg-blue-50 border-blue-500 text-blue-600"
+                                            : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:border-zinc-200"
                                     )}
                                 >
                                     {w.title}
@@ -235,7 +243,7 @@ export function DashboardClient() {
                                 </button>
                             ))}
                         </div>
-                    </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
 
@@ -306,6 +314,105 @@ function renderWidgetContent(id: string, data: any) {
                 </div>
             );
 
+        case "transport-ops":
+            return (
+                <div className="grid md:grid-cols-2 gap-8">
+                    <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-xl font-black flex items-center gap-3 italic">
+                                <Bus className="h-5 w-5 text-emerald-600" />
+                                Transport Status
+                            </h3>
+                            <div className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100">
+                                Global Pulse
+                            </div>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between p-6 rounded-2xl bg-zinc-50 border border-zinc-100 transition-all hover:bg-white hover:shadow-lg hover:-translate-y-1">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Active Fleet</p>
+                                    <p className="text-2xl font-black text-zinc-900">12 Routes</p>
+                                </div>
+                                <div className="h-12 w-12 rounded-xl bg-white border border-zinc-100 flex items-center justify-center">
+                                    <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between p-6 rounded-2xl bg-rose-50 border border-rose-100 group transition-all cursor-pointer hover:shadow-xl hover:shadow-rose-100/50">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Service Delay</p>
+                                    <p className="text-2xl font-black text-rose-600">{stats.delayedRoutes || 1} Vehicle(s)</p>
+                                </div>
+                                <div className="h-12 w-12 rounded-xl bg-white border border-rose-100 flex items-center justify-center text-rose-500 italic">
+                                    <Clock className="h-5 w-5 animate-pulse" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm overflow-hidden relative group hover:shadow-xl hover:shadow-blue-500/5 transition-all">
+                        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-500/5 blur-[80px]" />
+                        <div className="relative z-10 flex flex-col h-full justify-between">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="space-y-1">
+                                    <h3 className="text-xl font-black text-zinc-900 italic">Live Telemetry</h3>
+                                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Real-time GPS clusters</p>
+                                </div>
+                                <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                                    <ChevronRight className="h-5 w-5" />
+                                </button>
+                            </div>
+                            <div className="space-y-4">
+                                {[
+                                    { route: "R-NW-12", status: "Moving", speed: "42 km/h", color: "bg-emerald-500" },
+                                    { route: "R-ES-04", status: "Traffic", speed: "12 km/h", color: "bg-amber-500" }
+                                ].map((r, i) => (
+                                    <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-100/50">
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn("h-2 w-2 rounded-full", r.color)} />
+                                            <span className="text-xs font-black text-zinc-600 tracking-wider font-mono">{r.route}</span>
+                                        </div>
+                                        <span className="text-[10px] font-bold text-zinc-400 uppercase italic">{r.status} • {r.speed}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+        case "academic-performance":
+            return (
+                <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm">
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600">
+                                <TrendingUp className="h-5 w-5" />
+                            </div>
+                            <h3 className="text-xl font-black">Academic Achievement Cluster</h3>
+                        </div>
+                        <div className="flex gap-2">
+                            <button className="px-5 py-2 rounded-xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">Detailed Exams</button>
+                        </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-4 gap-6">
+                        {(data?.academicPerformance || [
+                            { title: "Mid Term", avg: "82%", trend: "up" },
+                            { title: "Unit Test-I", avg: "78%", trend: "stable" }
+                        ]).map((perf: any, i: number) => (
+                            <div key={i} className="p-6 rounded-3xl border border-zinc-100 bg-zinc-50/50 group hover:bg-white hover:border-violet-200 hover:shadow-xl hover:shadow-violet-100/50 transition-all cursor-pointer">
+                                <div className="flex items-center justify-between mb-4">
+                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{perf.title}</span>
+                                    {perf.trend === "up" ? <TrendingUp className="h-4 w-4 text-emerald-500" /> : <Activity className="h-4 w-4 text-amber-500" />}
+                                </div>
+                                <p className="text-4xl font-black text-zinc-900 group-hover:text-violet-600 transition-colors uppercase tracking-tighter">{perf.avg}</p>
+                                <p className="text-[10px] text-zinc-500 font-bold mt-2 font-mono italic">Avg Cohort Performance</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
         case "recent-activity":
             return (
                 <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
@@ -365,7 +472,7 @@ function renderWidgetContent(id: string, data: any) {
                 <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                     <div className="flex items-center justify-between border-b border-zinc-100 pb-6 dark:border-zinc-800">
                         <h3 className="text-xl font-black">Revenue Analytics</h3>
-                        <div className="px-3 py-1.5 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Yearly Performance</div>
+                        <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100">Yearly Performance</div>
                     </div>
                     <div className="mt-8 flex flex-col md:flex-row gap-12 items-center">
                         <div className="relative h-40 w-40 flex items-center justify-center">

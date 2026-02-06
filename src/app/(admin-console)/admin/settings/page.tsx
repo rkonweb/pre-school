@@ -302,7 +302,7 @@ export default function AdminSettingsPage() {
                 {/* Infrastructure Stats Column */}
                 <div className="space-y-8">
                     {/* Backups */}
-                    <div className="rounded-[2.5rem] bg-zinc-900 p-8 text-white shadow-2xl shadow-zinc-900/40">
+                    <div className="rounded-[2.5rem] bg-blue-600 p-8 text-white shadow-2xl shadow-zinc-900/40">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="h-12 w-12 rounded-3xl bg-white/10 flex items-center justify-center text-emerald-400 ring-8 ring-white/5">
                                 <Database className="h-6 w-6" />

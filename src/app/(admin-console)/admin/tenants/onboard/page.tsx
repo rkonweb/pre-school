@@ -222,7 +222,7 @@ export default function OnboardSchoolPage() {
             {/* Wizard Header */}
             <header className="bg-white border-b border-zinc-100 px-8 py-4 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 bg-zinc-900 rounded-lg flex items-center justify-center text-white font-bold shadow-md shadow-zinc-900/10">
+                    <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md shadow-zinc-900/10">
                         <Building2 className="h-4 w-4" />
                     </div>
                     <div>
@@ -791,7 +791,7 @@ export default function OnboardSchoolPage() {
                     {step < 4 ? (
                         <button
                             onClick={handleNext}
-                            className="flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-3 font-bold text-white hover:bg-black transition-all shadow-lg shadow-zinc-900/10"
+                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 font-bold text-white hover:bg-black transition-all shadow-lg shadow-zinc-900/10"
                         >
                             Continue
                             <ArrowRight className="h-4 w-4" />

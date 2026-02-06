@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -69,6 +69,9 @@ model School {
   
   // Academics & Progress
   exams             Exam[]
+  
+  // Integrations (WhatsApp, SMS, Payments etc) - JSON String
+  integrationsConfig String?        @default("{}")
 }
 
 model Admission {
@@ -947,6 +950,24 @@ model TransportVehicle {
   status            String   @default("ACTIVE") // ACTIVE, MAINTENANCE, INACTIVE
   gpsDeviceId       String?  // For future integration
   
+  // Compliance Documents
+  insuranceNumber   String?
+  insuranceExpiry   DateTime?
+  insuranceDocUrl   String?
+  
+  pollutionNumber   String?
+  pollutionExpiry   DateTime?
+  pollutionDocUrl   String?
+  
+  fitnessExpiry     DateTime?
+  fitnessDocUrl     String?
+  
+  permitNumber      String?
+  permitExpiry      DateTime?
+  permitDocUrl      String?
+  
+  rcDocUrl          String?
+
   routes            TransportRoute[]
   maintenanceLogs   TransportMaintenance[]
 
@@ -1109,6 +1130,8 @@ model Exam {
   classrooms    String   @default("[]") // JSON Array of classroom IDs
   subjects      String   @default("[]") // JSON Array of subject names
   maxMarks      Float    @default(100)
+  minMarks      Float    @default(0)
+  questionPaperUrl String?
   gradingSystem String   @default("MARKS") // MARKS, GRADES
   schoolId      String
   createdById   String
@@ -1125,6 +1148,7 @@ model ExamResult {
   id        String   @id @default(cuid())
   marks     Float?
   grade     String?
+  status    String? // PASSED, FAILED
   remarks   String?
   subject   String? 
   examId    String

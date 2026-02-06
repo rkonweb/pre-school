@@ -727,7 +727,7 @@ export default function EditTenantPage() {
                         </div>
 
                         {/* Real-time MRR Calculator Widget */}
-                        <div className="bg-zinc-900 rounded-[32px] p-8 mb-8 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-in zoom-in-95 duration-500">
+                        <div className="bg-blue-600 rounded-[32px] p-8 mb-8 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-in zoom-in-95 duration-500">
                             <div>
                                 <div className="flex items-center gap-2 text-blue-400 mb-2">
                                     <Crown className="h-4 w-4" />
@@ -913,7 +913,7 @@ export default function EditTenantPage() {
                                         className={cn(
                                             "flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer",
                                             formData.addons.includes(addon.id)
-                                                ? "bg-zinc-900 border-zinc-900 text-white shadow-xl scale-[1.02]"
+                                                ? "bg-blue-600 border-zinc-900 text-white shadow-xl scale-[1.02]"
                                                 : "bg-white border-zinc-100 hover:border-zinc-200 text-zinc-600"
                                         )}
                                     >
@@ -977,7 +977,7 @@ export default function EditTenantPage() {
                     {step < 4 ? (
                         <button
                             onClick={handleNext}
-                            className="flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-3 font-bold text-white hover:bg-black transition-all shadow-lg shadow-zinc-900/10"
+                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 font-bold text-white hover:bg-black transition-all shadow-lg shadow-zinc-900/10"
                         >
                             Continue
                             <ArrowRight className="h-4 w-4" />

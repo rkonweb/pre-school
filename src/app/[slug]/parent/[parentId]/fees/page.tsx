@@ -222,7 +222,7 @@ export default function FeesPage() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative overflow-hidden bg-zinc-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-zinc-900/20"
+                className="relative overflow-hidden bg-blue-600 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-zinc-900/20"
             >
                 {isSwitching && (
                     <div className="absolute inset-0 bg-zinc-900/50 backdrop-blur-sm z-20 flex items-center justify-center">

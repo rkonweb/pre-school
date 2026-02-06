@@ -18,6 +18,25 @@ export async function getVehiclesAction(schoolSlug: string) {
     }
 }
 
+export async function getVehicleAction(id: string, schoolSlug: string) {
+    try {
+        const vehicle = await prisma.transportVehicle.findUnique({
+            where: { id },
+            include: {
+                maintenanceLogs: {
+                    orderBy: { date: 'desc' }
+                },
+                _count: {
+                    select: { routes: true }
+                }
+            }
+        });
+        return { success: true, data: vehicle };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function createVehicleAction(data: any, schoolSlug: string) {
     try {
         const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
@@ -29,7 +48,24 @@ export async function createVehicleAction(data: any, schoolSlug: string) {
                 model: data.model,
                 capacity: parseInt(data.capacity),
                 status: data.status,
-                schoolId: school.id
+                schoolId: school.id,
+
+                insuranceNumber: data.insuranceNumber,
+                insuranceExpiry: data.insuranceExpiry ? new Date(data.insuranceExpiry) : null,
+                insuranceDocUrl: data.insuranceDocUrl,
+
+                pollutionNumber: data.pollutionNumber,
+                pollutionExpiry: data.pollutionExpiry ? new Date(data.pollutionExpiry) : null,
+                pollutionDocUrl: data.pollutionDocUrl,
+
+                fitnessExpiry: data.fitnessExpiry ? new Date(data.fitnessExpiry) : null,
+                fitnessDocUrl: data.fitnessDocUrl,
+
+                permitNumber: data.permitNumber,
+                permitExpiry: data.permitExpiry ? new Date(data.permitExpiry) : null,
+                permitDocUrl: data.permitDocUrl,
+
+                rcDocUrl: data.rcDocUrl
             }
         });
         revalidatePath(`/s/${schoolSlug}/transport/vehicles`);
@@ -48,6 +84,23 @@ export async function updateVehicleAction(id: string, data: any, schoolSlug: str
                 model: data.model,
                 capacity: parseInt(data.capacity),
                 status: data.status,
+
+                insuranceNumber: data.insuranceNumber,
+                insuranceExpiry: data.insuranceExpiry ? new Date(data.insuranceExpiry) : null,
+                insuranceDocUrl: data.insuranceDocUrl,
+
+                pollutionNumber: data.pollutionNumber,
+                pollutionExpiry: data.pollutionExpiry ? new Date(data.pollutionExpiry) : null,
+                pollutionDocUrl: data.pollutionDocUrl,
+
+                fitnessExpiry: data.fitnessExpiry ? new Date(data.fitnessExpiry) : null,
+                fitnessDocUrl: data.fitnessDocUrl,
+
+                permitNumber: data.permitNumber,
+                permitExpiry: data.permitExpiry ? new Date(data.permitExpiry) : null,
+                permitDocUrl: data.permitDocUrl,
+
+                rcDocUrl: data.rcDocUrl
             }
         });
         revalidatePath(`/s/${schoolSlug}/transport/vehicles`);
@@ -196,24 +249,46 @@ export async function searchStudentsForTransportAction(query: string, schoolSlug
     }
 }
 
-export async function assignStudentToRouteAction(studentId: string, routeId: string, pickupStopId: string, dropStopId: string, schoolSlug: string) {
+export async function assignStudentToRouteAction(studentId: string, routeId: string, pickupStopId: string, dropStopId: string, schoolSlug: string, transportFee: number = 0) {
     try {
-        // Upsert profile
-        await prisma.studentTransportProfile.upsert({
+        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
+        if (!school) throw new Error("School not found");
+
+        // 1. Upsert profile
+        const profile = await prisma.studentTransportProfile.upsert({
             where: { studentId },
             create: {
                 studentId,
                 routeId,
                 pickupStopId,
-                dropStopId
+                dropStopId,
+                transportFee
             },
             update: {
                 routeId,
                 pickupStopId,
-                dropStopId
+                dropStopId,
+                transportFee
             }
         });
+
+        // 2. Integration: Fee Module
+        // If fee is > 0, create a pending fee for the student
+        if (transportFee > 0) {
+            await prisma.fee.create({
+                data: {
+                    title: `Transport Fee - ${new Date().toLocaleString('default', { month: 'long' })}`,
+                    amount: transportFee,
+                    dueDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 5), // 5th of next month
+                    status: "PENDING",
+                    studentId,
+                    description: `Assigned to route: ${routeId}`
+                }
+            });
+        }
+
         revalidatePath(`/s/${schoolSlug}/transport/assignments`);
+        revalidatePath(`/s/${schoolSlug}/students/${studentId}`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -232,25 +307,67 @@ export async function removeStudentFromTransportAction(studentId: string, school
 
 // --- Dashboard ---
 
-export async function getTransportStatsAction(schoolSlug: string) {
+export async function getTransportDashboardDataAction(schoolSlug: string) {
     try {
         const school = await prisma.school.findUnique({ where: { slug: schoolSlug }, select: { id: true } });
-        if (!school) return { success: false };
+        if (!school) return { success: false, error: "School not found" };
 
-        const [vehicles, drivers, routes, studentsOnTransport] = await Promise.all([
+        const [vehicles, drivers, routes, studentsOnTransport, allVehicles, topDrivers] = await Promise.all([
             prisma.transportVehicle.count({ where: { schoolId: school.id } }),
             prisma.transportDriver.count({ where: { schoolId: school.id } }),
             prisma.transportRoute.count({ where: { schoolId: school.id } }),
-            prisma.studentTransportProfile.count({ where: { student: { schoolId: school.id } } }) // Ensure student belongs to school
+            prisma.studentTransportProfile.count({ where: { student: { schoolId: school.id } } }),
+            prisma.transportVehicle.findMany({
+                where: { schoolId: school.id },
+                select: {
+                    id: true,
+                    registrationNumber: true,
+                    insuranceExpiry: true,
+                    pollutionExpiry: true,
+                    fitnessExpiry: true,
+                    permitExpiry: true
+                }
+            }),
+            prisma.transportDriver.findMany({
+                where: { schoolId: school.id },
+                take: 3,
+                orderBy: { updatedAt: 'desc' }
+            })
         ]);
+
+        // Generate Real-time Alerts based on compliance data
+        const alerts: any[] = [];
+        const today = new Date();
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+        allVehicles.forEach((v: any) => {
+            if (v.insuranceExpiry && new Date(v.insuranceExpiry) < thirtyDaysFromNow) {
+                alerts.push({
+                    id: `ins-${v.id}`,
+                    type: "CRITICAL",
+                    title: "Insurance Expiry",
+                    asset: v.registrationNumber,
+                    date: v.insuranceExpiry
+                });
+            }
+            if (v.pollutionExpiry && new Date(v.pollutionExpiry) < today) {
+                alerts.push({
+                    id: `pol-${v.id}`,
+                    type: "EXPIRED",
+                    title: "Pollution Certificate",
+                    asset: v.registrationNumber,
+                    date: v.pollutionExpiry
+                });
+            }
+        });
 
         return {
             success: true,
             data: {
-                vehicles,
-                drivers,
-                routes,
-                studentsOnTransport
+                stats: { vehicles, drivers, routes, studentsOnTransport },
+                alerts: alerts.slice(0, 5),
+                topDrivers
             }
         };
     } catch (error: any) {

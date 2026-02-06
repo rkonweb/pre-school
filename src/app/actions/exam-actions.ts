@@ -13,6 +13,8 @@ export async function createExamAction(schoolSlug: string, data: {
     classrooms: string[]; // List of IDs
     subjects?: string[]; // List of Subject Names
     maxMarks: number;
+    minMarks?: number;
+    questionPaperUrl?: string;
     description?: string;
     gradingSystem?: string;
 }) {
@@ -33,6 +35,8 @@ export async function createExamAction(schoolSlug: string, data: {
                 classrooms: JSON.stringify(data.classrooms),
                 subjects: JSON.stringify(data.subjects || []),
                 maxMarks: data.maxMarks,
+                minMarks: data.minMarks || 0,
+                questionPaperUrl: data.questionPaperUrl,
                 description: data.description,
                 gradingSystem: data.gradingSystem || "MARKS",
                 school: { connect: { slug: schoolSlug } },
@@ -98,6 +102,49 @@ export async function deleteExamAction(schoolSlug: string, examId: string) {
         });
         revalidatePath(`/s/${schoolSlug}/students/reports`);
         return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function updateExamAction(schoolSlug: string, examId: string, data: {
+    title: string;
+    date: Date;
+    type: string;
+    category: string;
+    classrooms: string[];
+    subjects?: string[];
+    maxMarks: number;
+    minMarks?: number;
+    questionPaperUrl?: string; // Added
+    description?: string;
+    gradingSystem?: string;
+}) {
+    try {
+        const userRes = await getCurrentUserAction();
+        if (!userRes.success || !userRes.data) return { success: false, error: "Unauthorized" };
+
+        const exam = await prisma.exam.update({
+            where: { id: examId },
+            data: {
+                title: data.title,
+                date: data.date,
+                type: data.type,
+                category: data.category,
+                classrooms: JSON.stringify(data.classrooms),
+                subjects: JSON.stringify(data.subjects || []),
+                maxMarks: data.maxMarks,
+                minMarks: data.minMarks || 0,
+                questionPaperUrl: data.questionPaperUrl, // Added
+                description: data.description,
+                gradingSystem: data.gradingSystem || "MARKS",
+                updatedAt: new Date()
+            }
+        });
+
+        revalidatePath(`/s/${schoolSlug}/students/reports`);
+        revalidatePath(`/s/${schoolSlug}/students/reports/${examId}`);
+        return { success: true, data: exam };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

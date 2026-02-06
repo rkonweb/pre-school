@@ -139,7 +139,7 @@ export default function StudentsPage() {
                 {canCreate && (
                     <button
                         onClick={() => setIsAddStudentOpen(true)}
-                        className="h-12 px-6 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
+                        className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
                     >
                         <Plus className="h-4 w-4" />
                         Add Student

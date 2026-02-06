@@ -166,7 +166,7 @@ export default function ProfilePage() {
                 ) : (
                     <div className="space-y-6">
                         {/* Parent Profile View */}
-                        <div className="bg-zinc-900 rounded-[40px] p-10 text-white shadow-2xl relative overflow-hidden">
+                        <div className="bg-blue-600 rounded-[40px] p-10 text-white shadow-2xl relative overflow-hidden">
                             <div className="relative z-10 flex items-center gap-6">
                                 <div className="h-20 w-20 rounded-full bg-white/10 flex items-center justify-center text-3xl font-black">
                                     {profile?.firstName?.[0] || 'P'}

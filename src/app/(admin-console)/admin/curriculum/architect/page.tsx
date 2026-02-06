@@ -468,7 +468,7 @@ function DayEditor({ selectedClass, date }: { selectedClass: any, date: Date }) 
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="h-12 px-8 rounded-2xl bg-zinc-900 text-white text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl flex items-center gap-2 disabled:opacity-50"
+                        className="h-12 px-8 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl flex items-center gap-2 disabled:opacity-50"
                     >
                         {isSaving ? <Clock className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         Save Architecture
@@ -994,3 +994,4 @@ function ContentBlock({ data, onChange, readOnly }: { data: any, onChange: (d: a
         </div>
     );
 }
+

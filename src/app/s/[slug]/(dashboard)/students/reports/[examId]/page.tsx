@@ -11,7 +11,7 @@ import { getExamByIdAction } from "@/app/actions/exam-actions";
 import { getExamResultsAction, recordMarksAction } from "@/app/actions/result-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
-import { getStudentsByClassroomAction } from "@/app/actions/student-actions"; // Need this action
+
 import { toast } from "sonner";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -32,7 +32,8 @@ export default function MarksEntryPage() {
 
     // Data State
     const [students, setStudents] = useState<any[]>([]);
-    const [marksData, setMarksData] = useState<any>({}); // { studentId: { marks, grade, remarks } }
+    // Structure: { studentId: { subjectName: { marks, grade, status, remarks } } }
+    const [marksData, setMarksData] = useState<Record<string, Record<string, { marks: string, grade: string, status: string, remarks: string }>>>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -41,10 +42,10 @@ export default function MarksEntryPage() {
     }, []);
 
     useEffect(() => {
-        if (selectedClassId && selectedSubject) {
+        if (selectedClassId) {
             loadStudentMarks();
         }
-    }, [selectedClassId, selectedSubject]);
+    }, [selectedClassId]);
 
     const loadInitialData = async () => {
         setLoading(true);
@@ -54,12 +55,37 @@ export default function MarksEntryPage() {
             getClassroomsAction(slug)
         ]);
 
-        if (examRes.success) {
+        if (examRes.success && examRes.data) {
             setExam(examRes.data);
+
+            // Handle Subjects: Prioritize exam specific subjects
+            let availableSubjects: any[] = [];
+            try {
+                const examSubjects = JSON.parse(examRes.data.subjects || "[]");
+                if (Array.isArray(examSubjects) && examSubjects.length > 0) {
+                    availableSubjects = examSubjects.map((name: string, i: number) => ({
+                        id: `exam-sub-${i}`,
+                        name
+                    }));
+                }
+            } catch (e) {
+                console.error("Error parsing exam subjects", e);
+            }
+
+            // Fallback to master data if no specific subjects defined
+            if (availableSubjects.length === 0 && subjectsRes.success) {
+                availableSubjects = subjectsRes.data || [];
+            }
+
+            setSubjects(availableSubjects);
+            if (availableSubjects.length > 0) {
+                setSelectedSubject(availableSubjects[0].name);
+            }
+
             // Parse exam.classrooms to filter classesRes
             try {
                 const allowedIds = JSON.parse(examRes.data.classrooms || "[]");
-                if (classesRes.success) {
+                if (classesRes.success && classesRes.data) {
                     const filtered = classesRes.data.filter((c: any) => allowedIds.includes(c.id));
                     setClassrooms(filtered);
                     if (filtered.length > 0) setSelectedClassId(filtered[0].id);
@@ -69,34 +95,15 @@ export default function MarksEntryPage() {
             }
         }
 
-        if (subjectsRes.success) setSubjects(subjectsRes.data);
         setLoading(false);
     };
 
     const loadStudentMarks = async () => {
         setLoading(true);
-        // Fetch Students
-        // We need a server action to get students by class. Using existing or importing.
-        // Assuming we might need to import it or use a raw fetch if not available.
-        // Let's assume getStudentsByClassroomAction exists or we create it.
-        // I'll use a direct fetch or existing action.
-
-        // Fetch Results
+        // Fetch Results for ALL subjects in this class
         const resultsRes = await getExamResultsAction(examId, selectedClassId);
 
-        // Fetch Students
-        // Temporary: Using getStudentsByClassroomAction which I assume exists or needs creation.
-        // Since I haven't checked student-actions.ts for this specific filtered call, I'll rely on the one I'll create/verify.
-        // Actually, let's use a known pattern or verify.
-        // For now, I'll assume I can import it. If it fails, I'll fix.
-        // To be safe, let's use a server action I KNOW exists or generic query.
-        // I'll add `getStudentsByClassroomAction` to `student-actions.ts` if needed.
-
-        // Wait, I can't modify student-actions.ts in this file.
-        // I will use `getClassroomAction(selectedClassId)` which returns students!
-        const classRes = await getClassroomsAction(slug);
-        // Wait, getClassroomsAction returns all. getClassroomAction(id) returns single with students.
-        // Import `getClassroomAction` from classroom-actions.ts
+        // Fetch Class Students
         const { getClassroomAction } = await import("@/app/actions/classroom-actions");
         const clsRes = await getClassroomAction(selectedClassId);
 
@@ -104,16 +111,22 @@ export default function MarksEntryPage() {
             setStudents(clsRes.classroom.students);
 
             // Map existing results
-            const initialMarks: any = {};
-            if (resultsRes.success) {
+            const initialMarks: Record<string, Record<string, { marks: string, grade: string, status: string, remarks: string }>> = {};
+
+            // Initialize empty structure for all students
+            clsRes.classroom.students.forEach((s: any) => {
+                initialMarks[s.id] = {};
+            });
+
+            if (resultsRes.success && resultsRes.data) {
                 resultsRes.data.forEach((r: any) => {
-                    if (r.subject === selectedSubject) {
-                        initialMarks[r.studentId] = {
-                            marks: r.marks?.toString() || "",
-                            grade: r.grade || "",
-                            remarks: r.remarks || ""
-                        };
-                    }
+                    if (!initialMarks[r.studentId]) initialMarks[r.studentId] = {};
+                    initialMarks[r.studentId][r.subject] = {
+                        marks: r.marks?.toString() || "",
+                        grade: r.grade || "",
+                        status: r.status || "",
+                        remarks: r.remarks || ""
+                    };
                 });
             }
             setMarksData(initialMarks);
@@ -121,25 +134,69 @@ export default function MarksEntryPage() {
         setLoading(false);
     };
 
-    const handleMarkChange = (studentId: string, field: string, value: string) => {
-        setMarksData((prev: any) => ({
-            ...prev,
-            [studentId]: {
-                ...prev[studentId],
-                [field]: value
+    const calculateGrade = (marks: number, maxMarks: number) => {
+        if (!maxMarks || maxMarks === 0) return "";
+        const percentage = (marks / maxMarks) * 100;
+
+        if (percentage >= 90) return "A+";
+        if (percentage >= 80) return "A";
+        if (percentage >= 70) return "B+";
+        if (percentage >= 60) return "B";
+        if (percentage >= 50) return "C";
+        if (percentage >= 40) return "D";
+        return "E";
+    };
+
+    const calculateStatus = (marks: number, minMarks: number) => {
+        if (marks >= minMarks) return "PASSED";
+        return "FAILED";
+    };
+
+    const handleMarkChange = (studentId: string, subject: string, field: 'marks' | 'grade' | 'status' | 'remarks', value: string) => {
+        setMarksData((prev) => {
+            const currentSub = prev[studentId]?.[subject] || { marks: "", grade: "", status: "", remarks: "" };
+            let updated = { ...currentSub, [field]: value };
+
+            if (field === 'marks') {
+                const numVal = parseFloat(value);
+                if (value !== "" && !isNaN(numVal) && exam?.maxMarks) {
+                    updated.grade = calculateGrade(numVal, exam.maxMarks);
+                    updated.status = calculateStatus(numVal, exam.minMarks || 0);
+                } else {
+                    updated.grade = "";
+                    updated.status = "";
+                }
             }
-        }));
+
+            return {
+                ...prev,
+                [studentId]: {
+                    ...prev[studentId],
+                    [subject]: updated
+                }
+            };
+        });
     };
 
     const handleSave = async () => {
         setSaving(true);
-        const payload = Object.keys(marksData).map(studentId => ({
-            studentId,
-            subject: selectedSubject,
-            marks: marksData[studentId].marks ? parseFloat(marksData[studentId].marks) : undefined,
-            grade: marksData[studentId].grade,
-            remarks: marksData[studentId].remarks
-        }));
+        const payload: any[] = [];
+
+        Object.keys(marksData).forEach(studentId => {
+            Object.keys(marksData[studentId]).forEach(subject => {
+                const data = marksData[studentId][subject];
+                if (data.marks !== "" || data.remarks !== "") {
+                    payload.push({
+                        studentId,
+                        subject,
+                        marks: data.marks ? parseFloat(data.marks) : null,
+                        grade: data.grade || null,
+                        status: data.status || null,
+                        remarks: data.remarks || null
+                    });
+                }
+            });
+        });
 
         const res = await recordMarksAction(slug, examId, payload);
         if (res.success) {
@@ -151,6 +208,8 @@ export default function MarksEntryPage() {
     };
 
     if (!exam) return <div className="p-8 text-center">Loading Exam Details...</div>;
+
+    const currentSubject = subjects.find(s => s.name === selectedSubject);
 
     return (
         <div className="space-y-6">
@@ -164,10 +223,15 @@ export default function MarksEntryPage() {
                         <div className="flex items-center gap-2 mt-1">
                             <Badge variant="outline">{exam.type}</Badge>
                             <Badge variant="secondary">{formatDate(exam.date)}</Badge>
+                            {exam.category === 'ACADEMIC' && typeof exam.minMarks !== 'undefined' && exam.minMarks > 0 &&
+                                <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
+                                    Pass Marks: {exam.minMarks}
+                                </Badge>
+                            }
                         </div>
                     </div>
                 </div>
-                <Button onClick={handleSave} disabled={saving || !selectedSubject}>
+                <Button onClick={handleSave} disabled={saving || students.length === 0}>
                     {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     Save Marks
                 </Button>
@@ -196,7 +260,7 @@ export default function MarksEntryPage() {
                             <Select value={selectedSubject} onValueChange={setSelectedSubject}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select Subject">
-                                        {subjects.find(s => s.name === selectedSubject)?.name || selectedSubject}
+                                        {selectedSubject || "Select Subject"}
                                     </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -212,52 +276,74 @@ export default function MarksEntryPage() {
                         loading ? (
                             <div className="text-center py-8">Loading Students...</div>
                         ) : (
-                            <div className="border rounded-md overflow-hidden">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-slate-50 text-slate-500 font-medium">
-                                        <tr>
-                                            <th className="p-3">Student</th>
-                                            <th className="p-3 w-32">Marks (Max: {exam.maxMarks})</th>
-                                            <th className="p-3 w-32">Grade</th>
-                                            <th className="p-3">Remarks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y">
-                                        {students.map(student => (
-                                            <tr key={student.id} className="hover:bg-slate-50/50">
-                                                <td className="p-3 font-medium">
-                                                    {student.firstName} {student.lastName}
-                                                </td>
-                                                <td className="p-3">
-                                                    <Input
-                                                        type="number"
-                                                        className="h-8"
-                                                        placeholder="0"
-                                                        max={exam.maxMarks}
-                                                        value={marksData[student.id]?.marks || ""}
-                                                        onChange={(e) => handleMarkChange(student.id, "marks", e.target.value)}
-                                                    />
-                                                </td>
-                                                <td className="p-3">
-                                                    <Input
-                                                        className="h-8"
-                                                        placeholder="Grade"
-                                                        value={marksData[student.id]?.grade || ""}
-                                                        onChange={(e) => handleMarkChange(student.id, "grade", e.target.value)}
-                                                    />
-                                                </td>
-                                                <td className="p-3">
-                                                    <Input
-                                                        className="h-8"
-                                                        placeholder="Optional..."
-                                                        value={marksData[student.id]?.remarks || ""}
-                                                        onChange={(e) => handleMarkChange(student.id, "remarks", e.target.value)}
-                                                    />
-                                                </td>
+                            <div className="border rounded-md overflow-hidden bg-white shadow-sm">
+                                <div className="px-4 py-3 bg-slate-50 border-b flex items-center justify-between">
+                                    <div className="font-bold text-slate-900">{selectedSubject}</div>
+                                    <span className="text-xs font-medium text-slate-500 bg-white px-2 py-1 rounded border">Max: {exam.maxMarks}</span>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-white text-slate-500 font-medium border-b">
+                                            <tr>
+                                                <th className="p-3 w-64">Student</th>
+                                                <th className="p-3 w-32">Marks</th>
+                                                <th className="p-3 w-32">Grade</th>
+                                                <th className="p-3 w-32">Status</th>
+                                                <th className="p-3">Remarks</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y relative">
+                                            {students.map(student => {
+                                                const data = marksData[student.id]?.[selectedSubject] || { marks: "", grade: "", status: "", remarks: "" };
+                                                return (
+                                                    <tr key={student.id} className="hover:bg-slate-50/50">
+                                                        <td className="p-3 font-medium text-slate-700">
+                                                            {student.firstName} {student.lastName}
+                                                        </td>
+                                                        <td className="p-3">
+                                                            <Input
+                                                                type="number"
+                                                                className="h-8 w-24"
+                                                                placeholder="-"
+                                                                value={data.marks}
+                                                                onChange={(e) => handleMarkChange(student.id, selectedSubject, 'marks', e.target.value)}
+                                                                tabIndex={1}
+                                                            />
+                                                        </td>
+                                                        <td className="p-3">
+                                                            <Input
+                                                                className="h-8 w-24 bg-slate-50 text-slate-500 font-semibold"
+                                                                placeholder="-"
+                                                                value={data.grade}
+                                                                readOnly
+                                                                tabIndex={-1}
+                                                            />
+                                                        </td>
+                                                        <td className="p-3">
+                                                            <div className={`flex items-center justify-center h-8 px-3 rounded-md border text-xs font-semibold ${data.status === 'PASSED'
+                                                                    ? 'bg-green-50 text-green-700 border-green-200'
+                                                                    : data.status === 'FAILED'
+                                                                        ? 'bg-red-50 text-red-700 border-red-200'
+                                                                        : 'bg-gray-50 text-gray-400 border-gray-200'
+                                                                }`}>
+                                                                {data.status || "-"}
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-3">
+                                                            <Input
+                                                                className="h-8"
+                                                                placeholder="Optional remarks..."
+                                                                value={data.remarks}
+                                                                onChange={(e) => handleMarkChange(student.id, selectedSubject, 'remarks', e.target.value)}
+                                                                tabIndex={3}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
                                 {students.length === 0 && (
                                     <div className="p-8 text-center text-muted-foreground">No students found in this class.</div>
                                 )}

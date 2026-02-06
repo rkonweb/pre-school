@@ -102,7 +102,7 @@ export default function ClassesPage() {
                 </div>
                 <button
                     onClick={() => setIsCreateOpen(true)}
-                    className="h-12 px-6 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     New Class
@@ -286,7 +286,7 @@ export default function ClassesPage() {
                     </p>
                     <button
                         onClick={() => setIsCreateOpen(true)}
-                        className="mt-8 h-12 px-8 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl"
+                        className="mt-8 h-12 px-8 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl"
                     >
                         Create First Class
                     </button>
@@ -512,7 +512,7 @@ function ClassDialog({ onClose, onSuccess, schoolsSlug, grades, sections, staff,
                     <button
                         type="submit"
                         disabled={isSaving}
-                        className="w-full h-16 bg-zinc-900 text-white rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 mt-4"
+                        className="w-full h-16 bg-blue-600 text-white hover:bg-blue-700 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 mt-4"
                     >
                         {isSaving ? "Saving..." : initialData ? "Update Class" : "Create Class"}
                     </button>

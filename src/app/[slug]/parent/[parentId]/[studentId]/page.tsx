@@ -382,7 +382,7 @@ export default function StudentDetailsPage() {
                                         <motion.div
                                             whileTap={{ scale: 0.98 }}
                                             onClick={() => setActiveTab("timetable")}
-                                            className="bg-zinc-900 rounded-[2.2rem] p-6 text-white relative overflow-hidden mt-2"
+                                            className="bg-blue-600 rounded-[2.2rem] p-6 text-white relative overflow-hidden mt-2"
                                         >
                                             <div className="absolute -right-4 -bottom-4 opacity-10">
                                                 <Clock className="h-24 w-24" />

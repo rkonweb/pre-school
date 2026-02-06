@@ -269,27 +269,34 @@ export default function DiaryPage() {
                                     const isToday = isCurrentMonth && day === today.getDate();
                                     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
+                                    const dayDate = new Date(year, month, day);
+                                    const todayMidnight = new Date();
+                                    todayMidnight.setHours(0, 0, 0, 0);
+                                    const isPast = dayDate < todayMidnight;
+
                                     return (
                                         <div
                                             key={day}
                                             className={`relative aspect-square border-2 rounded-2xl p-3 transition-all ${isToday
                                                 ? "border-blue-500 bg-blue-50"
-                                                : "border-zinc-100 hover:border-zinc-200 hover:bg-zinc-50"
+                                                : isPast ? "border-zinc-100 bg-zinc-50/50" : "border-zinc-100 hover:border-zinc-200 hover:bg-zinc-50"
                                                 }`}
                                         >
                                             {/* Date Number */}
                                             <div className="flex items-center justify-between mb-2">
-                                                <div className={`text-sm font-bold ${isToday ? "text-blue-600" : "text-zinc-500"}`}>
+                                                <div className={`text-sm font-bold ${isToday ? "text-blue-600" : isPast ? "text-zinc-300" : "text-zinc-500"}`}>
                                                     {day}
                                                 </div>
                                                 {/* Add Entry Button */}
-                                                <button
-                                                    onClick={() => handleAddEntry(dateStr)}
-                                                    className="h-6 w-6 rounded-lg bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-sm hover:shadow-md"
-                                                    title="Add entry"
-                                                >
-                                                    <Plus className="h-4 w-4" />
-                                                </button>
+                                                {!isPast && (
+                                                    <button
+                                                        onClick={() => handleAddEntry(dateStr)}
+                                                        className="h-6 w-6 rounded-lg bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-sm hover:shadow-md"
+                                                        title="Add entry"
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                    </button>
+                                                )}
                                             </div>
 
                                             {/* Entries */}

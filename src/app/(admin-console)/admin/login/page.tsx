@@ -85,7 +85,7 @@ export default function SuperAdminLoginPage() {
 
                             <button
                                 disabled={isLoading}
-                                className="group relative w-full flex items-center justify-center gap-2 rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white shadow-xl shadow-zinc-900/10 hover:bg-black hover:shadow-zinc-900/20 active:scale-[0.99] disabled:opacity-70 transition-all"
+                                className="group relative w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 text-sm font-bold text-white shadow-xl shadow-zinc-900/10 hover:bg-black hover:shadow-zinc-900/20 active:scale-[0.99] disabled:opacity-70 transition-all"
                             >
                                 {isLoading ? (
                                     <>

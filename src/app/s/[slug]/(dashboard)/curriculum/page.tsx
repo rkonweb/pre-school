@@ -320,7 +320,7 @@ function SchoolDayViewer({ selectedClass, date, onPreview }: any) {
                 </h2>
                 <button
                     onClick={() => window.print()}
-                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-zinc-900 text-white hover:bg-zinc-800 transition-all text-xs font-black uppercase tracking-widest shadow-xl hover:scale-105"
+                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 hover:bg-zinc-800 transition-all text-xs font-black uppercase tracking-widest shadow-xl hover:scale-105"
                 >
                     <Printer className="h-4 w-4" />
                     Print Plan

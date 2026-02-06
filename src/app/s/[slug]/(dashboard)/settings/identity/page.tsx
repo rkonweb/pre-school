@@ -46,7 +46,7 @@ export default function IdentitySettingsPage() {
                 <p className="font-black uppercase tracking-widest text-xs mb-2">Institutional Sync Error</p>
                 <p className="text-sm font-medium">{error || "School profile could not be localized."}</p>
             </div>
-            <button onClick={load} className="px-6 py-2 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Retry Connection</button>
+            <button onClick={load} className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-[10px] font-black uppercase tracking-widest">Retry Connection</button>
         </div>
     );
 

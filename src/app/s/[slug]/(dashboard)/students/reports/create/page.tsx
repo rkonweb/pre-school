@@ -31,6 +31,7 @@ export default function CreateExamPage() {
     const [type, setType] = useState("TERM"); // TERM, TEST
     const [category, setCategory] = useState("ACADEMIC"); // ACADEMIC, SPORTS, ARTS
     const [maxMarks, setMaxMarks] = useState(100);
+    const [minMarks, setMinMarks] = useState(35);
     const [description, setDescription] = useState("");
 
     // Selection State
@@ -100,6 +101,7 @@ export default function CreateExamPage() {
             classrooms: selectedClasses,
             subjects: selectedSubjects,
             maxMarks: category === 'ACADEMIC' ? Number(maxMarks) : 0,
+            minMarks: category === 'ACADEMIC' ? Number(minMarks) : 0,
             description
         });
 
@@ -173,10 +175,16 @@ export default function CreateExamPage() {
                                 </Select>
                             </div>
                             {category === 'ACADEMIC' && (
-                                <div className="space-y-2">
-                                    <Label>Max Marks (Per Subject)</Label>
-                                    <Input type="number" value={maxMarks} onChange={e => setMaxMarks(Number(e.target.value))} required />
-                                </div>
+                                <>
+                                    <div className="space-y-2">
+                                        <Label>Max Marks</Label>
+                                        <Input type="number" value={maxMarks} onChange={e => setMaxMarks(Number(e.target.value))} required />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Min Pass Marks</Label>
+                                        <Input type="number" value={minMarks} onChange={e => setMinMarks(Number(e.target.value))} required />
+                                    </div>
+                                </>
                             )}
                         </div>
 

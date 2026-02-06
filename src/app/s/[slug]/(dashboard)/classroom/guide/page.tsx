@@ -177,7 +177,7 @@ export default function DailyGuidePage() {
 
                         <button
                             onClick={() => setActiveTab("teaching")}
-                            className="w-full rounded-2xl bg-zinc-900 py-4 font-bold text-white transition-active dark:bg-zinc-50 dark:text-zinc-900 flex items-center justify-center gap-2"
+                            className="w-full rounded-2xl bg-blue-600 py-4 font-bold text-white transition-active dark:bg-zinc-50 dark:text-zinc-900 flex items-center justify-center gap-2"
                         >
                             Start Class Now <ArrowRight className="h-4 w-4" />
                         </button>
@@ -301,7 +301,7 @@ export default function DailyGuidePage() {
                             </div>
                         </div>
 
-                        <button className="w-full rounded-2xl bg-zinc-900 py-4 font-bold text-white dark:bg-zinc-50 dark:text-zinc-900">
+                        <button className="w-full rounded-2xl bg-blue-600 py-4 font-bold text-white dark:bg-zinc-50 dark:text-zinc-900">
                             Submit Report & End Day
                         </button>
                     </div>

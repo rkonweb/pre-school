@@ -233,3 +233,50 @@ export async function updateSchoolProfileAction(slug: string, data: any) {
         return { success: false, error: error.message || "Failed to update profile" };
     }
 }
+
+export async function getIntegrationSettingsAction(slug: string) {
+    try {
+        const school = await (prisma as any).school.findUnique({
+            where: { slug },
+            select: { id: true, integrationsConfig: true }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
+        let config = {};
+        try {
+            config = school.integrationsConfig ? JSON.parse(school.integrationsConfig) : {};
+        } catch (e) {
+            config = {};
+        }
+
+        return { success: true, data: config };
+    } catch (error: any) {
+        console.error("getIntegrationSettingsAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function saveIntegrationSettingsAction(slug: string, data: any) {
+    try {
+        const school = await (prisma as any).school.findUnique({
+            where: { slug },
+            select: { id: true }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
+        await (prisma as any).school.update({
+            where: { id: school.id },
+            data: {
+                integrationsConfig: JSON.stringify(data)
+            }
+        });
+
+        revalidatePath(`/s/${slug}/settings/integrations`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("saveIntegrationSettingsAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}

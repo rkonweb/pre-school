@@ -119,7 +119,7 @@ export default function InventoryPage() {
                                     className={cn(
                                         "whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                                         filter === cat
-                                            ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900"
+                                            ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-zinc-50 dark:text-zinc-900"
                                             : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
                                     )}
                                 >

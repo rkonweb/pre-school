@@ -91,7 +91,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <button
                     onClick={() => setShowAddModal(true)}
-                    className="flex items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-200"
+                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-200"
                 >
                     <Plus className="h-4 w-4" /> Add Admin
                 </button>
@@ -321,7 +321,7 @@ function AddAdminModal({ isOpen, onClose, schoolId, onSuccess }: any) {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full py-4 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Add Administrator"}
                             </button>
@@ -450,7 +450,7 @@ function EditAdminModal({ isOpen, onClose, admin, onSuccess }: any) {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full py-4 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Update Administrator"}
                             </button>

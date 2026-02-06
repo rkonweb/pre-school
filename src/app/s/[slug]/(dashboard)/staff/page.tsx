@@ -123,7 +123,7 @@ export default function StaffPage() {
                 </div>
                 <Link
                     href={`/s/${slug}/staff/add`}
-                    className="h-12 px-6 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     Add Staff Member
@@ -152,7 +152,7 @@ export default function StaffPage() {
                     >
                         <option value="all">All Designations</option>
                         {designations.map(d => (
-                            <option key={d.code} value={d.name}>{d.name}</option>
+                            <option key={d.id} value={d.name}>{d.name}</option>
                         ))}
                     </select>
 
@@ -163,7 +163,7 @@ export default function StaffPage() {
                     >
                         <option value="all">All Departments</option>
                         {departments.map(d => (
-                            <option key={d.code} value={d.name}>{d.name}</option>
+                            <option key={d.id} value={d.name}>{d.name}</option>
                         ))}
                     </select>
 
@@ -174,7 +174,7 @@ export default function StaffPage() {
                     >
                         <option value="all">All Emp. Types</option>
                         {employmentTypes.map(d => (
-                            <option key={d.code} value={d.code}>{d.name}</option>
+                            <option key={d.id} value={d.code}>{d.name}</option>
                         ))}
                     </select>
 

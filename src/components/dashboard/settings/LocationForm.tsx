@@ -90,7 +90,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
             <p className="text-sm text-zinc-500 max-w-md mx-auto">
                 The provided Google Maps API key appears to be invalid or restricted. Please check your credentials.
             </p>
-            <button onClick={() => router.refresh()} className="px-6 py-3 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase">Retry Connection</button>
+            <button onClick={() => router.refresh()} className="px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase hover:bg-blue-700 transition-colors">Retry Connection</button>
         </div>
     );
 

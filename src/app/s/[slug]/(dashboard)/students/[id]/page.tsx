@@ -219,7 +219,7 @@ export default function StudentDetailPage() {
                 <p className="text-zinc-500 font-medium">Student not found or failed to load.</p>
                 <button
                     onClick={() => router.push(`/s/${slug}/students`)}
-                    className="px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium"
+                    className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium"
                 >
                     Back to Students
                 </button>
@@ -307,7 +307,7 @@ export default function StudentDetailPage() {
                             onClick={() => setMode(mode === "view" ? "edit" : "view")}
                             className={cn(
                                 "h-12 px-6 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all",
-                                mode === "view" ? "bg-zinc-900 text-white shadow-xl shadow-zinc-200" : "bg-zinc-100 text-zinc-600"
+                                mode === "view" ? "bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-zinc-200" : "bg-zinc-100 text-zinc-600"
                             )}
                         >
                             {mode === "view" ? <Edit3 className="h-4 w-4" /> : <X className="h-4 w-4" />}
@@ -537,7 +537,7 @@ export default function StudentDetailPage() {
                             </div>
 
                             {/* Parent Connectivity */}
-                            <div className="bg-zinc-900 rounded-[40px] p-8 text-white shadow-2xl shadow-zinc-200">
+                            <div className="bg-blue-600 rounded-[40px] p-8 text-white shadow-2xl shadow-zinc-200">
                                 <SectionTitle icon={Users} title="Guardian connectivity" light />
                                 <div className="mt-8 space-y-6">
                                     <div>
@@ -567,7 +567,7 @@ export default function StudentDetailPage() {
                                         <button
                                             type="button"
                                             onClick={() => setIsConnectSiblingOpen(true)}
-                                            className="text-[10px] font-black bg-zinc-900 text-white px-3 py-1.5 rounded-lg uppercase tracking-widest hover:bg-zinc-700 transition-all flex items-center gap-1"
+                                            className="text-[10px] font-black bg-blue-600 text-white hover:bg-blue-700 px-3 py-1.5 rounded-lg uppercase tracking-widest hover:bg-zinc-700 transition-all flex items-center gap-1"
                                         >
                                             <Plus className="h-3 w-3" /> Connect
                                         </button>
@@ -680,7 +680,7 @@ export default function StudentDetailPage() {
                             {canReports && (
                                 <button
                                     onClick={() => setIsAddReportOpen(true)}
-                                    className="h-12 px-6 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200"
+                                    className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200"
                                 >
                                     <Plus className="h-4 w-4" />
                                     New Report
@@ -795,7 +795,7 @@ export default function StudentDetailPage() {
                             {canFees && (
                                 <button
                                     onClick={() => setIsCreateFeeOpen(true)}
-                                    className="h-12 px-6 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200"
+                                    className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200"
                                 >
                                     <Plus className="h-4 w-4" />
                                     Create Invoice

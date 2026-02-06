@@ -445,7 +445,7 @@ export default function StaffAttendancePage() {
                             </div>
                             <button
                                 onClick={() => setIsFormOpen(true)}
-                                className="flex items-center gap-2.5 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-zinc-900/10 transition-all hover:-translate-y-0.5"
+                                className="flex items-center gap-2.5 bg-blue-600 dark:bg-zinc-50 text-white dark:text-zinc-900 px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-zinc-900/10 transition-all hover:-translate-y-0.5"
                             >
                                 <PlusCircle className="h-4 w-4" />
                                 New Application

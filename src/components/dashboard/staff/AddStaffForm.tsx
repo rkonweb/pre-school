@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, Briefcase, Mail, Phone, Calendar, FileText, X, User, MapPin, CreditCard, Heart, Linkedin, Twitter, Facebook, Instagram, ArrowUpDown, Check, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createStaffAction } from "@/app/actions/staff-actions";
@@ -13,13 +13,13 @@ interface AddStaffFormProps {
     schoolSlug?: string;
     onCancel: () => void;
     onSuccess: () => void;
-    roles?: any[]; // New prop
-    designations?: { name: string; code: string }[];
-    departments?: { name: string; code: string }[];
-    employmentTypes?: { name: string; code: string }[];
-    bloodGroups?: { name: string; code: string }[];
-    genders?: { name: string; code: string }[];
-    subjects?: { name: string; code: string }[]; // New prop
+    roles?: any[];
+    designations?: { id: string; name: string; code: string }[];
+    departments?: { id: string; name: string; code: string }[];
+    employmentTypes?: { id: string; name: string; code: string }[];
+    bloodGroups?: { id: string; name: string; code: string }[];
+    genders?: { id: string; name: string; code: string }[];
+    subjects?: { id: string; name: string; code: string }[];
     initialData?: any;
     staffId?: string;
 }
@@ -38,6 +38,15 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
         initialData?.subjects ? (initialData.subjects.includes(",") ? initialData.subjects.split(",").map((s: any) => s.trim()) : [initialData.subjects]) : []
     );
     const [isSubjectsOpen, setIsSubjectsOpen] = useState(false);
+    const [selectedDesignation, setSelectedDesignation] = useState(initialData?.designation || "");
+    const [wasSubmitted, setWasSubmitted] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
 
     const toggleSubject = (subjectName: string) => {
         if (selectedSubjects.includes(subjectName)) {
@@ -60,6 +69,16 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const form = e.currentTarget as HTMLFormElement;
+
+        if (!form.checkValidity()) {
+            setWasSubmitted(true);
+            const firstInvalid = form.querySelector(':invalid') as HTMLElement;
+            firstInvalid?.focus();
+            toast.error("Please fill in all required fields.");
+            return;
+        }
+
         setIsLoading(true);
 
         const formData = new FormData(e.currentTarget as HTMLFormElement);
@@ -96,7 +115,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex h-full flex-col gap-8">
+        <form onSubmit={handleSubmit} noValidate className="flex h-full flex-col gap-8">
             <div className="flex flex-col gap-8">
 
                 {/* 1. Personal Information */}
@@ -132,35 +151,73 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
 
                         {/* Fields */}
                         <div className="grid flex-1 gap-4 sm:grid-cols-2">
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">First Name <span className="text-red-500">*</span></label>
-                                <input name="firstName" defaultValue={initialData?.firstName} required className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input
+                                    name="firstName"
+                                    defaultValue={initialData?.firstName}
+                                    required
+                                    className={cn(
+                                        "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
+                                        "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                        wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
+                                    )}
+                                />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Last Name <span className="text-red-500">*</span></label>
-                                <input name="lastName" defaultValue={initialData?.lastName} required className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input
+                                    name="lastName"
+                                    defaultValue={initialData?.lastName}
+                                    required
+                                    className={cn(
+                                        "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
+                                        "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                        wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
+                                    )}
+                                />
                             </div>
 
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Email Address <span className="text-red-500">*</span></label>
-                                <input name="email" type="email" defaultValue={initialData?.email} required className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input
+                                    name="email"
+                                    type="email"
+                                    defaultValue={initialData?.email}
+                                    required
+                                    className={cn(
+                                        "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
+                                        "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                        wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
+                                    )}
+                                />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Phone Number <span className="text-red-500">*</span></label>
-                                <input name="mobile" type="tel" defaultValue={initialData?.mobile} required className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input
+                                    name="mobile"
+                                    type="tel"
+                                    defaultValue={initialData?.mobile}
+                                    required
+                                    className={cn(
+                                        "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
+                                        "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                        wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
+                                    )}
+                                />
                             </div>
 
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date of Birth</label>
                                 <input name="dateOfBirth" type="date" defaultValue={formatDate(initialData?.dateOfBirth)} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Gender</label>
                                 <select name="gender" defaultValue={initialData?.gender} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800">
                                     <option value="">Select Gender</option>
                                     {genders.length > 0 ? (
                                         genders.map((g) => (
-                                            <option key={g.code} value={g.name}>
+                                            <option key={g.id} value={g.name}>
                                                 {g.name}
                                             </option>
                                         ))
@@ -173,13 +230,13 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     )}
                                 </select>
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Blood Group</label>
                                 <select name="bloodGroup" defaultValue={initialData?.bloodGroup} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800">
                                     <option value="">Select Group</option>
                                     {bloodGroups.length > 0 ? (
                                         bloodGroups.map((bg) => (
-                                            <option key={bg.code} value={bg.name}>
+                                            <option key={bg.id} value={bg.name}>
                                                 {bg.name}
                                             </option>
                                         ))
@@ -265,12 +322,17 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     id="designation"
                                     name="designation"
                                     required
-                                    defaultValue={initialData?.designation || ""}
-                                    className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
+                                    value={selectedDesignation}
+                                    onChange={(e) => setSelectedDesignation(e.target.value)}
+                                    className={cn(
+                                        "w-full appearance-none rounded-xl border px-4 py-3 text-sm font-medium transition-all focus:outline-none focus:ring-4",
+                                        "focus:border-blue-500 focus:ring-blue-500/10 dark:bg-zinc-950 dark:text-zinc-200",
+                                        wasSubmitted ? "invalid:border-red-500 invalid:ring-4 invalid:ring-red-500/10" : "border-zinc-200 dark:border-zinc-800"
+                                    )}
                                 >
                                     <option value="">Select Designation</option>
                                     {designations.map((role) => (
-                                        <option key={role.code} value={role.name}>
+                                        <option key={role.id} value={role.name}>
                                             {role.name}
                                         </option>
                                     ))}
@@ -292,7 +354,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                 >
                                     <option value="">Select Department</option>
                                     {departments.map((dept) => (
-                                        <option key={dept.code} value={dept.name}>
+                                        <option key={dept.id} value={dept.name}>
                                             {dept.name}
                                         </option>
                                     ))}
@@ -303,62 +365,64 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Teaching Subjects</label>
-                            <div className="relative">
-                                {/* Trigger Area */}
-                                <div
-                                    onClick={() => setIsSubjectsOpen(!isSubjectsOpen)}
-                                    className="min-h-[3rem] w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium transition-all cursor-pointer flex flex-wrap gap-2 items-center focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950"
-                                >
-                                    {selectedSubjects.length === 0 ? (
-                                        <span className="text-zinc-500">Select Subjects...</span>
-                                    ) : (
-                                        selectedSubjects.map(sub => (
-                                            <span key={sub} className="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1">
-                                                {sub}
-                                                <button type="button" onClick={(e) => { e.stopPropagation(); toggleSubject(sub); }} className="hover:text-blue-900">
-                                                    <X className="h-3 w-3" />
-                                                </button>
-                                            </span>
-                                        ))
-                                    )}
-                                    <div className="ml-auto pointer-events-none text-zinc-400">
-                                        <ArrowUpDown className="h-4 w-4" />
-                                    </div>
-                                </div>
-
-                                {/* Dropdown Menu */}
-                                {isSubjectsOpen && (
-                                    <>
-                                        <div className="fixed inset-0 z-10" onClick={() => setIsSubjectsOpen(false)} />
-                                        <div className="absolute z-20 top-full mt-2 w-full rounded-xl border border-zinc-200 bg-white p-2 shadow-xl max-h-60 overflow-y-auto dark:bg-zinc-900 dark:border-zinc-800">
-                                            {subjects.map(sub => {
-                                                const isSelected = selectedSubjects.includes(sub.name);
-                                                return (
-                                                    <div
-                                                        key={sub.code}
-                                                        onClick={() => toggleSubject(sub.name)}
-                                                        className={cn(
-                                                            "flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer text-sm font-medium transition-colors",
-                                                            isSelected ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "hover:bg-zinc-50 text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                                                        )}
-                                                    >
-                                                        <div className={cn("h-4 w-4 rounded border flex items-center justify-center transition-colors", isSelected ? "bg-blue-600 border-blue-600 text-white" : "border-zinc-300 dark:border-zinc-600")}>
-                                                            {isSelected && <Check className="h-3 w-3" />}
-                                                        </div>
-                                                        {sub.name}
-                                                    </div>
-                                                );
-                                            })}
+                        {selectedDesignation !== "Driver" && (
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Teaching Subjects</label>
+                                <div className="relative">
+                                    {/* Trigger Area */}
+                                    <div
+                                        onClick={() => setIsSubjectsOpen(!isSubjectsOpen)}
+                                        className="min-h-[3rem] w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium transition-all cursor-pointer flex flex-wrap gap-2 items-center focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950"
+                                    >
+                                        {selectedSubjects.length === 0 ? (
+                                            <span className="text-zinc-500">Select Subjects...</span>
+                                        ) : (
+                                            selectedSubjects.map(sub => (
+                                                <span key={sub} className="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1">
+                                                    {sub}
+                                                    <button type="button" onClick={(e) => { e.stopPropagation(); toggleSubject(sub); }} className="hover:text-blue-900">
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </span>
+                                            ))
+                                        )}
+                                        <div className="ml-auto pointer-events-none text-zinc-400">
+                                            <ArrowUpDown className="h-4 w-4" />
                                         </div>
-                                    </>
-                                )}
+                                    </div>
 
-                                {/* Hidden Input for Form Submission */}
-                                <input type="hidden" name="subjects" value={selectedSubjects.join(",")} />
+                                    {/* Dropdown Menu */}
+                                    {isSubjectsOpen && (
+                                        <>
+                                            <div className="fixed inset-0 z-10" onClick={() => setIsSubjectsOpen(false)} />
+                                            <div className="absolute z-20 top-full mt-2 w-full rounded-xl border border-zinc-200 bg-white p-2 shadow-xl max-h-60 overflow-y-auto dark:bg-zinc-900 dark:border-zinc-800">
+                                                {subjects.map(sub => {
+                                                    const isSelected = selectedSubjects.includes(sub.name);
+                                                    return (
+                                                        <div
+                                                            key={sub.id}
+                                                            onClick={() => toggleSubject(sub.name)}
+                                                            className={cn(
+                                                                "flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer text-sm font-medium transition-colors",
+                                                                isSelected ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "hover:bg-zinc-50 text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                                                            )}
+                                                        >
+                                                            <div className={cn("h-4 w-4 rounded border flex items-center justify-center transition-colors", isSelected ? "bg-blue-600 border-blue-600 text-white" : "border-zinc-300 dark:border-zinc-600")}>
+                                                                {isSelected && <Check className="h-3 w-3" />}
+                                                            </div>
+                                                            {sub.name}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* Hidden Input for Form Submission */}
+                                    <input type="hidden" name="subjects" value={selectedSubjects.join(",")} />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="space-y-2">
                             <label htmlFor="employmentType" className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Employment Type</label>
@@ -371,7 +435,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                 >
                                     <option value="">Select Type</option>
                                     {employmentTypes.map((type) => (
-                                        <option key={type.code} value={type.code}>
+                                        <option key={type.id} value={type.code}>
                                             {type.name}
                                         </option>
                                     ))}
@@ -382,15 +446,25 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                             </div>
                         </div>
 
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date of Joining <span className="text-red-500">*</span></label>
-                            <input name="joiningDate" type="date" required defaultValue={formatDate(initialData?.joiningDate)} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                            <input
+                                name="joiningDate"
+                                type="date"
+                                required
+                                defaultValue={formatDate(initialData?.joiningDate)}
+                                className={cn(
+                                    "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1",
+                                    "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                    wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
+                                )}
+                            />
                         </div>
-                        <div className="space-y-1.5 sm:col-span-2">
+                        <div className="space-y-1.5 sm:col-span-2" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Qualifications</label>
                             <input name="qualifications" defaultValue={initialData?.qualifications} placeholder="e.g. B.Ed, MA English" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
-                        <div className="space-y-1.5 sm:col-span-3">
+                        <div className="space-y-1.5 sm:col-span-3" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Experience Summary</label>
                             <textarea name="experience" defaultValue={initialData?.experience} rows={2} placeholder="Brief summary of past experience..." className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
@@ -410,30 +484,30 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-1.5 sm:col-span-2">
+                        <div className="space-y-1.5 sm:col-span-2" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Street Address</label>
                             <input name="address" defaultValue={initialData?.address} placeholder="123 Main St, Apt 4B" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">City</label>
                             <input name="addressCity" defaultValue={initialData?.addressCity} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">State / Province</label>
                             <input name="addressState" defaultValue={initialData?.addressState} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Zip / Postal Code</label>
                             <input name="addressZip" defaultValue={initialData?.addressZip} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Country</label>
                             <input name="addressCountry" defaultValue={initialData?.addressCountry} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
                     </div>
 
                     <div className="mt-6 flex flex-wrap gap-4">
-                        <div className="flex-1 min-w-[200px] space-y-1.5">
+                        <div className="flex-1 min-w-[200px] space-y-1.5" suppressHydrationWarning>
                             <div className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                 <Linkedin className="h-4 w-4 text-blue-600" /> LinkedIn Profile
                             </div>
@@ -456,15 +530,15 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Contact Name</label>
                                 <input name="emergencyContactName" defaultValue={initialData?.emergencyContactName} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Relationship</label>
                                 <input name="emergencyContactRelation" defaultValue={initialData?.emergencyContactRelation} placeholder="e.g. Spouse, Father" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Emergency Phone</label>
                                 <input name="emergencyContactPhone" defaultValue={initialData?.emergencyContactPhone} type="tel" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
@@ -483,15 +557,15 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Bank Name</label>
                                 <input name="bankName" defaultValue={initialData?.bankName} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Account Number</label>
                                 <input name="bankAccountNo" defaultValue={initialData?.bankAccountNo} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">IFSC / Sort Code</label>
                                 <input name="bankIfsc" defaultValue={initialData?.bankIfsc} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>

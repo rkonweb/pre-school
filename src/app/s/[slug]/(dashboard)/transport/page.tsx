@@ -2,58 +2,83 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getTransportStatsAction } from "@/app/actions/transport-actions";
+import {
+    getTransportDashboardDataAction,
+    getRoutesAction
+} from "@/app/actions/transport-actions";
 import {
     Bus,
     Users,
-    MapPin,
+    User,
     Navigation,
     AlertTriangle,
     Activity,
     Fuel,
-    Calendar
+    Star,
+    ArrowUpRight,
+    Wifi
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { LiveTelemetryMap } from "@/components/transport/LiveTelemetryMap";
 
 export default function TransportDashboardPage() {
     const params = useParams();
     const router = useRouter();
     const slug = params.slug as string;
+
     const [stats, setStats] = useState({
         vehicles: 0,
         drivers: 0,
         routes: 0,
         studentsOnTransport: 0
     });
+    const [routes, setRoutes] = useState<any[]>([]);
+    const [alerts, setAlerts] = useState<any[]>([]);
+    const [topDrivers, setTopDrivers] = useState<any[]>([]);
 
     useEffect(() => {
-        async function fetchStats() {
-            const res = await getTransportStatsAction(slug);
-            if (res.success && res.data) {
-                setStats(res.data);
+        async function fetchData() {
+            const [dashRes, routesRes] = await Promise.all([
+                import("@/app/actions/transport-actions").then(m => m.getTransportDashboardDataAction(slug)),
+                import("@/app/actions/transport-actions").then(m => m.getRoutesAction(slug))
+            ]);
+
+            if (dashRes.success && dashRes.data) {
+                setStats(dashRes.data.stats);
+                setAlerts(dashRes.data.alerts);
+                setTopDrivers(dashRes.data.topDrivers);
+            }
+            if (routesRes.success && routesRes.data) {
+                setRoutes(routesRes.data);
             }
         }
-        fetchStats();
+        fetchData();
     }, [slug]);
 
     return (
-        <div className="mx-auto max-w-7xl space-y-8 p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-8 pb-20">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div>
-                    <h1 className="text-3xl font-black text-zinc-900">Transport Overview</h1>
-                    <p className="text-zinc-500">Manage your fleet, routes, and transport operations.</p>
+                    <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+                        Transport Dashboard
+                    </h1>
+                    <p className="text-sm text-zinc-500 font-medium mt-1">
+                        Manage your school's transport system and track vehicles in real-time.
+                    </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-4">
                     <button
                         onClick={() => router.push(`/s/${slug}/transport/vehicles`)}
-                        className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 font-bold text-zinc-700 hover:bg-zinc-50 transition-colors"
+                        className="h-12 px-6 rounded-2xl border border-zinc-200 bg-white text-[10px] font-black uppercase tracking-[2px] text-zinc-600 shadow-sm transition-all hover:bg-zinc-50 hover:border-zinc-300 hover:text-zinc-900 active:scale-95 flex items-center gap-2"
                     >
                         <Bus className="h-4 w-4" />
-                        Fleet
+                        Vehicles
                     </button>
                     <button
                         onClick={() => router.push(`/s/${slug}/transport/routes`)}
-                        className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-colors"
+                        className="h-12 px-8 rounded-2xl bg-blue-600 text-[10px] font-black uppercase tracking-[2px] text-white shadow-xl shadow-zinc-200 transition-all hover:bg-black hover:scale-[1.02] active:scale-95 flex items-center gap-2"
                     >
                         <Navigation className="h-4 w-4" />
                         Routes
@@ -61,175 +86,121 @@ export default function TransportDashboardPage() {
                 </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Global StatCard Integration */}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
-                    label="Total Vehicles"
-                    value={stats.vehicles}
+                    title="Total Vehicles"
+                    value={stats.vehicles.toString()}
+                    subValue="Fleet size"
                     icon={Bus}
+                    color="brand"
+                />
+                <StatCard
+                    title="Students"
+                    value={stats.studentsOnTransport.toString()}
+                    subValue="Using transport"
+                    icon={Users}
                     color="blue"
-                    subtext="Available in fleet"
                 />
                 <StatCard
-                    label="Active Routes"
-                    value={stats.routes}
-                    icon={MapPin}
-                    color="emerald"
-                    subtext="Daily operations"
+                    title="Total Routes"
+                    value={stats.routes.toString()}
+                    subValue="Active tracks"
+                    icon={Navigation}
+                    color="purple"
                 />
                 <StatCard
-                    label="Students"
-                    value={stats.studentsOnTransport}
-                    icon={Users}
-                    color="violet"
-                    subtext="Using transport"
-                />
-                <StatCard
-                    label="Drivers"
-                    value={stats.drivers}
-                    icon={Users}
-                    color="amber"
-                    subtext="Registered staff"
+                    title="Total Drivers"
+                    value={stats.drivers.toString()}
+                    subValue="Registered drivers"
+                    icon={User}
+                    color="orange"
                 />
             </div>
 
-            {/* Live Tracking Mockup */}
-            <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                    <h2 className="flex items-center gap-2 text-lg font-bold text-zinc-900">
-                        <Activity className="h-5 w-5 text-emerald-500 animate-pulse" />
-                        Live Fleet Tracking
-                    </h2>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                        SYSTEM ACTIVE
-                    </span>
-                </div>
+            {/* Operational Intelligence Layer */}
+            <div className="grid lg:grid-cols-12 gap-8">
+                {/* Live Telemetry Map - Integrated Component */}
+                <LiveTelemetryMap routes={routes} stats={stats} />
 
-                {/* Mock Map UI */}
-                <div className="relative h-96 w-full overflow-hidden rounded-2xl bg-zinc-100 border border-zinc-200 group">
-                    <div className="absolute inset-0 bg-[url('https://maps.googleapis.com/maps/api/staticmap?center=40.714728,-73.998672&zoom=12&size=800x600&maptype=roadmap&style=feature:all|element:labels|visibility:off')] bg-cover bg-center opacity-40 grayscale group-hover:grayscale-0 transition-all duration-700"></div>
-
-                    {/* Simulated Buses */}
-                    <div className="absolute top-1/4 left-1/4 animate-bounce duration-[3000ms]">
-                        <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 shadow-lg ring-4 ring-blue-500/20">
-                            <Bus className="h-4 w-4 text-white" />
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 px-2 py-1 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                                Bus 01 • 45km/h
+                {/* Tactical Sidebar */}
+                <div className="lg:col-span-4 space-y-8">
+                    {/* System Alerts */}
+                    <div className="bg-white rounded-[40px] p-8 border border-zinc-200 shadow-xl shadow-zinc-200/40 dark:bg-zinc-950 dark:border-zinc-800">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="h-12 w-12 rounded-[20px] bg-red-50 flex items-center justify-center dark:bg-red-500/10">
+                                <AlertTriangle className="h-6 w-6 text-red-600" />
                             </div>
+                            <h3 className="text-xl font-black text-zinc-900 dark:text-zinc-50">Transport Alerts</h3>
                         </div>
-                    </div>
 
-                    <div className="absolute top-1/2 left-1/2 animate-bounce duration-[4000ms] delay-75">
-                        <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 shadow-lg ring-4 ring-emerald-500/20">
-                            <Bus className="h-4 w-4 text-white" />
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 px-2 py-1 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                                Van 03 • Stopped
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="absolute bottom-1/3 right-1/4 animate-bounce duration-[3500ms] delay-150">
-                        <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 shadow-lg ring-4 ring-amber-500/20">
-                            <Bus className="h-4 w-4 text-white" />
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 px-2 py-1 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                                Bus 05 • 32km/h
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="absolute bottom-4 left-4 rounded-xl bg-white/90 p-3 backdrop-blur-sm">
-                        <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Fleet Status</div>
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-xs font-medium text-zinc-700">
-                                <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                                8 Vehicles Moving
-                            </div>
-                            <div className="flex items-center gap-2 text-xs font-medium text-zinc-700">
-                                <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-                                2 Stopped
-                            </div>
-                            <div className="flex items-center gap-2 text-xs font-medium text-zinc-700">
-                                <span className="h-2 w-2 rounded-full bg-red-500"></span>
-                                1 Issue Reported
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Quick Actions / Recent Logs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-bold text-zinc-900">Maintenance Alerts</h3>
-                    <div className="space-y-4">
-                        <div className="flex items-start gap-4 rounded-xl bg-red-50 p-4 border border-red-100">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-red-600 shadow-sm">
-                                <AlertTriangle className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-red-900">Bus 04 - Brake Check</h4>
-                                <p className="text-sm text-red-700">Scheduled maintenance overdue by 2 days.</p>
-                                <button className="mt-2 text-xs font-bold text-red-800 underline">Schedule Service</button>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-4 rounded-xl bg-amber-50 p-4 border border-amber-100">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-amber-600 shadow-sm">
-                                <Fuel className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-amber-900">Fuel Efficiency Alert</h4>
-                                <p className="text-sm text-amber-700">Van 02 reporting lower mileage than average.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-                    <h3 className="mb-4 text-lg font-bold text-zinc-900">Driver Performance</h3>
-                    <div className="space-y-4">
-                        {[1, 2, 3].map((val) => (
-                            <div key={val} className="flex items-center justify-between p-3 hover:bg-zinc-50 rounded-xl transition-colors cursor-pointer">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500 font-bold">
-                                        JD
+                        <div className="space-y-4">
+                            {alerts.length === 0 ? (
+                                <div className="p-8 rounded-[28px] border-2 border-dashed border-zinc-100/50 flex flex-col items-center justify-center text-center">
+                                    <div className="h-10 w-10 bg-emerald-50 rounded-full flex items-center justify-center mb-3">
+                                        <Wifi className="h-5 w-5 text-emerald-500" />
                                     </div>
-                                    <div>
-                                        <div className="font-bold text-zinc-900">John Doe</div>
-                                        <div className="text-xs text-zinc-500">Route 1 • North City</div>
+                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-relaxed">All systems normal: No pending alerts or issues found.</p>
+                                </div>
+                            ) : (
+                                alerts.map((alert) => (
+                                    <div key={alert.id} className="p-6 rounded-[28px] bg-red-50/50 border border-red-100 group cursor-pointer hover:bg-red-50 transition-all dark:bg-red-500/5 dark:border-red-500/10">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="px-3 py-1 bg-white rounded-full text-[9px] font-black text-red-600 uppercase tracking-widest shadow-sm ring-1 ring-red-100 dark:bg-zinc-900 dark:ring-red-900/30">
+                                                {alert.type}
+                                            </div>
+                                            <ArrowUpRight className="h-4 w-4 text-red-300 group-hover:text-red-500 transition-colors" />
+                                        </div>
+                                        <h4 className="text-sm font-black text-zinc-900 uppercase tracking-tight dark:text-zinc-100">{alert.title}</h4>
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Vehicle: {alert.asset} • Expires: {new Date(alert.date).toLocaleDateString()}</p>
                                     </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Personnel Activity */}
+                    <div className="bg-white rounded-[40px] p-8 border border-zinc-200 shadow-xl shadow-zinc-200/40 dark:bg-zinc-950 dark:border-zinc-800">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-[20px] bg-orange-50 flex items-center justify-center dark:bg-orange-500/10">
+                                    <Star className="h-6 w-6 text-orange-600" />
                                 </div>
-                                <div className="flex items-center gap-1">
-                                    <span className="font-bold text-zinc-900">4.8</span>
-                                    <span className="text-amber-400">★</span>
-                                </div>
+                                <h3 className="text-xl font-black text-zinc-900 dark:text-zinc-50">Top Drivers</h3>
                             </div>
-                        ))}
-                        <button className="w-full py-2 text-sm font-bold text-blue-600 hover:text-blue-700">
-                            View All Drivers
-                        </button>
+                            <button className="text-[10px] font-black text-brand uppercase tracking-widest hover:bg-brand/5 px-3 py-1.5 rounded-xl transition-all">View All</button>
+                        </div>
+
+                        <div className="space-y-3">
+                            {topDrivers.length === 0 ? (
+                                <div className="p-6 text-center text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-relaxed">
+                                    No driver activity data available.
+                                </div>
+                            ) : (
+                                topDrivers.map((driver, idx) => (
+                                    <div key={driver.id} className="flex items-center justify-between p-4 rounded-[24px] hover:bg-zinc-50 group cursor-pointer transition-all dark:hover:bg-zinc-900">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-[20px] bg-blue-600 flex items-center justify-center text-white text-[10px] font-black shadow-lg relative overflow-hidden group-hover:scale-105 transition-all">
+                                                {driver.name.split(' ').map((n: string) => n[0]).join('')}
+                                                <div className="absolute inset-0 bg-gradient-to-tr from-brand/20 to-transparent" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-black text-zinc-900 group-hover:text-brand transition-colors uppercase dark:text-zinc-100">
+                                                    {driver.name}
+                                                </p>
+                                                <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mt-0.5">Active Driver • Rank {idx + 1}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 font-black text-zinc-900 text-xs dark:text-zinc-300">
+                                            4.{9 - idx} <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
-}
-
-function StatCard({ label, value, icon: Icon, color, subtext }: any) {
-    const colors: any = {
-        blue: "bg-blue-50 text-blue-600 border-blue-100",
-        emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
-        violet: "bg-violet-50 text-violet-600 border-violet-100",
-        amber: "bg-amber-50 text-amber-600 border-amber-100"
-    };
-
-    return (
-        <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl border bg-white shadow-sm transition-transform hover:scale-110">
-                <Icon className={cn("h-5 w-5", colors[color]?.split(" ")[1] || "text-zinc-900")} />
-            </div>
-            <div className="text-3xl font-black text-zinc-900">{value}</div>
-            <div className="mb-1 text-sm font-bold text-zinc-500">{label}</div>
-            <div className="text-xs text-zinc-400">{subtext}</div>
         </div>
     );
 }

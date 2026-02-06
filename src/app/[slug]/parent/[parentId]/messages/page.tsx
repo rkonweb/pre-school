@@ -269,7 +269,7 @@ export default function MessagesPage() {
                                             >
                                                 <div className={`
                                                     max-w-[85%] px-5 py-3 rounded-2xl text-sm font-medium leading-relaxed shadow-sm
-                                                    ${isMe ? 'bg-zinc-900 text-white rounded-tr-sm' : 'bg-white border border-zinc-100 text-zinc-700 rounded-tl-sm'}
+                                                    ${isMe ? 'bg-blue-600 text-white hover:bg-blue-700 rounded-tr-sm' : 'bg-white border border-zinc-100 text-zinc-700 rounded-tl-sm'}
                                                 `}>
                                                     {msg.content}
                                                     <div className={`text-[9px] mt-1 text-right font-bold ${isMe ? 'text-zinc-500' : 'text-zinc-300'}`}>

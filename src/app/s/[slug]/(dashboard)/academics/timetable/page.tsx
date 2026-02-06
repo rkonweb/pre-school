@@ -255,7 +255,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                                 className={cn(
                                     "h-10 px-5 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2",
                                     isSelected
-                                        ? "bg-zinc-900 border-zinc-900 text-white shadow-lg shadow-zinc-200"
+                                        ? "bg-blue-600 border-zinc-900 text-white shadow-lg shadow-zinc-200"
                                         : "bg-white border-zinc-100 text-zinc-400 hover:border-zinc-300"
                                 )}
                             >
@@ -350,7 +350,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="h-12 px-8 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                        className="h-12 px-8 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                     >
                         <Save className="h-4 w-4" />
                         {isSaving ? "Saving..." : "Save Structure"}
@@ -808,7 +808,7 @@ function CellEditor({ day, periodId, initialData, staff, slug, currentClassId, o
                     <button
                         onClick={handleSave}
                         disabled={!!conflict || checking}
-                        className="flex-[2] h-12 rounded-2xl bg-zinc-900 text-white font-black text-xs uppercase tracking-widest hover:bg-zinc-800 disabled:opacity-50 transition-all shadow-lg shadow-zinc-200"
+                        className="flex-[2] h-12 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 font-black text-xs uppercase tracking-widest hover:bg-zinc-800 disabled:opacity-50 transition-all shadow-lg shadow-zinc-200"
                     >
                         Save
                     </button>

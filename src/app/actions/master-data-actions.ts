@@ -132,49 +132,40 @@ export async function bulkCreateMasterDataAction(
         const uniqueItems = Array.from(new Set(items.map(i => i.name)))
             .map(name => items.find(i => i.name === name)!);
 
+        // Trim names for comparison
+        const cleanedItems = uniqueItems.map(item => ({
+            ...item,
+            name: String(item.name).trim()
+        })).filter(item => item.name !== "");
+
+        console.log(`Final processed payload: ${cleanedItems.length} items`);
+
+        // Fetch existing records to check for duplicates manually (reliable for NULL parentIds)
+        const existingRecords = await (prisma as any).masterData.findMany({
+            where: {
+                type,
+                parentId: parentId || null,
+                name: { in: cleanedItems.map(i => i.name) }
+            },
+            select: { id: true, name: true, code: true }
+        });
+
+        console.log(`Found ${existingRecords.length} existing records in DB`);
+
+        const existingNames = new Set(existingRecords.map((r: any) => String(r.name).trim()));
         let count = 0;
 
         if (strategy === "UPDATE") {
-            // SLOW PATH: Upsert loop
-            // Since we can't do bulk upsert easily with varying IDs, we do promises
-            // NOTE: Batching would be better for massive datasets, but for <1000 items this is OK.
-            const operations = uniqueItems.map(item => {
+            console.log("Executing UPDATE strategy...");
+            // SLOW PATH: Upsert logic
+            for (const item of cleanedItems) {
                 const code = item.code || item.name.substring(0, 3).toUpperCase();
-
-                // Try to find existing first to update, or create
-                return (prisma as any).masterData.upsert({
-                    where: {
-                        // Assuming we have a composite unique constraint or we search first.
-                        // Since Prisma needs a unique ID for 'where' in upsert usually, 
-                        // unless we have defined @@unique([type, name, parentId]).
-                        // If no such unique index exists, upsert throws.
-
-                        // FALLBACK: Use findFirst then update/create manually if no unique index.
-                        // But let's assume valid schema or use explicit check.
-                        // Actually, without a unique constraint on (type, name), 'upsert' acts weird.
-                        // Let's do explicit check-and-act for safety.
-                        id: "placeholder" // Intentionally invalid to force create if logic relied on ID, but we can't use upsert without unique selector.
-                    },
-                    update: {},
-                    create: {}
-                }).catch(() => null); // Prevent throw, we handle manually below
-            });
-
-            // Refined Manual Upsert Logic
-            for (const item of uniqueItems) {
-                const code = item.code || item.name.substring(0, 3).toUpperCase();
-                const existing = await (prisma as any).masterData.findFirst({
-                    where: {
-                        type: type,
-                        name: item.name,
-                        parentId: parentId || null
-                    }
-                });
+                const existing = existingRecords.find((r: any) => String(r.name).trim() === item.name);
 
                 if (existing) {
                     await (prisma as any).masterData.update({
                         where: { id: existing.id },
-                        data: { code: code } // Update code if changed
+                        data: { code: code }
                     });
                 } else {
                     await (prisma as any).masterData.create({
@@ -189,22 +180,32 @@ export async function bulkCreateMasterDataAction(
                 count++;
             }
         } else {
-            // FAST PATH: Create Many (Append)
-            // @ts-ignore
-            const result = await (prisma as any).masterData.createMany({
-                data: uniqueItems.map(item => ({
-                    type,
-                    name: item.name,
-                    code: item.code || item.name.substring(0, 3).toUpperCase(),
-                    parentId: parentId || null
-                })),
-                skipDuplicates: true
-            });
-            count = result.count;
+            console.log("Executing APPEND strategy...");
+            // APPEND PATH: Only create items that don't exist
+            const itemsToCreate = cleanedItems.filter(item => !existingNames.has(item.name));
+            console.log(`Items to create after skipping duplicates: ${itemsToCreate.length}`);
+
+            if (itemsToCreate.length > 0) {
+                // We use createMany but we've already filtered duplicates
+                // @ts-ignore
+                const result = await (prisma as any).masterData.createMany({
+                    data: itemsToCreate.map(item => ({
+                        type,
+                        name: item.name,
+                        code: item.code || item.name.substring(0, 3).toUpperCase(),
+                        parentId: parentId || null
+                    })),
+                    skipDuplicates: true
+                });
+                count = result.count;
+            } else {
+                count = 0;
+            }
         }
 
         revalidatePath("/admin/dashboard/master-data");
-        return { success: true, count: count };
+        const skipped = cleanedItems.length - count;
+        return { success: true, count: count, skipped: skipped };
     } catch (error: any) {
         console.error("Bulk Create Error:", error);
         return { success: false, error: error.message || "Bulk import failed" };

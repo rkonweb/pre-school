@@ -229,6 +229,7 @@ export default function MasterDataPage() {
             <BulkActions
                 data={data}
                 selectedType={selectedType}
+                setSelectedType={setSelectedType}
                 parentId={selectedParentId}
                 onRefresh={loadData}
             />
@@ -259,7 +260,7 @@ export default function MasterDataPage() {
                                         className={cn(
                                             "w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left transition-all group",
                                             isSelected
-                                                ? "bg-zinc-900 text-white shadow-lg shadow-zinc-200"
+                                                ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-zinc-200"
                                                 : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
                                         )}
                                     >
@@ -342,7 +343,7 @@ export default function MasterDataPage() {
                                 </div>
                                 <button
                                     onClick={handleOpenAdd}
-                                    className="bg-zinc-900 text-white px-6 py-2.5 rounded-2xl font-black text-xs hover:scale-[1.02] active:scale-95 transition-all shadow-lg flex items-center gap-2"
+                                    className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-2.5 rounded-2xl font-black text-xs hover:scale-[1.02] active:scale-95 transition-all shadow-lg flex items-center gap-2"
                                 >
                                     <Plus className="h-3.5 w-3.5" />
                                     Add New
@@ -444,7 +445,7 @@ export default function MasterDataPage() {
                     <div className="relative w-full max-w-xl bg-white rounded-[40px] shadow-2xl animate-in fade-in zoom-in duration-300 overflow-hidden">
                         <div className="p-8 border-b border-zinc-100 bg-zinc-50/30">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="h-10 w-10 bg-zinc-900 text-white rounded-2xl flex items-center justify-center">
+                                <div className="h-10 w-10 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl flex items-center justify-center">
                                     <Plus className="h-5 w-5" />
                                 </div>
                                 <h2 className="text-2xl font-black text-zinc-900 tracking-tight">
@@ -518,7 +519,7 @@ export default function MasterDataPage() {
                                 <button
                                     type="submit"
                                     disabled={isSaving}
-                                    className="flex-1 py-4 px-8 rounded-2xl bg-zinc-900 text-white font-black text-xs hover:scale-[1.02] active:scale-95 transition-all shadow-xl flex items-center justify-center gap-3 uppercase tracking-widest"
+                                    className="flex-1 py-4 px-8 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 font-black text-xs hover:scale-[1.02] active:scale-95 transition-all shadow-xl flex items-center justify-center gap-3 uppercase tracking-widest"
                                 >
                                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                                     {editingItem ? "Commit Changes" : "Create Record"}
@@ -532,7 +533,7 @@ export default function MasterDataPage() {
     );
 }
 
-function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
+function BulkActions({ data, selectedType, setSelectedType, parentId, onRefresh }: any) {
     const [isImporting, setIsImporting] = useState(false);
     const [previewData, setPreviewData] = useState<any[] | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
@@ -613,7 +614,17 @@ function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
                     });
                 } else {
                     const wb = XLSX.read(bstr, { type: "binary" });
-                    const wsname = wb.SheetNames[0];
+
+                    // Prefer sheet matching selectedType, else first sheet
+                    let wsname = wb.SheetNames.find(name =>
+                        name === selectedType ||
+                        name.toUpperCase() === selectedType.toUpperCase() ||
+                        name.replace(/\s+/g, '_').toUpperCase() === selectedType.toUpperCase()
+                    );
+
+                    if (!wsname) wsname = wb.SheetNames[0];
+
+                    console.log("Selected Sheet:", wsname);
                     const ws = wb.Sheets[wsname];
                     parsed = XLSX.utils.sheet_to_json(ws);
 
@@ -641,18 +652,48 @@ function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
         e.target.value = "";
     };
 
-    const handleImportConfirm = async (cleanedData: any[], strategy: string) => {
+    const handleImportConfirm = async (cleanedData: any[], strategy: string, overrideType?: string): Promise<boolean> => {
+        const finalType = overrideType || selectedType;
+        // If type changed via override, we should almost always reset parentId 
+        // as the current parentId belongs to the old tab's hierarchy.
+        const finalParentId = (overrideType && overrideType !== selectedType) ? null : (parentId || null);
+
+        console.log("=== handleImportConfirm CALLED ===");
+        console.log("Type:", finalType);
+        console.log("ParentId:", finalParentId);
+        console.log("Strategy:", strategy);
+        console.log("Data count:", cleanedData.length);
+        console.log("Sample:", cleanedData.slice(0, 2));
+
         setIsImporting(true);
-        const res = await bulkCreateMasterDataAction(selectedType, parentId || null, cleanedData, strategy); // Pass strategy
-        if (res.success) {
-            toast.success(`Import success: ${res.count} records processed`);
-            onRefresh();
-            setShowPreview(false);
-            setPreviewData(null);
-        } else {
-            toast.error(res.error || "Import failed");
+        try {
+            const res = await bulkCreateMasterDataAction(finalType, finalParentId, cleanedData, strategy);
+            console.log("Server Response:", res);
+            if (res.success) {
+                const skippedCount = res.skipped || 0;
+                const message = skippedCount > 0
+                    ? `Added ${res.count} records. Skipped ${skippedCount} existing.`
+                    : `Imported ${res.count} records successfully.`;
+                toast.success(message);
+                if (overrideType && overrideType !== selectedType) {
+                    setSelectedType(overrideType);
+                } else {
+                    onRefresh();
+                }
+                setShowPreview(false);
+                setPreviewData(null);
+                return true;
+            } else {
+                toast.error(res.error || "Import failed");
+                return false;
+            }
+        } catch (err: any) {
+            console.error("Import Error:", err);
+            toast.error("Import error: " + err.message);
+            return false;
+        } finally {
+            setIsImporting(false);
         }
-        setIsImporting(false);
     };
 
     return (
@@ -669,7 +710,7 @@ function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
                     </button>
                     <div className="relative">
                         <input type="file" accept=".csv, .xlsx, .xls" onChange={handleFileUpload} disabled={isImporting} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" />
-                        <button disabled={isImporting} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 font-bold text-sm transition-all disabled:opacity-50">
+                        <button disabled={isImporting} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 hover:bg-zinc-800 font-bold text-sm transition-all disabled:opacity-50">
                             {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                             {isImporting ? "Processing..." : "Bulk Upload"}
                         </button>
@@ -693,6 +734,9 @@ function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
 
 function ImportPreviewModal({ isOpen, onClose, data, headers, onConfirm, targetType }: any) {
     const [strategy, setStrategy] = useState("APPEND");
+    const [selectedCategory, setSelectedCategory] = useState(targetType);
+    const [isLoading, setIsLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     if (!isOpen) return null;
 
@@ -700,7 +744,51 @@ function ImportPreviewModal({ isOpen, onClose, data, headers, onConfirm, targetT
     const nameCol = headers.find((h: string) => h.toLowerCase().includes("name")) || headers[0] || "";
     const codeCol = headers.find((h: string) => h.toLowerCase().includes("code")) || "";
 
-    const handleConfirm = () => {
+    useEffect(() => {
+        if (data && data.length > 0 && nameCol) {
+            const sampleValues = data.slice(0, 5).map((row: any) => String(row[nameCol] || "").toUpperCase().trim());
+
+            // Detect Blood Groups
+            const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+            const bloodMatches = sampleValues.filter((v: string) => bloodGroups.includes(v)).length;
+            if (bloodMatches >= 2 || bloodMatches === sampleValues.length) {
+                setSelectedCategory("BLOOD_GROUP");
+                return;
+            }
+
+            // Detect Gender
+            const genders = ["MALE", "FEMALE", "TRANSGENDER", "OTHER"];
+            const genderMatches = sampleValues.filter((v: string) => genders.includes(v)).length;
+            if (genderMatches >= 2) {
+                setSelectedCategory("GENDER");
+                return;
+            }
+
+            // Detect Departments
+            const depts = ["ADMIN", "ACADEMIC", "TRANSPORT", "HR", "ACCOUNTS", "MARKETING"];
+            const deptMatches = sampleValues.filter((v: string) => depts.some(d => v.includes(d))).length;
+            if (deptMatches >= 2) {
+                setSelectedCategory("DEPARTMENT");
+                return;
+            }
+
+            // Detect Designations
+            const desigs = ["PRINCIPAL", "TEACHER", "DRIVER", "ACCOUNTANT", "GUARD", "OFFICER"];
+            const desigMatches = sampleValues.filter((v: string) => desigs.some(d => v.includes(d))).length;
+            if (desigMatches >= 2) {
+                setSelectedCategory("DESIGNATION");
+                return;
+            }
+        }
+    }, [isOpen, nameCol]); // Run when modal opens or column is detected
+
+    const handleConfirm = async () => {
+        console.log("=== IMPORT DEBUG ===");
+        console.log("Headers:", headers);
+        console.log("Name Col Detected:", nameCol);
+        console.log("Selected Category:", selectedCategory);
+        console.log("Sample Data:", data.slice(0, 2));
+
         if (!nameCol) {
             toast.error("Could not detect 'Name' column in your file");
             return;
@@ -709,9 +797,31 @@ function ImportPreviewModal({ isOpen, onClose, data, headers, onConfirm, targetT
         const cleaned = data.map((row: any) => ({
             name: row[nameCol],
             code: codeCol ? row[codeCol] : undefined
-        })).filter((i: any) => i.name);
+        })).filter((i: any) => i.name && String(i.name).trim() !== "");
 
-        onConfirm(cleaned, strategy);
+        console.log("Cleaned Data:", cleaned.slice(0, 3));
+        console.log("Total items to import:", cleaned.length);
+
+        if (cleaned.length === 0) {
+            toast.error("No valid data to import");
+            return;
+        }
+
+        setIsLoading(true);
+        setProgress(10);
+
+        // Simulate progress
+        const progressInterval = setInterval(() => {
+            setProgress(p => Math.min(p + 15, 90));
+        }, 300);
+
+        try {
+            await onConfirm(cleaned, strategy, selectedCategory);
+            setProgress(100);
+        } finally {
+            clearInterval(progressInterval);
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -722,20 +832,55 @@ function ImportPreviewModal({ isOpen, onClose, data, headers, onConfirm, targetT
                     <p className="text-sm text-zinc-500 mt-1">Choose how to handle existing data</p>
                 </div>
 
+                {isLoading && (
+                    <div className="px-8 pt-4">
+                        <div className="w-full bg-zinc-100 rounded-full h-2 overflow-hidden">
+                            <div
+                                className="bg-zinc-900 h-2 rounded-full transition-all duration-300 ease-out"
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+                        <p className="text-xs text-zinc-500 mt-2 text-center">Importing... {progress}%</p>
+                    </div>
+                )}
+
                 <div className="p-8 overflow-y-auto space-y-6">
+                    <div className="space-y-3">
+                        <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Target Category</label>
+                        <div className="relative">
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                disabled={isLoading}
+                                className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-sm outline-none focus:ring-2 focus:ring-zinc-900 transition-all appearance-none pr-12"
+                            >
+                                {DATA_TYPES.map(type => (
+                                    <option key={type.id} value={type.id}>{type.label}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <ChevronDown className="h-4 w-4 text-zinc-400" />
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="space-y-3">
                         <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Import Strategy</label>
                         <div className="grid grid-cols-2 gap-4">
                             <button
+                                type="button"
+                                disabled={isLoading}
                                 onClick={() => setStrategy("APPEND")}
-                                className={cn("p-4 rounded-2xl border-2 text-left transition-all", strategy === "APPEND" ? "border-zinc-900 bg-zinc-50" : "border-zinc-100 hover:border-zinc-200")}
+                                className={cn("p-4 rounded-2xl border-2 text-left transition-all disabled:opacity-50", strategy === "APPEND" ? "border-zinc-900 bg-zinc-50" : "border-zinc-100 hover:border-zinc-200")}
                             >
                                 <span className="block font-bold text-sm text-zinc-900">Append Only</span>
                                 <span className="block text-xs text-zinc-500 mt-1">Add new records. Skip duplicates.</span>
                             </button>
                             <button
+                                type="button"
+                                disabled={isLoading}
                                 onClick={() => setStrategy("UPDATE")}
-                                className={cn("p-4 rounded-2xl border-2 text-left transition-all", strategy === "UPDATE" ? "border-zinc-900 bg-zinc-50" : "border-zinc-100 hover:border-zinc-200")}
+                                className={cn("p-4 rounded-2xl border-2 text-left transition-all disabled:opacity-50", strategy === "UPDATE" ? "border-zinc-900 bg-zinc-50" : "border-zinc-100 hover:border-zinc-200")}
                             >
                                 <span className="block font-bold text-sm text-zinc-900">Update Existing</span>
                                 <span className="block text-xs text-zinc-500 mt-1">Update fields if name matches. Add new otherwise.</span>
@@ -770,11 +915,33 @@ function ImportPreviewModal({ isOpen, onClose, data, headers, onConfirm, targetT
                 </div>
 
                 <div className="p-8 border-t border-zinc-100 flex gap-4">
-                    <button onClick={onClose} className="flex-1 h-14 rounded-2xl border-2 border-zinc-100 font-black text-xs uppercase tracking-widest text-zinc-500 hover:bg-zinc-50 transition-all">Cancel</button>
-                    <button onClick={handleConfirm} className="flex-1 h-14 rounded-2xl bg-zinc-900 text-white font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl">Complete Import</button>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isLoading}
+                        className="flex-1 h-14 rounded-2xl border-2 border-zinc-100 font-black text-xs uppercase tracking-widest text-zinc-500 hover:bg-zinc-50 transition-all disabled:opacity-50"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleConfirm}
+                        disabled={isLoading}
+                        className="flex-1 h-14 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
+                    >
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Importing...
+                            </>
+                        ) : (
+                            "Complete Import"
+                        )}
+                    </button>
                 </div>
             </div>
         </div>
     );
 }
+
 

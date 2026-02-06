@@ -209,7 +209,7 @@ export default function PayrollPage() {
                         <button
                             onClick={handleGenerate}
                             disabled={isGenerating}
-                            className="bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-2xl shadow-zinc-900/20 transition-all hover:-translate-y-1 hover:shadow-emerald-500/10 active:scale-95 disabled:opacity-50"
+                            className="bg-blue-600 dark:bg-zinc-50 text-white dark:text-zinc-900 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-2xl shadow-zinc-900/20 transition-all hover:-translate-y-1 hover:shadow-emerald-500/10 active:scale-95 disabled:opacity-50"
                         >
                             {isGenerating ? <Clock className="h-4 w-4 animate-spin text-emerald-500" /> : <Plus className="h-4 w-4" />}
                             Run Payroll Engine
@@ -235,7 +235,7 @@ export default function PayrollPage() {
                             onClick={() => handleViewDetails(p)}
                         >
                             <div className="flex items-start justify-between mb-8">
-                                <div className="p-4 bg-zinc-900 dark:bg-white rounded-3xl text-white dark:text-zinc-900 shadow-xl shadow-zinc-900/10 transition-transform group-hover:scale-110">
+                                <div className="p-4 bg-blue-600 dark:bg-white rounded-3xl text-white dark:text-zinc-900 shadow-xl shadow-zinc-900/10 transition-transform group-hover:scale-110">
                                     <Wallet className="h-6 w-6" />
                                 </div>
                                 <StatusBadge status={p.status} />
@@ -314,7 +314,7 @@ export default function PayrollPage() {
                     </div>
 
                     {/* Action Bar */}
-                    <div className="bg-zinc-900 dark:bg-zinc-950 text-white rounded-[3rem] p-10 flex flex-col lg:flex-row gap-10 items-center justify-between shadow-3xl shadow-zinc-900/40 relative overflow-hidden group">
+                    <div className="bg-blue-600 dark:bg-zinc-950 text-white rounded-[3rem] p-10 flex flex-col lg:flex-row gap-10 items-center justify-between shadow-3xl shadow-zinc-900/40 relative overflow-hidden group">
                         {/* Background Decoration */}
                         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2" />
 
@@ -471,7 +471,7 @@ export default function PayrollPage() {
                                                                 setSelectedPayslip(p);
                                                                 setIsPayslipOpen(true);
                                                             }}
-                                                            className="h-12 w-12 flex items-center justify-center bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl shadow-xl transition-all hover:scale-110 active:scale-90"
+                                                            className="h-12 w-12 flex items-center justify-center bg-blue-600 dark:bg-white text-white dark:text-zinc-900 rounded-2xl shadow-xl transition-all hover:scale-110 active:scale-90"
                                                         >
                                                             <Eye className="h-5 w-5" />
                                                         </button>
@@ -514,7 +514,7 @@ export default function PayrollPage() {
                     <div className="space-y-12 pb-10">
                         {/* Header Profile */}
                         <div className="text-center space-y-4">
-                            <div className="h-32 w-32 rounded-[3rem] bg-zinc-900 mx-auto flex items-center justify-center text-white text-3xl font-black italic shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border-4 border-white">
+                            <div className="h-32 w-32 rounded-[3rem] bg-blue-600 mx-auto flex items-center justify-center text-white text-3xl font-black italic shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border-4 border-white">
                                 {selectedPayslip.user.firstName[0]}{selectedPayslip.user.lastName[0]}
                             </div>
                             <div>
@@ -531,8 +531,8 @@ export default function PayrollPage() {
                                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Gross Earnings</p>
                                 <p className="text-2xl font-black italic text-zinc-900 tracking-tighter">₹{selectedPayslip.grossSalary.toLocaleString()}</p>
                             </div>
-                            <div className="p-8 bg-zinc-900 border-rose-500/20 rounded-[2.5rem] border flex flex-col items-center justify-center text-center shadow-2xl shadow-zinc-900/20">
-                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Total Deductions</p>
+                            <div className="p-8 bg-rose-50 border-rose-100 rounded-[2.5rem] border flex flex-col items-center justify-center text-center shadow-sm">
+                                <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Total Deductions</p>
                                 <p className="text-2xl font-black italic text-rose-500 tracking-tighter">₹{(selectedPayslip.tax + selectedPayslip.pf + selectedPayslip.insurance + selectedPayslip.leaveDeduction + selectedPayslip.otherDeductions).toLocaleString()}</p>
                             </div>
                             <div className="col-span-2 p-10 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-[3rem] text-white flex flex-col items-center justify-center text-center shadow-[0_40px_80px_-20px_rgba(16,185,129,0.3)] border-4 border-white/20">
@@ -587,7 +587,7 @@ export default function PayrollPage() {
                         <div className="pt-10 flex gap-4">
                             <button
                                 onClick={handlePrint}
-                                className="flex-1 bg-zinc-900 text-white py-6 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 shadow-3xl shadow-zinc-900/20 transition-all hover:-translate-y-1 active:scale-95 border-b-4 border-black"
+                                className="flex-1 bg-blue-600 text-white hover:bg-blue-700 py-6 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 shadow-3xl shadow-zinc-900/20 transition-all hover:-translate-y-1 active:scale-95 border-b-4 border-black"
                             >
                                 <Printer className="h-5 w-5" />
                                 Execute Print Command
@@ -690,7 +690,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                     {school?.logo ? (
                         <img src={school.logo} alt="School Logo" className="h-24 w-auto object-contain" />
                     ) : (
-                        <div className="h-20 w-20 bg-zinc-900 flex items-center justify-center text-white text-3xl font-black">{school?.name?.[0]}</div>
+                        <div className="h-20 w-20 bg-blue-600 flex items-center justify-center text-white text-3xl font-black">{school?.name?.[0]}</div>
                     )}
                     <div>
                         <h1 className="text-3xl font-black uppercase tracking-tighter italic">{school?.name}</h1>
@@ -700,7 +700,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                     </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-3 pt-4">
-                    <div className="bg-zinc-900 text-white px-8 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px]">Payslip Archive</div>
+                    <div className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px]">Payslip Archive</div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Document Reference</p>
                         <p className="text-sm font-black italic">#{payslip.id.toUpperCase()}</p>
@@ -729,7 +729,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                         )}
                     </div>
                 </div>
-                <div className="p-10 bg-zinc-900 text-white rounded-[2.5rem] flex flex-col justify-between shadow-2xl">
+                <div className="p-10 bg-blue-600 text-white hover:bg-blue-700 rounded-[2.5rem] flex flex-col justify-between shadow-2xl">
                     <div className="space-y-1">
                         <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Pay Period Verification</p>
                         <p className="text-2xl font-black italic tracking-tighter">

@@ -400,7 +400,7 @@ export default function IndividualStaffAttendanceReport() {
 
                 {/* Sidebar: Analytics & Leave Trends (Hidden in Print) */}
                 <div className="space-y-10 print:hidden">
-                    <div className="bg-zinc-900 p-10 rounded-[2.5rem] text-white space-y-8 shadow-2xl relative overflow-hidden group">
+                    <div className="bg-blue-600 p-10 rounded-[2.5rem] text-white space-y-8 shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-150 transition-transform duration-1000">
                             <Activity className="h-32 w-32" />
                         </div>

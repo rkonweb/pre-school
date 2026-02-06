@@ -8,6 +8,12 @@ export default async function AddStaffPage({ params }: { params: Promise<{ slug:
     const { data: employmentTypes } = await getMasterDataAction("EMPLOYMENT_TYPE");
     const { data: bloodGroups } = await getMasterDataAction("BLOOD_GROUP");
     const { data: genders } = await getMasterDataAction("GENDER");
+    const { data: subjects } = await getMasterDataAction("SUBJECT");
+
+    // Fetch Roles
+    const { getRolesAction } = await import("@/app/actions/role-actions");
+    const rolesRes = await getRolesAction(slug);
+    const roles = rolesRes.success ? rolesRes.roles : [];
 
     return (
         <AddStaffPageClient
@@ -17,6 +23,8 @@ export default async function AddStaffPage({ params }: { params: Promise<{ slug:
             employmentTypes={employmentTypes || []}
             bloodGroups={bloodGroups || []}
             genders={genders || []}
+            subjects={subjects || []}
+            roles={roles || []}
         />
     );
 }

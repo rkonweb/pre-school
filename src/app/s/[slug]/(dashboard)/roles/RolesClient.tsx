@@ -791,7 +791,7 @@ export default function RolesClient({
                                                     <button
                                                         onClick={saveStaffAccessChanges}
                                                         disabled={isSavingStaffAccess}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
                                                     >
                                                         {isSavingStaffAccess ? "Saving..." : <><Save className="h-3.5 w-3.5" /> Save Staff Mapping</>}
                                                     </button>

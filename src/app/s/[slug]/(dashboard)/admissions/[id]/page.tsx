@@ -423,7 +423,7 @@ export default function AdmissionDetailPage() {
                     {mode === "view" ? (
                         <button
                             onClick={() => setMode("edit")}
-                            className="bg-zinc-900 text-white h-12 px-6 rounded-2xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-xl shadow-zinc-200"
+                            className="bg-blue-600 text-white hover:bg-blue-700 h-12 px-6 rounded-2xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-xl shadow-zinc-200"
                         >
                             <Edit3 className="h-4 w-4" />
                             Edit Profile
@@ -669,7 +669,7 @@ export default function AdmissionDetailPage() {
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleUploadDoc(doc.key)}
-                                                                    className="h-10 px-6 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
+                                                                    className="h-10 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
                                                                 >
                                                                     Upload
                                                                 </button>
@@ -779,7 +779,7 @@ export default function AdmissionDetailPage() {
                                         className={cn(
                                             "py-3 px-2 text-[9px] font-black rounded-xl transition-all border-2 text-center",
                                             formData.officialStatus === s.id
-                                                ? "bg-zinc-900 border-zinc-900 text-white shadow-lg"
+                                                ? "bg-blue-600 border-zinc-900 text-white shadow-lg"
                                                 : "bg-zinc-50 border-zinc-50 text-zinc-400"
                                         )}
                                     >
@@ -944,7 +944,7 @@ export default function AdmissionDetailPage() {
                         )}
 
                         {formData.stage === "ENROLLED" && (
-                            <div className="mt-10 p-8 rounded-[32px] bg-zinc-900 text-white shadow-2xl shadow-zinc-200">
+                            <div className="mt-10 p-8 rounded-[32px] bg-blue-600 text-white hover:bg-blue-700 shadow-2xl shadow-zinc-200">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="h-8 w-8 bg-emerald-500 rounded-full flex items-center justify-center">
                                         <CheckCircle2 className="h-4 w-4 text-white" />

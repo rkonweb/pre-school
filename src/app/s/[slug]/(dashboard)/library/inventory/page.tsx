@@ -624,7 +624,7 @@ export default function LibraryInventoryPage() {
                             <button
                                 onClick={handleBulkSubmit}
                                 disabled={!bulkFile || isBulkUploading}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-zinc-800 disabled:opacity-50"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-zinc-800 disabled:opacity-50"
                             >
                                 {isBulkUploading && <Loader2 className="h-4 w-4 animate-spin" />}
                                 Upload & Process

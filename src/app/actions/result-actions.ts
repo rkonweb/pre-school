@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getCurrentUserAction } from "./session-actions";
 
-export async function recordMarksAction(schoolSlug: string, examId: string, results: { studentId: string; subject: string; marks?: number; grade?: string; remarks?: string }[]) {
+export async function recordMarksAction(schoolSlug: string, examId: string, results: { studentId: string; subject: string; marks?: number | null; grade?: string | null; status?: string | null; remarks?: string | null }[]) {
     try {
+        console.log(`Recording marks for exam ${examId}, count: ${results.length}`);
         const userRes = await getCurrentUserAction();
         if (!userRes.success) return { success: false, error: "Unauthorized" };
 
@@ -21,6 +22,7 @@ export async function recordMarksAction(schoolSlug: string, examId: string, resu
                 update: {
                     marks: res.marks,
                     grade: res.grade,
+                    status: res.status,
                     remarks: res.remarks
                 },
                 create: {
@@ -29,6 +31,7 @@ export async function recordMarksAction(schoolSlug: string, examId: string, resu
                     subject: res.subject,
                     marks: res.marks,
                     grade: res.grade,
+                    status: res.status,
                     remarks: res.remarks
                 }
             })

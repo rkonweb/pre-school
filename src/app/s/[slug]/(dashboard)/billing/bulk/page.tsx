@@ -212,7 +212,7 @@ export default function BulkInvoicePage() {
                         </button>
                         <Link
                             href={`/s/${slug}/billing`}
-                            className="flex items-center gap-2 rounded-xl bg-zinc-900 px-6 py-2.5 text-sm font-bold text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 shadow-lg shadow-zinc-200"
+                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 shadow-lg shadow-zinc-200"
                         >
                             <Copy className="h-4 w-4" />
                             View Invoices

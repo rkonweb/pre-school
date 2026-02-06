@@ -53,7 +53,7 @@ export default function SuperAdminWorksheetsPage() {
                     <p className="text-zinc-500">Super Admin visibility into worksheet usage and security overrides.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white dark:bg-zinc-50 dark:text-zinc-900">
+                    <button className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white dark:bg-zinc-50 dark:text-zinc-900">
                         <Activity className="h-4 w-4" />
                         Live Network Map
                     </button>

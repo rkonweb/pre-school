@@ -43,6 +43,13 @@ export function DiaryEntryModal({ schoolSlug, classrooms, initialData, selectedC
         e.preventDefault();
         setIsLoading(true);
 
+        // Only restrict past dates for new entries
+        if (!initialData && formData.scheduledFor && new Date(formData.scheduledFor) < new Date()) {
+            toast.error("Cannot schedule entries in the past");
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const data = {
                 ...formData,
@@ -160,6 +167,7 @@ export function DiaryEntryModal({ schoolSlug, classrooms, initialData, selectedC
                         <input
                             type="datetime-local"
                             value={formData.scheduledFor}
+                            min={new Date().toISOString().slice(0, 16)}
                             onChange={(e) => setFormData({ ...formData, scheduledFor: e.target.value })}
                             className="w-full px-4 py-3 rounded-xl border border-zinc-200 font-medium text-sm focus:ring-2 focus:ring-blue-600 outline-none"
                         />
