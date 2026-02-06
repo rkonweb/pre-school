@@ -534,12 +534,14 @@ export default function MasterDataPage() {
 
 function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
     const [isImporting, setIsImporting] = useState(false);
+    const [previewData, setPreviewData] = useState<any[] | null>(null);
+    const [fileHeaders, setFileHeaders] = useState<string[]>([]);
+    const [showPreview, setShowPreview] = useState(false);
 
     const handleExport = async () => {
         const toastId = toast.loading("Preparing full system export...");
 
         try {
-            // Fetch ALL data from server
             const res = await getAllMasterDataForExportAction();
 
             if (!res.success || !res.data) {
@@ -550,7 +552,6 @@ function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
             const allData = res.data;
             const wb = XLSX.utils.book_new();
 
-            // 1. Group data by Type
             const groupedData: Record<string, any[]> = {};
             allData.forEach((item: any) => {
                 const type = item.type || "Uncategorized";
@@ -558,19 +559,17 @@ function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
                 groupedData[type].push({
                     Name: item.name,
                     Code: item.code || "",
-                    ID: item.id, // Helpful for reference
+                    ID: item.id,
                     ParentID: item.parentId || ""
                 });
             });
 
-            // 2. Create a Sheet for each Type
             Object.keys(groupedData).sort().forEach(type => {
-                const sheetName = type.substring(0, 31); // Excel limit 31 chars
+                const sheetName = type.substring(0, 31);
                 const ws = XLSX.utils.json_to_sheet(groupedData[type]);
                 XLSX.utils.book_append_sheet(wb, ws, sheetName);
             });
 
-            // 3. Generate File
             const fileName = `FULL_MasterData_${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(wb, fileName);
 
@@ -589,31 +588,43 @@ function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
         setIsImporting(true);
         const reader = new FileReader();
 
-        reader.onload = async (event) => {
+        reader.onload = (event) => {
             try {
                 const bstr = event.target?.result;
-                let parsedData: any[] = [];
+                let parsed: any[] = [];
+                let headers: string[] = [];
 
                 if (file.name.endsWith(".csv")) {
-                    // CSV Parsing
                     Papa.parse(file, {
                         header: true,
+                        skipEmptyLines: true,
                         complete: (results) => {
-                            processImport(results.data);
+                            if (results.meta.fields) headers = results.meta.fields;
+                            parsed = results.data;
+                            setPreviewData(parsed);
+                            setFileHeaders(headers);
+                            setShowPreview(true);
+                            setIsImporting(false);
                         },
-                        error: (err: any) => {
+                        error: () => {
                             toast.error("Failed to parse CSV");
                             setIsImporting(false);
                         }
                     });
-                    return; // Async handled in callback
                 } else {
-                    // Excel Parsing
                     const wb = XLSX.read(bstr, { type: "binary" });
                     const wsname = wb.SheetNames[0];
                     const ws = wb.Sheets[wsname];
-                    parsedData = XLSX.utils.sheet_to_json(ws);
-                    await processImport(parsedData);
+                    parsed = XLSX.utils.sheet_to_json(ws);
+
+                    if (parsed.length > 0) {
+                        headers = Object.keys(parsed[0] as object);
+                    }
+
+                    setPreviewData(parsed);
+                    setFileHeaders(headers);
+                    setShowPreview(true);
+                    setIsImporting(false);
                 }
             } catch (error) {
                 console.error("File Read Error", error);
@@ -625,40 +636,19 @@ function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
         if (file.name.endsWith(".csv")) {
             reader.readAsText(file);
         } else {
-            reader.readAsBinaryString(file); // For XLSX
+            reader.readAsBinaryString(file);
         }
-
-        // Reset input
         e.target.value = "";
     };
 
-    const processImport = async (rawData: any[]) => {
-        // Normalize Validation
-        const cleanData = rawData
-            .map((row: any) => {
-                // Support various header formats
-                const name = row.Name || row.name || row.NAME;
-                const code = row.Code || row.code || row.CODE;
-                return { name, code };
-            })
-            .filter((item: any) => item.name && typeof item.name === 'string' && item.name.trim() !== "");
-
-        if (cleanData.length === 0) {
-            toast.error("No valid data found in file. Ensure 'Name' column exists.");
-            setIsImporting(false);
-            return;
-        }
-
-        if (!confirm(`Ready to import ${cleanData.length} items to ${selectedType}?`)) {
-            setIsImporting(false);
-            return;
-        }
-
-        const res = await bulkCreateMasterDataAction(selectedType, parentId || null, cleanData);
-
+    const handleImportConfirm = async (cleanedData: any[], strategy: string) => {
+        setIsImporting(true);
+        const res = await bulkCreateMasterDataAction(selectedType, parentId || null, cleanedData, strategy); // Pass strategy
         if (res.success) {
-            toast.success(`Successfully imported ${res.count} items`);
+            toast.success(`Import success: ${res.count} records processed`);
             onRefresh();
+            setShowPreview(false);
+            setPreviewData(null);
         } else {
             toast.error(res.error || "Import failed");
         }
@@ -666,36 +656,125 @@ function BulkActions({ data, selectedType, parentId, onRefresh }: any) {
     };
 
     return (
-        <div className="bg-white rounded-3xl border border-zinc-200 p-6 flex items-center justify-between shadow-sm">
-            <div>
-                <h3 className="font-bold text-lg text-zinc-900">Bulk Operations</h3>
-                <p className="text-sm text-zinc-500">Import or Export {selectedType} data.</p>
-            </div>
-            <div className="flex gap-4">
-                <button
-                    onClick={handleExport}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-sm transition-all"
-                >
-                    <Download className="h-4 w-4" />
-                    Export XLSX
-                </button>
-                <div className="relative">
-                    <input
-                        type="file"
-                        accept=".csv, .xlsx, .xls"
-                        onChange={handleFileUpload}
-                        disabled={isImporting}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                    />
-                    <button
-                        disabled={isImporting}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 font-bold text-sm transition-all disabled:opacity-50"
-                    >
-                        {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                        {isImporting ? "Importing..." : "Bulk Upload"}
+        <>
+            <div className="bg-white rounded-3xl border border-zinc-200 p-6 flex items-center justify-between shadow-sm">
+                <div>
+                    <h3 className="font-bold text-lg text-zinc-900">Bulk Operations</h3>
+                    <p className="text-sm text-zinc-500">Import or Export {selectedType} data.</p>
+                </div>
+                <div className="flex gap-4">
+                    <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-sm transition-all">
+                        <Download className="h-4 w-4" />
+                        Export XLSX
                     </button>
+                    <div className="relative">
+                        <input type="file" accept=".csv, .xlsx, .xls" onChange={handleFileUpload} disabled={isImporting} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" />
+                        <button disabled={isImporting} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 font-bold text-sm transition-all disabled:opacity-50">
+                            {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                            {isImporting ? "Processing..." : "Bulk Upload"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {showPreview && previewData && (
+                <ImportPreviewModal
+                    isOpen={showPreview}
+                    onClose={() => setShowPreview(false)}
+                    data={previewData}
+                    headers={fileHeaders}
+                    onConfirm={handleImportConfirm}
+                    targetType={selectedType}
+                />
+            )}
+        </>
+    );
+}
+
+function ImportPreviewModal({ isOpen, onClose, data, headers, onConfirm, targetType }: any) {
+    const [strategy, setStrategy] = useState("APPEND");
+
+    if (!isOpen) return null;
+
+    // Auto-detect columns
+    const nameCol = headers.find((h: string) => h.toLowerCase().includes("name")) || headers[0] || "";
+    const codeCol = headers.find((h: string) => h.toLowerCase().includes("code")) || "";
+
+    const handleConfirm = () => {
+        if (!nameCol) {
+            toast.error("Could not detect 'Name' column in your file");
+            return;
+        }
+
+        const cleaned = data.map((row: any) => ({
+            name: row[nameCol],
+            code: codeCol ? row[codeCol] : undefined
+        })).filter((i: any) => i.name);
+
+        onConfirm(cleaned, strategy);
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-[32px] w-full max-w-xl shadow-2xl flex flex-col max-h-[90vh]">
+                <div className="p-8 border-b border-zinc-100">
+                    <h3 className="text-xl font-black text-zinc-900">Import {data.length} {targetType} Records</h3>
+                    <p className="text-sm text-zinc-500 mt-1">Choose how to handle existing data</p>
+                </div>
+
+                <div className="p-8 overflow-y-auto space-y-6">
+                    <div className="space-y-3">
+                        <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Import Strategy</label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={() => setStrategy("APPEND")}
+                                className={cn("p-4 rounded-2xl border-2 text-left transition-all", strategy === "APPEND" ? "border-zinc-900 bg-zinc-50" : "border-zinc-100 hover:border-zinc-200")}
+                            >
+                                <span className="block font-bold text-sm text-zinc-900">Append Only</span>
+                                <span className="block text-xs text-zinc-500 mt-1">Add new records. Skip duplicates.</span>
+                            </button>
+                            <button
+                                onClick={() => setStrategy("UPDATE")}
+                                className={cn("p-4 rounded-2xl border-2 text-left transition-all", strategy === "UPDATE" ? "border-zinc-900 bg-zinc-50" : "border-zinc-100 hover:border-zinc-200")}
+                            >
+                                <span className="block font-bold text-sm text-zinc-900">Update Existing</span>
+                                <span className="block text-xs text-zinc-500 mt-1">Update fields if name matches. Add new otherwise.</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <label className="text-xs font-black text-zinc-400 uppercase tracking-widest">Preview (First 5 Rows)</label>
+                        <div className="bg-zinc-50 rounded-2xl p-4 overflow-x-auto">
+                            <table className="w-full text-left text-sm">
+                                <thead>
+                                    <tr className="border-b border-zinc-200">
+                                        <th className="pb-2 pr-4 font-bold text-zinc-600 text-xs">Name</th>
+                                        {codeCol && <th className="pb-2 font-bold text-zinc-600 text-xs">Code</th>}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.slice(0, 5).map((row: any, i: number) => (
+                                        <tr key={i} className="border-b border-zinc-100 last:border-0">
+                                            <td className="py-2 pr-4 font-medium text-zinc-900">{row[nameCol]}</td>
+                                            {codeCol && <td className="py-2 font-medium text-zinc-600">{row[codeCol] || "-"}</td>}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {data.length > 5 && (
+                                <p className="text-xs text-zinc-400 mt-3 text-center">+ {data.length - 5} more rows</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-8 border-t border-zinc-100 flex gap-4">
+                    <button onClick={onClose} className="flex-1 h-14 rounded-2xl border-2 border-zinc-100 font-black text-xs uppercase tracking-widest text-zinc-500 hover:bg-zinc-50 transition-all">Cancel</button>
+                    <button onClick={handleConfirm} className="flex-1 h-14 rounded-2xl bg-zinc-900 text-white font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl">Complete Import</button>
                 </div>
             </div>
         </div>
     );
 }
+
