@@ -17,7 +17,8 @@ import {
     Lock,
     MapPin,
     Video,
-    Cloud
+    Cloud,
+    HardDrive
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -77,6 +78,12 @@ export default function IntegrationsPage() {
             accessKey: "",
             secretKey: "",
             endpoint: ""
+        },
+        googleDrive: {
+            enabled: false,
+            clientEmail: "",
+            privateKey: "",
+            folderId: ""
         }
     });
 
@@ -115,6 +122,7 @@ export default function IntegrationsPage() {
         { id: "maps", label: "Google Maps", icon: MapPin, color: "text-red-500", bg: "bg-red-50" },
         { id: "zoom", label: "Zoom / Meet", icon: Video, color: "text-cyan-500", bg: "bg-cyan-50" },
         { id: "storage", label: "Cloud Drive", icon: Cloud, color: "text-sky-500", bg: "bg-sky-50" },
+        { id: "googleDrive", label: "Google Drive", icon: HardDrive, color: "text-green-500", bg: "bg-green-50" },
     ];
 
     if (loading) {
@@ -763,6 +771,100 @@ export default function IntegrationsPage() {
                                 )}
                             </div>
                         </section>
+                    </div>
+                )}
+
+                {activeTab === "googleDrive" && (
+                    <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                        <section className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Google Drive API</h3>
+                                    <p className="text-[10px] font-black text-zinc-400 tracking-widest uppercase italic">Service account for file uploads & storage</p>
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-100">
+                                    <div className={cn("h-2 w-2 rounded-full", config.googleDrive?.enabled ? "bg-green-500 animate-pulse" : "bg-zinc-300")} />
+                                    <span className="text-[9px] font-black text-green-600 uppercase tracking-widest">
+                                        {config.googleDrive?.enabled ? "Connected" : "Disconnected"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Integration Status</label>
+                                    <button
+                                        onClick={() => setConfig({ ...config, googleDrive: { ...config.googleDrive, enabled: !config.googleDrive?.enabled } })}
+                                        className={cn(
+                                            "w-full h-14 rounded-2xl border flex items-center justify-between px-6 transition-all",
+                                            config.googleDrive?.enabled ? "bg-green-50 border-green-200 text-green-900" : "bg-zinc-50 border-zinc-100 text-zinc-400"
+                                        )}
+                                    >
+                                        <span className="text-xs font-black uppercase tracking-widest">Enable Google Drive</span>
+                                        <div className={cn(
+                                            "w-10 h-5 rounded-full relative transition-all",
+                                            config.googleDrive?.enabled ? "bg-green-500" : "bg-zinc-200"
+                                        )}>
+                                            <div className={cn(
+                                                "absolute top-1 w-3 h-3 bg-white rounded-full transition-all",
+                                                config.googleDrive?.enabled ? "right-1" : "left-1"
+                                            )} />
+                                        </div>
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Folder ID (Optional)</label>
+                                    <input
+                                        placeholder="Leave empty for root folder"
+                                        value={config.googleDrive?.folderId}
+                                        onChange={(e) => setConfig({ ...config, googleDrive: { ...config.googleDrive, folderId: e.target.value } })}
+                                        className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 px-6 text-xs font-bold text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 transition-all font-mono"
+                                    />
+                                </div>
+                                <div className="space-y-3 md:col-span-2">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Service Account Email</label>
+                                    <div className="relative group">
+                                        <HardDrive className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 group-focus-within:text-green-500 transition-colors" />
+                                        <input
+                                            placeholder="your-service-account@project.iam.gserviceaccount.com"
+                                            value={config.googleDrive?.clientEmail}
+                                            onChange={(e) => setConfig({ ...config, googleDrive: { ...config.googleDrive, clientEmail: e.target.value } })}
+                                            className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 pl-14 pr-6 text-xs font-bold text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 transition-all font-mono"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-3 md:col-span-2">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Private Key (from JSON credentials)</label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-5 top-4 h-4 w-4 text-zinc-300 group-focus-within:text-green-500 transition-colors" />
+                                        <textarea
+                                            placeholder="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+                                            value={config.googleDrive?.privateKey}
+                                            onChange={(e) => setConfig({ ...config, googleDrive: { ...config.googleDrive, privateKey: e.target.value } })}
+                                            rows={4}
+                                            className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 pl-14 pr-6 py-4 text-xs font-bold text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 transition-all font-mono resize-none"
+                                        />
+                                    </div>
+                                    <p className="text-[10px] text-zinc-400 font-medium px-2">Paste the private_key value from your service account JSON file. Keep newlines intact.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="p-6 rounded-[24px] bg-green-50 border border-green-100 flex items-start gap-4">
+                            <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                                <ExternalLink className="h-4 w-4 text-green-500" />
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-black text-green-900 uppercase">Setup Instructions</h4>
+                                <ol className="text-[10px] font-medium text-green-700 mt-2 space-y-1 list-decimal list-inside">
+                                    <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" className="text-green-600 font-black hover:underline">Google Cloud Console</a></li>
+                                    <li>Create a Service Account and download the JSON key</li>
+                                    <li>Enable the Google Drive API for your project</li>
+                                    <li>Copy the client_email and private_key from the JSON file</li>
+                                    <li>(Optional) Create a folder in Google Drive and share it with the service account email</li>
+                                </ol>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
