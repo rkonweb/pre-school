@@ -14,11 +14,13 @@ import {
     Loader2,
     Search,
     ArrowRight,
-    ArrowLeft
+    ArrowLeft,
+    FileText
 } from "lucide-react";
 import { addDays, isBefore } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getSchoolSettingsAction } from "@/app/actions/settings-actions";
 
 export default function VehiclesPage() {
     const params = useParams();
@@ -27,10 +29,19 @@ export default function VehiclesPage() {
     const [vehicles, setVehicles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [brandColor, setBrandColor] = useState("#2D9CB8");
 
     useEffect(() => {
         fetchVehicles();
+        fetchSettings();
     }, [slug]);
+
+    async function fetchSettings() {
+        const res = await getSchoolSettingsAction(slug);
+        if (res.success && res.data?.brandColor) {
+            setBrandColor(res.data.brandColor);
+        }
+    }
 
     async function fetchVehicles() {
         setLoading(true);
@@ -92,7 +103,8 @@ export default function VehiclesPage() {
                 </div>
                 <Link
                     href={`/s/${slug}/transport/vehicles/new`}
-                    className="h-12 px-8 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-zinc-200 hover:bg-black hover:scale-[1.02] active:scale-95 transition-all"
+                    style={{ backgroundColor: brandColor }}
+                    className="h-12 px-8 text-white hover:opacity-90 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     Add Vehicle
@@ -101,14 +113,14 @@ export default function VehiclesPage() {
 
             {/* Controls */}
             <div className="flex flex-col gap-6">
-                <div className="relative group max-w-2xl">
-                    <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 group-focus-within:text-brand transition-colors" />
+                <div className="relative group max-w-2xl" style={{ '--brand-color': brandColor } as any}>
+                    <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 group-focus-within:text-[var(--brand-color)] transition-colors" />
                     <input
                         type="text"
                         placeholder="Search by registration number or model..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full h-12 rounded-2xl border border-zinc-200 bg-white pl-11 pr-4 text-sm font-medium focus:ring-2 focus:ring-brand outline-none transition-all shadow-sm dark:bg-zinc-950 dark:border-zinc-800"
+                        className="w-full h-12 rounded-2xl border border-zinc-200 bg-white pl-11 pr-4 text-sm font-medium focus:ring-2 focus:ring-[var(--brand-color)] outline-none transition-all shadow-sm dark:bg-zinc-950 dark:border-zinc-800"
                     />
                 </div>
 
@@ -154,7 +166,10 @@ export default function VehiclesPage() {
                                             <tr key={vehicle.id} className="group hover:bg-zinc-50/80 transition-all dark:hover:bg-zinc-900/50">
                                                 <td className="px-8 py-6">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                                                        <div
+                                                            style={{ backgroundColor: brandColor }}
+                                                            className="h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"
+                                                        >
                                                             <Bus className="h-5 w-5" />
                                                         </div>
                                                         <div>
@@ -185,19 +200,30 @@ export default function VehiclesPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-8 py-6">
-                                                    <div className="flex gap-1.5">
-                                                        {complianceStatus.map((s, idx) => (
+                                                    <div className="flex flex-col gap-2">
+                                                        <div className="flex gap-1.5">
+                                                            {complianceStatus.map((s, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    className={cn(
+                                                                        "h-2 w-6 rounded-full shadow-inner ring-1 ring-inset ring-black/5",
+                                                                        s === "VALID" ? "bg-emerald-400" :
+                                                                            s === "EXPIRING_SOON" ? "bg-amber-400" :
+                                                                                "bg-red-500"
+                                                                    )}
+                                                                    title={s}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                        {vehicle.documents && JSON.parse(vehicle.documents).length > 0 && (
                                                             <div
-                                                                key={idx}
-                                                                className={cn(
-                                                                    "h-2 w-6 rounded-full shadow-inner ring-1 ring-inset ring-black/5",
-                                                                    s === "VALID" ? "bg-emerald-400" :
-                                                                        s === "EXPIRING_SOON" ? "bg-amber-400" :
-                                                                            "bg-red-500"
-                                                                )}
-                                                                title={s}
-                                                            />
-                                                        ))}
+                                                                style={{ color: brandColor }}
+                                                                className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest"
+                                                            >
+                                                                <FileText className="h-3 w-3" />
+                                                                +{JSON.parse(vehicle.documents).length} Other(s)
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-6 text-right">

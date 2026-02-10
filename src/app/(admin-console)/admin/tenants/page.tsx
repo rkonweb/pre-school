@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
     Building2,
     CreditCard,
@@ -26,11 +28,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { getTenantsAction, updateTenantStatusAction, deleteTenantAction, updateTenantAction } from "@/app/actions/tenant-actions";
+import { getTenantsAction, updateTenantStatusAction, deleteTenantAction, updateTenantAction, impersonateTenantAction } from "@/app/actions/tenant-actions";
 import { Tenant } from "@/types/tenant";
 import { formatDistanceToNow } from "date-fns";
 
 export default function TenantManagementPage() {
+    const router = useRouter();
     const [tenants, setTenants] = useState<Tenant[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filter, setFilter] = useState("ALL");
@@ -298,7 +301,23 @@ export default function TenantManagementPage() {
                                                     <Pencil className="h-4 w-4" />
                                                 </Link>
                                                 <button
-                                                    onClick={() => alert(`Impersonating admin: ${tenant.adminName}`)}
+                                                    onClick={async () => {
+                                                        const loadingToast = toast.loading(`Impersonating ${tenant.adminName}...`);
+                                                        try {
+                                                            const result = await impersonateTenantAction(tenant.id);
+                                                            if (result.success && result.redirectUrl) {
+                                                                toast.dismiss(loadingToast);
+                                                                toast.success("Login successful! Redirecting...", { duration: 2000 });
+                                                                router.push(result.redirectUrl);
+                                                            } else {
+                                                                toast.dismiss(loadingToast);
+                                                                toast.error(result.error || "Impersonation failed");
+                                                            }
+                                                        } catch (error) {
+                                                            toast.dismiss(loadingToast);
+                                                            toast.error("Failed to impersonate");
+                                                        }
+                                                    }}
                                                     title="Impersonate"
                                                     className="p-2 rounded-lg text-zinc-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
                                                 >

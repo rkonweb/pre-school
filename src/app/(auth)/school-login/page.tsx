@@ -212,7 +212,7 @@ export default function LoginPage() {
                             <div className="space-y-5">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">Email Address</label>
-                                    <div className="group flex items-center w-full bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden focus-within:border-slate-900 focus-within:ring-4 focus-within:ring-slate-100 transition-all h-14">
+                                    <div className="group flex items-center w-full bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden focus-within:border-slate-900 focus-within:ring-4 focus-within:ring-slate-100 transition-all h-14" suppressHydrationWarning>
                                         <div className="px-5 h-full flex items-center justify-center text-slate-400">
                                             <Mail className="h-5 w-5" />
                                         </div>

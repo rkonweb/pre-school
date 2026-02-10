@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createVehicleAction } from "@/app/actions/transport-actions";
+import { uploadToSubfolderAction, deleteFileAction } from "@/app/actions/upload-actions";
+import { FileUpload } from "@/components/upload/FileUpload";
+import { getSchoolSettingsAction } from "@/app/actions/settings-actions";
 import {
     Bus,
     Loader2,
@@ -13,18 +16,37 @@ import {
     Check,
     Navigation,
     Activity,
-    FileText
+    FileText,
+    Upload,
+    X
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 export default function NewVehiclePage() {
     const params = useParams();
     const router = useRouter();
     const slug = params.slug as string;
 
+    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [activeUploads, setActiveUploads] = useState(0);
+    const isAnyFileUploading = activeUploads > 0;
     const [activeTab, setActiveTab] = useState<"BASIC" | "DOCS">("BASIC");
+    const [brandColor, setBrandColor] = useState("#2D9CB8");
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            const res = await getSchoolSettingsAction(slug);
+            if (res.success && res.data?.brandColor) {
+                setBrandColor(res.data.brandColor);
+            }
+            setLoading(false);
+        };
+        fetchSettings();
+    }, [slug]);
+
     const [formData, setFormData] = useState({
         registrationNumber: "",
         model: "",
@@ -41,8 +63,37 @@ export default function NewVehiclePage() {
         permitNumber: "",
         permitExpiry: "",
         permitDocUrl: "",
-        rcDocUrl: ""
+        rcDocUrl: "",
+        documents: [] as { name: string, url: string }[]
     });
+
+    const addDocument = () => {
+        setFormData(prev => ({
+            ...prev,
+            documents: [...prev.documents, { name: "", url: "" }]
+        }));
+    };
+
+    const removeDocument = async (index: number) => {
+        const doc = formData.documents[index];
+        if (doc.url) {
+            const confirm = window.confirm(`Are you sure you want to remove this document and delete the file from Google Drive?`);
+            if (!confirm) return;
+            await deleteFileAction(doc.url, slug);
+        }
+
+        setFormData(prev => ({
+            ...prev,
+            documents: prev.documents.filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateDocument = (index: number, field: "name" | "url", value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            documents: prev.documents.map((doc, i) => i === index ? { ...doc, [field]: value } : doc)
+        }));
+    };
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -63,198 +114,310 @@ export default function NewVehiclePage() {
     }
 
     return (
-        <div className="flex flex-col gap-10 pb-20">
-            {/* Standardized Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div className="flex items-center gap-6">
-                    <button
-                        onClick={() => router.back()}
-                        className="group flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white transition-all hover:border-zinc-900 active:scale-95 shadow-sm"
-                    >
-                        <ArrowLeft className="h-5 w-5 text-zinc-500 group-hover:text-zinc-900" />
-                    </button>
-                    <div>
-                        <h1 className="text-3xl font-black tracking-tight text-zinc-900 uppercase">
-                            Commission Unit
-                        </h1>
-                        <p className="text-sm text-zinc-500 font-medium mt-0.5">
-                            Initialize a new operational asset into the cluster's transit network.
-                        </p>
-                    </div>
+        <div className="flex flex-col gap-8 pb-20" style={{ '--brand-color': brandColor } as any}>
+            {/* Header */}
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={() => router.back()}
+                    className="p-2 hover:bg-zinc-100 rounded-lg transition-colors"
+                >
+                    <ArrowLeft className="h-5 w-5 text-zinc-500" />
+                </button>
+                <div>
+                    <h1 className="text-2xl font-bold text-zinc-900">Add New Vehicle</h1>
+                    <p className="text-sm text-zinc-500">Enter vehicle details to add to fleet.</p>
                 </div>
             </div>
 
-            {/* Config Engine */}
-            <div className="grid lg:grid-cols-12 gap-10">
-                {/* Phase Selection */}
-                <div className="lg:col-span-3 space-y-4">
+            <div className="grid lg:grid-cols-12 gap-8">
+                {/* Sidebar Navigation */}
+                <div className="lg:col-span-3 space-y-2">
                     <button
                         onClick={() => setActiveTab("BASIC")}
                         className={cn(
-                            "w-full flex items-center justify-between p-6 rounded-[28px] border-2 transition-all group",
+                            "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                             activeTab === "BASIC"
-                                ? "border-zinc-900 bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-zinc-200"
-                                : "border-zinc-100 bg-white text-zinc-400 hover:border-zinc-200"
+                                ? "bg-white shadow-sm border border-zinc-200"
+                                : "text-zinc-600 hover:bg-zinc-50"
                         )}
+                        style={activeTab === "BASIC" ? { borderLeft: `4px solid ${brandColor}`, color: brandColor } : {}}
                     >
-                        <div className="text-left">
-                            <div className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">Phase 01</div>
-                            <div className="text-sm font-black uppercase tracking-tight italic">Core Telemetry</div>
-                        </div>
-                        <Activity className={cn("h-5 w-5", activeTab === "BASIC" ? "text-brand" : "text-zinc-200 group-hover:text-zinc-400")} />
+                        <Bus className="h-4 w-4" />
+                        Basic Information
                     </button>
-
                     <button
                         onClick={() => setActiveTab("DOCS")}
                         className={cn(
-                            "w-full flex items-center justify-between p-6 rounded-[28px] border-2 transition-all group",
+                            "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                             activeTab === "DOCS"
-                                ? "border-zinc-900 bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-zinc-200"
-                                : "border-zinc-100 bg-white text-zinc-400 hover:border-zinc-200"
+                                ? "bg-white shadow-sm border border-zinc-200"
+                                : "text-zinc-600 hover:bg-zinc-50"
                         )}
+                        style={activeTab === "DOCS" ? { borderLeft: `4px solid ${brandColor}`, color: brandColor } : {}}
                     >
-                        <div className="text-left">
-                            <div className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">Phase 02</div>
-                            <div className="text-sm font-black uppercase tracking-tight italic">Compliance Matrix</div>
-                        </div>
-                        <Shield className={cn("h-5 w-5", activeTab === "DOCS" ? "text-brand" : "text-zinc-200 group-hover:text-zinc-400")} />
+                        <Shield className="h-4 w-4" />
+                        Documents & Compliance
                     </button>
                 </div>
 
-                {/* Parameter Matrix */}
+                {/* Main Form Area */}
                 <div className="lg:col-span-9">
-                    <form onSubmit={handleSubmit} className="rounded-[40px] bg-white p-10 border border-zinc-200 shadow-xl shadow-zinc-200/40 relative overflow-hidden">
-                        {activeTab === "BASIC" ? (
-                            <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
-                                <SectionHeading icon={Bus} title="Unit Identity" />
+                    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
+                        <div className="p-6 md:p-8">
+                            {activeTab === "BASIC" ? (
+                                <div className="space-y-6 animate-in fade-in duration-300">
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                                            <Bus className="h-5 w-5 text-blue-600" />
+                                            Vehicle Details
+                                        </h3>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Registration Identifier</label>
-                                    <input
-                                        required
-                                        placeholder="TN-01-AB-1234"
-                                        className="w-full h-14 rounded-xl border border-zinc-200 bg-white px-5 text-sm font-bold focus:ring-2 focus:ring-brand outline-none transition-all shadow-sm"
-                                        value={formData.registrationNumber}
-                                        onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value.toUpperCase() })}
-                                    />
-                                </div>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-sm font-medium text-zinc-700">Registration Number</label>
+                                                <input
+                                                    required
+                                                    placeholder="e.g. TN-01-AB-1234"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-[var(--brand-color)] focus:border-[var(--brand-color)] outline-none transition-all"
+                                                    value={formData.registrationNumber}
+                                                    onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value.toUpperCase() })}
+                                                />
+                                            </div>
 
-                                <div className="grid grid-cols-2 gap-8">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Unit Model / Make</label>
-                                        <input
-                                            placeholder="Tata Marcopolo XL"
-                                            className="w-full h-14 rounded-xl border border-zinc-200 bg-white px-5 text-sm font-bold focus:ring-2 focus:ring-brand outline-none transition-all shadow-sm"
-                                            value={formData.model}
-                                            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                                        />
+                                            <div className="space-y-1.5">
+                                                <label className="text-sm font-medium text-zinc-700">Model / Make</label>
+                                                <input
+                                                    placeholder="e.g. Tata Marcopolo"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                    value={formData.model}
+                                                    onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-1.5">
+                                                <label className="text-sm font-medium text-zinc-700">Seating Capacity</label>
+                                                <input
+                                                    required
+                                                    type="number"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                    value={formData.capacity}
+                                                    onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-1.5">
+                                                <label className="text-sm font-medium text-zinc-700">Status</label>
+                                                <select
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+                                                    value={formData.status}
+                                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                                >
+                                                    <option value="ACTIVE">Active</option>
+                                                    <option value="MAINTENANCE">Maintenance</option>
+                                                    <option value="INACTIVE">Inactive</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Payload Capacity</label>
-                                        <input
-                                            required
-                                            type="number"
-                                            className="w-full h-14 rounded-xl border border-zinc-200 bg-white px-5 text-sm font-bold focus:ring-2 focus:ring-brand outline-none transition-all shadow-sm"
-                                            value={formData.capacity}
-                                            onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                                        />
-                                    </div>
                                 </div>
+                            ) : (
+                                <div className="space-y-8 animate-in fade-in duration-300">
+                                    {/* Insurance */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                                            <Shield className="h-5 w-5 text-emerald-600" />
+                                            Insurance Limits
+                                        </h3>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-sm font-medium text-zinc-700">Policy Number</label>
+                                                <input
+                                                    placeholder="Policy Number"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                                    value={formData.insuranceNumber}
+                                                    onChange={(e) => setFormData({ ...formData, insuranceNumber: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-sm font-medium text-zinc-700">Expiry Date</label>
+                                                <input
+                                                    type="date"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                                    value={formData.insuranceExpiry}
+                                                    onChange={(e) => setFormData({ ...formData, insuranceExpiry: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="text-sm font-medium text-zinc-700 mb-1.5 block">Insurance Document</label>
+                                                <FileUpload
+                                                    value={formData.insuranceDocUrl}
+                                                    onUpload={(url) => setFormData({ ...formData, insuranceDocUrl: url })}
+                                                    onUploadingStateChange={(isUploading) => setActiveUploads(prev => isUploading ? prev + 1 : Math.max(0, prev - 1))}
+                                                    schoolSlug={slug}
+                                                    mainFolder="Vehicles"
+                                                    subFolder={formData.registrationNumber}
+                                                    label="Insurance Certificate"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 block">Initial Readiness State</label>
-                                    <div className="flex flex-wrap gap-4">
-                                        {["ACTIVE", "MAINTENANCE", "INACTIVE"].map((s) => (
+                                    {/* Pollution */}
+                                    <div className="pt-6 border-t border-zinc-100 space-y-4">
+                                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                                            <AlertCircle className="h-5 w-5 text-amber-600" />
+                                            Pollution Certificate
+                                        </h3>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-sm font-medium text-zinc-700">Certificate Number</label>
+                                                <input
+                                                    placeholder="PUC Number"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
+                                                    value={formData.pollutionNumber}
+                                                    onChange={(e) => setFormData({ ...formData, pollutionNumber: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-sm font-medium text-zinc-700">Expiry Date</label>
+                                                <input
+                                                    type="date"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
+                                                    value={formData.pollutionExpiry}
+                                                    onChange={(e) => setFormData({ ...formData, pollutionExpiry: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="text-sm font-medium text-zinc-700 mb-1.5 block">Pollution Document</label>
+                                                <FileUpload
+                                                    value={formData.pollutionDocUrl}
+                                                    onUpload={(url) => setFormData({ ...formData, pollutionDocUrl: url })}
+                                                    onUploadingStateChange={(isUploading) => setActiveUploads(prev => isUploading ? prev + 1 : Math.max(0, prev - 1))}
+                                                    schoolSlug={slug}
+                                                    mainFolder="Vehicles"
+                                                    subFolder={formData.registrationNumber}
+                                                    label="Pollution Certificate"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Fitness */}
+                                    <div className="pt-6 border-t border-zinc-100 space-y-4">
+                                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                                            <Wrench className="h-5 w-5 text-indigo-600" />
+                                            Fitness Certificate
+                                        </h3>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-sm font-medium text-zinc-700">Fitness Expiry Date</label>
+                                                <input
+                                                    type="date"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                                    value={formData.fitnessExpiry}
+                                                    onChange={(e) => setFormData({ ...formData, fitnessExpiry: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="text-sm font-medium text-zinc-700 mb-1.5 block">Fitness Document</label>
+                                                <FileUpload
+                                                    value={formData.fitnessDocUrl}
+                                                    onUpload={(url) => setFormData({ ...formData, fitnessDocUrl: url })}
+                                                    onUploadingStateChange={(isUploading) => setActiveUploads(prev => isUploading ? prev + 1 : Math.max(0, prev - 1))}
+                                                    schoolSlug={slug}
+                                                    mainFolder="Vehicles"
+                                                    subFolder={formData.registrationNumber}
+                                                    label="Fitness Certificate"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Additional Documents */}
+                                    <div className="pt-6 border-t border-zinc-100 space-y-4">
+                                        <h3 className="text-lg font-semibold flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <FileText className="h-5 w-5 text-gray-600" />
+                                                Additional Documents
+                                            </div>
                                             <button
-                                                key={s}
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, status: s })}
-                                                className={cn(
-                                                    "px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm",
-                                                    formData.status === s
-                                                        ? "bg-blue-600 text-white hover:bg-blue-700 border-zinc-900 shadow-lg"
-                                                        : "bg-white text-zinc-400 border-zinc-200 hover:border-zinc-900 hover:text-zinc-900"
-                                                )}
+                                                onClick={addDocument}
+                                                className="text-xs bg-zinc-900 text-white px-3 py-1.5 rounded-lg hover:bg-zinc-700 transition-colors"
                                             >
-                                                {s}
+                                                + Add Document
                                             </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500">
-                                {/* Insurance */}
-                                <div className="space-y-8">
-                                    <SectionHeading icon={Shield} title="Insurance Parameters" color="bg-emerald-50 text-emerald-600" />
-                                    <div className="grid grid-cols-2 gap-8 px-1">
-                                        <DocField
-                                            label="Policy Reference"
-                                            value={formData.insuranceNumber}
-                                            onChange={(v) => setFormData({ ...formData, insuranceNumber: v })}
-                                            placeholder="POL-2024-XXXX"
-                                        />
-                                        <DocField
-                                            label="Termination Date"
-                                            type="date"
-                                            value={formData.insuranceExpiry}
-                                            onChange={(v) => setFormData({ ...formData, insuranceExpiry: v })}
-                                        />
-                                    </div>
-                                </div>
+                                        </h3>
 
-                                {/* Pollution */}
-                                <div className="space-y-8 pt-10 border-t border-zinc-100">
-                                    <SectionHeading icon={AlertCircle} title="Emission Compliance" color="bg-amber-50 text-amber-600" />
-                                    <div className="grid grid-cols-2 gap-8 px-1">
-                                        <DocField
-                                            label="Certificate ID"
-                                            value={formData.pollutionNumber}
-                                            onChange={(v) => setFormData({ ...formData, pollutionNumber: v })}
-                                            placeholder="PUC-XXXX-XXXX"
-                                        />
-                                        <DocField
-                                            label="Expiry Sequence"
-                                            type="date"
-                                            value={formData.pollutionExpiry}
-                                            onChange={(v) => setFormData({ ...formData, pollutionExpiry: v })}
-                                        />
+                                        <div className="space-y-4">
+                                            {formData.documents.map((doc, index) => (
+                                                <div key={index} className="p-4 bg-zinc-50 rounded-xl border border-zinc-200 relative group animate-in slide-in-from-top-2 duration-200">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeDocument(index)}
+                                                        className="absolute top-2 right-2 p-1 text-zinc-400 hover:text-red-500 rounded-full hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </button>
+                                                    <div className="grid md:grid-cols-2 gap-4">
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-sm font-medium text-zinc-700">Document Name</label>
+                                                            <input
+                                                                placeholder="e.g. Permit, Tax Token"
+                                                                className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                                value={doc.name}
+                                                                onChange={(e) => updateDocument(index, "name", e.target.value)}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-sm font-medium text-zinc-700">File</label>
+                                                            <FileUpload
+                                                                value={doc.url}
+                                                                onUpload={(url) => updateDocument(index, "url", url)}
+                                                                onUploadingStateChange={(isUploading) => {
+                                                                    setActiveUploads(prev => isUploading ? prev + 1 : Math.max(0, prev - 1));
+                                                                }}
+                                                                schoolSlug={slug}
+                                                                mainFolder="Vehicles"
+                                                                subFolder={formData.registrationNumber}
+                                                                label={doc.name || "Additional Document"}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {formData.documents.length === 0 && (
+                                                <div className="text-center py-8 text-zinc-400 text-sm border-2 border-dashed border-zinc-100 rounded-xl">
+                                                    No additional documents added.
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
+                            )}
+                        </div>
 
-                                {/* Fitness */}
-                                <div className="space-y-8 pt-10 border-t border-zinc-100">
-                                    <SectionHeading icon={Wrench} title="Fitness Verification" color="bg-indigo-50 text-indigo-600" />
-                                    <div className="px-1">
-                                        <DocField
-                                            label="Inspectorate Expiry Date"
-                                            type="date"
-                                            value={formData.fitnessExpiry}
-                                            onChange={(v) => setFormData({ ...formData, fitnessExpiry: v })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Control Deck */}
-                        <div className="mt-16 pt-10 border-t border-zinc-100 flex items-center justify-end">
+                        {/* Footer Actions */}
+                        <div className="bg-zinc-50 px-6 py-4 border-t border-zinc-200 flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => router.back()}
+                                className="px-4 py-2 text-sm font-medium text-zinc-700 bg-white border border-zinc-300 rounded-lg hover:bg-zinc-50"
+                            >
+                                Cancel
+                            </button>
                             <button
                                 type="submit"
-                                disabled={submitting}
-                                className="h-14 rounded-2xl bg-blue-600 px-10 text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                disabled={submitting || isAnyFileUploading}
+                                className="h-10 px-6 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                style={{ backgroundColor: brandColor }}
                             >
-                                {submitting ? (
+                                {(submitting || isAnyFileUploading) ? (
                                     <>
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                        Finalizing Initialization
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        {isAnyFileUploading ? "Uploading Documents..." : "Saving..."}
                                     </>
-                                ) : (
-                                    <>
-                                        <Check className="h-5 w-5 text-brand" />
-                                        Initialize Commissioning
-                                    </>
-                                )}
+                                ) : "Create Vehicle"}
                             </button>
                         </div>
                     </form>
@@ -271,21 +434,6 @@ function SectionHeading({ icon: Icon, title, color = "bg-blue-600 text-white hov
                 <Icon className="h-5 w-5" />
             </div>
             <h3 className="text-sm font-black text-zinc-900 uppercase tracking-tight">{title}</h3>
-        </div>
-    );
-}
-
-function DocField({ label, value, onChange, type = "text", placeholder }: { label: string, value: string, onChange: (v: string) => void, type?: string, placeholder?: string }) {
-    return (
-        <div className="space-y-2">
-            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">{label}</label>
-            <input
-                type={type}
-                placeholder={placeholder}
-                className="w-full h-12 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-bold focus:ring-2 focus:ring-brand outline-none transition-all shadow-sm"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-            />
         </div>
     );
 }

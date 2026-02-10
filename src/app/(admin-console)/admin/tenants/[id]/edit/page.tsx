@@ -124,6 +124,7 @@ export default function EditTenantPage() {
                 setPlans(plansData);
 
                 if (tenant) {
+                    console.log("📊 Fetched Tenant Data:", tenant);
                     setFormData({
                         schoolName: tenant.name,
                         subdomain: tenant.subdomain || "",

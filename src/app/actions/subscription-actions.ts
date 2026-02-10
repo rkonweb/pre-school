@@ -228,3 +228,240 @@ export async function reorderSubscriptionPlansAction(items: { id: string, sortOr
         return { success: false, error: error.message };
     }
 }
+
+/**
+ * Get all available subscription plans for upgrade selection
+ */
+export async function getAvailablePlansAction() {
+    try {
+        const plans = await prisma.subscriptionPlan.findMany({
+            where: {
+                isActive: true
+            },
+            orderBy: [
+                { sortOrder: 'asc' },
+                { price: 'asc' }
+            ],
+            select: {
+                id: true,
+                name: true,
+                slug: true,
+                description: true,
+                price: true,
+                currency: true,
+                billingPeriod: true,
+                features: true,
+                maxStudents: true,
+                maxStaff: true,
+                maxStorageGB: true,
+                tier: true,
+                supportLevel: true,
+                isPopular: true,
+                includedModules: true,
+            }
+        });
+
+        // Parse JSON fields
+        const parsedPlans = plans.map(plan => ({
+            ...plan,
+            features: typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features,
+            includedModules: typeof plan.includedModules === 'string' ? JSON.parse(plan.includedModules) : plan.includedModules,
+        }));
+
+        return {
+            success: true,
+            data: parsedPlans
+        };
+    } catch (error) {
+        console.error("Error fetching plans:", error);
+        return {
+            success: false,
+            error: "Failed to fetch subscription plans"
+        };
+    }
+}
+
+/**
+ * Upgrade subscription plan
+ */
+export async function upgradePlanAction(schoolSlug: string, newPlanId: string) {
+    try {
+        // Get school with current subscription
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug },
+            select: {
+                id: true,
+                subscription: {
+                    select: {
+                        id: true,
+                        planId: true,
+                        plan: {
+                            select: {
+                                tier: true,
+                                price: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!school) {
+            return {
+                success: false,
+                error: "School not found"
+            };
+        }
+
+        // Get new plan details
+        const newPlan = await prisma.subscriptionPlan.findUnique({
+            where: { id: newPlanId },
+            select: {
+                id: true,
+                name: true,
+                tier: true,
+                price: true,
+                billingPeriod: true,
+                includedModules: true,
+            }
+        });
+
+        if (!newPlan) {
+            return {
+                success: false,
+                error: "Plan not found"
+            };
+        }
+
+        // Validate upgrade (prevent downgrades without explicit confirmation)
+        const tierOrder = { free: 0, basic: 1, premium: 2, enterprise: 3 };
+        const currentTier = school.subscription?.plan?.tier || "free";
+        const newTier = newPlan.tier;
+
+        if (tierOrder[newTier as keyof typeof tierOrder] < tierOrder[currentTier as keyof typeof tierOrder]) {
+            return {
+                success: false,
+                error: "Downgrades require manual confirmation. Please contact support."
+            };
+        }
+
+        // Calculate new end date
+        const now = new Date();
+        const endDate = new Date(now);
+        if (newPlan.billingPeriod === "monthly") {
+            endDate.setMonth(endDate.getMonth() + 1);
+        } else if (newPlan.billingPeriod === "yearly") {
+            endDate.setFullYear(endDate.getFullYear() + 1);
+        }
+
+        // Update subscription
+        if (school.subscription) {
+            await prisma.subscription.update({
+                where: { id: school.subscription.id },
+                data: {
+                    planId: newPlanId,
+                    status: "ACTIVE",
+                    endDate: endDate,
+                }
+            });
+        } else {
+            // Create new subscription if none exists
+            await prisma.subscription.create({
+                data: {
+                    schoolId: school.id,
+                    planId: newPlanId,
+                    status: "ACTIVE",
+                    startDate: now,
+                    endDate: endDate,
+                }
+            });
+        }
+
+        // Update school's modules config if needed
+        if (newPlan.includedModules) {
+            const modules = typeof newPlan.includedModules === 'string'
+                ? JSON.parse(newPlan.includedModules)
+                : newPlan.includedModules;
+
+            await prisma.school.update({
+                where: { id: school.id },
+                data: {
+                    modulesConfig: JSON.stringify(modules)
+                }
+            });
+        }
+
+        revalidatePath(`/s/${schoolSlug}/dashboard`);
+        revalidatePath(`/s/${schoolSlug}/settings`);
+
+        return {
+            success: true,
+            data: {
+                message: `Successfully upgraded to ${newPlan.name}!`,
+                newPlan: {
+                    name: newPlan.name,
+                    tier: newPlan.tier,
+                },
+                endDate: endDate.toISOString(),
+            }
+        };
+    } catch (error) {
+        console.error("Error upgrading plan:", error);
+        return {
+            success: false,
+            error: "Failed to upgrade plan"
+        };
+    }
+}
+
+/**
+ * Calculate pro-rated upgrade price
+ */
+export async function calculateUpgradePriceAction(
+    currentPlanId: string,
+    newPlanId: string,
+    daysRemaining: number
+) {
+    try {
+        const [currentPlan, newPlan] = await Promise.all([
+            prisma.subscriptionPlan.findUnique({
+                where: { id: currentPlanId },
+                select: { price: true, billingPeriod: true }
+            }),
+            prisma.subscriptionPlan.findUnique({
+                where: { id: newPlanId },
+                select: { price: true, billingPeriod: true }
+            })
+        ]);
+
+        if (!currentPlan || !newPlan) {
+            return {
+                success: false,
+                error: "Plans not found"
+            };
+        }
+
+        // Simple pro-rated calculation
+        const daysInPeriod = currentPlan.billingPeriod === "yearly" ? 365 : 30;
+        const unusedCredit = (currentPlan.price / daysInPeriod) * daysRemaining;
+        const newPlanCost = newPlan.price;
+        const amountToPay = Math.max(0, newPlanCost - unusedCredit);
+
+        return {
+            success: true,
+            data: {
+                currentPlanPrice: currentPlan.price,
+                newPlanPrice: newPlan.price,
+                unusedCredit: Math.round(unusedCredit * 100) / 100,
+                amountToPay: Math.round(amountToPay * 100) / 100,
+                daysRemaining,
+            }
+        };
+    } catch (error) {
+        console.error("Error calculating price:", error);
+        return {
+            success: false,
+            error: "Failed to calculate upgrade price"
+        };
+    }
+}

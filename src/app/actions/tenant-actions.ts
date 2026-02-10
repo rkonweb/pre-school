@@ -376,3 +376,45 @@ export async function getTenantByIdAction(id: string): Promise<Tenant | undefine
         return undefined;
     }
 }
+
+// --- Impersonate Tenant Admin ---
+export async function impersonateTenantAction(tenantId: string) {
+    try {
+        // 1. Verify Super Admin (Security Check)
+        const { isSuperAdminAuthenticated } = await import("./admin-auth-actions");
+        const isAuth = await isSuperAdminAuthenticated();
+
+        if (!isAuth) {
+            return { success: false, error: "Unauthorized: Super Admin access required" };
+        }
+
+        // 2. Find the Tenant Admin
+        const adminUser = await prisma.user.findFirst({
+            where: {
+                schoolId: tenantId,
+                role: "ADMIN"
+            },
+            include: {
+                school: true
+            }
+        });
+
+        if (!adminUser || !adminUser.school) {
+            return { success: false, error: "Tenant admin not found" };
+        }
+
+        // 3. Set Session for this user
+        const { setUserSessionAction } = await import("./session-actions");
+        await setUserSessionAction(adminUser.id);
+
+        // 4. Return Redirect URL
+        return {
+            success: true,
+            redirectUrl: `/s/${adminUser.school.slug}/dashboard`
+        };
+
+    } catch (error: any) {
+        console.error("Impersonation Error:", error);
+        return { success: false, error: error.message };
+    }
+}

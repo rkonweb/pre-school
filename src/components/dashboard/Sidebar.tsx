@@ -104,7 +104,6 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                 { name: "Progress Reports", href: `/s/${slug}/students/reports`, icon: FileSpreadsheet }, // Key: students.reports
             ]
         },
-        { name: "Classroom", href: `/s/${slug}/classroom`, icon: BookOpen }, // Key: academics.classes (using classes permission for classroom view)
         { name: "Classes", href: `/s/${slug}/academics/classes`, icon: Layers }, // Key: academics.classes
         { name: "Timetable", href: `/s/${slug}/academics/timetable`, icon: Clock }, // Key: academics.timetable
         { name: "Diary", href: `/s/${slug}/diary`, icon: NotebookPen }, // Key: diary

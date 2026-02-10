@@ -5,9 +5,11 @@ async function main() {
     console.log("🌱 Starting Database Seeding...");
 
     const scripts = [
+
         "scripts/seed-master-data.ts",
         "scripts/seed-geo-data.ts",
-        "scripts/seed-indian-cities.ts"
+        "scripts/seed-indian-cities.ts",
+        "scripts/import-training-snapshot.ts"
     ];
 
     for (const script of scripts) {

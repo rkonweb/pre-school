@@ -86,8 +86,8 @@ export async function createClassroomAction(schoolSlug: string, name: string, te
         }
     });
 
-    revalidatePath(`/s/${schoolSlug}/classroom`);
-    return classroom;
+    revalidatePath(`/s/${schoolSlug}/academics/classes`);
+    return { success: true, data: classroom };
 }
 
 export async function updateClassroomAction(schoolSlug: string, id: string, data: any) {
@@ -101,7 +101,7 @@ export async function updateClassroomAction(schoolSlug: string, id: string, data
             where: { id },
             data: updateData
         });
-        revalidatePath(`/s/${schoolSlug}/classroom`);
+        revalidatePath(`/s/${schoolSlug}/academics/classes`);
         return { success: true, classroom };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -113,7 +113,7 @@ export async function deleteClassroomAction(schoolSlug: string, id: string) {
         await prisma.classroom.delete({
             where: { id }
         });
-        revalidatePath(`/s/${schoolSlug}/classroom`);
+        revalidatePath(`/s/${schoolSlug}/academics/classes`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };

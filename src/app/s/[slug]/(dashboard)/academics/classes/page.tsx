@@ -9,22 +9,14 @@ import {
     BookOpen,
     Edit3,
     Trash2,
-    CheckCircle2,
-    X,
     User,
     School,
-    MoreHorizontal,
     Calendar,
-    Clock,
-    Save,
     MapPin,
     LayoutGrid
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { getClassroomsAction, createClassroomAction, updateClassroomAction, deleteClassroomAction } from "@/app/actions/classroom-actions";
-import { getStaffAction } from "@/app/actions/staff-actions";
-import { getMasterDataAction } from "@/app/actions/master-data-actions";
+import { getClassroomsAction, deleteClassroomAction } from "@/app/actions/classroom-actions";
 
 export default function ClassesPage() {
     const params = useParams();
@@ -33,14 +25,7 @@ export default function ClassesPage() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [classrooms, setClassrooms] = useState<any[]>([]);
-    const [staff, setStaff] = useState<any[]>([]);
-    const [grades, setGrades] = useState<any[]>([]);
-    const [sections, setSections] = useState<any[]>([]);
     const [search, setSearch] = useState("");
-
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingClass, setEditingClass] = useState<any>(null);
-    const [timetableClass, setTimetableClass] = useState<any>(null);
 
     useEffect(() => {
         loadData();
@@ -49,17 +34,13 @@ export default function ClassesPage() {
     async function loadData(showLoading = true) {
         if (showLoading) setIsLoading(true);
         try {
-            const [classesRes, staffRes, gradesRes, sectionsRes] = await Promise.all([
-                getClassroomsAction(slug),
-                getStaffAction(slug),
-                getMasterDataAction("GRADE", null),
-                getMasterDataAction("SECTION", null)
-            ]);
+            const classesRes = await getClassroomsAction(slug);
 
-            if (classesRes.success) setClassrooms(classesRes.data || []);
-            if (staffRes.success) setStaff(staffRes.data || []);
-            if (gradesRes.success) setGrades(gradesRes.data || []);
-            if (sectionsRes.success) setSections(sectionsRes.data || []);
+            if (classesRes.success) {
+                setClassrooms(classesRes.data || []);
+            } else {
+                toast.error("Failed to load classes");
+            }
 
         } catch (error) {
             toast.error("Failed to load data");
@@ -69,9 +50,9 @@ export default function ClassesPage() {
         }
     }
 
-    const filteredClasses = classrooms.filter(c =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.teacher?.firstName?.toLowerCase().includes(search.toLowerCase())
+    const filteredClasses = (classrooms || []).filter(c =>
+        (c.name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (c.teacher?.firstName || "").toLowerCase().includes(search.toLowerCase())
     );
 
     const handleDelete = async (id: string) => {
@@ -101,7 +82,7 @@ export default function ClassesPage() {
                     </p>
                 </div>
                 <button
-                    onClick={() => setIsCreateOpen(true)}
+                    onClick={() => router.push(`/s/${slug}/academics/classes/create`)}
                     className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
@@ -242,7 +223,7 @@ export default function ClassesPage() {
                                                     <Calendar className="h-4 w-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => setEditingClass(item)}
+                                                    onClick={() => router.push(`/s/${slug}/academics/classes/${item.id}/edit`)}
                                                     className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-blue-600 hover:border-blue-200 transition-all"
                                                     title="Edit Class"
                                                 >
@@ -285,239 +266,13 @@ export default function ClassesPage() {
                         Get started by creating your first academic class section.
                     </p>
                     <button
-                        onClick={() => setIsCreateOpen(true)}
+                        onClick={() => router.push(`/s/${slug}/academics/classes/create`)}
                         className="mt-8 h-12 px-8 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl"
                     >
                         Create First Class
                     </button>
                 </div>
             )}
-
-            {/* Dialogs */}
-            {(isCreateOpen || editingClass) && (
-                <ClassDialog
-                    onClose={() => {
-                        setIsCreateOpen(false);
-                        setEditingClass(null);
-                    }}
-                    onSuccess={() => {
-                        loadData(false);
-                        setIsCreateOpen(false);
-                        setEditingClass(null);
-                    }}
-                    schoolsSlug={slug}
-                    grades={grades}
-                    sections={sections}
-                    staff={staff}
-                    initialData={editingClass}
-                />
-            )}
-        </div>
-    );
-}
-
-function ClassDialog({ onClose, onSuccess, schoolsSlug, grades, sections, staff, initialData }: any) {
-    const [grade, setGrade] = useState(initialData ? "" : "");
-    const [section, setSection] = useState("");
-    const [customName, setCustomName] = useState(initialData?.name || "");
-    const [teacherId, setTeacherId] = useState(initialData?.teacherId || "");
-    const [capacity, setCapacity] = useState(initialData?.capacity || 30);
-    const [roomNumber, setRoomNumber] = useState(initialData?.roomNumber || "");
-    const [mode, setMode] = useState<"standard" | "custom">("standard");
-    const [isSaving, setIsSaving] = useState(false);
-
-    useEffect(() => {
-        if (initialData && initialData.name) {
-            setMode("custom");
-        }
-    }, [initialData]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSaving(true);
-
-        const finalName = mode === "standard"
-            ? `${grade}${section ? ` - ${section}` : ""}`
-            : customName;
-
-        try {
-            const payload = {
-                name: finalName,
-                teacherId,
-                capacity: parseInt(capacity),
-                roomNumber
-            };
-
-            if (initialData) {
-                const res = await updateClassroomAction(schoolsSlug, initialData.id, payload);
-                if (res.success) {
-                    toast.success("Class updated");
-                    onSuccess();
-                } else {
-                    toast.error(res.error);
-                }
-            } else {
-                const res = await createClassroomAction(schoolsSlug, finalName, teacherId);
-                // Note: Create action might need update for capacity/roomNumber support, or we do a double update.
-                // Assuming createClassroomAction only takes name/teacherId for now.
-                // To support full creation, we should ideally update createClassroomAction, 
-                // but for now let's just create then update if needed, or rely on defaults.
-                if (res) {
-                    // If we have extra fields, update them immediately
-                    if (capacity !== 30 || roomNumber) {
-                        await updateClassroomAction(schoolsSlug, res.id, { capacity: parseInt(capacity), roomNumber });
-                    }
-                    toast.success("Class created");
-                    onSuccess();
-                }
-            }
-        } catch (error: any) {
-            toast.error(error.message || "Operation failed");
-        }
-        setIsSaving(false);
-    };
-
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-sm bg-zinc-900/40">
-            <div className="bg-white rounded-[48px] w-full max-w-lg p-12 shadow-2xl animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-10">
-                    <h3 className="text-2xl font-black text-zinc-900 tracking-tight">
-                        {initialData ? "Edit Class" : "New Class"}
-                    </h3>
-                    <button onClick={onClose} className="h-10 w-10 rounded-full bg-zinc-50 flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all">
-                        <X className="h-5 w-5" />
-                    </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Naming Mode Toggle */}
-                    <div className="flex bg-zinc-100 p-1 rounded-2xl">
-                        <button
-                            type="button"
-                            onClick={() => setMode("standard")}
-                            className={cn(
-                                "flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
-                                mode === "standard" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400"
-                            )}
-                        >
-                            Standard Format
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setMode("custom")}
-                            className={cn(
-                                "flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
-                                mode === "custom" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400"
-                            )}
-                        >
-                            Custom Name
-                        </button>
-                    </div>
-
-                    {mode === "standard" ? (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 ml-2">Grade</label>
-                                <select
-                                    value={grade}
-                                    onChange={e => setGrade(e.target.value)}
-                                    className="w-full h-14 px-4 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600 appearance-none"
-                                    required={!initialData}
-                                >
-                                    <option value="">Select...</option>
-                                    {grades.length > 0 ? grades.map((g: any) => (
-                                        <option key={g.id} value={g.name}>{g.name}</option>
-                                    )) : (
-                                        <>
-                                            <option value="Pre-K">Pre-K</option>
-                                            <option value="Kindergarten">Kindergarten</option>
-                                            <option value="Grade 1">Grade 1</option>
-                                        </>
-                                    )}
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 ml-2">Section</label>
-                                <select
-                                    value={section}
-                                    onChange={e => setSection(e.target.value)}
-                                    className="w-full h-14 px-4 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600 appearance-none"
-                                >
-                                    <option value="">Select...</option>
-                                    {sections?.length > 0 ? sections.map((s: any) => (
-                                        <option key={s.id} value={s.name}>{s.name}</option>
-                                    )) : (
-                                        <>
-                                            <option value="A">Section A</option>
-                                            <option value="B">Section B</option>
-                                        </>
-                                    )}
-                                </select>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 ml-4 block">Class Display Name</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Science Lab 1"
-                                value={customName}
-                                onChange={e => setCustomName(e.target.value)}
-                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600"
-                                required
-                            />
-                        </div>
-                    )}
-
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 ml-4 block">Class Teacher</label>
-                        <div className="relative">
-                            <select
-                                value={teacherId}
-                                onChange={e => setTeacherId(e.target.value)}
-                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600 appearance-none"
-                            >
-                                <option value="">Select Teacher</option>
-                                {staff.map((s: any) => (
-                                    <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
-                                ))}
-                            </select>
-                            <User className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-300 pointer-events-none" />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 ml-4 block">Room No.</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. 101"
-                                value={roomNumber}
-                                onChange={e => setRoomNumber(e.target.value)}
-                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 ml-4 block">Capacity</label>
-                            <input
-                                type="number"
-                                placeholder="30"
-                                value={capacity}
-                                onChange={e => setCapacity(e.target.value)}
-                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600"
-                            />
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={isSaving}
-                        className="w-full h-16 bg-blue-600 text-white hover:bg-blue-700 rounded-[24px] font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 mt-4"
-                    >
-                        {isSaving ? "Saving..." : initialData ? "Update Class" : "Create Class"}
-                    </button>
-                </form>
-            </div>
         </div>
     );
 }

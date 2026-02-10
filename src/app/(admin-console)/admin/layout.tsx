@@ -6,6 +6,8 @@ import { AdminSidebar } from "@/components/admin-console/AdminSidebar";
 import { SuperAdminProvider } from "@/context/super-admin-context";
 
 import { isSuperAdminAuthenticated } from "@/app/actions/admin-auth-actions";
+import { ModalProvider } from "@/components/ui/modal/ModalContext";
+import { GlobalModalRenderer } from "@/components/ui/modal/GlobalModal";
 
 export default function AdminLayout({
     children,
@@ -52,12 +54,15 @@ export default function AdminLayout({
 
     return (
         <SuperAdminProvider>
-            <div className="flex min-h-screen bg-zinc-50">
-                <AdminSidebar />
-                <main className="flex-1 overflow-y-auto bg-zinc-50 text-zinc-900">
-                    {children}
-                </main>
-            </div>
+            <ModalProvider>
+                <div className="flex h-screen bg-zinc-50 overflow-hidden">
+                    <AdminSidebar />
+                    <main className="flex-1 overflow-y-auto bg-zinc-50 text-zinc-900">
+                        {children}
+                    </main>
+                </div>
+                <GlobalModalRenderer />
+            </ModalProvider>
         </SuperAdminProvider>
     );
 }

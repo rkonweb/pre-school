@@ -19,7 +19,21 @@ export const MODULES: ModuleDefinition[] = [
         key: "admissions",
         label: "Admissions",
         description: "Manage inquiries and applications",
-        permissions: ["view", "create", "edit", "delete"]
+        permissions: ["view", "create", "edit", "delete"],
+        subModules: [
+            {
+                key: "admissions.inquiries",
+                label: "Inquiries",
+                description: "Prospective leads",
+                permissions: ["view", "create", "edit"]
+            },
+            {
+                key: "admissions.applications",
+                label: "Applications",
+                description: "Formal applications",
+                permissions: ["view", "create", "edit", "delete"]
+            }
+        ]
     },
     {
         key: "students",
@@ -31,7 +45,27 @@ export const MODULES: ModuleDefinition[] = [
                 key: "students.profiles",
                 label: "Profiles",
                 description: "Student personal data",
-                permissions: ["view", "create", "edit", "delete"]
+                permissions: ["view", "create", "edit", "delete"],
+                subModules: [
+                    {
+                        key: "students.profiles.personal",
+                        label: "Personal Info",
+                        description: "Basic details & Family",
+                        permissions: ["view", "edit"]
+                    },
+                    {
+                        key: "students.profiles.documents",
+                        label: "Documents",
+                        description: "Uploaded files",
+                        permissions: ["view", "create", "delete"]
+                    },
+                    {
+                        key: "students.profiles.health",
+                        label: "Health Records",
+                        description: "Medical info",
+                        permissions: ["view", "edit"]
+                    }
+                ]
             },
             {
                 key: "students.attendance",
@@ -89,7 +123,27 @@ export const MODULES: ModuleDefinition[] = [
                 key: "staff.directory",
                 label: "Directory",
                 description: "Staff lists and details",
-                permissions: ["view", "create", "edit", "delete"]
+                permissions: ["view", "create", "edit", "delete"],
+                subModules: [
+                    {
+                        key: "staff.directory.personal",
+                        label: "Personal Information",
+                        description: "Contact & Bio",
+                        permissions: ["view", "edit"]
+                    },
+                    {
+                        key: "staff.directory.contract",
+                        label: "HR & Contract",
+                        description: "Salary, Bank, Role",
+                        permissions: ["view", "manage"]
+                    },
+                    {
+                        key: "staff.directory.system",
+                        label: "System Access",
+                        description: "Login & Roles",
+                        permissions: ["view", "manage"]
+                    }
+                ]
             },
             {
                 key: "staff.attendance",
@@ -122,6 +176,12 @@ export const MODULES: ModuleDefinition[] = [
                 label: "Expenses",
                 description: "School expenditures",
                 permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "billing.structure",
+                label: "Fee Structure",
+                description: "Fee heads & plans",
+                permissions: ["view", "manage"]
             }
         ]
     },
@@ -136,6 +196,18 @@ export const MODULES: ModuleDefinition[] = [
         label: "Inventory",
         description: "Manage assets and stocks",
         permissions: ["view", "manage"]
+    },
+    {
+        key: "library",
+        label: "Library",
+        description: "Book catalog and circulation",
+        permissions: ["view", "manage", "create", "edit", "delete"]
+    },
+    {
+        key: "transport",
+        label: "Transport",
+        description: "Routes, vehicles and tracking",
+        permissions: ["view", "manage", "create", "edit", "delete"]
     },
     {
         key: "settings",

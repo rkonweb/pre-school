@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, Menu, Search, User } from "lucide-react";
+import { Bell, Menu, Search } from "lucide-react";
 import Link from "next/link";
+import { ProfileMenu } from "./ProfileMenu";
 
 export function Header() {
     return (
@@ -33,10 +34,7 @@ export function Header() {
                     <span className="sr-only">Notifications</span>
                 </button>
 
-                <div className="h-8 w-8 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                    {/* Placeholder Avatar */}
-                    <User className="h-full w-full p-1.5 text-zinc-400" />
-                </div>
+                <ProfileMenu />
             </div>
         </header>
     );

@@ -26,7 +26,8 @@ import {
     updateClassAccessAction,
     removeClassAccessAction,
     getManagedStaffAction,
-    updateManagedStaffAction
+    updateManagedStaffAction,
+    seedDefaultRolesAction
 } from "@/app/actions/role-actions";
 import { cn } from "@/lib/utils";
 import { MODULES, RolePermission } from "@/lib/permissions-config";
@@ -347,7 +348,22 @@ export default function RolesClient({
 
             {activeTab === "roles" && (
                 <div className="space-y-4">
-                    <div className="flex justify-end">
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={async () => {
+                                if (!confirm("Add standard roles? Existing roles with same name will be skipped.")) return;
+                                const res = await seedDefaultRolesAction(schoolSlug);
+                                if (res.success) {
+                                    toast.success(`Done: ${res.created} created, ${res.updated || 0} updated`);
+                                    router.refresh();
+                                } else {
+                                    toast.error(res.error || "Failed to seed roles");
+                                }
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 font-medium text-sm transition-colors border border-zinc-200 dark:border-zinc-700"
+                        >
+                            <Shield className="h-4 w-4" /> Add Defaults
+                        </button>
                         <button
                             onClick={() => {
                                 setIsCreatingRole(!isCreatingRole);
@@ -356,7 +372,7 @@ export default function RolesClient({
                                 setNewRoleDesc("");
                                 setNewRolePermissions([]);
                             }}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors shadow-sm shadow-blue-200 dark:shadow-blue-900/20"
                         >
                             <Plus className="h-4 w-4" /> Create Custom Role
                         </button>
@@ -413,79 +429,24 @@ export default function RolesClient({
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                                            {MODULES.map((module) => (
-                                                <Fragment key={module.key}>
-                                                    {/* Parent Module Row */}
-                                                    <tr className={cn("transition-colors", module.subModules ? "bg-zinc-50 dark:bg-zinc-900/80" : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50")}>
-                                                        <td className="px-4 py-3">
-                                                            <div className="font-semibold text-zinc-900 dark:text-zinc-200">{module.label}</div>
-                                                            <div className="text-xs text-zinc-500">{module.description}</div>
-                                                        </td>
-                                                        {[
-                                                            { keys: ["view"] },
-                                                            { keys: ["create", "send", "mark"] },
-                                                            { keys: ["edit", "review"] },
-                                                            { keys: ["delete"] },
-                                                            { keys: ["manage", "export"] }
-                                                        ].map((col, idx) => {
-                                                            const validAction = col.keys.find(k => module.permissions.includes(k as any));
-                                                            const isUnsupported = !validAction;
-                                                            const isChecked = validAction && newRolePermissions.find(p => p.module === module.key)?.actions.includes(validAction as any);
-
-                                                            const isManageOwn = newRolePermissions.find(p => p.module === module.key)?.actions.includes("manage_own");
-                                                            const isManageSelected = newRolePermissions.find(p => p.module === module.key)?.actions.includes("manage_selected");
-
-                                                            return (
-                                                                <td key={idx} className="px-4 py-3 text-center">
-                                                                    {!isUnsupported ? (
-                                                                        <div className="flex flex-col items-center justify-center gap-1">
-                                                                            <input
-                                                                                type="checkbox"
-                                                                                className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 h-4 w-4 cursor-pointer"
-                                                                                checked={!!isChecked}
-                                                                                onChange={() => togglePermission(module.key, validAction)}
-                                                                            />
-                                                                            {validAction !== "create" && validAction !== "view" && validAction !== "edit" && validAction !== "delete" && validAction !== "manage" && (
-                                                                                <span className="text-[10px] text-zinc-400 uppercase tracking-tighter font-bold">{validAction}</span>
-                                                                            )}
-                                                                        </div>
-                                                                    ) : (
-                                                                        <span className="text-zinc-300 dark:text-zinc-800">-</span>
-                                                                    )}
-                                                                </td>
-                                                            );
-                                                        })}
-                                                        <td className="px-4 py-3 text-center">
-                                                            {module.permissions.includes("manage_own" as any) ? (
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
-                                                                    checked={!!newRolePermissions.find(p => p.module === module.key)?.actions.includes("manage_own" as any)}
-                                                                    onChange={() => togglePermission(module.key, "manage_own")}
-                                                                />
-                                                            ) : <span className="text-zinc-200 dark:text-zinc-800">-</span>}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-center">
-                                                            {module.permissions.includes("manage_selected" as any) ? (
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
-                                                                    checked={!!newRolePermissions.find(p => p.module === module.key)?.actions.includes("manage_selected" as any)}
-                                                                    onChange={() => togglePermission(module.key, "manage_selected")}
-                                                                />
-                                                            ) : <span className="text-zinc-200 dark:text-zinc-800">-</span>}
-                                                        </td>
-                                                    </tr>
-
-                                                    {/* Sub Modules Rows */}
-                                                    {module.subModules?.map(sub => (
-                                                        <tr key={sub.key} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors border-l-4 border-l-transparent hover:border-l-blue-500">
-                                                            <td className="px-4 py-2 pl-12 bg-zinc-50/50 dark:bg-zinc-900/30">
+                                            {(() => {
+                                                const renderModuleRow = (module: any, depth = 0) => (
+                                                    <Fragment key={module.key}>
+                                                        <tr className={cn(
+                                                            "transition-colors",
+                                                            module.subModules ? "bg-zinc-50 dark:bg-zinc-900/80" : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50",
+                                                            depth > 0 && "border-l-4 border-l-transparent hover:border-l-blue-500"
+                                                        )}>
+                                                            <td className="px-4 py-2" style={{ paddingLeft: `${depth * 1.5 + 1}rem` }}>
                                                                 <div className="flex items-center gap-2">
-                                                                    <div className="w-2 h-2 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                                                                    {depth > 0 && <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 shrink-0" />}
                                                                     <div>
-                                                                        <div className="font-medium text-sm text-zinc-800 dark:text-zinc-300">{sub.label}</div>
-                                                                        <div className="text-[10px] text-zinc-400">{sub.description}</div>
+                                                                        <div className={cn("font-medium", depth === 0 ? "text-zinc-900 dark:text-zinc-200" : "text-sm text-zinc-800 dark:text-zinc-300")}>
+                                                                            {module.label}
+                                                                        </div>
+                                                                        <div className={cn("text-zinc-500", depth === 0 ? "text-xs" : "text-[10px]")}>
+                                                                            {module.description}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </td>
@@ -496,20 +457,23 @@ export default function RolesClient({
                                                                 { keys: ["delete"] },
                                                                 { keys: ["manage", "export"] }
                                                             ].map((col, idx) => {
-                                                                const validAction = col.keys.find(k => sub.permissions.includes(k as any));
+                                                                const validAction = col.keys.find(k => module.permissions.includes(k as any));
                                                                 const isUnsupported = !validAction;
-                                                                const isChecked = validAction && newRolePermissions.find(p => p.module === sub.key)?.actions.includes(validAction as any);
+                                                                const isChecked = validAction && newRolePermissions.find(p => p.module === module.key)?.actions.includes(validAction as any);
 
                                                                 return (
-                                                                    <td key={idx} className="px-4 py-2 text-center bg-zinc-50/50 dark:bg-zinc-900/30">
+                                                                    <td key={idx} className={cn("px-4 py-2 text-center", depth > 0 && "bg-zinc-50/50 dark:bg-zinc-900/30")}>
                                                                         {!isUnsupported ? (
                                                                             <div className="flex flex-col items-center justify-center gap-1">
                                                                                 <input
                                                                                     type="checkbox"
-                                                                                    className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 h-3 w-3 cursor-pointer"
+                                                                                    className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 h-4 w-4 cursor-pointer"
                                                                                     checked={!!isChecked}
-                                                                                    onChange={() => togglePermission(sub.key, validAction)}
+                                                                                    onChange={() => togglePermission(module.key, validAction)}
                                                                                 />
+                                                                                {validAction !== "create" && validAction !== "view" && validAction !== "edit" && validAction !== "delete" && validAction !== "manage" && (
+                                                                                    <span className="text-[10px] text-zinc-400 uppercase tracking-tighter font-bold">{validAction}</span>
+                                                                                )}
                                                                             </div>
                                                                         ) : (
                                                                             <span className="text-zinc-200 dark:text-zinc-800 text-xs">-</span>
@@ -517,30 +481,32 @@ export default function RolesClient({
                                                                     </td>
                                                                 );
                                                             })}
-                                                            <td className="px-4 py-2 text-center bg-zinc-50/50 dark:bg-zinc-900/30">
-                                                                {sub.permissions.includes("manage_own" as any) ? (
+                                                            <td className={cn("px-4 py-2 text-center", depth > 0 && "bg-zinc-50/50 dark:bg-zinc-900/30")}>
+                                                                {module.permissions.includes("manage_own" as any) ? (
                                                                     <input
                                                                         type="checkbox"
-                                                                        className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 h-3 w-3 cursor-pointer"
-                                                                        checked={!!newRolePermissions.find(p => p.module === sub.key)?.actions.includes("manage_own" as any)}
-                                                                        onChange={() => togglePermission(sub.key, "manage_own")}
+                                                                        className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
+                                                                        checked={!!newRolePermissions.find(p => p.module === module.key)?.actions.includes("manage_own" as any)}
+                                                                        onChange={() => togglePermission(module.key, "manage_own")}
                                                                     />
                                                                 ) : <span className="text-zinc-200 dark:text-zinc-800 text-xs">-</span>}
                                                             </td>
-                                                            <td className="px-4 py-2 text-center bg-zinc-50/50 dark:bg-zinc-900/30">
-                                                                {sub.permissions.includes("manage_selected" as any) ? (
+                                                            <td className={cn("px-4 py-2 text-center", depth > 0 && "bg-zinc-50/50 dark:bg-zinc-900/30")}>
+                                                                {module.permissions.includes("manage_selected" as any) ? (
                                                                     <input
                                                                         type="checkbox"
-                                                                        className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 h-3 w-3 cursor-pointer"
-                                                                        checked={!!newRolePermissions.find(p => p.module === sub.key)?.actions.includes("manage_selected" as any)}
-                                                                        onChange={() => togglePermission(sub.key, "manage_selected")}
+                                                                        className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
+                                                                        checked={!!newRolePermissions.find(p => p.module === module.key)?.actions.includes("manage_selected" as any)}
+                                                                        onChange={() => togglePermission(module.key, "manage_selected")}
                                                                     />
                                                                 ) : <span className="text-zinc-200 dark:text-zinc-800 text-xs">-</span>}
                                                             </td>
                                                         </tr>
-                                                    ))}
-                                                </Fragment>
-                                            ))}
+                                                        {module.subModules?.map((sub: any) => renderModuleRow(sub, depth + 1))}
+                                                    </Fragment>
+                                                );
+                                                return MODULES.map(m => renderModuleRow(m));
+                                            })()}
                                         </tbody>
                                     </table>
                                 </div>

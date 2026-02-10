@@ -37,14 +37,18 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
     USD: "$",
     EUR: "€",
     GBP: "£",
-    INR: "₹"
+    INR: "₹",
+    CAD: "$",
+    SGD: "$"
 };
 
 const EXCHANGE_RATES: Record<string, number> = {
     INR: 1,
-    USD: 0.012, // 1 INR = 0.012 USD (approx)
-    EUR: 0.011, // 1 INR = 0.011 EUR
-    GBP: 0.0095 // 1 INR = 0.0095 GBP
+    USD: 0.012,
+    EUR: 0.011,
+    GBP: 0.0095,
+    CAD: 0.016,
+    SGD: 0.016
 };
 
 const convertPrice = (priceInInr: number, currency: string) => {
@@ -59,11 +63,52 @@ const convertPrice = (priceInInr: number, currency: string) => {
     return Math.ceil(converted);
 };
 
+// Country-specific configurations
+const COUNTRY_CONFIG: Record<string, { currency: string; timezone: string; phoneFormat: string; phoneLength: number; dialCode: string }> = {
+    "United States": { currency: "USD", timezone: "UTC-5 (EST)", phoneFormat: "+1 (XXX) XXX-XXXX", phoneLength: 10, dialCode: "+1" },
+    "Canada": { currency: "CAD", timezone: "UTC-5 (EST)", phoneFormat: "+1 (XXX) XXX-XXXX", phoneLength: 10, dialCode: "+1" },
+    "United Kingdom": { currency: "GBP", timezone: "UTC+0 (GMT)", phoneFormat: "+44 XXXX XXX XXX", phoneLength: 10, dialCode: "+44" },
+    "India": { currency: "INR", timezone: "UTC+5:30 (IST)", phoneFormat: "+91 XXXXX XXXXX", phoneLength: 10, dialCode: "+91" },
+    "Singapore": { currency: "SGD", timezone: "UTC+8 (SGT)", phoneFormat: "+65 XXXX XXXX", phoneLength: 8, dialCode: "+65" }
+};
+
+// Phone formatting helper
+const formatPhoneNumber = (value: string, country: string): string => {
+    const config = COUNTRY_CONFIG[country];
+    if (!config) return value;
+
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, "");
+
+    // Limit to max length
+    const limited = digits.slice(0, config.phoneLength);
+
+    // Format based on country
+    if (country === "United States" || country === "Canada") {
+        if (limited.length <= 3) return limited;
+        if (limited.length <= 6) return `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
+        return `(${limited.slice(0, 3)}) ${limited.slice(3, 6)}-${limited.slice(6)}`;
+    } else if (country === "India") {
+        if (limited.length <= 5) return limited;
+        return `${limited.slice(0, 5)} ${limited.slice(5)}`;
+    } else if (country === "Singapore") {
+        if (limited.length <= 4) return limited;
+        return `${limited.slice(0, 4)} ${limited.slice(4)}`;
+    } else if (country === "United Kingdom") {
+        if (limited.length <= 4) return limited;
+        if (limited.length <= 7) return `${limited.slice(0, 4)} ${limited.slice(4)}`;
+        return `${limited.slice(0, 4)} ${limited.slice(4, 7)} ${limited.slice(7)}`;
+    }
+
+    return limited;
+};
+
 export default function OnboardSchoolPage() {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
     // Carousel State
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -151,10 +196,77 @@ export default function OnboardSchoolPage() {
         modules: ["attendance", "communication", "billing"]
     });
 
-    const handleNext = () => setStep(s => s + 1);
-    const handleBack = () => setStep(s => s - 1);
+    // Validation function
+    const validateStep = (stepNum: number): boolean => {
+        const errors: string[] = [];
+
+        if (stepNum === 1) {
+            if (!formData.schoolName.trim()) errors.push("School Name is required");
+            if (!formData.subdomain.trim()) errors.push("Domain Prefix is required");
+        } else if (stepNum === 2) {
+            if (!formData.country) errors.push("Country is required");
+            if (!formData.contactEmail.trim()) errors.push("Contact Email is required");
+            if (!formData.contactPhone.trim()) errors.push("Contact Phone is required");
+            // Email validation
+            if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) {
+                errors.push("Contact Email is invalid");
+            }
+        } else if (stepNum === 3) {
+            if (!formData.adminName.trim()) errors.push("Admin Name is required");
+            if (!formData.adminEmail.trim()) errors.push("Admin Email is required");
+            if (!formData.adminPhone.trim()) errors.push("Admin Phone is required");
+            // Email validation
+            if (formData.adminEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.adminEmail)) {
+                errors.push("Admin Email is invalid");
+            }
+        } else if (stepNum === 4) {
+            if (!formData.plan) errors.push("Plan selection is required");
+            if (!formData.currency) errors.push("Currency is required");
+            if (!formData.timezone) errors.push("Timezone is required");
+        }
+
+        setValidationErrors(errors);
+        return errors.length === 0;
+    };
+
+    // Handle country change with auto-update
+    const handleCountryChange = (country: string) => {
+        const config = COUNTRY_CONFIG[country];
+        setFormData(prev => ({
+            ...prev,
+            country,
+            currency: config?.currency || prev.currency,
+            timezone: config?.timezone || prev.timezone,
+            contactPhone: "", // Reset phone when country changes
+            adminPhone: "" // Reset admin phone too
+        }));
+    };
+
+    // Handle phone input with formatting
+    const handlePhoneChange = (value: string, field: "contactPhone" | "adminPhone") => {
+        const formatted = formatPhoneNumber(value, formData.country);
+        setFormData(prev => ({ ...prev, [field]: formatted }));
+    };
+
+    const handleNext = () => {
+        if (validateStep(step)) {
+            setStep(s => s + 1);
+            setValidationErrors([]);
+        }
+    };
+
+    const handleBack = () => {
+        setStep(s => s - 1);
+        setValidationErrors([]);
+    };
+
 
     const handleSubmit = async () => {
+        // Validate Step 4 before submission
+        if (!validateStep(4)) {
+            return;
+        }
+
         setLoading(true);
         try {
             const result = await createTenantAction({
@@ -260,23 +372,41 @@ export default function OnboardSchoolPage() {
                         <div className="text-center mb-10">
                             <h2 className="text-3xl font-extrabold text-zinc-900">Institutional Identity</h2>
                             <p className="text-zinc-500 mt-2">Establish the digital presence and branding for the new tenant.</p>
+                            {validationErrors.length > 0 && (
+                                <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-left">
+                                    <p className="text-sm font-bold text-red-900 mb-2">Please fix the following errors:</p>
+                                    <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
+                                        {validationErrors.map((error, idx) => (
+                                            <li key={idx}>{error}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
 
                         <div className="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100 space-y-8">
                             <div className="grid md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">School Name</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase">
+                                            School Name <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="text"
                                             value={formData.schoolName}
                                             onChange={e => setFormData({ ...formData, schoolName: e.target.value })}
                                             placeholder="e.g. Springfield Academy"
-                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600 transition-all"
+                                            required
+                                            className={cn(
+                                                "w-full rounded-xl border bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600 transition-all",
+                                                validationErrors.some(e => e.includes("School Name")) ? "border-red-300" : "border-zinc-200"
+                                            )}
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">Domain Prefix</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase">
+                                            Domain Prefix <span className="text-red-500">*</span>
+                                        </label>
                                         <div className="flex rounded-xl border border-zinc-200 bg-zinc-50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-600 transition-all">
                                             <input
                                                 type="text"
@@ -457,11 +587,17 @@ export default function OnboardSchoolPage() {
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-zinc-500 uppercase">Country</label>
+                                            <label className="text-xs font-bold text-zinc-500 uppercase">
+                                                Country <span className="text-red-500">*</span>
+                                            </label>
                                             <select
                                                 value={formData.country}
-                                                onChange={e => setFormData({ ...formData, country: e.target.value })}
-                                                className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600"
+                                                onChange={e => handleCountryChange(e.target.value)}
+                                                required
+                                                className={cn(
+                                                    "w-full rounded-xl border bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600",
+                                                    validationErrors.some(e => e.includes("Country")) ? "border-red-300" : "border-zinc-200"
+                                                )}
                                             >
                                                 <option>United States</option>
                                                 <option>Canada</option>
@@ -501,7 +637,9 @@ export default function OnboardSchoolPage() {
                                     </div>
                                     <div className="h-px bg-zinc-100 my-2" />
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">General Email</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase">
+                                            General Email <span className="text-red-500">*</span>
+                                        </label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                                             <input
@@ -509,21 +647,36 @@ export default function OnboardSchoolPage() {
                                                 value={formData.contactEmail}
                                                 onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
                                                 placeholder="info@school.com"
-                                                className="w-full rounded-xl border-zinc-200 bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600"
+                                                required
+                                                className={cn(
+                                                    "w-full rounded-xl border bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600",
+                                                    validationErrors.some(e => e.includes("Contact Email")) ? "border-red-300" : "border-zinc-200"
+                                                )}
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">General Phone</label>
+                                        <label className="text-xs font-bold text-zinc-500 uppercase">
+                                            General Phone <span className="text-red-500">*</span>
+                                        </label>
                                         <div className="relative">
                                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                                             <input
                                                 type="tel"
                                                 value={formData.contactPhone}
-                                                onChange={e => setFormData({ ...formData, contactPhone: e.target.value })}
-                                                placeholder="+1 (555) 000-0000"
-                                                className="w-full rounded-xl border-zinc-200 bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600"
+                                                onChange={e => handlePhoneChange(e.target.value, "contactPhone")}
+                                                placeholder={COUNTRY_CONFIG[formData.country]?.phoneFormat || "+1 (555) 000-0000"}
+                                                required
+                                                className={cn(
+                                                    "w-full rounded-xl border bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600",
+                                                    validationErrors.some(e => e.includes("Contact Phone")) ? "border-red-300" : "border-zinc-200"
+                                                )}
                                             />
+                                            {COUNTRY_CONFIG[formData.country] && (
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">
+                                                    {COUNTRY_CONFIG[formData.country].dialCode}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -548,13 +701,19 @@ export default function OnboardSchoolPage() {
 
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Principal / Admin Name</label>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase">
+                                        Principal / Admin Name <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         type="text"
                                         value={formData.adminName}
                                         onChange={e => setFormData({ ...formData, adminName: e.target.value })}
                                         placeholder="Full Name"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600"
+                                        required
+                                        className={cn(
+                                            "w-full rounded-xl border bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600",
+                                            validationErrors.some(e => e.includes("Admin Name")) ? "border-red-300" : "border-zinc-200"
+                                        )}
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -568,24 +727,43 @@ export default function OnboardSchoolPage() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Personal Email</label>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase">
+                                        Personal Email <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         type="email"
                                         value={formData.adminEmail}
                                         onChange={e => setFormData({ ...formData, adminEmail: e.target.value })}
                                         placeholder="admin@school.com"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600"
+                                        required
+                                        className={cn(
+                                            "w-full rounded-xl border bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600",
+                                            validationErrors.some(e => e.includes("Admin Email")) ? "border-red-300" : "border-zinc-200"
+                                        )}
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Mobile Number</label>
-                                    <input
-                                        type="tel"
-                                        value={formData.adminPhone}
-                                        onChange={e => setFormData({ ...formData, adminPhone: e.target.value })}
-                                        placeholder="+1 (555) 000-0000"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600"
-                                    />
+                                    <label className="text-xs font-bold text-zinc-500 uppercase">
+                                        Mobile Number <span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="tel"
+                                            value={formData.adminPhone}
+                                            onChange={e => handlePhoneChange(e.target.value, "adminPhone")}
+                                            placeholder={COUNTRY_CONFIG[formData.country]?.phoneFormat || "+1 (555) 000-0000"}
+                                            required
+                                            className={cn(
+                                                "w-full rounded-xl border bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600",
+                                                validationErrors.some(e => e.includes("Admin Phone")) ? "border-red-300" : "border-zinc-200"
+                                            )}
+                                        />
+                                        {COUNTRY_CONFIG[formData.country] && (
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">
+                                                {COUNTRY_CONFIG[formData.country].dialCode}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -598,6 +776,16 @@ export default function OnboardSchoolPage() {
                         <div className="text-center mb-10">
                             <h2 className="text-3xl font-extrabold text-zinc-900">Subscription & Configuration</h2>
                             <p className="text-zinc-500 mt-2">Configure billing plan and regional settings.</p>
+                            {validationErrors.length > 0 && (
+                                <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-left">
+                                    <p className="text-sm font-bold text-red-900 mb-2">Please fix the following errors:</p>
+                                    <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
+                                        {validationErrors.map((error, idx) => (
+                                            <li key={idx}>{error}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
 
                         {/* Regional Settings */}
@@ -614,9 +802,11 @@ export default function OnboardSchoolPage() {
                                         className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600"
                                     >
                                         <option value="USD">USD ($)</option>
+                                        <option value="CAD">CAD ($)</option>
                                         <option value="EUR">EUR (€)</option>
                                         <option value="GBP">GBP (£)</option>
                                         <option value="INR">INR (₹)</option>
+                                        <option value="SGD">SGD ($)</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">

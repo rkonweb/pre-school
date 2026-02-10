@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model School {
@@ -519,13 +518,52 @@ model FeeComponent {
 }
 
 model Curriculum {
-  id        String          @id @default(cuid())
-  name      String
-  slug      String          @unique
-  color     String?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  days      DayCurriculum[]
+  id             String           @id @default(cuid())
+  name           String
+  slug           String           @unique
+  color          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  days           DayCurriculum[]
+  academicMonths AcademicMonth[]
+}
+
+model AcademicMonth {
+  id           String        @id @default(cuid())
+  curriculumId String
+  curriculum   Curriculum    @relation(fields: [curriculumId], references: [id], onDelete: Cascade)
+  monthNumber  Int           // 1-10
+  title        String        // "Month 1: Introduction to Learning"
+  description  String?
+  theme        String?       // "Colors and Shapes"
+  objectives   String        @default("[]") // JSON array of learning objectives
+  startDate    DateTime?
+  endDate      DateTime?
+  isCompleted  Boolean       @default(false)
+  days         AcademicDay[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([curriculumId, monthNumber])
+  @@index([curriculumId])
+}
+
+model AcademicDay {
+  id          String        @id @default(cuid())
+  monthId     String
+  month       AcademicMonth @relation(fields: [monthId], references: [id], onDelete: Cascade)
+  dayNumber   Int           // 1-20
+  title       String?       // "Day 1: Introduction to Colors"
+  theme       String?       // Daily theme
+  blocks      String        @default("[]") // JSON array of content blocks
+  worksheets  String        @default("[]") // JSON array of worksheet files
+  isCompleted Boolean       @default(false)
+  notes       String?       // Admin notes
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([monthId, dayNumber])
+  @@index([monthId])
 }
 
 model DayCurriculum {
@@ -558,6 +596,80 @@ model SystemSettings {
   backupFrequency String   @default("DAILY")
   maintenanceMode Boolean  @default(false)
   updatedAt       DateTime @updatedAt
+  integrationsConfig String? @default("{}") // JSON string for API integrations (Google AI, OpenAI, etc.)
+}
+
+// ============================================================================
+// TEACHERS TRAINING MODULE
+// ============================================================================
+
+model TrainingCategory {
+  id          String           @id @default(cuid())
+  name        String           @unique // e.g., "Teacher", "Nanny"
+  slug        String           @unique // e.g., "teacher", "nanny"
+  description String?
+  modules     TrainingModule[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model TrainingModule {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  cover       String?         // URL or Base64
+  role        String          @default("TEACHER") // Deprecated: Use categoryId instead
+  categoryId  String?
+  category    TrainingCategory? @relation(fields: [categoryId], references: [id])
+  isPublished Boolean         @default(false)
+  slug        String          @unique
+  order       Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  topics      TrainingTopic[]
+}
+
+model TrainingTopic {
+  id          String         @id @default(cuid())
+  moduleId    String
+  module      TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  order       Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  pages       TrainingPage[]
+
+  @@index([moduleId])
+}
+
+model TrainingPage {
+  id          String        @id @default(cuid())
+  topicId     String
+  topic       TrainingTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  title       String
+  content     String        // HTML content from Tiptap
+  order       Int           @default(0)
+  isPublished Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+
+  @@index([topicId])
+  attachments TrainingAttachment[]
+}
+
+model TrainingAttachment {
+  id          String       @id @default(cuid())
+  pageId      String
+  page        TrainingPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  name        String
+  url         String
+  size        Int          @default(0) // in bytes
+  type        String       @default("file") // 'pdf', 'image', etc.
+  createdAt   DateTime     @default(now())
+
+  @@index([pageId])
 }
 
 model Homework {
@@ -968,9 +1080,12 @@ model TransportVehicle {
   permitDocUrl      String?
   
   rcDocUrl          String?
+  documents         String   @default("[]")
 
-  routes            TransportRoute[]
+  pickupRoutes      TransportRoute[] @relation("PickupVehicle")
+  dropRoutes        TransportRoute[] @relation("DropVehicle")
   maintenanceLogs   TransportMaintenance[]
+  telemetry         VehicleTelemetry[]
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -1007,8 +1122,11 @@ model TransportRoute {
   schoolId    String
   school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   
-  vehicleId   String?
-  vehicle     TransportVehicle? @relation(fields: [vehicleId], references: [id])
+  pickupVehicleId String?
+  pickupVehicle   TransportVehicle? @relation("PickupVehicle", fields: [pickupVehicleId], references: [id])
+  
+  dropVehicleId   String?
+  dropVehicle     TransportVehicle? @relation("DropVehicle", fields: [dropVehicleId], references: [id])
   
   driverId    String?
   driver      TransportDriver? @relation(fields: [driverId], references: [id])
@@ -1033,6 +1151,7 @@ model TransportStop {
   longitude     Float?
   pickupTime    String?  // "07:30 AM"
   dropTime      String?  // "03:30 PM"
+  monthlyFee    Float    @default(0)
   
   pickupStudents StudentTransportProfile[] @relation("PickupStop")
   dropStudents   StudentTransportProfile[] @relation("DropStop")
@@ -1048,8 +1167,8 @@ model StudentTransportProfile {
   studentId     String   @unique
   student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   
-  routeId       String
-  route         TransportRoute @relation(fields: [routeId], references: [id])
+  routeId       String?
+  route         TransportRoute? @relation(fields: [routeId], references: [id])
   
   pickupStopId  String?
   pickupStop    TransportStop? @relation("PickupStop", fields: [pickupStopId], references: [id])
@@ -1058,6 +1177,14 @@ model StudentTransportProfile {
   dropStop      TransportStop? @relation("DropStop", fields: [dropStopId], references: [id])
   
   transportFee  Float    @default(0)
+  status        String   @default("PENDING") // PENDING, APPROVED, ACTIVE, INACTIVE, REJECTED
+  startDate     DateTime?
+  endDate       DateTime?
+  
+  // Application details
+  applicationAddress String?
+  applicationLat     Float?
+  applicationLng     Float?
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -1080,6 +1207,30 @@ model TransportMaintenance {
   updatedAt   DateTime @updatedAt
 
   @@index([vehicleId])
+}
+
+model VehicleTelemetry {
+  id              String   @id @default(cuid())
+  vehicleId       String
+  vehicle         TransportVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  // Location
+  latitude        Float
+  longitude       Float
+  heading         Float?   // Direction in degrees (0-360)
+  speed           Float?   // km/h
+  
+  // Status
+  status          String   @default("MOVING") // MOVING, STOPPED, IDLE
+  delayMinutes    Int      @default(0)
+  nextStopId      String?  // Reference to TransportStop
+  
+  // Timestamps
+  recordedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  
+  @@index([vehicleId])
+  @@index([recordedAt])
 }
 
 model LibraryTransaction {

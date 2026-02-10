@@ -11,7 +11,7 @@ import { getExamByIdAction, updateExamAction } from "@/app/actions/exam-actions"
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Save, X, FileText } from "lucide-react";
 import Link from "next/link";
 
 export default function EditExamPage() {
@@ -39,6 +39,8 @@ export default function EditExamPage() {
     });
 
     const [uploading, setUploading] = useState(false);
+    const [uploadedFileName, setUploadedFileName] = useState<string>("");
+    const [originalQuestionPaperUrl, setOriginalQuestionPaperUrl] = useState<string>(""); // Track original for deletion on save
 
     useEffect(() => {
         loadData();
@@ -79,6 +81,8 @@ export default function EditExamPage() {
                 description: exam.description || "",
                 questionPaperUrl: (exam as any).questionPaperUrl || ""
             });
+            // Store original URL to track if file was removed
+            setOriginalQuestionPaperUrl((exam as any).questionPaperUrl || "");
         } else {
             toast.error("Failed to load exam details");
             router.push(`/s/${slug}/students/reports`);
@@ -109,6 +113,7 @@ export default function EditExamPage() {
         const data = new FormData();
         data.append("file", file);
         data.append("folder", "worksheets");
+        data.append("schoolSlug", slug);
 
         try {
             // Dynamically import to avoid server-side issues
@@ -117,7 +122,8 @@ export default function EditExamPage() {
 
             if (res.success && res.url) {
                 setFormData(prev => ({ ...prev, questionPaperUrl: res.url! }));
-                toast.success("File uploaded successfully");
+                setUploadedFileName(file.name);
+                toast.success(`File "${file.name}" uploaded successfully`);
             } else {
                 toast.error(res.error || "Upload failed");
             }
@@ -129,6 +135,14 @@ export default function EditExamPage() {
         }
     };
 
+    // Handle file removal - just clears from form, actual deletion happens on save
+    const handleRemoveFile = () => {
+        setFormData(prev => ({ ...prev, questionPaperUrl: "" }));
+        setUploadedFileName("");
+        toast.info("File will be removed when you save the exam");
+    };
+
+
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -136,6 +150,25 @@ export default function EditExamPage() {
         setSaving(true);
 
         try {
+            console.log("📝 Save initiated:");
+            console.log("   Original URL:", originalQuestionPaperUrl || "(none)");
+            console.log("   Current URL:", formData.questionPaperUrl || "(none)");
+
+            // Check if file was removed or replaced - delete old file from Drive
+            if (originalQuestionPaperUrl && originalQuestionPaperUrl !== formData.questionPaperUrl) {
+                console.log("🗑️ Deleting old file from storage:", originalQuestionPaperUrl);
+                try {
+                    const { deleteFileAction } = await import("@/app/actions/upload-actions");
+                    const deleteResult = await deleteFileAction(originalQuestionPaperUrl, slug);
+                    console.log("   Delete result:", deleteResult);
+                } catch (deleteError) {
+                    console.error("Failed to delete old file:", deleteError);
+                    // Continue with save even if delete fails
+                }
+            } else {
+                console.log("   No file deletion needed");
+            }
+
             const res = await updateExamAction(slug, examId, {
                 ...formData,
                 date: new Date(formData.date),
@@ -152,8 +185,8 @@ export default function EditExamPage() {
                 toast.error(res.error || "Failed to update exam");
             }
         } catch (error: any) {
-            console.error("Upload error:", error);
-            toast.error(error?.message || "Upload failed. Please check your internet connection.");
+            console.error("Save error:", error);
+            toast.error(error?.message || "Save failed. Please check your internet connection.");
         } finally {
             setSaving(false);
         }
@@ -305,19 +338,43 @@ export default function EditExamPage() {
                         {/* Question Paper Upload */}
                         <div className="space-y-2">
                             <Label>Question Paper (PDF)</Label>
-                            <div className="flex items-center gap-4">
-                                <Input
-                                    type="file"
-                                    accept=".pdf"
-                                    onChange={handleFileUpload}
-                                    disabled={uploading}
-                                />
-                                {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                            </div>
-                            {formData.questionPaperUrl && (
-                                <p className="text-sm text-green-600 mt-1">
-                                    File uploaded: <a href={formData.questionPaperUrl} target="_blank" rel="noopener noreferrer" className="underline">View Question Paper</a>
-                                </p>
+                            {!formData.questionPaperUrl ? (
+                                <div className="flex items-center gap-4">
+                                    <Input
+                                        type="file"
+                                        accept=".pdf"
+                                        onChange={handleFileUpload}
+                                        disabled={uploading}
+                                    />
+                                    {uploading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                    <FileText className="h-8 w-8 text-green-600 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-green-800 dark:text-green-200 truncate">
+                                            {uploadedFileName || "Question Paper"}
+                                        </p>
+                                        <a
+                                            href={formData.questionPaperUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-green-600 hover:text-green-700 underline"
+                                        >
+                                            View / Download
+                                        </a>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleRemoveFile}
+                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                        title="Remove file"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             )}
                         </div>
 
@@ -333,9 +390,9 @@ export default function EditExamPage() {
                             <Link href={`/s/${slug}/students/reports`}>
                                 <Button variant="ghost" type="button">Cancel</Button>
                             </Link>
-                            <Button type="submit" disabled={saving}>
+                            <Button type="submit" disabled={saving || uploading}>
                                 {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                                Update Exam
+                                {uploading ? "Uploading..." : "Update Exam"}
                             </Button>
                         </div>
                     </form>

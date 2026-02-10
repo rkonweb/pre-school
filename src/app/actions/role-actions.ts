@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { MODULES, RolePermission, ModuleDefinition } from "@/lib/permissions-config";
 
 // ==========================================
 // ROLE ACTIONS
@@ -196,6 +197,202 @@ export async function updateManagedStaffAction(managerId: string, staffIds: stri
         });
         return { success: true };
     } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ==========================================
+// SEED DEFAULTS
+// ==========================================
+
+export async function seedDefaultRolesAction(schoolSlug: string) {
+    try {
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
+        const flatten = (modules: ModuleDefinition[]): RolePermission[] => {
+            return modules.flatMap(m => {
+                const base: RolePermission = { module: m.key, actions: m.permissions };
+                const subs = m.subModules ? flatten(m.subModules) : [];
+                return [base, ...subs];
+            });
+        };
+
+        const adminPerms: RolePermission[] = flatten(MODULES);
+
+        const teacherPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "students", actions: ["view"] },
+            { module: "students.profiles", actions: ["view"] },
+            { module: "students.profiles.personal", actions: ["view", "edit"] },
+            { module: "students.profiles.health", actions: ["view"] },
+            { module: "students.attendance", actions: ["view", "mark", "edit"] },
+            { module: "students.reports", actions: ["view", "create", "edit"] },
+            { module: "academics", actions: ["view"] },
+            { module: "academics.classes", actions: ["view"] },
+            { module: "academics.timetable", actions: ["view"] },
+            { module: "academics.curriculum", actions: ["view"] },
+            { module: "diary", actions: ["view", "create", "review"] },
+            { module: "library", actions: ["view"] },
+            { module: "transport", actions: ["view"] },
+            { module: "staff.attendance", actions: ["view", "manage_own"] },
+        ];
+
+        const accountantPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "billing", actions: ["view", "create", "edit", "delete", "export"] },
+            { module: "billing.invoices", actions: ["view", "create", "export"] },
+            { module: "billing.expenses", actions: ["view", "create", "edit", "delete"] },
+            { module: "billing.structure", actions: ["view", "manage"] },
+            { module: "staff", actions: ["view"] },
+            { module: "staff.payroll", actions: ["view", "manage", "export"] },
+            { module: "inventory", actions: ["view"] },
+            { module: "students", actions: ["view"] },
+        ];
+
+        const librarianPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "library", actions: ["view", "manage", "create", "edit", "delete"] },
+            { module: "students", actions: ["view"] },
+            { module: "staff", actions: ["view"] },
+        ];
+
+        const transportPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "transport", actions: ["view", "manage", "create", "edit", "delete"] },
+            { module: "students", actions: ["view"] },
+            { module: "staff.directory", actions: ["view"] },
+            { module: "staff.directory.personal", actions: ["view"] },
+        ];
+
+        const receptionistPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "admissions", actions: ["view", "create", "edit"] },
+            { module: "admissions.inquiries", actions: ["view", "create", "edit"] },
+            { module: "admissions.applications", actions: ["view", "create", "edit"] },
+            { module: "students", actions: ["view"] },
+            { module: "communication", actions: ["view", "send"] },
+            { module: "staff.directory", actions: ["view"] },
+            { module: "staff.directory.personal", actions: ["view"] },
+        ];
+
+        const hrManagerPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "staff", actions: ["view", "create", "edit", "delete"] },
+            { module: "staff.directory", actions: ["view", "create", "edit", "delete"] },
+            { module: "staff.directory.personal", actions: ["view", "edit"] },
+            { module: "staff.directory.contract", actions: ["view", "manage"] },
+            { module: "staff.directory.system", actions: ["view", "manage"] },
+            { module: "staff.attendance", actions: ["view", "mark", "edit", "manage_selected"] },
+            { module: "staff.payroll", actions: ["view", "manage", "export"] },
+        ];
+
+        const academicCoordinatorPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "academics", actions: ["view", "manage"] },
+            { module: "academics.classes", actions: ["view", "manage", "create", "edit"] },
+            { module: "academics.timetable", actions: ["view", "create", "edit"] },
+            { module: "academics.curriculum", actions: ["view", "create", "edit"] },
+            { module: "students", actions: ["view"] },
+            { module: "students.profiles", actions: ["view", "edit"] },
+            { module: "students.reports", actions: ["view", "create", "edit", "delete"] },
+            { module: "diary", actions: ["view", "review"] },
+            { module: "staff.directory", actions: ["view"] },
+        ];
+
+        const nursePerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "students", actions: ["view"] },
+            { module: "students.profiles", actions: ["view"] },
+            { module: "students.profiles.personal", actions: ["view"] },
+            { module: "students.profiles.health", actions: ["view", "edit"] },
+        ];
+
+        const driverPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "transport", actions: ["view"] },
+            { module: "students", actions: ["view"] },
+        ];
+
+        const officeAdminPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "students", actions: ["view", "create", "edit", "delete", "export"] },
+            { module: "students.profiles", actions: ["view", "create", "edit", "delete"] },
+            { module: "students.attendance", actions: ["view", "mark", "edit"] },
+            { module: "admissions", actions: ["view", "create", "edit", "delete"] },
+            { module: "admissions.inquiries", actions: ["view", "create", "edit", "delete"] },
+            { module: "admissions.applications", actions: ["view", "create", "edit", "delete"] },
+            { module: "staff.directory", actions: ["view"] },
+            { module: "staff.attendance", actions: ["view", "mark", "edit", "manage_selected"] },
+            { module: "billing", actions: ["view"] },
+            { module: "billing.invoices", actions: ["view", "create", "export"] },
+            { module: "inventory", actions: ["view", "manage"] },
+            { module: "transport", actions: ["view", "manage"] },
+            { module: "communication", actions: ["view", "send"] },
+            { module: "library", actions: ["view", "manage"] },
+        ];
+
+        const canteenManagerPerms: RolePermission[] = [
+            { module: "dashboard", actions: ["view"] },
+            { module: "inventory", actions: ["view", "manage", "create", "edit", "delete"] },
+            { module: "students.profiles.health", actions: ["view"] },
+        ];
+
+        const defaults = [
+            { name: "Administrator", desc: "Full system access", perms: adminPerms },
+            { name: "Office Administrator", desc: "Daily school operations", perms: officeAdminPerms },
+            { name: "Teacher", desc: "Academic and student management", perms: teacherPerms },
+            { name: "Accountant", desc: "Financial management", perms: accountantPerms },
+            { name: "Librarian", desc: "Library management", perms: librarianPerms },
+            { name: "Transport Manager", desc: "Fleet management", perms: transportPerms },
+            { name: "Receptionist", desc: "Front desk operations", perms: receptionistPerms },
+            { name: "HR Manager", desc: "Human resources and payroll", perms: hrManagerPerms },
+            { name: "Academic Coordinator", desc: "Curriculum and teacher oversight", perms: academicCoordinatorPerms },
+            { name: "Nurse", desc: "Health and wellness", perms: nursePerms },
+            { name: "Driver", desc: "Transport operations", perms: driverPerms },
+            { name: "Canteen Manager", desc: "Food and inventory management", perms: canteenManagerPerms }
+        ];
+
+        let createdCount = 0;
+        let updatedCount = 0;
+
+        for (const roleDef of defaults) {
+            const existing = await prisma.role.findFirst({
+                where: {
+                    schoolId: school.id,
+                    name: roleDef.name
+                }
+            });
+
+            if (!existing) {
+                await prisma.role.create({
+                    data: {
+                        name: roleDef.name,
+                        description: roleDef.desc,
+                        permissions: JSON.stringify(roleDef.perms),
+                        schoolId: school.id
+                    }
+                });
+                createdCount++;
+            } else {
+                await prisma.role.update({
+                    where: { id: existing.id },
+                    data: {
+                        description: roleDef.desc,
+                        permissions: JSON.stringify(roleDef.perms)
+                    }
+                });
+                updatedCount++;
+            }
+        }
+
+        revalidatePath(`/s/${schoolSlug}/roles`);
+        return { success: true, created: createdCount, updated: updatedCount };
+    } catch (error: any) {
+        console.error("Seed Roles Error:", error);
         return { success: false, error: error.message };
     }
 }

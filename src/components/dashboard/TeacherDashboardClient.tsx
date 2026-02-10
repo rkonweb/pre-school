@@ -199,7 +199,7 @@ export function TeacherDashboardClient() {
                         </div>
                         <div className="grid sm:grid-cols-2 gap-4">
                             {classrooms.map((c: any) => (
-                                <div key={c.id} onClick={() => navTo(`/classroom/${c.id}`)} className="p-5 rounded-2xl border border-zinc-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all group cursor-pointer relative overflow-hidden">
+                                <div key={c.id} onClick={() => navTo(`/academics/classes`)} className="p-5 rounded-2xl border border-zinc-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all group cursor-pointer relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <ArrowRight className="h-4 w-4 text-blue-500" />
                                     </div>

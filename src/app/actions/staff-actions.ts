@@ -68,8 +68,7 @@ export async function getStaffAction(schoolSlug: string) {
     }
 }
 
-import { writeFile } from "fs/promises";
-import { join } from "path";
+
 
 export async function createStaffAction(schoolSlug: string, formData: FormData) {
     try {
@@ -123,6 +122,9 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
 
         // Handle File Uploads
         const documents: Record<string, string> = {};
+
+        const { writeFile } = await import("fs/promises");
+        const { join } = await import("path");
 
         const processFile = async (key: string) => {
             const file = formData.get(key) as File;
@@ -309,6 +311,9 @@ export async function updateStaffAction(id: string, formData: FormData) {
         // Handle Avatar Upload if it's a file
         const avatarFile = formData.get("avatarFile") as File;
         if (avatarFile && avatarFile.size > 0) {
+            const { writeFile } = await import("fs/promises");
+            const { join } = await import("path");
+
             const buffer = Buffer.from(await avatarFile.arrayBuffer());
             const filename = `avatar-${Date.now()}-${avatarFile.name.replace(/\s/g, "_")}`;
             const path = join(process.cwd(), "public/uploads/staff", filename);
