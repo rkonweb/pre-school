@@ -2,9 +2,13 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { validateUserSchoolAction } from "./session-actions";
 
 export async function getAcademicYearsAction(slug: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await prisma.school.findUnique({
             where: { slug }
         });
@@ -40,6 +44,9 @@ export async function getAcademicYearsAction(slug: string) {
 
 export async function createAcademicYearAction(slug: string, data: { name: string, startDate: Date, endDate: Date, isCurrent: boolean }) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await prisma.school.findUnique({
             where: { slug }
         });
@@ -69,8 +76,11 @@ export async function createAcademicYearAction(slug: string, data: { name: strin
     }
 }
 
-export async function updateAcademicYearAction(slug: string, id: string, data: any) {
+export async function updateAcademicYearAction(slug: string, id: string, data: any & { confirmTransition?: boolean }) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await prisma.school.findUnique({
             where: { slug }
         });
@@ -90,6 +100,15 @@ export async function updateAcademicYearAction(slug: string, id: string, data: a
 
         // SHIFT STUDENTS if this year is now current
         if (data.isCurrent) {
+            // SAFETY GATE: Confirm transition must be true for this destructive operation
+            if (data.confirmTransition !== true) {
+                return {
+                    success: false,
+                    error: "CONFIRMATION_REQUIRED",
+                    message: "Marking this year as current will IRREVERSIBLY shift all successfully promoted students to their new classes. This action cannot be undone. Please confirm to proceed."
+                };
+            }
+
             console.log(`Academic year ${year.name} marked as current. Shifting students...`);
 
             // 1. Find all students in this school who have a future promotion target
@@ -132,6 +151,9 @@ export async function updateAcademicYearAction(slug: string, id: string, data: a
 
 export async function getCurrentAcademicYearAction(slug: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await prisma.school.findUnique({
             where: { slug }
         });

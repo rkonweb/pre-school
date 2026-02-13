@@ -3,13 +3,16 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { deleteFileAction } from "@/app/actions/upload-actions";
+import { validateUserSchoolAction } from "./session-actions";
 
 // --- ROUTES & STOPS ---
 
 export async function createRouteAction(schoolSlug: string, data: any) {
     try {
-        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
-        if (!school) throw new Error("School not found");
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "School not found" };
 
         await prisma.transportRoute.create({
             data: {
@@ -18,7 +21,7 @@ export async function createRouteAction(schoolSlug: string, data: any) {
                 pickupVehicleId: data.pickupVehicleId || null,
                 dropVehicleId: data.dropVehicleId || null,
                 driverId: data.driverId,
-                schoolId: school.id,
+                schoolId: schoolId,
                 stops: {
                     create: data.stops.map((s: any, idx: number) => ({
                         name: s.name,
@@ -40,8 +43,10 @@ export async function createRouteAction(schoolSlug: string, data: any) {
     }
 }
 
-export async function updateRouteAction(routeId: string, data: any) {
+export async function updateRouteAction(slug: string, routeId: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         // Simple update for route details
         await prisma.transportRoute.update({
             where: { id: routeId },
@@ -63,8 +68,10 @@ export async function updateRouteAction(routeId: string, data: any) {
     }
 }
 
-export async function deleteRouteAction(routeId: string) {
+export async function deleteRouteAction(slug: string, routeId: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         await prisma.transportRoute.delete({ where: { id: routeId } });
         return { success: true };
     } catch (error: any) {
@@ -74,8 +81,10 @@ export async function deleteRouteAction(routeId: string) {
 
 // --- STOP MANAGEMENT ---
 
-export async function addStopAction(routeId: string, data: any) {
+export async function addStopAction(slug: string, routeId: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         await prisma.transportStop.create({
             data: {
                 routeId,
@@ -97,8 +106,10 @@ export async function addStopAction(routeId: string, data: any) {
 
 // --- APPLICATION FLOW ---
 
-export async function applyForTransportAction(studentId: string, data: any) {
+export async function applyForTransportAction(slug: string, studentId: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         // 1. Check if profile exists
         const existing = await prisma.studentTransportProfile.findUnique({
             where: { studentId }
@@ -140,8 +151,10 @@ export async function applyForTransportAction(studentId: string, data: any) {
 
 // --- ADMIN APPROVAL ---
 
-export async function approveTransportRequestAction(studentId: string, assignmentData: any) {
+export async function approveTransportRequestAction(slug: string, studentId: string, assignmentData: any) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         // assignmentData: { routeId, stopId, startDate }
 
         const stop = await prisma.transportStop.findUnique({
@@ -181,8 +194,10 @@ export async function approveTransportRequestAction(studentId: string, assignmen
     }
 }
 
-export async function rejectTransportRequestAction(studentId: string) {
+export async function rejectTransportRequestAction(slug: string, studentId: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         await prisma.studentTransportProfile.update({
             where: { studentId },
             data: { status: "REJECTED" }
@@ -197,6 +212,9 @@ export async function rejectTransportRequestAction(studentId: string) {
 
 export async function getVehiclesAction(schoolSlug: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const vehicles = await prisma.transportVehicle.findMany({
             where: { school: { slug: schoolSlug } },
             orderBy: { createdAt: 'desc' }
@@ -208,8 +226,10 @@ export async function getVehiclesAction(schoolSlug: string) {
     }
 }
 
-export async function deleteVehicleAction(vehicleId: string, schoolSlug: string) {
+export async function deleteVehicleAction(slug: string, vehicleId: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         const vehicle = await prisma.transportVehicle.findUnique({
             where: { id: vehicleId }
         }) as any;
@@ -225,14 +245,14 @@ export async function deleteVehicleAction(vehicleId: string, schoolSlug: string)
             ];
 
             for (const url of complianceDocs) {
-                if (url) await deleteFileAction(url, schoolSlug);
+                if (url) await deleteFileAction(url, slug);
             }
 
             // 2. Delete Additional documents
             try {
                 const additionalDocs = JSON.parse(vehicle.documents || "[]");
                 for (const doc of additionalDocs) {
-                    if (doc.url) await deleteFileAction(doc.url, schoolSlug);
+                    if (doc.url) await deleteFileAction(doc.url, slug);
                 }
             } catch (e) {
                 console.error("Failed to parse additional documents for deletion:", e);
@@ -242,7 +262,7 @@ export async function deleteVehicleAction(vehicleId: string, schoolSlug: string)
         await prisma.transportVehicle.delete({
             where: { id: vehicleId }
         });
-        revalidatePath(`/s/${schoolSlug}/transport/vehicles`);
+        revalidatePath(`/s/${slug}/transport/vehicles`);
         return { success: true };
     } catch (error: any) {
         console.error("Error deleting vehicle:", error);
@@ -252,8 +272,10 @@ export async function deleteVehicleAction(vehicleId: string, schoolSlug: string)
 
 export async function createVehicleAction(data: any, schoolSlug: string) {
     try {
-        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
-        if (!school) throw new Error("School not found");
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "School not found" };
 
         await prisma.transportVehicle.create({
             data: {
@@ -261,7 +283,7 @@ export async function createVehicleAction(data: any, schoolSlug: string) {
                 model: data.model,
                 capacity: parseInt(data.capacity),
                 status: data.status,
-                schoolId: school.id,
+                schoolId: schoolId,
 
                 insuranceNumber: data.insuranceNumber || null,
                 insuranceExpiry: data.insuranceExpiry ? new Date(data.insuranceExpiry) : null,
@@ -346,6 +368,9 @@ export async function updateVehicleAction(vehicleId: string, data: any, schoolSl
 
 export async function getDriversAction(schoolSlug: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const drivers = await prisma.transportDriver.findMany({
             where: { school: { slug: schoolSlug } },
             orderBy: { name: 'asc' }
@@ -359,8 +384,10 @@ export async function getDriversAction(schoolSlug: string) {
 
 export async function createDriverAction(data: any, schoolSlug: string) {
     try {
-        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
-        if (!school) throw new Error("School not found");
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "School not found" };
 
         await prisma.transportDriver.create({
             data: {
@@ -368,7 +395,7 @@ export async function createDriverAction(data: any, schoolSlug: string) {
                 licenseNumber: data.licenseNumber,
                 phone: data.phone,
                 status: data.status || "ACTIVE",
-                schoolId: school.id
+                schoolId: schoolId
             }
         });
 

@@ -66,6 +66,7 @@ export default function EditTenantPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [step, setStep] = useState(1);
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
     // Initial state
     const [formData, setFormData] = useState({
@@ -183,7 +184,27 @@ export default function EditTenantPage() {
     const handleNext = () => setStep(s => s + 1);
     const handleBack = () => setStep(s => s - 1);
 
+    const validateForm = (): boolean => {
+        const errors: string[] = [];
+        if (!formData.schoolName.trim()) errors.push("School Name is required");
+        if (!formData.contactEmail.trim()) errors.push("General Email is required");
+        if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) {
+            errors.push("General Email is invalid");
+        }
+        if (!formData.adminName.trim()) errors.push("Admin Name is required");
+        if (!formData.adminEmail.trim()) errors.push("Personal Email is required");
+        if (formData.adminEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.adminEmail)) {
+            errors.push("Personal Email is invalid");
+        }
+        setValidationErrors(errors);
+        return errors.length === 0;
+    };
+
     const handleSave = async () => {
+        if (!validateForm()) {
+            alert("Please fix validation errors before saving.");
+            return;
+        }
         setIsSaving(true);
         try {
             await updateTenantAction(id, {
@@ -532,18 +553,22 @@ export default function EditTenantPage() {
                                         </div>
                                     </div>
                                     <div className="h-px bg-zinc-100 my-2" />
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">General Email</label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                            <input
-                                                type="email"
-                                                value={formData.contactEmail}
-                                                onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
-                                                placeholder="info@school.com"
-                                                className="w-full rounded-xl border-zinc-200 bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600"
-                                            />
-                                        </div>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase">
+                                        General Email <span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                                        <input
+                                            type="email"
+                                            value={formData.contactEmail}
+                                            onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
+                                            placeholder="info@school.com"
+                                            required
+                                            className={cn(
+                                                "w-full rounded-xl border bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600 transition-all",
+                                                validationErrors.some(e => e.includes("General Email")) ? "border-red-300" : "border-zinc-200"
+                                            )}
+                                        />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-zinc-500 uppercase">General Phone</label>
@@ -552,7 +577,11 @@ export default function EditTenantPage() {
                                             <input
                                                 type="tel"
                                                 value={formData.contactPhone}
-                                                onChange={e => setFormData({ ...formData, contactPhone: e.target.value })}
+                                                maxLength={10}
+                                                onChange={e => {
+                                                    const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                                                    setFormData({ ...formData, contactPhone: val });
+                                                }}
                                                 placeholder="+1 (555) 000-0000"
                                                 className="w-full rounded-xl border-zinc-200 bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600"
                                             />
@@ -600,13 +629,19 @@ export default function EditTenantPage() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Personal Email</label>
+                                    <label className="text-xs font-bold text-zinc-500 uppercase">
+                                        Personal Email <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         type="email"
                                         value={formData.adminEmail}
                                         onChange={e => setFormData({ ...formData, adminEmail: e.target.value })}
                                         placeholder="admin@school.com"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600"
+                                        required
+                                        className={cn(
+                                            "w-full rounded-xl border bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600 transition-all",
+                                            validationErrors.some(e => e.includes("Personal Email")) ? "border-red-300" : "border-zinc-200"
+                                        )}
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -614,7 +649,11 @@ export default function EditTenantPage() {
                                     <input
                                         type="tel"
                                         value={formData.adminPhone}
-                                        onChange={e => setFormData({ ...formData, adminPhone: e.target.value })}
+                                        maxLength={10}
+                                        onChange={e => {
+                                            const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                                            setFormData({ ...formData, adminPhone: val });
+                                        }}
                                         placeholder="+1 (555) 000-0000"
                                         className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600"
                                     />

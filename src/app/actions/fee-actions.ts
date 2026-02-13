@@ -4,15 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { eachMonthOfInterval, format } from "date-fns";
 
-import { getCurrentUserAction } from "./session-actions";
+import { validateUserSchoolAction } from "./session-actions";
 import { verifyClassAccess } from "@/lib/access-control";
 
-export async function createFeeAction(studentId: string, title: string, amount: number, dueDate: Date, description?: string, academicYearId?: string) {
+export async function createFeeAction(slug: string, studentId: string, title: string, amount: number, dueDate: Date, description?: string, academicYearId?: string) {
     try {
         // PERMISSION CHECK
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) return { success: false, error: "Unauthorized" };
-        const currentUser = userRes.data;
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
 
         const student = await prisma.student.findUnique({
             where: { id: studentId },
@@ -45,12 +45,12 @@ export async function createFeeAction(studentId: string, title: string, amount: 
     }
 }
 
-export async function getStudentFeesAction(studentId: string, academicYearId?: string) {
+export async function getStudentFeesAction(slug: string, studentId: string, academicYearId?: string) {
     try {
         // PERMISSION CHECK
-        const userRes = await getCurrentUserAction();
-        if (userRes.success && userRes.data) {
-            const currentUser = userRes.data;
+        const auth = await validateUserSchoolAction(slug);
+        if (auth.success && auth.user) {
+            const currentUser = auth.user;
             const student = await prisma.student.findUnique({
                 where: { id: studentId },
                 select: { classroomId: true }
@@ -81,12 +81,12 @@ export async function getStudentFeesAction(studentId: string, academicYearId?: s
     }
 }
 
-export async function recordPaymentAction(feeId: string, amount: number, method: string, reference?: string, paymentDate?: Date) {
+export async function recordPaymentAction(slug: string, feeId: string, amount: number, method: string, reference?: string, paymentDate?: Date) {
     try {
         // PERMISSION CHECK
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) return { success: false, error: "Unauthorized" };
-        const currentUser = userRes.data;
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
 
         // Trace fee -> student -> classroom
         const feeRecord = await prisma.fee.findUnique({
@@ -339,8 +339,11 @@ export async function getFeeStructuresAction(schoolSlug: string) {
     }
 }
 
-export async function updateFeeAction(id: string, data: any) {
+export async function updateFeeAction(slug: string, id: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         // Due Date is NOT updated here to ensure immutability after creation
         const fee = await prisma.fee.update({
             where: { id },
@@ -356,8 +359,11 @@ export async function updateFeeAction(id: string, data: any) {
     }
 }
 
-export async function deleteFeeAction(id: string) {
+export async function deleteFeeAction(slug: string, id: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         // Delete payments first
         await prisma.feePayment.deleteMany({
             where: { feeId: id }

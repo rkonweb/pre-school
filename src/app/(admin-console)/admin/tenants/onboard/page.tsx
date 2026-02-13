@@ -74,14 +74,14 @@ const COUNTRY_CONFIG: Record<string, { currency: string; timezone: string; phone
 
 // Phone formatting helper
 const formatPhoneNumber = (value: string, country: string): string => {
-    const config = COUNTRY_CONFIG[country];
-    if (!config) return value;
-
     // Remove all non-digits
     const digits = value.replace(/\D/g, "");
 
-    // Limit to max length
-    const limited = digits.slice(0, config.phoneLength);
+    // Limit to exactly 10 digits regardless of country for now as per global request
+    const limited = digits.slice(0, 10);
+
+    const config = COUNTRY_CONFIG[country];
+    if (!config) return limited;
 
     // Format based on country
     if (country === "United States" || country === "Canada") {
@@ -91,13 +91,6 @@ const formatPhoneNumber = (value: string, country: string): string => {
     } else if (country === "India") {
         if (limited.length <= 5) return limited;
         return `${limited.slice(0, 5)} ${limited.slice(5)}`;
-    } else if (country === "Singapore") {
-        if (limited.length <= 4) return limited;
-        return `${limited.slice(0, 4)} ${limited.slice(4)}`;
-    } else if (country === "United Kingdom") {
-        if (limited.length <= 4) return limited;
-        if (limited.length <= 7) return `${limited.slice(0, 4)} ${limited.slice(4)}`;
-        return `${limited.slice(0, 4)} ${limited.slice(4, 7)} ${limited.slice(7)}`;
     }
 
     return limited;
@@ -667,6 +660,7 @@ export default function OnboardSchoolPage() {
                                                 onChange={e => handlePhoneChange(e.target.value, "contactPhone")}
                                                 placeholder={COUNTRY_CONFIG[formData.country]?.phoneFormat || "+1 (555) 000-0000"}
                                                 required
+                                                maxLength={14} // To accommodate formatting chars like ( ) -
                                                 className={cn(
                                                     "w-full rounded-xl border bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600",
                                                     validationErrors.some(e => e.includes("Contact Phone")) ? "border-red-300" : "border-zinc-200"
@@ -753,6 +747,7 @@ export default function OnboardSchoolPage() {
                                             onChange={e => handlePhoneChange(e.target.value, "adminPhone")}
                                             placeholder={COUNTRY_CONFIG[formData.country]?.phoneFormat || "+1 (555) 000-0000"}
                                             required
+                                            maxLength={14}
                                             className={cn(
                                                 "w-full rounded-xl border bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600",
                                                 validationErrors.some(e => e.includes("Admin Phone")) ? "border-red-300" : "border-zinc-200"

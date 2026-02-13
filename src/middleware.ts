@@ -54,8 +54,28 @@ export async function middleware(req: NextRequest) {
     // Matches /s/anything... but likely not parent routes as they are rewritten?
     // Let's protect /s/* (School Dashboards)
     if (url.pathname.startsWith("/s/")) {
-        const userSession = req.cookies.get("userId");
-        if (!userSession) {
+        const sessionToken = req.cookies.get("session")?.value;
+        if (!sessionToken) {
+            return NextResponse.redirect(new URL("/school-login", req.url));
+        }
+
+        try {
+            const payload = await decrypt(sessionToken);
+            if (!payload || !payload.userId) {
+                return NextResponse.redirect(new URL("/school-login", req.url));
+            }
+
+            // CROSS-TENANT CHECK
+            // URL format: /s/[slug]/...
+            const pathParts = url.pathname.split("/");
+            const pathSlug = pathParts[2]; // parts[0] is "", parts[1] is "s", parts[2] is slug
+
+            if (pathSlug && payload.schoolSlug && pathSlug !== payload.schoolSlug) {
+                console.warn(`SECURITY: User ${payload.userId} attempted to access school ${pathSlug} but belongs to ${payload.schoolSlug}`);
+                // Redirect to their own dashboard or login
+                return NextResponse.redirect(new URL(`/s/${payload.schoolSlug}`, req.url));
+            }
+        } catch (e) {
             return NextResponse.redirect(new URL("/school-login", req.url));
         }
     }

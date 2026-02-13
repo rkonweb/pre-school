@@ -2,8 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
-import { getCurrentUserAction } from "./session-actions";
+import { validateUserSchoolAction } from "./session-actions";
 import { getSchoolToday, getSchoolNow } from "@/lib/date-utils";
 
 async function getSchoolTimezone(schoolSlug: string) {
@@ -16,6 +15,9 @@ async function getSchoolTimezone(schoolSlug: string) {
 
 export async function getStaffAttendanceAction(schoolSlug: string, date?: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
         const timezone = await getSchoolTimezone(schoolSlug);
         const targetDate = date ? new Date(date) : getSchoolToday(timezone);
         targetDate.setHours(0, 0, 0, 0);
@@ -27,53 +29,39 @@ export async function getStaffAttendanceAction(schoolSlug: string, date?: string
             }
         };
 
-        // Permission Filtering
-        // Permission Filtering
-        const currentUserRes = await getCurrentUserAction();
-        const viewingUserId = currentUserRes.success ? currentUserRes.data?.id : null;
+        const viewingUser = auth.user;
+        const viewingUserId = viewingUser.id;
 
-        if (viewingUserId) {
-            const user = await prisma.user.findUnique({
-                where: { id: viewingUserId },
-                include: { customRole: true } as any
-            });
+        if (viewingUser.role !== "ADMIN" && viewingUser.role !== "SUPER_ADMIN") {
+            let restricted = true;
+            let allowedIds: string[] = [viewingUserId];
 
-            if (user && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
-                // Default: Restrict to OWN
-                let restricted = true;
-                let allowedIds: string[] = [viewingUserId];
+            let perms: any[] = [];
+            try {
+                perms = typeof (viewingUser as any).customRole?.permissions === 'string'
+                    ? JSON.parse((viewingUser as any).customRole.permissions)
+                    : (viewingUser as any).customRole?.permissions;
+            } catch (e) { }
 
-                if (user.customRole) {
-                    let perms: any[] = [];
-                    try {
-                        perms = typeof (user as any).customRole?.permissions === 'string'
-                            ? JSON.parse((user as any).customRole.permissions)
-                            : (user as any).customRole?.permissions;
-                    } catch (e) { }
+            const attendPerm = perms?.find((p: any) => p.module === "staff.attendance");
 
-                    const attendPerm = perms?.find(p => p.module === "staff.attendance");
-
-                    if (attendPerm) {
-                        const actions = attendPerm.actions || [];
-                        if (actions.includes("manage") || actions.includes("view")) {
-                            restricted = false;
-                        } else if (actions.includes("manage_selected")) {
-                            const access = await (prisma as any).staffAccess.findMany({
-                                where: { managerId: viewingUserId },
-                                select: { staffId: true }
-                            });
-                            const mappedIds = access.map((a: any) => a.staffId);
-                            allowedIds = [...allowedIds, ...mappedIds];
-                        }
-                    }
-                }
-
-                if (restricted) {
-                    whereClause.userId = { in: allowedIds };
+            if (attendPerm) {
+                const actions = attendPerm.actions || [];
+                if (actions.includes("manage") || actions.includes("view")) {
+                    restricted = false;
+                } else if (actions.includes("manage_selected")) {
+                    const access = await (prisma as any).staffAccess.findMany({
+                        where: { managerId: viewingUserId },
+                        select: { staffId: true }
+                    });
+                    const mappedIds = access.map((a: any) => a.staffId);
+                    allowedIds = [...allowedIds, ...mappedIds];
                 }
             }
-        } else {
-            return { success: true, data: [] };
+
+            if (restricted) {
+                whereClause.userId = { in: allowedIds };
+            }
         }
 
         const attendance = await prisma.staffAttendance.findMany({
@@ -104,11 +92,8 @@ export async function getStaffAttendanceAction(schoolSlug: string, date?: string
         // Map to include effective policy gap
         const data = attendance.map((at: any) => {
             const policies = at.user.customRole?.leavePolicies || [];
-            // Find policy for this role in this school
             const rolePolicy = policies.find((p: any) => p.schoolId === at.user.schoolId);
-            // Default policy for the school
             const defaultPolicy = at.user.school?.leavePolicies?.find((p: any) => p.isDefault);
-
             const effectivePolicy = rolePolicy || defaultPolicy;
 
             return {
@@ -199,10 +184,10 @@ async function verifyAttendancePermission(managerId: string, targetUserId: strin
 
 export async function togglePunchAction(schoolSlug: string, userId: string, date: string) {
     try {
-        const currentUserRes = await getCurrentUserAction();
-        const performingUserId = currentUserRes.success ? currentUserRes.data?.id : null;
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
-        if (!performingUserId) throw new Error("Unauthorized");
+        const performingUserId = auth.user.id;
 
         // Enforce Permission
         const hasPermission = await verifyAttendancePermission(performingUserId, userId);
@@ -380,10 +365,10 @@ export async function togglePunchAction(schoolSlug: string, userId: string, date
 
 export async function markStaffAttendanceAction(schoolSlug: string, data: { userId: string, date: string, status?: string, notes?: string }) {
     try {
-        const currentUserRes = await getCurrentUserAction();
-        const performingUserId = currentUserRes.success ? currentUserRes.data?.id : null;
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
-        if (!performingUserId) throw new Error("Unauthorized");
+        const performingUserId = auth.user.id;
 
         // Enforce Permission
         const hasPermission = await verifyAttendancePermission(performingUserId, data.userId);
@@ -420,8 +405,11 @@ export async function markStaffAttendanceAction(schoolSlug: string, data: { user
 
 export async function getStaffLeaveRequestsAction(schoolSlug: string) {
     try {
-        const currentUserRes = await getCurrentUserAction();
-        const viewingUserId = currentUserRes.success ? currentUserRes.data?.id : null;
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const viewingUser = auth.user;
+        const viewingUserId = viewingUser.id;
 
         let whereClause: any = {
             user: {
@@ -429,44 +417,39 @@ export async function getStaffLeaveRequestsAction(schoolSlug: string) {
             }
         };
 
-        if (viewingUserId) {
-            const user = await prisma.user.findUnique({
-                where: { id: viewingUserId },
-                include: { customRole: true } as any
-            });
+        if (viewingUser.role !== "ADMIN" && viewingUser.role !== "SUPER_ADMIN") {
+            let restricted = true;
+            let allowedIds: string[] = [viewingUserId];
 
-            if (user && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
-                let restricted = true;
-                let allowedIds: string[] = [viewingUserId];
+            const user = viewingUser;
 
-                if (user.customRole) {
-                    let perms: any[] = [];
-                    try {
-                        perms = typeof (user as any).customRole?.permissions === 'string'
-                            ? JSON.parse((user as any).customRole.permissions)
-                            : (user as any).customRole?.permissions;
-                    } catch (e) { }
+            if (user.customRole) {
+                let perms: any[] = [];
+                try {
+                    perms = typeof (user as any).customRole?.permissions === 'string'
+                        ? JSON.parse((user as any).customRole.permissions)
+                        : (user as any).customRole?.permissions;
+                } catch (e) { }
 
-                    const attendPerm = perms?.find(p => p.module === "staff.attendance");
+                const attendPerm = perms?.find(p => p.module === "staff.attendance");
 
-                    if (attendPerm) {
-                        const actions = attendPerm.actions || [];
-                        if (actions.includes("manage") || actions.includes("view")) {
-                            restricted = false;
-                        } else if (actions.includes("manage_selected")) {
-                            const access = await (prisma as any).staffAccess.findMany({
-                                where: { managerId: viewingUserId },
-                                select: { staffId: true }
-                            });
-                            const mappedIds = access.map((a: any) => a.staffId);
-                            allowedIds = [...allowedIds, ...mappedIds];
-                        }
+                if (attendPerm) {
+                    const actions = attendPerm.actions || [];
+                    if (actions.includes("manage") || actions.includes("view")) {
+                        restricted = false;
+                    } else if (actions.includes("manage_selected")) {
+                        const access = await (prisma as any).staffAccess.findMany({
+                            where: { managerId: viewingUserId },
+                            select: { staffId: true }
+                        });
+                        const mappedIds = access.map((a: any) => a.staffId);
+                        allowedIds = [...allowedIds, ...mappedIds];
                     }
                 }
+            }
 
-                if (restricted) {
-                    whereClause.userId = { in: allowedIds };
-                }
+            if (restricted) {
+                whereClause.userId = { in: allowedIds };
             }
         }
 
@@ -487,6 +470,9 @@ export async function getStaffLeaveRequestsAction(schoolSlug: string) {
 
 export async function createLeaveRequestAction(schoolSlug: string, data: { userId: string, startDate: string, endDate: string, type: string, reason: string }) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const request = await prisma.leaveRequest.create({
             data: {
                 userId: data.userId,
@@ -505,6 +491,9 @@ export async function createLeaveRequestAction(schoolSlug: string, data: { userI
 
 export async function updateLeaveStatusAction(schoolSlug: string, id: string, status: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const request = await prisma.leaveRequest.update({
             where: { id },
             data: { status }
@@ -518,11 +507,14 @@ export async function updateLeaveStatusAction(schoolSlug: string, id: string, st
 
 export async function getAttendanceAnalyticsAction(schoolSlug: string, month: number, year: number) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
         const startDate = new Date(year, month, 1);
         const endDate = new Date(year, month + 1, 0);
 
-        const currentUserRes = await getCurrentUserAction();
-        const viewingUserId = currentUserRes.success ? currentUserRes.data?.id : null;
+        const viewingUserId = auth.user.id;
+        const viewingUser = auth.user;
 
         let whereClause: any = {
             date: {
@@ -545,45 +537,37 @@ export async function getAttendanceAnalyticsAction(schoolSlug: string, month: nu
         };
 
 
-        if (viewingUserId) {
-            const user = await prisma.user.findUnique({
-                where: { id: viewingUserId },
-                include: { customRole: true } as any
-            });
+        if (viewingUser.role !== "ADMIN" && viewingUser.role !== "SUPER_ADMIN") {
+            let restricted = true;
+            let allowedIds: string[] = [viewingUserId];
 
-            if (user && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
-                let restricted = true;
-                let allowedIds: string[] = [viewingUserId];
+            const user = viewingUser;
+            let perms: any[] = [];
+            try {
+                perms = typeof (user as any).customRole?.permissions === 'string'
+                    ? JSON.parse((user as any).customRole.permissions)
+                    : (user as any).customRole?.permissions;
+            } catch (e) { }
 
-                if (user.customRole) {
-                    let perms: any[] = [];
-                    try {
-                        perms = typeof (user as any).customRole?.permissions === 'string'
-                            ? JSON.parse((user as any).customRole.permissions)
-                            : (user as any).customRole?.permissions;
-                    } catch (e) { }
+            const attendPerm = perms?.find((p: any) => p.module === "staff.attendance");
 
-                    const attendPerm = perms?.find(p => p.module === "staff.attendance");
-
-                    if (attendPerm) {
-                        const actions = attendPerm.actions || [];
-                        if (actions.includes("manage") || actions.includes("view")) {
-                            restricted = false;
-                        } else if (actions.includes("manage_selected")) {
-                            const access = await (prisma as any).staffAccess.findMany({
-                                where: { managerId: viewingUserId },
-                                select: { staffId: true }
-                            });
-                            const mappedIds = access.map((a: any) => a.staffId);
-                            allowedIds = [...allowedIds, ...mappedIds];
-                        }
-                    }
+            if (attendPerm) {
+                const actions = attendPerm.actions || [];
+                if (actions.includes("manage") || actions.includes("view")) {
+                    restricted = false;
+                } else if (actions.includes("manage_selected")) {
+                    const access = await (prisma as any).staffAccess.findMany({
+                        where: { managerId: viewingUserId },
+                        select: { staffId: true }
+                    });
+                    const mappedIds = access.map((a: any) => a.staffId);
+                    allowedIds = [...allowedIds, ...mappedIds];
                 }
+            }
 
-                if (restricted) {
-                    whereClause.userId = { in: allowedIds };
-                    leaveWhereClause.userId = { in: allowedIds };
-                }
+            if (restricted) {
+                whereClause.userId = { in: allowedIds };
+                leaveWhereClause.userId = { in: allowedIds };
             }
         }
 
@@ -610,8 +594,11 @@ export async function getAttendanceAnalyticsAction(schoolSlug: string, month: nu
     }
 }
 
-export async function getStaffAttendanceHistoryAction(userId: string) {
+export async function getStaffAttendanceHistoryAction(schoolSlug: string, userId: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
         const attendance = await prisma.staffAttendance.findMany({
             where: { userId },
             include: { punches: { orderBy: { timestamp: "asc" } } },
@@ -633,8 +620,11 @@ export async function getStaffAttendanceHistoryAction(userId: string) {
     }
 }
 
-export async function getStaffLeaveHistoryAction(userId: string) {
+export async function getStaffLeaveHistoryAction(schoolSlug: string, userId: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
         const leaves = await prisma.leaveRequest.findMany({
             where: { userId },
             orderBy: { startDate: "desc" }
@@ -651,6 +641,9 @@ export async function getStaffLeaveHistoryAction(userId: string) {
 
 export async function getAttendanceDataAction(schoolSlug: string, classroomId: string, dateStr: string, academicYearId?: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
         const targetDate = new Date(dateStr);
         targetDate.setHours(0, 0, 0, 0);
 
@@ -699,8 +692,11 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
     }
 }
 
-export async function markAttendanceAction(studentId: string, date: string | Date, status: string, notes?: string, academicYearId?: string) {
+export async function markAttendanceAction(schoolSlug: string, studentId: string, date: string | Date, status: string, notes?: string, academicYearId?: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
         const student = await prisma.student.findUnique({
             where: { id: studentId },
             include: { school: { select: { timezone: true } } }
@@ -713,8 +709,7 @@ export async function markAttendanceAction(studentId: string, date: string | Dat
         const todayStr = `${schoolNow.getFullYear()}-${String(schoolNow.getMonth() + 1).padStart(2, '0')}-${String(schoolNow.getDate()).padStart(2, '0')}`;
 
         // Role-Based Validation
-        const currentUserRes = await getCurrentUserAction();
-        const role = currentUserRes.success ? currentUserRes.data?.role : "STAFF";
+        const role = auth.user.role;
         const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
 
         if (targetDateStr > todayStr) {
@@ -752,8 +747,11 @@ export async function markAttendanceAction(studentId: string, date: string | Dat
     }
 }
 
-export async function getStudentAttendanceAction(studentId: string, academicYearId?: string) {
+export async function getStudentAttendanceAction(schoolSlug: string, studentId: string, academicYearId?: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
         const query: any = { studentId };
         if (academicYearId) {
             query.academicYearId = academicYearId;

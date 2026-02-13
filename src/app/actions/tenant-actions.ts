@@ -106,19 +106,36 @@ export async function createTenantAction(data: CreateTenantInput) {
 
         // Global Phone Uniqueness Check for admin phone
         if (mobile && !mobile.startsWith('mock-')) {
-            const { validatePhoneUniqueness } = await import("./phone-validation");
+            const { validatePhoneUniqueness, validateEmailUniqueness } = await import("./identity-validation");
             const phoneCheck = await validatePhoneUniqueness(mobile);
             if (!phoneCheck.isValid) {
                 return { success: false, error: phoneCheck.error };
+            }
+
+            // Check admin email if provided
+            const adminEmail = data.email || data.contactEmail;
+            if (adminEmail) {
+                const emailCheck = await validateEmailUniqueness(adminEmail);
+                if (!emailCheck.isValid) {
+                    return { success: false, error: emailCheck.error };
+                }
             }
         }
 
         // Check school contact phone if different from admin phone
         if (data.contactPhone && data.contactPhone !== mobile) {
-            const { validatePhoneUniqueness } = await import("./phone-validation");
+            const { validatePhoneUniqueness, validateEmailUniqueness } = await import("./identity-validation");
             const phoneCheck = await validatePhoneUniqueness(data.contactPhone);
             if (!phoneCheck.isValid) {
                 return { success: false, error: phoneCheck.error };
+            }
+
+            // Check school email if different
+            if (data.contactEmail && data.contactEmail !== data.email) {
+                const emailCheck = await validateEmailUniqueness(data.contactEmail);
+                if (!emailCheck.isValid) {
+                    return { success: false, error: emailCheck.error };
+                }
             }
         }
 

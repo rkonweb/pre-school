@@ -15,8 +15,8 @@ model School {
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
   address                String?
-  email                  String?
-  phone                  String?
+  email                  String?                 @unique
+  phone                  String?                 @unique
   brandColor             String?                 @default("#2563eb")
   city                   String?
   country                String?
@@ -71,6 +71,10 @@ model School {
   users                  User[]
   marketingDesigns       SchoolMarketingDesign[]
   academicYears          AcademicYear[]
+  branches               Branch[]
+  leads                  Lead[]
+  whatsappTemplates      WhatsAppTemplate[]
+  leadAutomationRules    LeadAutomationRule[]
 }
 
 model AcademicYear {
@@ -141,6 +145,23 @@ model Admission {
   updatedAt             DateTime  @updatedAt
   school                School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
+  marketingStatus String  @default("NEW") // NEW, CONTACTED, INTERESTED, etc.
+  score           Int     @default(50)
+  counsellorId    String?
+  counsellor      User?   @relation("AdmissionCounsellor", fields: [counsellorId], references: [id])
+
+  // Detailed CRM Fields
+  lastMeaningfulActionAt DateTime?
+  tourStatus             String    @default("NONE") // NONE, SCHEDULED, COMPLETED
+  feeConcernLevel        String    @default("NONE") // NONE, MILD, STRONG
+  distanceConcern        Boolean   @default(false)
+  timingConcern          Boolean   @default(false)
+  programFit             String    @default("GOOD") // GOOD, CLOSE, BAD
+  seatAvailability       String    @default("AVAILABLE") // AVAILABLE, WAITLIST
+
+  interactions LeadInteraction[]
+  followUps    FollowUp[]
+
   @@index([schoolId])
   @@index([stage])
   @@index([parentPhone])
@@ -150,7 +171,7 @@ model Admission {
 model User {
   id                       String                @id @default(cuid())
   mobile                   String                @unique
-  email                    String?
+  email                    String?               @unique
   firstName                String?
   lastName                 String?
   designation              String?
@@ -198,6 +219,12 @@ model User {
   payslips                 Payslip[]
   salaryRevisions          SalaryRevision[]
   managedStaff             StaffAccess[]         @relation("ManagerMapping")
+  branchId                 String?
+  branch                   Branch?               @relation(fields: [branchId], references: [id])
+  managedLeads             Lead[]                @relation("LeadCounsellor")
+  managedAdmissions        Admission[]           @relation("AdmissionCounsellor")
+  followUps                FollowUp[]
+  leadInteractions         LeadInteraction[]
   managedBy                StaffAccess[]         @relation("StaffMapping")
   staffAttendance          StaffAttendance[]
   recordedHealth           StudentHealthRecord[]
@@ -1520,4 +1547,132 @@ model SchoolMarketingDesign {
   @@unique([schoolId, templateId])
   @@index([schoolId])
   @@index([templateId])
+}
+
+model Branch {
+  id        String   @id @default(cuid())
+  name      String
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  leads     Lead[]
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lead {
+  id                String    @id @default(cuid())
+  parentName        String
+  mobile            String
+  childName         String
+  childAge          Int?
+  childDOB          DateTime?
+  programInterested String?
+  preferredBranchId String?
+  branch            Branch?   @relation(fields: [preferredBranchId], references: [id])
+  source            String? // Website, Ads, WhatsApp, Walk-in, etc.
+  status            String    @default("NEW") // Pipeline stages
+  priority          String    @default("MEDIUM")
+  score             Int       @default(50)
+  counsellorId      String?
+  counsellor        User?     @relation("LeadCounsellor", fields: [counsellorId], references: [id])
+
+  // Scoring Metrics
+  firstResponseTime      Int? // in minutes
+  lastMeaningfulActionAt DateTime?
+  tourStatus             String    @default("NONE") // NONE, SCHEDULED, COMPLETED
+  feeConcernLevel        String    @default("NONE") // NONE, MILD, STRONG
+  distanceConcern        Boolean   @default(false)
+  timingConcern          Boolean   @default(false)
+  programFit             String    @default("GOOD") // GOOD, CLOSE, BAD
+  seatAvailability       String    @default("AVAILABLE") // AVAILABLE, WAITLIST
+
+  // Engagement
+  whatsappRead       Boolean @default(false)
+  linkClicks         Int     @default(0)
+  repliesCount       Int     @default(0)
+  callConnectedCount Int     @default(0)
+  noAnswerCount      Int     @default(0)
+  isReferral         Boolean @default(false)
+
+  // Consent
+  consentWhatsApp Boolean @default(false)
+  consentCalls    Boolean @default(false)
+
+  schoolId     String
+  school       School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  interactions LeadInteraction[]
+  followUps    FollowUp[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([schoolId])
+  @@index([status])
+  @@index([mobile])
+}
+
+model FollowUp {
+  id           String     @id @default(cuid())
+  leadId       String?
+  lead         Lead?      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  admissionId  String?
+  admission    Admission? @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  type         String // CALL, WHATSAPP, VISIT
+  scheduledAt  DateTime
+  completedAt  DateTime?
+  status       String     @default("PENDING") // PENDING, COMPLETED, CANCELLED, OVERDUE
+  notes        String?
+  assignedToId String?
+  assignedTo   User?      @relation(fields: [assignedToId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([leadId])
+  @@index([assignedToId])
+}
+
+model LeadInteraction {
+  id          String     @id @default(cuid())
+  leadId      String?
+  lead        Lead?      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  admissionId String?
+  admission   Admission? @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  type        String // CALL_LOG, WHATSAPP_MSG, NOTE, STATUS_CHANGE, AUTOMATION
+  content     String
+  staffId     String?
+  staff       User?      @relation(fields: [staffId], references: [id])
+  createdAt   DateTime   @default(now())
+
+  @@index([leadId])
+}
+
+model WhatsAppTemplate {
+  id         String   @id @default(cuid())
+  name       String
+  category   String // ADMISSION, PAYMENT, TOUR, VALUE, NURTURE, REENGAGEMENT
+  body       String
+  variables  String? // JSON string: list of variable names
+  language   String   @default("EN")
+  scoreBands String // JSON string: array of score bands
+  schoolId   String
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([schoolId])
+}
+
+model LeadAutomationRule {
+  id          String   @id @default(cuid())
+  scoreBand   String // HOT, WARM, COOL, COLD
+  frequency   Int // hours between messages
+  maxMessages Int
+  allowedCats String // JSON string: array of categories
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([schoolId, scoreBand])
 }

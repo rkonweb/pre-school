@@ -4,11 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 import { getEnforcedScope, verifyClassAccess, verifyParentAccess } from "@/lib/access-control";
-import { getCurrentUserAction } from "./session-actions";
+import { validateUserSchoolAction } from "./session-actions";
 
 // ... existing code ...
 
-export async function createHomeworkAction(data: {
+export async function createHomeworkAction(slug: string, data: {
     // ... args ...
     title: string;
     description?: string;
@@ -30,9 +30,9 @@ export async function createHomeworkAction(data: {
 }) {
     try {
         // PERMISSION CHECK
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) return { success: false, error: "Unauthorized" };
-        const currentUser = userRes.data;
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
 
         if (data.assignedTo === "CLASS" && data.classroomId) {
             const hasAccess = await verifyClassAccess(currentUser.id, currentUser.role, data.classroomId);
@@ -104,8 +104,15 @@ export async function createHomeworkAction(data: {
 
 // ... publishHomeworkAction ...
 
-export async function getSchoolHomeworkAction(schoolId: string, classroomId?: string, academicYearId?: string) {
+export async function getSchoolHomeworkAction(slug: string, classroomId?: string, academicYearId?: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
+
+        const schoolId = currentUser.schoolId;
+        if (!schoolId) return { success: false, error: "User has no assigned school" };
+
         let query = `SELECT * FROM Homework WHERE schoolId = ?`;
         const params: any[] = [schoolId];
 
@@ -114,36 +121,18 @@ export async function getSchoolHomeworkAction(schoolId: string, classroomId?: st
             params.push(academicYearId);
         }
 
-        // ---------------------------------------------------------
-        // ACCESS CONTROL
-        // ---------------------------------------------------------
-        const userRes = await getCurrentUserAction();
-        if (userRes.success && userRes.data) {
-            const scope = await getEnforcedScope(userRes.data.id, userRes.data.role);
-            if (scope.restriction) {
-                if (classroomId) {
-                    // If requesting specific class, must be in allowed list
-                    if (!scope.allowedIds.includes(classroomId)) {
-                        // Unauthorized for this class
-                        return { success: true, data: [] };
-                    }
-                    // If allowed, flow proceeds to add filter below
+        const scope = await getEnforcedScope(currentUser.id, currentUser.role);
+        if (scope.restriction) {
+            if (classroomId) {
+                if (!scope.allowedIds.includes(classroomId)) {
+                    return { success: true, data: [] };
+                }
+            } else {
+                if (scope.allowedIds.length > 0) {
+                    const list = scope.allowedIds.map(id => `'${id}'`).join(", ");
+                    query += ` AND (classroomId IN (${list}) OR classroomId IS NULL)`;
                 } else {
-                    // Listing ALL: Must filter to only allowed classes
-                    if (scope.allowedIds.length > 0) {
-                        const list = scope.allowedIds.map(id => `'${id}'`).join(", ");
-                        // We check:
-                        // 1. Homework assigned to allowed classroom (classroomId IN list)
-                        // 2. OR Homework assigned to INDIVIDUAL where target student is in allowed class? (Harder in SQL)
-                        // Simplest: Filter by classroomId column.
-                        // Note: Some homework might be 'INDIVIDUAL' but have `classroomId` set contextually? 
-                        // The Create Action sets `classroomId` if provided.
-                        query += ` AND (classroomId IN (${list}) OR classroomId IS NULL)`;
-                        // "OR classroomId IS NULL" allows seeing global assignments? usually not for staff.
-                        // Let's be strict: `AND classroomId IN (${list})`.
-                    } else {
-                        return { success: true, data: [] }; // See nothing
-                    }
+                    return { success: true, data: [] };
                 }
             }
         }
@@ -152,12 +141,12 @@ export async function getSchoolHomeworkAction(schoolId: string, classroomId?: st
         if (classroomId) {
             query += ` AND classroomId = ?`;
             params.push(classroomId);
-        } else if (userRes.success && userRes.data?.role === 'STAFF') {
+        } else if (currentUser.role === 'STAFF') {
             // Apply the list filter here if invalid check? 
             // Actually we modified Query string above, but `params` are separate.
             // If we appended string with literals above, we are good.
             // But let's be cleaner.
-            const scope = await getEnforcedScope(userRes.data.id, userRes.data.role);
+            const scope = await getEnforcedScope(currentUser.id, currentUser.role);
             if (scope.restriction && !classroomId && scope.allowedIds.length > 0) {
                 const list = scope.allowedIds.map(id => `'${id}'`).join(", ");
                 query += ` AND classroomId IN (${list})`;
@@ -198,12 +187,12 @@ export async function getSchoolHomeworkAction(schoolId: string, classroomId?: st
 // STUDENT / PARENT ACTIONS
 // ============================================
 
-export async function getStudentHomeworkAction(studentId: string, academicYearId?: string) {
+export async function getStudentHomeworkAction(slug: string, studentId: string, academicYearId?: string) {
     try {
         // PERMISSION CHECK
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) return { success: false, error: "Unauthorized" };
-        const currentUser = userRes.data;
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
 
         if (currentUser.role === "PARENT") {
             const hasAccess = await verifyParentAccess(currentUser.mobile, studentId);
@@ -270,7 +259,7 @@ export async function getStudentHomeworkAction(studentId: string, academicYearId
     }
 }
 
-export async function submitHomeworkAction(data: {
+export async function submitHomeworkAction(slug: string, data: {
     homeworkId: string;
     studentId: string;
     mediaType?: "PHOTO" | "VIDEO" | "NONE";
@@ -280,9 +269,9 @@ export async function submitHomeworkAction(data: {
 }) {
     try {
         // PERMISSION CHECK
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) return { success: false, error: "Unauthorized" };
-        const currentUser = userRes.data;
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
 
         // If Parent, verify they own this student
         if (currentUser.role === "PARENT") {

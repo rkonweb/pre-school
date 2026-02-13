@@ -4,13 +4,16 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
+import { validateUserSchoolAction } from "./session-actions";
 
 // --- Book Management ---
 
 export async function createBookAction(data: any, schoolSlug: string) {
     try {
-        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
-        if (!school) throw new Error("School not found");
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "School not found" };
 
         await prisma.libraryBook.create({
             data: {
@@ -21,7 +24,7 @@ export async function createBookAction(data: any, schoolSlug: string) {
                 category: data.category,
                 copies: Number(data.copies),
                 shelfNo: data.shelfNo,
-                schoolId: school.id
+                schoolId: schoolId
             }
         });
 
@@ -32,8 +35,10 @@ export async function createBookAction(data: any, schoolSlug: string) {
     }
 }
 
-export async function updateBookAction(bookId: string, data: any, schoolSlug: string) {
+export async function updateBookAction(slug: string, bookId: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         await prisma.libraryBook.update({
             where: { id: bookId },
             data: {
@@ -47,17 +52,20 @@ export async function updateBookAction(bookId: string, data: any, schoolSlug: st
             }
         });
 
-        revalidatePath(`/s/${schoolSlug}/library/inventory`);
+        revalidatePath(`/s/${slug}/library/inventory`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
 }
 
-export async function deleteBookAction(bookId: string, schoolSlug: string) {
+export async function deleteBookAction(slug: string, bookId: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         await prisma.libraryBook.delete({ where: { id: bookId } });
-        revalidatePath(`/s/${schoolSlug}/library/inventory`);
+        revalidatePath(`/s/${slug}/library/inventory`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -72,6 +80,8 @@ export async function getBooksAction(
     category: string = ""
 ) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
         const whereClause: any = {
             school: { slug: schoolSlug },
             OR: [
@@ -147,8 +157,10 @@ export async function getBooksAction(
 
 export async function issueBookAction(data: { bookId: string, studentId?: string, staffId?: string, dueDate: Date }, schoolSlug: string) {
     try {
-        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
-        if (!school) throw new Error("School not found");
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "School not found" };
 
         // Check availability
         const book = await prisma.libraryBook.findUnique({
@@ -169,7 +181,7 @@ export async function issueBookAction(data: { bookId: string, studentId?: string
                 staffId: data.staffId,
                 dueDate: data.dueDate,
                 status: "ISSUED",
-                schoolId: school.id
+                schoolId: schoolId
             }
         });
 
@@ -180,8 +192,10 @@ export async function issueBookAction(data: { bookId: string, studentId?: string
     }
 }
 
-export async function returnBookAction(transactionId: string, schoolSlug: string) {
+export async function returnBookAction(slug: string, transactionId: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         const transaction = await prisma.libraryTransaction.findUnique({
             where: { id: transactionId },
             include: { school: { include: { librarySettings: true } } }
@@ -209,7 +223,7 @@ export async function returnBookAction(transactionId: string, schoolSlug: string
             }
         });
 
-        revalidatePath(`/s/${schoolSlug}/library`);
+        revalidatePath(`/s/${slug}/library`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -218,28 +232,30 @@ export async function returnBookAction(transactionId: string, schoolSlug: string
 
 export async function getLibraryStatsAction(schoolSlug: string) {
     try {
-        const school = await prisma.school.findUnique({ where: { slug: schoolSlug }, select: { id: true } });
-        if (!school) return { success: false };
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "School not found" };
 
         const totalBooks = await prisma.libraryBook.aggregate({
-            where: { schoolId: school.id },
+            where: { schoolId: schoolId },
             _sum: { copies: true }
         });
 
         const issuedBooks = await prisma.libraryTransaction.count({
-            where: { schoolId: school.id, status: "ISSUED" }
+            where: { schoolId: schoolId, status: "ISSUED" }
         });
 
         const overdueBooks = await prisma.libraryTransaction.count({
             where: {
-                schoolId: school.id,
+                schoolId: schoolId,
                 status: "ISSUED",
                 dueDate: { lt: new Date() }
             }
         });
 
         const recentTransactions = await prisma.libraryTransaction.findMany({
-            where: { schoolId: school.id },
+            where: { schoolId: schoolId },
             include: {
                 book: true,
                 student: true,
@@ -292,8 +308,10 @@ export async function getTransactionsAction(schoolSlug: string, filter: "ALL" | 
     }
 }
 
-export async function getStudentLibraryHistoryAction(studentId: string) {
+export async function getStudentLibraryHistoryAction(slug: string, studentId: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         const transactions = await prisma.libraryTransaction.findMany({
             where: { studentId },
             include: { book: true },
@@ -320,6 +338,9 @@ export async function getStaffLibraryHistoryAction(staffId: string) {
 
 export async function updateBookCoverAction(schoolSlug: string, bookId: string, formData: FormData) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const file = formData.get("file") as File;
         if (!file || file.size === 0) {
             return { success: false, error: "No file provided" };
@@ -353,8 +374,10 @@ export async function updateBookCoverAction(schoolSlug: string, bookId: string, 
 
 export async function bulkCreateBooksAction(schoolSlug: string, booksData: any[]) {
     try {
-        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
-        if (!school) throw new Error("School not found");
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "School not found" };
 
         if (!Array.isArray(booksData) || booksData.length === 0) {
             return { success: false, error: "No valid data provided" };
@@ -368,7 +391,7 @@ export async function bulkCreateBooksAction(schoolSlug: string, booksData: any[]
             category: book.category || "General",
             copies: parseInt(book.copies) || 1,
             shelfNo: book.shelfNo || null,
-            schoolId: school.id
+            schoolId: schoolId
         }));
 
         const result = await prisma.libraryBook.createMany({

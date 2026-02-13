@@ -25,7 +25,11 @@ import {
     Banknote,
     Bus,
     FileSpreadsheet,
-    Folder
+    Folder,
+    MapPin,
+    TrendingUp,
+    Sparkles,
+    Sliders
 } from "lucide-react";
 import { useState } from "react";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
@@ -94,7 +98,25 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
 
     const rawNavigation: NavItem[] = [
         { name: "Dashboard", href: dashboardHref, icon: LayoutDashboard },
-        { name: "Admissions", href: `/s/${slug}/admissions`, icon: FileText }, // Key: admissions
+        {
+            name: "Admissions",
+            href: `/s/${slug}/admissions`,
+            icon: FileText,
+            children: [
+                { name: "AI Dashboard", href: `/s/${slug}/admissions/dashboard`, icon: Sparkles },
+                { name: "Application Pipeline", href: `/s/${slug}/admissions`, icon: Layers },
+                { name: "Inquiry Dashboard", href: `/s/${slug}/admissions/inquiry`, icon: LayoutDashboard },
+                { name: "Leads (Pipeline)", href: `/s/${slug}/admissions/inquiry/pipeline`, icon: MessageCircle },
+                { name: "Lead List", href: `/s/${slug}/admissions/inquiry/list`, icon: Users },
+                { name: "Follow-ups", href: `/s/${slug}/admissions/inquiry/followups`, icon: Clock },
+                { name: "School Tours", href: `/s/${slug}/admissions/inquiry/tours`, icon: MapPin },
+                { name: "WhatsApp Automation", href: `/s/${slug}/admissions/inquiry/automation`, icon: MessageCircle },
+                { name: "Template Library", href: `/s/${slug}/admissions/inquiry/templates`, icon: BookOpen },
+                { name: "Reports", href: `/s/${slug}/admissions/inquiry/reports`, icon: TrendingUp },
+                { name: "Inquiry Settings", href: `/s/${slug}/admissions/inquiry/settings`, icon: Settings },
+                { name: "AI Configuration", href: `/s/${slug}/admissions/settings/ai`, icon: Sparkles },
+            ]
+        },
         {
             name: "Students",
             href: `/s/${slug}/students`,
@@ -134,6 +156,18 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
     const navPermissionMap: Record<string, string> = {
         "Dashboard": "dashboard",
         "Admissions": "admissions",
+        "AI Dashboard": "admissions.dashboard", // Using generic permissions for now
+        "Application Pipeline": "admissions.pipeline",
+        "Inquiry Dashboard": "admissions.inquiry.dashboard",
+        "Leads (Pipeline)": "admissions.inquiry.pipeline",
+        "Lead List": "admissions.inquiry.list",
+        "Follow-ups": "admissions.inquiry.followups",
+        "School Tours": "admissions.inquiry.tours",
+        "WhatsApp Automation": "admissions.inquiry.automation",
+        "Template Library": "admissions.inquiry.templates",
+        "Reports": "admissions.inquiry.reports",
+        "Inquiry Settings": "admissions.inquiry.settings", // Note: This might overlap with global settings
+        "AI Configuration": "admissions.settings",
         "Students": "students", // Parent check
         "All Students": "students.profiles",
         "Attendance": "students.attendance", // Context dependent? But usually student attendance

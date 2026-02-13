@@ -2,18 +2,18 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getCurrentUserAction } from "./session-actions";
+import { validateUserSchoolAction } from "./session-actions";
 
 /**
  * Verify if user has permission to access transport tracking
  */
 async function verifyTransportPermission(schoolSlug: string, requiredAction: "view" | "manage" = "view") {
-    const currentUserRes = await getCurrentUserAction();
-    if (!currentUserRes.success || !currentUserRes.data) {
-        return { authorized: false, error: "Not authenticated" };
+    const auth = await validateUserSchoolAction(schoolSlug);
+    if (!auth.success || !auth.user) {
+        return { authorized: false, error: auth.error || "Not authenticated" };
     }
 
-    const user = currentUserRes.data;
+    const user = auth.user;
 
     // SUPER_ADMIN and ADMIN have full access
     if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") {
@@ -77,7 +77,7 @@ export async function getFleetStatusAction(schoolSlug: string) {
         const vehicles = await prisma.transportVehicle.findMany({
             where: { schoolId: school.id },
             include: {
-                pickupRoutes: {
+                TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle: {
                     take: 1,
                     select: {
                         id: true,
@@ -89,16 +89,16 @@ export async function getFleetStatusAction(schoolSlug: string) {
                         }
                     }
                 },
-                telemetry: {
+                VehicleTelemetry: {
                     orderBy: { recordedAt: 'desc' },
                     take: 1
                 }
             }
         });
 
-        const fleetStatus = vehicles.map(vehicle => {
-            const latestTelemetry = vehicle.telemetry[0];
-            const route = vehicle.pickupRoutes[0];
+        const fleetStatus = vehicles.map((vehicle: any) => {
+            const latestTelemetry = vehicle.VehicleTelemetry?.[0];
+            const route = vehicle.TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle?.[0];
 
             return {
                 id: vehicle.id,
@@ -150,10 +150,10 @@ export async function getVehicleTelemetryAction(vehicleId: string) {
         const vehicle = await prisma.transportVehicle.findUnique({
             where: { id: vehicleId },
             include: {
-                pickupRoutes: {
+                TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle: {
                     include: {
                         stops: {
-                            orderBy: { sequence: 'asc' }
+                            orderBy: { sequenceOrder: 'asc' }
                         },
                         driver: {
                             select: {
@@ -163,7 +163,7 @@ export async function getVehicleTelemetryAction(vehicleId: string) {
                         }
                     }
                 },
-                telemetry: {
+                VehicleTelemetry: {
                     orderBy: { recordedAt: 'desc' },
                     take: 10 // Last 10 locations for trail
                 }
@@ -174,7 +174,7 @@ export async function getVehicleTelemetryAction(vehicleId: string) {
             return { success: false, error: "Vehicle not found" };
         }
 
-        const route = vehicle.pickupRoutes[0];
+        const route = (vehicle as any).TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle?.[0];
 
         return {
             success: true,
@@ -188,16 +188,16 @@ export async function getVehicleTelemetryAction(vehicleId: string) {
                 route: route ? {
                     id: route.id,
                     name: route.name,
-                    stops: route.stops.map(stop => ({
+                    stops: (route.stops || []).map((stop: any) => ({
                         id: stop.id,
                         name: stop.name,
                         latitude: stop.latitude,
                         longitude: stop.longitude,
-                        sequence: stop.sequence
+                        sequence: stop.sequenceOrder
                     })),
                     driver: route.driver
                 } : null,
-                telemetry: vehicle.telemetry.map(t => ({
+                telemetry: (vehicle as any).VehicleTelemetry.map((t: any) => ({
                     latitude: t.latitude,
                     longitude: t.longitude,
                     speed: t.speed,
@@ -247,6 +247,7 @@ export async function updateVehicleTelemetryAction(
 
         const telemetry = await prisma.vehicleTelemetry.create({
             data: {
+                id: `tel-${Date.now()}`, // Explicit ID if missing in schema's autogen? or just random
                 vehicleId,
                 latitude: data.latitude,
                 longitude: data.longitude,
@@ -269,11 +270,14 @@ export async function updateVehicleTelemetryAction(
  * Get telemetry history for a vehicle within a date range
  */
 export async function getVehicleTelemetryHistoryAction(
+    slug: string,
     vehicleId: string,
     startDate: Date,
     endDate: Date
 ) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
         const telemetry = await prisma.vehicleTelemetry.findMany({
             where: {
                 vehicleId,

@@ -2,67 +2,79 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { validateUserSchoolAction } from "./session-actions";
+import { basename } from "path";
 
-import { getAttendanceScope } from "./attendance-actions"; // Need to export this or move to shared
-// Actually, circular dependency risk. I will duplicate the scope logic for safety or make a shared permission helper.
-// Since I can't easily create new files without friction, I will inline the logic or assume I can export it.
-// Let's try to export it from attendance-actions.ts inside the previous tool call? I did not check export.
-// I will implement the logic inline here to be safe.
+function maskStaffPII(staff: any, isAuthorized: boolean) {
+    if (!staff) return staff;
+    if (isAuthorized) return staff;
 
-import { getCurrentUserAction } from "./session-actions";
+    // Mask sensitive fields
+    const masked = { ...staff };
+    delete masked.bankName;
+    delete masked.bankAccountNo;
+    delete masked.bankIfsc;
+    delete masked.address;
+    delete masked.addressCity;
+    delete masked.addressState;
+    delete masked.addressZip;
+    delete masked.addressCountry;
+    delete masked.documents;
+    return masked;
+}
 
 export async function getStaffAction(schoolSlug: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        const viewingUser = auth.user;
+        const viewingUserId = viewingUser?.id;
         let whereClause: any = {
             school: { slug: schoolSlug },
             role: { in: ["STAFF", "ADMIN"] }
         };
 
-        const currentUserRes = await getCurrentUserAction();
-        const viewingUserId = currentUserRes.success ? currentUserRes.data?.id : null;
+        if (viewingUser && viewingUser.role !== "ADMIN" && viewingUser.role !== "SUPER_ADMIN") {
+            let perms: any[] = [];
+            try {
+                perms = typeof (viewingUser as any).customRole?.permissions === 'string'
+                    ? JSON.parse((viewingUser as any).customRole.permissions)
+                    : (viewingUser as any).customRole?.permissions;
+            } catch (e) { }
 
-        if (viewingUserId) {
-            const user = await prisma.user.findUnique({
-                where: { id: viewingUserId },
-                include: { customRole: true } as any
-            });
+            const attendPerm = perms?.find(p => p.module === "staff.attendance");
 
-            if (user && user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
-                let perms: any[] = [];
-                try {
-                    perms = typeof (user as any).customRole?.permissions === 'string'
-                        ? JSON.parse((user as any).customRole.permissions)
-                        : (user as any).customRole?.permissions;
-                } catch (e) { }
-
-                const attendPerm = perms?.find(p => p.module === "staff.attendance");
-
-                if (attendPerm) {
-                    // Logic hierarchy: Manage > Manage Selected > Manage Own > View
-                    if (!attendPerm.actions.includes("manage") && !attendPerm.actions.includes("view")) {
-                        if (attendPerm.actions.includes("manage_selected")) {
-                            const access = await (prisma as any).staffAccess.findMany({
-                                where: { managerId: viewingUserId },
-                                select: { staffId: true }
-                            });
-                            const ids = access.map((a: any) => a.staffId);
-                            if (!ids.includes(viewingUserId)) ids.push(viewingUserId);
-                            whereClause.id = { in: ids };
-                        } else if (attendPerm.actions.includes("manage_own")) {
-                            whereClause.id = viewingUserId;
-                        }
+            if (attendPerm && viewingUserId) {
+                // Logic hierarchy: Manage > Manage Selected > Manage Own > View
+                if (!attendPerm.actions.includes("manage") && !attendPerm.actions.includes("view")) {
+                    if (attendPerm.actions.includes("manage_selected")) {
+                        const access = await (prisma as any).staffAccess.findMany({
+                            where: { managerId: viewingUserId },
+                            select: { staffId: true }
+                        });
+                        const ids = access.map((a: any) => a.staffId);
+                        if (!ids.includes(viewingUserId)) ids.push(viewingUserId);
+                        whereClause.id = { in: ids };
+                    } else if (attendPerm.actions.includes("manage_own")) {
+                        whereClause.id = viewingUserId;
                     }
                 }
             }
         }
 
-        const staff = await prisma.user.findMany({
+        const staffList = await prisma.user.findMany({
             where: whereClause,
             orderBy: {
                 firstName: "asc"
             }
         });
-        return { success: true, data: staff };
+
+        // PII Masking: Only ADMIN or users with specific payroll access see bank/address details in lists.
+        const isAuthorized = viewingUser?.role === 'ADMIN' || viewingUser?.role === 'SUPER_ADMIN';
+        const maskedStaff = staffList.map(s => maskStaffPII(s, isAuthorized));
+
+        return { success: true, data: maskedStaff };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -72,6 +84,9 @@ export async function getStaffAction(schoolSlug: string) {
 
 export async function createStaffAction(schoolSlug: string, formData: FormData) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await prisma.school.findUnique({
             where: { slug: schoolSlug }
         });
@@ -89,10 +104,24 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
 
         // Global Phone Uniqueness Check
         if (mobile) {
-            const { validatePhoneUniqueness } = await import("./phone-validation");
+            const { validatePhoneUniqueness, validateEmailUniqueness } = await import("./identity-validation");
             const phoneCheck = await validatePhoneUniqueness(mobile);
             if (!phoneCheck.isValid) {
                 return { success: false, error: phoneCheck.error };
+            }
+
+            // Global Email Uniqueness Check
+            if (email) {
+                const emailCheck = await validateEmailUniqueness(email);
+                if (!emailCheck.isValid) {
+                    return { success: false, error: emailCheck.error };
+                }
+            }
+        } else if (email) {
+            const { validateEmailUniqueness } = await import("./identity-validation");
+            const emailCheck = await validateEmailUniqueness(email);
+            if (!emailCheck.isValid) {
+                return { success: false, error: emailCheck.error };
             }
         }
         const gender = formData.get("gender") as string;
@@ -131,10 +160,11 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
             const file = formData.get(key) as File;
             if (file && file.size > 0) {
                 const buffer = Buffer.from(await file.arrayBuffer());
-                const filename = `${Date.now()}-${file.name.replace(/\s/g, "_")}`;
-                const path = join(process.cwd(), "public/uploads/staff", filename);
+                // Sanitize filename to prevent path traversal
+                const safeName = `${Date.now()}-${basename(file.name).replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+                const path = join(process.cwd(), "public/uploads/staff", safeName);
                 await writeFile(path, buffer);
-                return `/uploads/staff/${filename}`;
+                return `/uploads/staff/${safeName}`;
             }
             return null;
         };
@@ -152,10 +182,10 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
         const avatarFile = formData.get("avatarFile") as File;
         if (avatarFile && avatarFile.size > 0) {
             const buffer = Buffer.from(await avatarFile.arrayBuffer());
-            const filename = `avatar-${Date.now()}-${avatarFile.name.replace(/\s/g, "_")}`;
-            const path = join(process.cwd(), "public/uploads/staff", filename);
+            const safeName = `avatar-${Date.now()}-${basename(avatarFile.name).replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+            const path = join(process.cwd(), "public/uploads/staff", safeName);
             await writeFile(path, buffer);
-            avatarPath = `/uploads/staff/${filename}`;
+            avatarPath = `/uploads/staff/${safeName}`;
         }
 
         // Creating User
@@ -220,8 +250,11 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
     }
 }
 
-export async function getStaffMemberAction(id: string) {
+export async function getStaffMemberAction(schoolSlug: string, id: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const staff = await prisma.user.findUnique({
             where: { id },
             include: {
@@ -230,14 +263,22 @@ export async function getStaffMemberAction(id: string) {
                 }
             }
         });
-        return { success: true, data: staff };
+
+        // PII Masking for individual member
+        // Staff can see their own full details. ADMINs can see everything.
+        const isAuthorized = auth.user && (auth.user.role === 'ADMIN' || auth.user.role === 'SUPER_ADMIN' || auth.user.id === id);
+        const maskedStaff = maskStaffPII(staff, !!isAuthorized);
+
+        return { success: true, data: maskedStaff };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
 }
 
-export async function updateStaffAction(id: string, formData: FormData) {
+export async function updateStaffAction(schoolSlug: string, id: string, formData: FormData) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
         const firstName = formData.get("firstName") as string;
         const lastName = formData.get("lastName") as string;
         const email = formData.get("email") as string;
@@ -248,10 +289,24 @@ export async function updateStaffAction(id: string, formData: FormData) {
 
         // Global Phone Uniqueness Check (exclude current user)
         if (mobile) {
-            const { validatePhoneUniqueness } = await import("./phone-validation");
+            const { validatePhoneUniqueness, validateEmailUniqueness } = await import("./identity-validation");
             const phoneCheck = await validatePhoneUniqueness(mobile, id);
             if (!phoneCheck.isValid) {
                 return { success: false, error: phoneCheck.error };
+            }
+
+            // Global Email Uniqueness Check
+            if (email) {
+                const emailCheck = await validateEmailUniqueness(email, id);
+                if (!emailCheck.isValid) {
+                    return { success: false, error: emailCheck.error };
+                }
+            }
+        } else if (email) {
+            const { validateEmailUniqueness } = await import("./identity-validation");
+            const emailCheck = await validateEmailUniqueness(email, id);
+            if (!emailCheck.isValid) {
+                return { success: false, error: emailCheck.error };
             }
         }
 
@@ -321,10 +376,10 @@ export async function updateStaffAction(id: string, formData: FormData) {
             const { join } = await import("path");
 
             const buffer = Buffer.from(await avatarFile.arrayBuffer());
-            const filename = `avatar-${Date.now()}-${avatarFile.name.replace(/\s/g, "_")}`;
-            const path = join(process.cwd(), "public/uploads/staff", filename);
+            const safeName = `avatar-${Date.now()}-${basename(avatarFile.name).replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+            const path = join(process.cwd(), "public/uploads/staff", safeName);
             await writeFile(path, buffer);
-            data.avatar = `/uploads/staff/${filename}`;
+            data.avatar = `/uploads/staff/${safeName}`;
         }
 
         const staff = await prisma.user.update({
@@ -351,6 +406,9 @@ export async function updateStaffAction(id: string, formData: FormData) {
 
 export async function updateStaffBasicInfoAction(schoolSlug: string, id: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const updated = await prisma.user.update({
             where: { id },
             data
@@ -366,6 +424,9 @@ export async function updateStaffBasicInfoAction(schoolSlug: string, id: string,
 
 export async function deleteStaffAction(schoolSlug: string, id: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         await prisma.user.delete({
             where: { id }
         });
@@ -375,7 +436,7 @@ export async function deleteStaffAction(schoolSlug: string, id: string) {
     }
 }
 
-export async function addSalaryRevisionAction(userId: string, data: {
+export async function addSalaryRevisionAction(schoolSlug: string, userId: string, data: {
     amount: number,
     effectiveDate: string,
     reason?: string,
@@ -392,6 +453,14 @@ export async function addSalaryRevisionAction(userId: string, data: {
     netSalary?: number
 }) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        // Ensure only ADMIN or payroll managers can edit salary
+        if (auth.user.role !== 'ADMIN' && auth.user.role !== 'SUPER_ADMIN') {
+            return { success: false, error: "Only admins can manage salary revisions" };
+        }
+
         const revision = await prisma.salaryRevision.create({
             data: {
                 userId,
@@ -420,8 +489,15 @@ export async function addSalaryRevisionAction(userId: string, data: {
     }
 }
 
-export async function deleteSalaryRevisionAction(id: string) {
+export async function deleteSalaryRevisionAction(schoolSlug: string, id: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (auth.user.role !== 'ADMIN' && auth.user.role !== 'SUPER_ADMIN') {
+            return { success: false, error: "Only admins can delete salary revisions" };
+        }
+
         await prisma.salaryRevision.delete({
             where: { id }
         });
@@ -431,8 +507,11 @@ export async function deleteSalaryRevisionAction(id: string) {
     }
 }
 
-export async function getStaffClassAccessAction(userId: string) {
+export async function getStaffClassAccessAction(schoolSlug: string, userId: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const access = await prisma.classAccess.findMany({
             where: { userId },
             select: { classroomId: true, canRead: true }
@@ -443,8 +522,11 @@ export async function getStaffClassAccessAction(userId: string) {
     }
 }
 
-export async function updateStaffClassAccessBulkAction(userId: string, accessMap: Record<string, boolean>) {
+export async function updateStaffClassAccessBulkAction(schoolSlug: string, userId: string, accessMap: Record<string, boolean>) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const activeClassIds = Object.entries(accessMap)
             .filter(([_, isActive]) => isActive)
             .map(([id]) => id);

@@ -10,7 +10,8 @@ import {
     ChevronRight,
     CreditCard,
     Coins,
-    Fingerprint
+    Fingerprint,
+    Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -68,6 +69,12 @@ export function SettingsSidebar() {
             href: `/s/${slug}/settings/payroll`,
             icon: Coins,
             desc: "Automated Rules"
+        },
+        {
+            label: "AI Configuration",
+            href: `/s/${slug}/admissions/settings/ai`,
+            icon: Sparkles,
+            desc: "Scoring & Alerts"
         }
     ];
 

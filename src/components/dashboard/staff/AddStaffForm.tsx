@@ -251,6 +251,11 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     type="tel"
                                     defaultValue={initialData?.mobile}
                                     required
+                                    maxLength={10}
+                                    onInput={(e) => {
+                                        const target = e.target as HTMLInputElement;
+                                        target.value = target.value.replace(/\D/g, "").slice(0, 10);
+                                    }}
                                     className={cn(
                                         "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
                                         "focus:border-brand focus:ring-brand dark:bg-zinc-800",
@@ -592,7 +597,17 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                             </div>
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Emergency Phone</label>
-                                <input name="emergencyContactPhone" defaultValue={initialData?.emergencyContactPhone} type="tel" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input
+                                    name="emergencyContactPhone"
+                                    defaultValue={initialData?.emergencyContactPhone}
+                                    type="tel"
+                                    maxLength={10}
+                                    onInput={(e) => {
+                                        const target = e.target as HTMLInputElement;
+                                        target.value = target.value.replace(/\D/g, "").slice(0, 10);
+                                    }}
+                                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800"
+                                />
                             </div>
                         </div>
                     </div>

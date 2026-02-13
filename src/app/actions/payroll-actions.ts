@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { validateUserSchoolAction } from "./session-actions";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from "date-fns";
 
 /**
@@ -9,8 +10,13 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from "
  */
 export async function generatePayrollAction(schoolSlug: string, month: number, year: number) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "SchoolHasNoID" };
+
         const school = await prisma.school.findUnique({
-            where: { slug: schoolSlug },
+            where: { id: schoolId },
             include: { users: { where: { status: "ACTIVE" } } }
         });
 
@@ -168,11 +174,13 @@ export async function generatePayrollAction(schoolSlug: string, month: number, y
 
 export async function getPayrollsAction(schoolSlug: string) {
     try {
-        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
-        if (!school) throw new Error("School not found");
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "SchoolHasNoID" };
 
         const payrolls = await (prisma as any).payroll.findMany({
-            where: { schoolId: school.id },
+            where: { schoolId: schoolId },
             orderBy: [{ year: "desc" }, { month: "desc" }],
             include: { payslips: true }
         });
@@ -197,6 +205,8 @@ export async function getPayslipsAction(payrollId: string) {
 
 export async function markAsPaidAction(payrollId: string, schoolSlug: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
         await (prisma as any).payroll.update({
             where: { id: payrollId },
             data: { status: "PAID" }
@@ -216,6 +226,9 @@ export async function markAsPaidAction(payrollId: string, schoolSlug: string) {
 
 export async function getSchoolDetailsAction(slug: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await prisma.school.findUnique({
             where: { slug },
             select: {

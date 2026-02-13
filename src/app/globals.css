@@ -11,6 +11,8 @@
   --summer-yellow: #FCC11A;
   --summer-orange: #FF8800;
 
+  --brand-color: var(--summer-teal);
+
   /* Semantic Mappings */
   --background: #FFFFFF;
   --foreground: var(--summer-navy);

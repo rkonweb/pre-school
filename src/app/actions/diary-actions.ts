@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getCurrentUserAction } from "./session-actions";
+import { validateUserSchoolAction } from "./session-actions";
 import { getEnforcedScope, verifyClassAccess } from "@/lib/access-control";
 
 // ... existing code ...
@@ -22,13 +22,10 @@ export async function createDiaryEntryAction(data: {
     academicYearId?: string;
 }) {
     try {
-        // Get current user from session
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) {
-            return { success: false, error: "Not authenticated. Please log in." };
-        }
-
-        const currentUser = userRes.data;
+        // PERMISSION CHECK
+        const auth = await validateUserSchoolAction(data.schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
 
         // PERMISSION CHECK
         if (data.classroomId) {
@@ -38,20 +35,13 @@ export async function createDiaryEntryAction(data: {
             }
         }
 
-        // Get school ID from slug
-        const school = await prisma.school.findUnique({
-            where: { slug: data.schoolSlug },
-            select: { id: true }
-        });
-
-        if (!school) {
-            return { success: false, error: "School not found" };
+        // Match school slug from auth
+        if (currentUser.school?.slug !== data.schoolSlug) {
+            return { success: false, error: "Tenant mismatch" };
         }
 
-        // Verify user belongs to this school
-        if (currentUser.schoolId !== school.id) {
-            return { success: false, error: "Unauthorized access" };
-        }
+        const schoolId = currentUser.schoolId;
+        if (!schoolId) return { success: false, error: "User has no assigned school" };
 
         // Determine status based on scheduling
         let status = "PUBLISHED";
@@ -77,7 +67,7 @@ export async function createDiaryEntryAction(data: {
                 attachments: data.attachments ? JSON.stringify(data.attachments) : null,
                 priority: data.priority || "NORMAL",
                 requiresAck: data.requiresAck || false,
-                schoolId: school.id,
+                schoolId: schoolId,
                 authorId: currentUser.id,
                 classroomId: data.classroomId || null,
                 academicYearId: data.academicYearId || null,
@@ -139,23 +129,15 @@ export async function getDiaryEntriesAction(schoolSlug: string, filters?: {
     academicYearId?: string;
 }) {
     try {
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) {
-            return { success: false, error: "Unauthorized" };
-        }
-        const currentUser = userRes.data;
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
 
-        const school = await prisma.school.findUnique({
-            where: { slug: schoolSlug },
-            select: { id: true }
-        });
-
-        if (!school) {
-            return { success: false, error: "School not found" };
-        }
+        const schoolId = currentUser.schoolId;
+        if (!schoolId) return { success: false, error: "User has no assigned school" };
 
         const where: any = {
-            schoolId: school.id
+            schoolId: schoolId
         };
 
         if (filters?.academicYearId) {
@@ -266,12 +248,12 @@ export async function getDiaryEntriesAction(schoolSlug: string, filters?: {
 
 import { verifyParentAccess } from "@/lib/access-control";
 
-export async function getDiaryEntriesForStudentAction(studentId: string, academicYearId?: string) {
+export async function getDiaryEntriesForStudentAction(slug: string, studentId: string, academicYearId?: string) {
     try {
         // PERMISSION CHECK
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) return { success: false, error: "Unauthorized" };
-        const currentUser = userRes.data;
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
 
         if (currentUser.role === "PARENT") {
             const hasAccess = await verifyParentAccess(currentUser.mobile, studentId);
@@ -333,7 +315,7 @@ export async function getDiaryEntriesForStudentAction(studentId: string, academi
 // UPDATE DIARY ENTRY
 // ============================================
 
-export async function updateDiaryEntryAction(id: string, data: {
+export async function updateDiaryEntryAction(slug: string, id: string, data: {
     title?: string;
     content?: string;
     type?: string;
@@ -344,6 +326,9 @@ export async function updateDiaryEntryAction(id: string, data: {
     status?: string;
 }) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const updateData: any = {};
 
         if (data.title) updateData.title = data.title;
@@ -382,8 +367,11 @@ export async function updateDiaryEntryAction(id: string, data: {
 // DELETE DIARY ENTRY
 // ============================================
 
-export async function deleteDiaryEntryAction(id: string) {
+export async function deleteDiaryEntryAction(slug: string, id: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const entry = await prisma.diaryEntry.findUnique({
             where: { id },
             include: {

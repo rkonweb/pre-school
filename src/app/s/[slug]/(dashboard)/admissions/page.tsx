@@ -224,17 +224,14 @@ export default function AdmissionsPage() {
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <select
-                                                    value={app.stage || "INQUIRY"}
-                                                    onChange={(e) => handleStageUpdate(app.id, e.target.value)}
-                                                    disabled={!canEdit}
+                                                <div
                                                     className={cn(
-                                                        "rounded-full px-4 py-1.5 text-[10px] font-black tracking-wider uppercase border-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer",
+                                                        "rounded-full px-4 py-1.5 text-[10px] font-black tracking-wider uppercase border-0 inline-flex items-center",
                                                         STAGES.find(s => s.id === app.stage)?.color
                                                     )}
                                                 >
-                                                    {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                                                </select>
+                                                    {STAGES.find(s => s.id === app.stage)?.label || app.stage}
+                                                </div>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { z } from "zod";
 import {
     ArrowLeft,
     User,
@@ -63,6 +64,46 @@ export default function NewInquiryPage() {
         enrolledGrade: "",
         source: "WALK_IN",
         notes: ""
+    });
+
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const admissionSchema = z.object({
+        studentName: z.string().min(2, "Student name must be at least 2 characters"),
+        studentGender: z.enum(["MALE", "FEMALE", "OTHER"]),
+        dateOfBirth: z.string().min(1, "Date of birth is required"),
+        enrolledGrade: z.string().min(1, "Please select an enrollment grade"),
+        fatherName: z.string().optional(),
+        fatherPhone: z.string().optional().refine(v => !v || /^\d{10}$/.test(v), "Phone must be 10 digits"),
+        fatherEmail: z.string().optional().refine(v => !v || z.string().email().safeParse(v).success, "Invalid email address"),
+        motherName: z.string().optional(),
+        motherPhone: z.string().optional().refine(v => !v || /^\d{10}$/.test(v), "Phone must be 10 digits"),
+        motherEmail: z.string().optional().refine(v => !v || z.string().email().safeParse(v).success, "Invalid email address"),
+        address: z.string().min(5, "Address must be at least 5 characters"),
+        countryId: z.string().min(1, "Please select a country"),
+        stateId: z.string().min(1, "Please select a state"),
+        city: z.string().min(1, "Please select a city"),
+        zip: z.string().regex(/^\d{6}$/, "Zip code must be exactly 6 digits"),
+        priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
+        source: z.string().min(1, "Please select a source")
+    }).refine(data => {
+        // Ensure at least one parent name is provided
+        return data.fatherName || data.motherName;
+    }, {
+        message: "At least one parent name (Father or Mother) is required",
+        path: ["fatherName"]
+    }).refine(data => {
+        // Ensure at least one parent phone is provided
+        return data.fatherPhone || data.motherPhone;
+    }, {
+        message: "At least one parent phone number is required",
+        path: ["fatherPhone"]
+    }).refine(data => {
+        // Ensure at least one parent email is provided
+        return data.fatherEmail || data.motherEmail;
+    }, {
+        message: "At least one parent email address is required",
+        path: ["fatherEmail"]
     });
 
     const [masterCountries, setMasterCountries] = useState<any[]>([]);
@@ -277,13 +318,31 @@ export default function NewInquiryPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setErrors({});
+
+        const validation = admissionSchema.safeParse(formData);
+        if (!validation.success) {
+            const newErrors: Record<string, string> = {};
+            validation.error.issues.forEach(err => {
+                if (err.path[0]) {
+                    newErrors[err.path[0].toString()] = err.message;
+                }
+            });
+            setErrors(newErrors);
+            // Focus on first error (simple scroll)
+            const firstErrorField = Object.keys(newErrors)[0];
+            const element = document.getElementsByName(firstErrorField)[0];
+            element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
         setIsSaving(true);
 
         const { stateId, countryId, ...cleanData } = formData;
 
         const submissionData = {
             ...cleanData,
-            studentAge: formData.studentAge ? parseInt(formData.studentAge) : null,
+            studentAge: formData.studentAge ? (formData.studentAge.includes("Years") ? parseInt(formData.studentAge) : null) : null,
             parentName: formData.parentName || formData.fatherName || formData.motherName || "Unnamed Parent"
         };
 
@@ -344,10 +403,19 @@ export default function NewInquiryPage() {
                     <div className="bg-white rounded-[32px] p-10 border border-zinc-100 shadow-xl shadow-zinc-200/20">
                         <SectionTitle icon={User} title="Student Information" />
                         <div className="grid md:grid-cols-2 gap-8 mt-8">
-                            <InputField required label="Full Legal Name" value={formData.studentName} onChange={(v: any) => setFormData({ ...formData, studentName: v })} />
-                            <div className="space-y-2">
+                            <InputField
+                                name="studentName"
+                                label="Full Legal Name"
+                                value={formData.studentName}
+                                error={errors.studentName}
+                                onChange={(v: any) => setFormData({ ...formData, studentName: v })}
+                            />
+                            <div className="space-y-2" id="studentGender">
                                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Gender</label>
-                                <div className="flex p-1 bg-zinc-50 rounded-2xl">
+                                <div className={cn(
+                                    "flex p-1 bg-zinc-50 rounded-2xl",
+                                    errors.studentGender && "ring-2 ring-red-500"
+                                )}>
                                     {["MALE", "FEMALE", "OTHER"].map(g => (
                                         <button
                                             key={g}
@@ -362,11 +430,14 @@ export default function NewInquiryPage() {
                                         </button>
                                     ))}
                                 </div>
+                                {errors.studentGender && <p className="text-[10px] text-red-500 font-bold px-1">{errors.studentGender}</p>}
                             </div>
                             <InputField
+                                name="dateOfBirth"
                                 label="Date of Birth"
                                 value={formData.dateOfBirth}
                                 type="date"
+                                error={errors.dateOfBirth}
                                 onChange={(v: any) => handleDOBChange(v)}
                             />
                             <InputField
@@ -379,9 +450,13 @@ export default function NewInquiryPage() {
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Grade for Enrollment</label>
                                 <select
+                                    name="enrolledGrade"
                                     value={formData.enrolledGrade}
                                     onChange={e => setFormData({ ...formData, enrolledGrade: e.target.value })}
-                                    className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold appearance-none focus:ring-2 focus:ring-brand transition-all"
+                                    className={cn(
+                                        "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold appearance-none focus:ring-2 focus:ring-brand transition-all",
+                                        errors.enrolledGrade && "ring-2 ring-red-500"
+                                    )}
                                 >
                                     <option value="">{isLoadingGrades ? "Loading Grades..." : "Select Grade"}</option>
                                     {grades.map(grade => (
@@ -390,6 +465,7 @@ export default function NewInquiryPage() {
                                         </option>
                                     ))}
                                 </select>
+                                {errors.enrolledGrade && <p className="text-[10px] text-red-500 font-bold px-1">{errors.enrolledGrade}</p>}
                             </div>
                         </div>
                     </div>
@@ -399,19 +475,39 @@ export default function NewInquiryPage() {
                         <div className="bg-white rounded-[32px] p-10 border border-zinc-100 shadow-xl shadow-zinc-200/20">
                             <SectionTitle icon={Users} title="Father's Details" />
                             <div className="space-y-6 mt-8">
-                                <InputField label="Name" value={formData.fatherName} onChange={(v: any) => setFormData({ ...formData, fatherName: v })} />
-                                <InputField label="Phone" value={formData.fatherPhone} onChange={(v: any) => setFormData({ ...formData, fatherPhone: v })} />
-                                <InputField label="Email" value={formData.fatherEmail} onChange={(v: any) => setFormData({ ...formData, fatherEmail: v })} />
-                                <InputField label="Occupation" value={formData.fatherOccupation} onChange={(v: any) => setFormData({ ...formData, fatherOccupation: v })} />
+                                <InputField name="fatherName" label="Name" error={errors.fatherName} value={formData.fatherName} onChange={(v: any) => setFormData({ ...formData, fatherName: v })} />
+                                <InputField
+                                    name="fatherPhone"
+                                    label="Phone"
+                                    error={errors.fatherPhone}
+                                    value={formData.fatherPhone}
+                                    maxLength={10}
+                                    onChange={(v: any) => {
+                                        const val = v.replace(/\D/g, "").slice(0, 10);
+                                        setFormData({ ...formData, fatherPhone: val });
+                                    }}
+                                />
+                                <InputField name="fatherEmail" label="Email" error={errors.fatherEmail} value={formData.fatherEmail} onChange={(v: any) => setFormData({ ...formData, fatherEmail: v })} />
+                                <InputField name="fatherOccupation" label="Occupation" value={formData.fatherOccupation} onChange={(v: any) => setFormData({ ...formData, fatherOccupation: v })} />
                             </div>
                         </div>
                         <div className="bg-white rounded-[32px] p-10 border border-zinc-100 shadow-xl shadow-zinc-200/20">
                             <SectionTitle icon={Users} title="Mother's Details" />
                             <div className="space-y-6 mt-8">
-                                <InputField label="Name" value={formData.motherName} onChange={(v: any) => setFormData({ ...formData, motherName: v })} />
-                                <InputField label="Phone" value={formData.motherPhone} onChange={(v: any) => setFormData({ ...formData, motherPhone: v })} />
-                                <InputField label="Email" value={formData.motherEmail} onChange={(v: any) => setFormData({ ...formData, motherEmail: v })} />
-                                <InputField label="Occupation" value={formData.motherOccupation} onChange={(v: any) => setFormData({ ...formData, motherOccupation: v })} />
+                                <InputField name="motherName" label="Name" error={errors.motherName} value={formData.motherName} onChange={(v: any) => setFormData({ ...formData, motherName: v })} />
+                                <InputField
+                                    name="motherPhone"
+                                    label="Phone"
+                                    error={errors.motherPhone}
+                                    value={formData.motherPhone}
+                                    maxLength={10}
+                                    onChange={(v: any) => {
+                                        const val = v.replace(/\D/g, "").slice(0, 10);
+                                        setFormData({ ...formData, motherPhone: val });
+                                    }}
+                                />
+                                <InputField name="motherEmail" label="Email" error={errors.motherEmail} value={formData.motherEmail} onChange={(v: any) => setFormData({ ...formData, motherEmail: v })} />
+                                <InputField name="motherOccupation" label="Occupation" value={formData.motherOccupation} onChange={(v: any) => setFormData({ ...formData, motherOccupation: v })} />
                             </div>
                         </div>
                     </div>
@@ -421,51 +517,78 @@ export default function NewInquiryPage() {
                         <SectionTitle icon={MapPin} title="Address" />
                         <div className="grid md:grid-cols-2 gap-8 mt-8">
                             <div className="md:col-span-2">
-                                <InputField label="Street Address" value={formData.address} onChange={(v: any) => setFormData({ ...formData, address: v })} />
+                                <InputField
+                                    name="address"
+                                    label="Street Address"
+                                    value={formData.address}
+                                    error={errors.address}
+                                    onChange={(v: any) => setFormData({ ...formData, address: v })}
+                                />
                             </div>
 
                             {/* Country Selector */}
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Country</label>
                                 <select
+                                    name="countryId"
                                     value={formData.countryId}
                                     onChange={e => handleCountryChange(e.target.value)}
-                                    className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold appearance-none focus:ring-2 focus:ring-brand transition-all"
+                                    className={cn(
+                                        "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold appearance-none focus:ring-2 focus:ring-brand transition-all",
+                                        errors.countryId && "ring-2 ring-red-500"
+                                    )}
                                 >
                                     <option value="">{isLoadingGeography.countries ? "Loading..." : "Select Country"}</option>
                                     {masterCountries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                 </select>
+                                {errors.countryId && <p className="text-[10px] text-red-500 font-bold px-1">{errors.countryId}</p>}
                             </div>
 
                             {/* State Selector */}
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">State / Province</label>
                                 <select
+                                    name="stateId"
                                     disabled={!formData.countryId}
                                     value={formData.stateId}
                                     onChange={e => handleStateChange(e.target.value)}
-                                    className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold appearance-none focus:ring-2 focus:ring-brand transition-all disabled:opacity-50"
+                                    className={cn(
+                                        "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold appearance-none focus:ring-2 focus:ring-brand transition-all disabled:opacity-50",
+                                        errors.stateId && "ring-2 ring-red-500"
+                                    )}
                                 >
                                     <option value="">{isLoadingGeography.states ? "Loading..." : "Select State"}</option>
                                     {masterStates.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                 </select>
+                                {errors.stateId && <p className="text-[10px] text-red-500 font-bold px-1">{errors.stateId}</p>}
                             </div>
 
                             {/* City Selector */}
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">City</label>
                                 <select
+                                    name="city"
                                     disabled={!formData.stateId}
                                     value={formData.city} // We store city name in formData.city
                                     onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                    className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold appearance-none focus:ring-2 focus:ring-brand transition-all disabled:opacity-50"
+                                    className={cn(
+                                        "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold appearance-none focus:ring-2 focus:ring-brand transition-all disabled:opacity-50",
+                                        errors.city && "ring-2 ring-red-500"
+                                    )}
                                 >
                                     <option value="">{isLoadingGeography.cities ? "Loading..." : "Select City"}</option>
                                     {masterCities.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                                 </select>
+                                {errors.city && <p className="text-[10px] text-red-500 font-bold px-1">{errors.city}</p>}
                             </div>
 
-                            <InputField label="Zip Code" value={formData.zip} onChange={(v: any) => setFormData({ ...formData, zip: v })} />
+                            <InputField
+                                name="zip"
+                                label="Zip Code"
+                                value={formData.zip}
+                                error={errors.zip}
+                                onChange={(v: any) => setFormData({ ...formData, zip: v })}
+                            />
                         </div>
                     </div>
                 </div>
@@ -559,15 +682,20 @@ export default function NewInquiryPage() {
                         <div className="mt-10">
                             <SectionTitle icon={Building2} title="Inquiry Source" />
                             <select
+                                name="source"
                                 value={formData.source}
                                 onChange={e => setFormData({ ...formData, source: e.target.value })}
-                                className="w-full mt-4 bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-sm appearance-none"
+                                className={cn(
+                                    "w-full mt-4 bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-sm appearance-none",
+                                    errors.source && "ring-2 ring-red-500"
+                                )}
                             >
                                 <option value="WALK_IN">Walk-in</option>
                                 <option value="SOCIAL_MEDIA">Social Media</option>
                                 <option value="REFERRAL">Referral</option>
                                 <option value="ADVERTISEMENT">Advertisement</option>
                             </select>
+                            {errors.source && <p className="text-[10px] text-red-500 font-bold px-1 mt-1">{errors.source}</p>}
                         </div>
 
                         <div className="mt-10">
@@ -606,7 +734,7 @@ function SectionTitle({ icon: Icon, title }: any) {
     );
 }
 
-function InputField({ label, value, readOnly, type = "text", onChange, hint, action, ...props }: any) {
+function InputField({ label, value, readOnly, type = "text", onChange, hint, action, error, name, ...props }: any) {
     return (
         <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
@@ -616,6 +744,7 @@ function InputField({ label, value, readOnly, type = "text", onChange, hint, act
             <div className="relative">
                 <input
                     {...props}
+                    name={name}
                     type={type}
                     value={value || ""}
                     readOnly={readOnly}
@@ -623,6 +752,7 @@ function InputField({ label, value, readOnly, type = "text", onChange, hint, act
                     className={cn(
                         "w-full h-14 px-6 rounded-2xl text-sm font-bold border-0 focus:ring-2 focus:ring-brand outline-none transition-all",
                         readOnly ? "bg-zinc-50 text-zinc-500 shadow-inner" : "bg-white border-2 border-zinc-100 text-zinc-900 shadow-sm",
+                        error ? "border-red-500 ring-2 ring-red-500/10" : "border-zinc-100",
                         action && "pr-24"
                     )}
                 />
@@ -632,6 +762,7 @@ function InputField({ label, value, readOnly, type = "text", onChange, hint, act
                     </div>
                 )}
             </div>
+            {error && <p className="text-[10px] text-red-500 font-bold px-1">{error}</p>}
         </div>
     );
 }

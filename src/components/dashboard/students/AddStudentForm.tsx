@@ -168,16 +168,20 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                                 <input
                                     id="phone"
                                     type="tel"
-                                    placeholder="+1 (555) 000-0000"
+                                    placeholder="98765 43210"
                                     value={form.parentMobile}
-                                    onChange={e => setForm({ ...form, parentMobile: e.target.value })}
+                                    maxLength={10}
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                                        setForm({ ...form, parentMobile: val });
+                                    }}
                                     className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                                     required
                                 />
                             </div>
                             <div className="space-y-1.5">
                                 <label htmlFor="email" className="text-sm font-medium text-zinc-900 dark:text-zinc-300">
-                                    Email
+                                    Email <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     id="email"
@@ -186,6 +190,7 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                                     value={form.parentEmail}
                                     onChange={e => setForm({ ...form, parentEmail: e.target.value })}
                                     className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                                    required
                                 />
                             </div>
                         </div>

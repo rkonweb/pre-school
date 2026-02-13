@@ -215,7 +215,18 @@ exports.Prisma.AdmissionScalarFieldEnum = {
   dateReceived: 'dateReceived',
   schoolId: 'schoolId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  marketingStatus: 'marketingStatus',
+  score: 'score',
+  counsellorId: 'counsellorId',
+  lastMeaningfulActionAt: 'lastMeaningfulActionAt',
+  tourStatus: 'tourStatus',
+  feeConcernLevel: 'feeConcernLevel',
+  distanceConcern: 'distanceConcern',
+  timingConcern: 'timingConcern',
+  programFit: 'programFit',
+  seatAvailability: 'seatAvailability',
+  automationPaused: 'automationPaused'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -257,7 +268,8 @@ exports.Prisma.UserScalarFieldEnum = {
   twitter: 'twitter',
   instagram: 'instagram',
   customRoleId: 'customRoleId',
-  biometricId: 'biometricId'
+  biometricId: 'biometricId',
+  branchId: 'branchId'
 };
 
 exports.Prisma.LeavePolicyScalarFieldEnum = {
@@ -1305,6 +1317,110 @@ exports.Prisma.SchoolMarketingDesignScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.BranchScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadScalarFieldEnum = {
+  id: 'id',
+  parentName: 'parentName',
+  mobile: 'mobile',
+  childName: 'childName',
+  childAge: 'childAge',
+  childDOB: 'childDOB',
+  programInterested: 'programInterested',
+  preferredBranchId: 'preferredBranchId',
+  source: 'source',
+  status: 'status',
+  priority: 'priority',
+  score: 'score',
+  counsellorId: 'counsellorId',
+  firstResponseTime: 'firstResponseTime',
+  lastMeaningfulActionAt: 'lastMeaningfulActionAt',
+  tourStatus: 'tourStatus',
+  feeConcernLevel: 'feeConcernLevel',
+  distanceConcern: 'distanceConcern',
+  timingConcern: 'timingConcern',
+  programFit: 'programFit',
+  seatAvailability: 'seatAvailability',
+  whatsappRead: 'whatsappRead',
+  linkClicks: 'linkClicks',
+  repliesCount: 'repliesCount',
+  callConnectedCount: 'callConnectedCount',
+  noAnswerCount: 'noAnswerCount',
+  isReferral: 'isReferral',
+  consentWhatsApp: 'consentWhatsApp',
+  consentCalls: 'consentCalls',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FollowUpScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  admissionId: 'admissionId',
+  type: 'type',
+  scheduledAt: 'scheduledAt',
+  completedAt: 'completedAt',
+  status: 'status',
+  notes: 'notes',
+  assignedToId: 'assignedToId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadInteractionScalarFieldEnum = {
+  id: 'id',
+  leadId: 'leadId',
+  admissionId: 'admissionId',
+  type: 'type',
+  content: 'content',
+  staffId: 'staffId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.WhatsAppTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  category: 'category',
+  body: 'body',
+  variables: 'variables',
+  language: 'language',
+  scoreBands: 'scoreBands',
+  schoolId: 'schoolId',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeadAutomationRuleScalarFieldEnum = {
+  id: 'id',
+  scoreBand: 'scoreBand',
+  frequency: 'frequency',
+  maxMessages: 'maxMessages',
+  allowedCats: 'allowedCats',
+  isEnabled: 'isEnabled',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AISettingsScalarFieldEnum = {
+  id: 'id',
+  weights: 'weights',
+  automationRules: 'automationRules',
+  globalAutomationEnabled: 'globalAutomationEnabled',
+  quietHours: 'quietHours',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1394,7 +1510,14 @@ exports.Prisma.ModelName = {
   VehicleTelemetry: 'VehicleTelemetry',
   MarketingTemplate: 'MarketingTemplate',
   MarketingAttribute: 'MarketingAttribute',
-  SchoolMarketingDesign: 'SchoolMarketingDesign'
+  SchoolMarketingDesign: 'SchoolMarketingDesign',
+  Branch: 'Branch',
+  Lead: 'Lead',
+  FollowUp: 'FollowUp',
+  LeadInteraction: 'LeadInteraction',
+  WhatsAppTemplate: 'WhatsAppTemplate',
+  LeadAutomationRule: 'LeadAutomationRule',
+  AISettings: 'AISettings'
 };
 
 /**

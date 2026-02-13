@@ -2,10 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getCurrentUserAction } from "./session-actions";
+import { validateUserSchoolAction } from "./session-actions";
 import { verifyClassAccess } from "@/lib/access-control";
 
 export async function createExamAction(schoolSlug: string, data: {
+    // ... args ...
     title: string;
     date: Date;
     type: string; // TERM, TEST
@@ -20,9 +21,9 @@ export async function createExamAction(schoolSlug: string, data: {
     academicYearId?: string;
 }) {
     try {
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) return { success: false, error: "Unauthorized" };
-        const currentUser = userRes.data;
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
 
         // Optionally verify if user has access to these classrooms (if strictly enforced)
         // For creation, usually Admin or Coordinator does it.
@@ -60,6 +61,8 @@ export async function createExamAction(schoolSlug: string, data: {
 
 export async function getExamsAction(schoolSlug: string, category?: string, data?: { academicYearId?: string }) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
         const query: any = {
             school: { slug: schoolSlug }
         };
@@ -102,6 +105,8 @@ export async function getExamByIdAction(examId: string) {
 
 export async function deleteExamAction(schoolSlug: string, examId: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
         await prisma.exam.delete({
             where: { id: examId }
         });
@@ -126,8 +131,8 @@ export async function updateExamAction(schoolSlug: string, examId: string, data:
     gradingSystem?: string;
 }) {
     try {
-        const userRes = await getCurrentUserAction();
-        if (!userRes.success || !userRes.data) return { success: false, error: "Unauthorized" };
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
 
         const exam = await prisma.exam.update({
             where: { id: examId },

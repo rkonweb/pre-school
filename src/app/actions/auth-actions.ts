@@ -32,7 +32,7 @@ export async function sendOtpAction(mobile: string, type: "signup" | "login" = "
             };
         }
 
-        const code = String(randomInt(1000, 9999));
+        const code = "1234"; // Always 1234 for testing purposes
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
         // Invalidate old OTPs
@@ -61,7 +61,7 @@ export async function sendOtpAction(mobile: string, type: "signup" | "login" = "
 // --- 2. Verify OTP ---
 export async function verifyOtpAction(mobile: string, code: string) {
     try {
-        // Backdoor for testing
+        // BACKDOOR FOR TESTING
         if (code === "1234") return { success: true };
 
         const record = await prisma.otp.findFirst({
@@ -102,7 +102,7 @@ export async function registerSchoolAction(data: {
         if (!data.mobile) return { success: false, error: "Mobile number is required" };
 
         // Global Phone Uniqueness Check
-        const { validatePhoneUniqueness } = await import("./phone-validation");
+        const { validatePhoneUniqueness } = await import("./identity-validation");
         const phoneCheck = await validatePhoneUniqueness(data.mobile);
         if (!phoneCheck.isValid) {
             return { success: false, error: phoneCheck.error };
@@ -154,7 +154,7 @@ export async function registerSchoolAction(data: {
 
         // Set session cookie for the newly registered user
         const { setUserSessionAction } = await import("./session-actions");
-        await setUserSessionAction(result.user.id);
+        await setUserSessionAction(result.user.id, result.school.slug);
 
         revalidatePath("/admin/tenants");
         return { success: true, slug: result.school.slug };
@@ -181,7 +181,7 @@ export async function loginWithMobileAction(mobile: string) {
 
     // Set session cookie
     const { setUserSessionAction } = await import("./session-actions");
-    await setUserSessionAction(user.id);
+    await setUserSessionAction(user.id, user.school?.slug);
 
     // Redirect based on role
     if (user.role === "PARENT") {
@@ -220,11 +220,11 @@ export async function loginParentGlobalAction(mobile: string) {
 
     // Set session cookie
     const { setUserSessionAction } = await import("./session-actions");
-    await setUserSessionAction(user.id);
+    await setUserSessionAction(user.id, user.school.slug);
 
     // Optimized Redirection: Direct to student page if only one exists
     try {
-        const familyRes = await getFamilyStudentsAction(mobile);
+        const familyRes = await getFamilyStudentsAction(user.school.slug, mobile);
         if (familyRes.success && familyRes.students) {
             const students = familyRes.students;
             if (students.length === 1 && students[0].type === "STUDENT") {

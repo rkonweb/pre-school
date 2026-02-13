@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { validateUserSchoolAction } from "./session-actions";
 
 interface DashboardOptions {
     page?: number;
@@ -20,6 +21,9 @@ interface DashboardOptions {
 
 export async function getBillingDashboardAction(slug: string, options: DashboardOptions = {}) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const { page = 1, limit = 10, search = "", filters = {}, sort } = options;
         const skip = (page - 1) * limit;
 

@@ -221,9 +221,13 @@ export default function ParentAdmissionPortal() {
                             />
                             <InputField
                                 label="Emergency Contact Phone"
-                                placeholder="+1 234 567 890"
+                                placeholder="98765 43210"
+                                type="tel"
                                 value={formData.emergencyContactPhone}
-                                onChange={v => setFormData({ ...formData, emergencyContactPhone: v })}
+                                onChange={v => {
+                                    const val = v.replace(/\D/g, "").slice(0, 10);
+                                    setFormData({ ...formData, emergencyContactPhone: val });
+                                }}
                             />
                         </div>
                     </div>
@@ -320,13 +324,14 @@ function SummaryItem({ icon: Icon, label, value }: any) {
     );
 }
 
-function InputField({ label, value, onChange, placeholder, type = "text" }: any) {
+function InputField({ label, value, onChange, placeholder, type = "text" }: { label: string, value: any, onChange: (v: string) => void, placeholder?: string, type?: string }) {
     return (
         <div className="space-y-2">
             <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 ml-4 block">{label}</label>
             <input
                 type={type}
                 value={value}
+                maxLength={type === "tel" ? 10 : undefined}
                 onChange={e => onChange(e.target.value)}
                 placeholder={placeholder}
                 className="w-full h-16 bg-zinc-50 border-2 border-transparent focus:border-brand focus:bg-white rounded-2xl px-8 font-bold transition-all outline-none text-sm placeholder:text-zinc-300 shadow-sm"

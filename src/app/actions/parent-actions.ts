@@ -3,6 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getDiaryEntriesForStudentAction } from "./diary-actions";
+import { validateUserSchoolAction } from "./session-actions";
+import { randomInt } from "crypto";
+import { getStudentAttendanceAction as getStaffAttendanceActionRaw } from "./attendance-actions";
 
 /**
  * Fetches school information by slug for branding
@@ -90,7 +93,7 @@ export async function sendParentOTPAction(phone: string) {
         }
 
         // 3. Generate Secure 6-digit OTP
-        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpCode = randomInt(100000, 1000000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
         // 4. Store OTP
@@ -186,9 +189,15 @@ export async function verifyParentOTPAction(phone: string, otp: string) {
  * Fetches all students associated with a parent phone number
  * Uses fuzzy matching to handle formatting differences
  */
-export async function getFamilyStudentsAction(phone: string) {
+export async function getFamilyStudentsAction(slug: string, phone?: string) {
     try {
-        if (!phone) return { success: true, students: [] };
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        // If phone is not provided, use the authenticated user's phone (if they are a parent)
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
+
+        if (!effectivePhone) return { success: true, students: [] };
 
         const cleanDigits = String(phone).replace(/\D/g, "");
         // Use last 5 digits for broad search if possible, else full
@@ -278,29 +287,34 @@ export async function getFamilyStudentsAction(phone: string) {
  * OPTIMIZED: Fetch ALL Dashboard Data in Single Request
  * significantly reduces network overhead and improves load time
  */
-export async function getParentDashboardDataAction(slug: string, phone: string) {
+export async function getParentDashboardDataAction(slug: string, phone?: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
+        if (!effectivePhone) return { success: false, error: "Identification required" };
+
+        const effectivePhoneStr = effectivePhone as string;
         const start = Date.now();
-        console.log(`[DASHBOARD_PERF] Starting fetch for ${phone}`);
+        console.log(`[DASHBOARD_PERF] Starting fetch for ${effectivePhoneStr}`);
 
         // 1. Fetch Core Data (School, Profile, Student List) in Parallel
         const [schoolRes, profileRes, studentsRes] = await Promise.all([
             getSchoolBySlugAction(slug),
-            getParentProfileAction(phone),
-            getFamilyStudentsAction(phone)
+            getParentProfileAction(slug, effectivePhoneStr),
+            getFamilyStudentsAction(slug, effectivePhoneStr)
         ]);
 
         const school = schoolRes.success ? schoolRes.school : null;
         const profile = profileRes.success ? profileRes.profile : null;
-        let students = studentsRes.success ? studentsRes.students : [];
+        const students = (studentsRes.success && (studentsRes as any).students) ? (studentsRes as any).students : [];
 
         // 2. Fetch Detailed Stats for each student in Parallel
-        // We do this server-side to avoid N+1 network requests
         const studentsWithStats = await Promise.all(students.map(async (student: any) => {
-            // Run fee and attendance content concurrently for this student
             const [attendanceRes, feesRes] = await Promise.all([
-                getStudentAttendanceAction(student.id, phone, 30),
-                getStudentFeesAction(student.id, phone)
+                getStudentAttendanceAction(slug, student.id, effectivePhoneStr, 30),
+                getStudentFeesAction(slug, student.id, effectivePhoneStr)
             ]);
 
             return {
@@ -313,7 +327,7 @@ export async function getParentDashboardDataAction(slug: string, phone: string) 
         }));
 
         // 3. Fetch Messages
-        const convRes = await getParentConversationsAction(phone);
+        const convRes = await getParentConversationsAction(effectivePhoneStr);
         const conversations = (convRes.success ? convRes.conversations : []) || [];
         const unreadMessages = conversations.reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0);
 
@@ -338,8 +352,15 @@ export async function getParentDashboardDataAction(slug: string, phone: string) 
  * Fetches parent profile details based on phone number
  * Priorities Admission record for richer data, falls back to Student record
  */
-export async function getParentProfileAction(phone: string) {
+export async function getParentProfileAction(slug: string, phone?: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
+        if (!effectivePhone) return { success: false, error: "Identification required" };
+
+        const phoneToMatch = effectivePhone;
         // 1. Try to find Admission record (Source of truth for detailed parent info)
         const admission = await (prisma as any).admission.findFirst({
             where: {
@@ -425,9 +446,15 @@ export async function getParentProfileAction(phone: string) {
 /**
  * Fetches detailed information for a specific student
  */
-export async function getStudentDetailsAction(studentId: string, phone: string) {
+export async function getStudentDetailsAction(slug: string, studentId: string, phone?: string) {
     try {
-        const cleanPhone = String(phone).replace(/\D/g, "");
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
+        if (!effectivePhone) return { success: false, error: "Identification required" };
+
+        const cleanPhone = String(effectivePhone).replace(/\D/g, "");
         const isMatch = (dbPhone: string | null) => {
             if (!dbPhone) return false;
             const dbDigits = String(dbPhone).replace(/\D/g, "");
@@ -482,7 +509,7 @@ export async function getStudentDetailsAction(studentId: string, phone: string) 
                     });
 
                     if (matchedStudent) {
-                        return getStudentDetailsAction(matchedStudent.id, phone);
+                        return getStudentDetailsAction(slug, matchedStudent.id, effectivePhone);
                     }
 
                     // Fallback: Return admission as student if not enrolled yet
@@ -615,15 +642,23 @@ export async function getStudentDetailsAction(studentId: string, phone: string) 
 /**
  * Fetches attendance records for a student
  */
-export async function getStudentAttendanceAction(studentId: string, phone: string, limit = 30) {
+export async function getStudentAttendanceAction(slug: string, studentId: string, phone?: string, limit = 30) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
+        if (!effectivePhone) return { success: false, error: "Identification required" };
+
+        const effectivePhoneStr = effectivePhone as string;
+
         // Verify parent has access to this student
         const student = await (prisma as any).student.findFirst({
             where: {
                 id: studentId,
                 OR: [
-                    { parentMobile: phone },
-                    { emergencyContactPhone: phone }
+                    { parentMobile: { contains: effectivePhoneStr.slice(-5) } },
+                    { emergencyContactPhone: { contains: effectivePhoneStr.slice(-5) } }
                 ]
             }
         });
@@ -648,7 +683,7 @@ export async function getStudentAttendanceAction(studentId: string, phone: strin
                 });
 
                 if (matchedStudent) {
-                    return getStudentAttendanceAction(matchedStudent.id, phone, limit);
+                    return getStudentAttendanceAction(slug, matchedStudent.id, effectivePhone, limit);
                 }
             }
             return { success: false, error: "Access denied" };
@@ -687,9 +722,15 @@ export async function getStudentAttendanceAction(studentId: string, phone: strin
 /**
  * Fetches fee details for a student
  */
-export async function getStudentFeesAction(studentId: string, phone: string) {
+export async function getStudentFeesAction(slug: string, studentId: string, phone?: string) {
     try {
-        const cleanPhone = String(phone).replace(/\D/g, "");
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
+        if (!effectivePhone) return { success: false, error: "Identification required" };
+
+        const cleanPhone = String(effectivePhone).replace(/\D/g, "");
         const isMatch = (dbPhone: string | null) => {
             if (!dbPhone) return false;
             const dbDigits = String(dbPhone).replace(/\D/g, "");
@@ -779,7 +820,7 @@ export async function getStudentFeesAction(studentId: string, phone: string) {
 
             if (matchedStudent) {
                 console.log(`[FEES_RESOLVE] Admission ${studentId} -> Student ${matchedStudent.id}`);
-                return getStudentFeesAction(matchedStudent.id, phone);
+                return getStudentFeesAction(slug, matchedStudent.id, effectivePhone);
             }
 
             // Fallback for non-enrolled inquiry
@@ -1222,9 +1263,15 @@ export async function recordPaymentAction(
  * UNIFIED ACTIVITY FEED: Combines Diary, Attendance, and Homework
  * Chronological timeline for the mobile app "Activity" tab
  */
-export async function getStudentActivityFeedAction(studentId: string, phone: string, limit = 50) {
+export async function getStudentActivityFeedAction(slug: string, studentId: string, phone?: string, limit = 50) {
     try {
-        const cleanPhone = String(phone).replace(/\D/g, "");
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
+        if (!effectivePhone) return { success: false, error: "Identification required" };
+
+        const phoneToMatch = effectivePhone;
 
         // 1. Fetch Student & Classroom context
         const student = await (prisma as any).student.findUnique({
@@ -1236,10 +1283,10 @@ export async function getStudentActivityFeedAction(studentId: string, phone: str
 
         // 2. Fetch Data Sources in Parallel
         const [diaryRes, attendanceRes, homeworkRes] = await Promise.all([
-            getDiaryEntriesForStudentAction(studentId),
-            getStudentAttendanceAction(studentId, phone, limit),
+            getDiaryEntriesForStudentAction(slug, studentId),
+            getStudentAttendanceAction(slug, studentId, effectivePhone, limit),
             // Re-using student homework logic from homework-actions but we'll call it directly here for speed
-            import("./homework-actions").then(m => m.getStudentHomeworkAction(studentId))
+            import("./homework-actions").then(m => m.getStudentHomeworkAction(slug, studentId))
         ]);
 
         const feed: any[] = [];
@@ -1318,8 +1365,16 @@ export async function getStudentActivityFeedAction(studentId: string, phone: str
 /**
  * SMART TRANSPORT: Fetches real-time bus status and route info
  */
-export async function getStudentTransportAction(studentId: string, phone: string) {
+export async function getStudentTransportAction(slug: string, studentId: string, phone?: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
+        if (!effectivePhone) return { success: false, error: "Identification required" };
+
+        const cleanPhone = String(effectivePhone).replace(/\D/g, "");
+
         // Verify access
         const student = await (prisma as any).student.findUnique({
             where: { id: studentId },
@@ -1420,8 +1475,12 @@ export async function updateMessageReceiptAction(
 /**
  * MEDIA VAULT: Aggregates all media (Photos, Videos, Voice Notes) for a student
  */
-export async function getStudentMediaAction(studentId: string) {
+export async function getStudentMediaAction(slug: string, studentId: string, phone?: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
         const student = await (prisma as any).student.findUnique({
             where: { id: studentId },
             select: { id: true, classroomId: true, firstName: true }
