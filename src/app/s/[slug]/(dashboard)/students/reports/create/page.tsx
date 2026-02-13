@@ -12,6 +12,7 @@ import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, X, Calendar, BookOpen, Users } from "lucide-react";
+import { getCookie } from "@/lib/cookies";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -52,8 +53,8 @@ export default function CreateExamPage() {
             getMasterDataAction("SUBJECT")
         ]);
 
-        if (classesRes.success) setClassrooms(classesRes.data);
-        if (subjectsRes.success) setAvailableSubjects(subjectsRes.data);
+        if (classesRes.success) setClassrooms(classesRes.data || []);
+        if (subjectsRes.success) setAvailableSubjects(subjectsRes.data || []);
     };
 
     const handleClassToggle = (id: string) => {
@@ -93,6 +94,7 @@ export default function CreateExamPage() {
         }
 
         setLoading(true);
+        const academicYearId = getCookie(`academic_year_${slug}`) || undefined;
         const res = await createExamAction(slug, {
             title,
             date: new Date(date),
@@ -102,7 +104,8 @@ export default function CreateExamPage() {
             subjects: selectedSubjects,
             maxMarks: category === 'ACADEMIC' ? Number(maxMarks) : 0,
             minMarks: category === 'ACADEMIC' ? Number(minMarks) : 0,
-            description
+            description,
+            academicYearId
         });
 
         if (res.success) {
@@ -131,7 +134,7 @@ export default function CreateExamPage() {
                 {/* Main Details */}
                 <Card className="md:col-span-2">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-indigo-500" /> Exam Details</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-brand" /> Exam Details</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -148,7 +151,11 @@ export default function CreateExamPage() {
                                 <Label>Category</Label>
                                 <Select value={category} onValueChange={setCategory}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select Category">{category}</SelectValue>
+                                        <SelectValue placeholder="Select Category">
+                                            {category === "ACADEMIC" ? "Academic" :
+                                                category === "SPORTS" ? "Sports" :
+                                                    category === "ARTS" ? "Arts" : "Co-Curricular"}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="ACADEMIC">Academic</SelectItem>
@@ -165,7 +172,10 @@ export default function CreateExamPage() {
                                 <Label>Exam Type</Label>
                                 <Select value={type} onValueChange={setType}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select Type">{type}</SelectValue>
+                                        <SelectValue placeholder="Select Type">
+                                            {type === "TERM" ? "Term Exam" :
+                                                type === "TEST" ? "Unit Test / Assessment" : "Competition"}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="TERM">Term Exam</SelectItem>
@@ -321,9 +331,9 @@ export default function CreateExamPage() {
                                     {selectedSubjects.length > 0 ? (
                                         <div className="flex flex-wrap gap-2">
                                             {selectedSubjects.map(sub => (
-                                                <Badge key={sub} variant="outline" className="pl-2 pr-1 py-1 bg-indigo-50 border-indigo-100 text-indigo-700">
+                                                <Badge key={sub} variant="outline" className="pl-2 pr-1 py-1 bg-brand/5 border-brand/20 text-brand">
                                                     {sub}
-                                                    <Button variant="ghost" size="icon" className="h-4 w-4 ml-1 hover:bg-transparent text-indigo-700" onClick={() => removeSubject(sub)}>
+                                                    <Button variant="ghost" size="icon" className="h-4 w-4 ml-1 hover:bg-transparent text-brand" onClick={() => removeSubject(sub)}>
                                                         <X className="h-3 w-3" />
                                                     </Button>
                                                 </Badge>
@@ -337,7 +347,7 @@ export default function CreateExamPage() {
                         </Card>
                     )}
 
-                    <Button type="submit" size="lg" className="w-full" disabled={loading}>
+                    <Button type="submit" size="lg" className="w-full bg-brand hover:brightness-110" disabled={loading}>
                         {loading ? "Creating Assessment..." : "Create Assessment"}
                     </Button>
                 </div>

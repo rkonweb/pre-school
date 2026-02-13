@@ -1,50 +1,22 @@
-# Task Checklist - Marketing Frontend Redesign
+- [ ] **Document Management System (DMS)**
+    - [x] **Database Seeding**: Create script to seed "School Resources" category, module, and sample data.
+    - [x] **Sidebar Update**: Add "Documents" link to School Dashboard (`Sidebar.tsx`) for Admins/Staff.
+    - [x] **School Portal UI**: Create `/s/[slug]/(dashboard)/documents` page to view/download resources.
+    - [x] **Verification**: Ensure Super Admin can manage via existing `/admin/training` and School Admin can view.
+    - [x] **Refinement**: Switched Admin interface to "Simple Document Uploader" for School Resources.
+    - [x] **Enhancement**: Added error popup (Modal) when upload size exceeds 10MB limit.
+    - [x] **Global UI**: Converted all delete/error confirmations to use the Global Modal system.
+    - [x] **Google Drive**: Implemented deep integration to save files in `Category/Module/Topic` folder structure on Drive.
+- [x] **Settings Refactor**
+    - [x] **Action Update**: Create `saveAPISettingsAction` for partial updates.
+    - [x] **New Page**: Create `/admin/settings/apis` for Email & AI config.
+    - [x] **Cleanup**: Remove API settings from main Settings page.
+    - [x] **Navigation**: Update Sidebar.
 
-- [x] **Design System & Global Layout**
-    - [x] Update `globals.css` with new color variables (Dark/Modern theme).
-    - [x] Create `LayoutWrapper` or update `layout.tsx` for sticky glassmorphic navbar.
-    - [x] Redesign `components/Navbar` and `components/Footer`. (Need to check if they exist or create them).
-
-- [x] **Homepage Redesign (`/`)**
-    - [x] **Hero Section**: New gradient/3D aesthetic, clear CTA.
-    - [x] **Social Proof**: "Trusted by" section.
-    - [x] **Features Grid**: Modern cards with hover effects.
-    - [x] **Testimonials**: Carousel or grid.
-    - [x] **CTA Section**: Final push.
-
-- [x] **Features Page (`/features`)**
-    - [x] **Hero**: Distinct from Homepage.
-    - [x] **Detail Sections**: Deep dive into modules (Admissions, Academics, etc.).
-    - [x] **Interactive Elements**: Tabs or scroll-triggered animations.
-
-- [x] **Pricing Page (`/pricing`)**
-    - [x] **Plan Cards**: Clean, comparing Free/Pro/Enterprise.
-    - [x] **Comparison Table**: Comprehensive feature list.
-    - [x] **FAQ Section**: Accordion style.
-
-- [x] **About / Pages (`/about`, etc.)**
-    - [x] Standardize layout for text-heavy pages.
-    - [x] **Mission/Values**: Visual representation.
-
-- [x] **Careers Page (`/careers`)**
-    - [x] **Hero**: "Join us" vibe.
-    - [x] **Culture**: Visual grid.
-    - [x] **Job List**: Clean list with filters.
-    - [x] **Detail Page**: Ensure it inherits new theme.
-    - [x] **Enhancements**: Add Perks, Values, Testimonials sections.
-    - [x] **Admin CMS**: UI for managing Job Postings (`/admin/cms/careers`).
-
-- [x] **Blog Page (`/blog`)**
-    - [x] **Grid Layout**: Magazine style for posts.
-    - [x] **Post View**: Clean typography.
-
-- [x] **Contact Page (`/contact`)**
-    - [x] **Layout**: Split screen (Info + Form).
-    - [x] **Form Styling**: Floating labels or clean inputs.
-
-- [x] **CMS Integration Checks**
-    - [x] Ensure all new designs still pull data from `cms-actions.ts`.
-
-- [x] **SEO Implementation**
-    - [x] CMS: Add "SEO Meta Tags" to Homepage, Features, Pricing, Contact.
-    - [x] Public: Refactor all pages to Server Components with `generateMetadata`.
+- [ ] **Marketing Tools**
+    - [x] **Database**: Create `MarketingTemplate` and `MarketingAttribute` models.
+    - [x] **Admin UI**: Create full-width `MarketingAdminPage` with dynamic attribute management.
+    - [x] **Designer**: Implement `MarketingDesigner` with drag-and-drop zones.
+    - [x] **Thumbnail**: Create `MarketingThumbnail` for live CSS previews.
+    - [x] **School UI**: Update `/s/[slug]/marketing` to mirror Admin features.
+    - [x] **Fix**: Ensure new templates are visible in School Portal (Revalidation).

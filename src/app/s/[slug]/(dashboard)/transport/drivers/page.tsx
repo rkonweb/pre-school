@@ -81,7 +81,7 @@ export default function DriversPage() {
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="h-12 px-8 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-zinc-200 hover:bg-black hover:scale-[1.02] active:scale-95 transition-all"
+                    className="h-12 px-8 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     Enlist Pilot
@@ -97,7 +97,7 @@ export default function DriversPage() {
                     {drivers.map((driver) => (
                         <div key={driver.id} className="group overflow-hidden rounded-[40px] border border-zinc-200 bg-white p-8 shadow-xl shadow-zinc-200/40 transition-all hover:shadow-brand/5 hover:translate-y-[-4px] dark:bg-zinc-950 dark:border-zinc-800">
                             <div className="flex items-center justify-between mb-8">
-                                <div className="h-14 w-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-lg shadow-lg group-hover:scale-110 transition-transform">
+                                <div className="h-14 w-14 rounded-2xl bg-brand flex items-center justify-center text-white font-black text-lg shadow-lg shadow-brand/20 group-hover:scale-110 transition-transform">
                                     {driver.name.charAt(0)}
                                 </div>
                                 <div className="flex flex-col items-end gap-1.5">
@@ -156,7 +156,7 @@ export default function DriversPage() {
                                 </div>
                                 <button
                                     onClick={() => setIsModalOpen(false)}
-                                    className="group h-12 w-12 rounded-2xl border border-zinc-100 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm dark:border-zinc-800"
+                                    className="group h-12 w-12 rounded-2xl border border-zinc-100 flex items-center justify-center hover:bg-brand hover:text-white transition-all shadow-sm dark:border-zinc-800"
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
@@ -209,7 +209,7 @@ export default function DriversPage() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="flex-[2] h-14 rounded-2xl bg-blue-600 text-[10px] font-black uppercase tracking-[2px] text-white shadow-xl shadow-zinc-200 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                        className="flex-[2] h-14 rounded-2xl bg-brand text-[10px] font-black uppercase tracking-[2px] text-white shadow-xl shadow-brand/20 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
                                         {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
                                         Finalize Induction

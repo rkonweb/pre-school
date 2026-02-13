@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Loader2, Paperclip } from "lucide-react";
 import { createDiaryEntryAction, updateDiaryEntryAction } from "@/app/actions/diary-actions";
 import { toast } from "sonner";
+import { getCookie } from "@/lib/cookies";
 
 interface DiaryEntryModalProps {
     schoolSlug: string;
@@ -55,7 +56,8 @@ export function DiaryEntryModal({ schoolSlug, classrooms, initialData, selectedC
                 ...formData,
                 schoolSlug,
                 recipientType: "CLASS" as const, // Always send to entire class
-                studentIds: [] // Not needed for CLASS type
+                studentIds: [], // Not needed for CLASS type
+                academicYearId: getCookie(`academic_year_${schoolSlug}`) || undefined
             };
 
             const res = initialData

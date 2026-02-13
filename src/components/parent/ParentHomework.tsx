@@ -468,6 +468,7 @@ function CelebrationOverlay({ isVisible }: { isVisible: boolean }) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 bg-gradient-to-br from-blue-500/90 to-purple-500/90 backdrop-blur-sm z-50 flex items-center justify-center"
+                    {...({} as any)}
                 >
                     <motion.div
                         initial={{ scale: 0, rotate: -180 }}
@@ -475,6 +476,7 @@ function CelebrationOverlay({ isVisible }: { isVisible: boolean }) {
                         exit={{ scale: 0, rotate: 180 }}
                         transition={{ type: "spring", duration: 0.8 }}
                         className="text-center"
+                        {...({} as any)}
                     >
                         {/* Confetti Effect */}
                         {[...Array(20)].map((_, i) => (
@@ -489,6 +491,7 @@ function CelebrationOverlay({ isVisible }: { isVisible: boolean }) {
                                 }}
                                 transition={{ duration: 2, delay: i * 0.05 }}
                                 className="absolute h-4 w-4 rounded-full"
+                                {...({} as any)}
                                 style={{
                                     backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'][i % 5],
                                 }}
@@ -502,6 +505,7 @@ function CelebrationOverlay({ isVisible }: { isVisible: boolean }) {
                             }}
                             transition={{ duration: 0.5, repeat: Infinity }}
                             className="h-32 w-32 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl"
+                            {...({} as any)}
                         >
                             <Star className="h-16 w-16 text-yellow-500" fill="currentColor" />
                         </motion.div>
@@ -511,6 +515,7 @@ function CelebrationOverlay({ isVisible }: { isVisible: boolean }) {
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.3 }}
                             className="text-5xl md:text-6xl font-black text-white mb-4"
+                            {...({} as any)}
                         >
                             Amazing Work! 🎉
                         </motion.h2>
@@ -520,6 +525,7 @@ function CelebrationOverlay({ isVisible }: { isVisible: boolean }) {
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.5 }}
                             className="text-2xl text-white/90 font-bold"
+                            {...({} as any)}
                         >
                             Activity submitted successfully!
                         </motion.p>

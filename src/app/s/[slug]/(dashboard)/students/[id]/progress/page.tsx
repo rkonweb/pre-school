@@ -15,7 +15,7 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from "recharts";
-import { Activity, BookOpen, HeartPulse, Trophy, Plus, FileText } from "lucide-react";
+import { Activity, BookOpen, HeartPulse, Trophy, Plus, FileText, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,20 +40,21 @@ export default function StudentProgressPage() {
     const loadData = async () => {
         setLoading(true);
         const [stuRes, progRes, healthRes, actRes] = await Promise.all([
-            getStudentAction(slug, studentId),
+            getStudentAction(studentId),
             getStudentProgressAction(studentId),
             getStudentHealthHistoryAction(studentId),
             getStudentActivitiesAction(studentId)
         ]);
 
-        if (stuRes.success) setStudent(stuRes.data);
+        if (stuRes.success) setStudent((stuRes as any).student);
         if (progRes.success) setProgressData(progRes.data);
-        if (healthRes.success) setHealthData(healthRes.data);
-        if (actRes.success) setActivityData(actRes.data);
+        if (healthRes.success) setHealthData(healthRes.data || []);
+        if (actRes.success) setActivityData(actRes.data || []);
         setLoading(false);
     };
 
-    if (loading || !student) return <div className="p-8 text-center">Loading Student Profile...</div>;
+    if (loading) return <div className="p-8 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-zinc-400" /></div>;
+    if (!student) return <div className="p-8 text-center text-red-500 font-bold">Student not found</div>;
 
     // Prepare Radar Data
     const academicScore = progressData?.academicTrend?.length > 0
@@ -118,7 +119,7 @@ export default function StudentProgressPage() {
                                     <span className="font-bold block">{progressData?.attendance?.presentDays}</span> Present
                                 </div>
                                 <div>
-                                    <span className="font-bold block text-blue-600">{activityData.length}</span> Activities
+                                    <span className="font-bold block text-brand">{activityData.length}</span> Activities
                                 </div>
                                 <div>
                                     <span className="font-bold block text-orange-600">{healthData.length}</span> Checkups
@@ -149,7 +150,7 @@ export default function StudentProgressPage() {
                                         <XAxis dataKey="exam" />
                                         <YAxis domain={[0, 100]} />
                                         <Tooltip />
-                                        <Line type="monotone" dataKey="percentage" stroke="#2563eb" strokeWidth={2} activeDot={{ r: 8 }} />
+                                        <Line type="monotone" dataKey="percentage" stroke="var(--brand-color)" strokeWidth={2} activeDot={{ r: 8 }} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             ) : (
@@ -174,7 +175,7 @@ export default function StudentProgressPage() {
                                                 <h4 className="font-semibold">{act.title}</h4>
                                                 <div className="flex gap-2 mt-1">
                                                     <Badge variant="outline">{act.category}</Badge>
-                                                    <Badge className={act.type === 'AWARD' ? 'bg-yellow-500' : 'bg-blue-500'}>{act.type}</Badge>
+                                                    <Badge className={act.type === 'AWARD' ? 'bg-yellow-500' : 'bg-brand'}>{act.type}</Badge>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground mt-1">{act.description}</p>
                                             </div>
@@ -277,8 +278,35 @@ function AddActivityDialog({ schoolSlug, studentId, onSuccess }: any) {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2"><Label>Title</Label><Input value={title} onChange={e => setTitle(e.target.value)} required placeholder="e.g. Inter-School Debate" /></div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2"><Label>Category</Label><Select value={category} onValueChange={setCategory}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="SPORTS">Sports</SelectItem><SelectItem value="ARTS">Arts</SelectItem><SelectItem value="CLUB">Club</SelectItem></SelectContent></Select></div>
-                        <div className="space-y-2"><Label>Type</Label><Select value={type} onValueChange={setType}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="PARTICIPATION">Participation</SelectItem><SelectItem value="AWARD">Award</SelectItem></SelectContent></Select></div>
+                        <div className="space-y-2">
+                            <Label>Category</Label>
+                            <Select value={category} onValueChange={setCategory}>
+                                <SelectTrigger>
+                                    <SelectValue>
+                                        {category === "SPORTS" ? "Sports" : category === "ARTS" ? "Arts" : "Club"}
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="SPORTS">Sports</SelectItem>
+                                    <SelectItem value="ARTS">Arts</SelectItem>
+                                    <SelectItem value="CLUB">Club</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Type</Label>
+                            <Select value={type} onValueChange={setType}>
+                                <SelectTrigger>
+                                    <SelectValue>
+                                        {type === "PARTICIPATION" ? "Participation" : "Award"}
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="PARTICIPATION">Participation</SelectItem>
+                                    <SelectItem value="AWARD">Award</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     <div className="space-y-2"><Label>Date</Label><Input type="date" value={date} onChange={e => setDate(e.target.value)} required /></div>
                     {type === 'AWARD' && <div className="space-y-2"><Label>Achievement</Label><Input value={achievement} onChange={e => setAchievement(e.target.value)} placeholder="e.g. First Place" /></div>}

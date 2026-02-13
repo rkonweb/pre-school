@@ -82,7 +82,7 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                                 placeholder="e.g. John Doe"
                                 value={form.fullName}
                                 onChange={e => setForm({ ...form, fullName: e.target.value })}
-                                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                                 required
                             />
                         </div>
@@ -97,7 +97,7 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                                     type="number"
                                     value={form.age}
                                     onChange={e => setForm({ ...form, age: e.target.value })}
-                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                                     required
                                 />
                             </div>
@@ -109,7 +109,7 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                                     id="gender"
                                     value={form.gender || ""}
                                     onChange={e => setForm({ ...form, gender: e.target.value })}
-                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                                 >
                                     <option value="">Select</option>
                                     <option value="MALE">Male</option>
@@ -127,7 +127,7 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                                 id="class"
                                 value={form.classroomId}
                                 onChange={e => setForm({ ...form, classroomId: e.target.value })}
-                                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                             >
                                 <option value="">Select Class</option>
                                 {classrooms.map(c => (
@@ -155,7 +155,7 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                                 placeholder="Guardian's Name"
                                 value={form.parentName}
                                 onChange={e => setForm({ ...form, parentName: e.target.value })}
-                                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                                className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                                 required
                             />
                         </div>
@@ -171,7 +171,7 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                                     placeholder="+1 (555) 000-0000"
                                     value={form.parentMobile}
                                     onChange={e => setForm({ ...form, parentMobile: e.target.value })}
-                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                                     required
                                 />
                             </div>
@@ -185,7 +185,7 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                                     placeholder="parent@example.com"
                                     value={form.parentEmail}
                                     onChange={e => setForm({ ...form, parentEmail: e.target.value })}
-                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                                 />
                             </div>
                         </div>
@@ -205,7 +205,7 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-zinc-900"
+                    className="inline-flex items-center justify-center rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-zinc-900"
                 >
                     {isLoading ? "Creating..." : "Create Student"}
                 </button>

@@ -4,10 +4,20 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 import { getCurrentUserAction } from "./session-actions";
+import { getSchoolToday, getSchoolNow } from "@/lib/date-utils";
+
+async function getSchoolTimezone(schoolSlug: string) {
+    const school = await prisma.school.findUnique({
+        where: { slug: schoolSlug },
+        select: { timezone: true }
+    });
+    return school?.timezone || "Asia/Kolkata";
+}
 
 export async function getStaffAttendanceAction(schoolSlug: string, date?: string) {
     try {
-        const targetDate = date ? new Date(date) : new Date();
+        const timezone = await getSchoolTimezone(schoolSlug);
+        const targetDate = date ? new Date(date) : getSchoolToday(timezone);
         targetDate.setHours(0, 0, 0, 0);
 
         let whereClause: any = {
@@ -245,8 +255,14 @@ export async function togglePunchAction(schoolSlug: string, userId: string, date
             console.error("Policy Fetch Error (Using Defaults):", e);
         }
 
+        const timezone = await getSchoolTimezone(schoolSlug);
         const targetDate = new Date(date);
         targetDate.setHours(0, 0, 0, 0);
+
+        const today = getSchoolToday(timezone);
+        if (targetDate > today) {
+            throw new Error("Cannot mark attendance for future dates.");
+        }
 
         // 1. Get or Create Attendance Record
         let attendance = await (prisma as any).staffAttendance.upsert({
@@ -283,7 +299,7 @@ export async function togglePunchAction(schoolSlug: string, userId: string, date
             data: {
                 type: nextType,
                 attendanceId: (attendance as any).id,
-                timestamp: new Date()
+                timestamp: getSchoolNow(timezone)
             }
         });
 
@@ -373,8 +389,16 @@ export async function markStaffAttendanceAction(schoolSlug: string, data: { user
         const hasPermission = await verifyAttendancePermission(performingUserId, data.userId);
         if (!hasPermission) throw new Error("Unauthorized to manage this staff's attendance");
 
+        const timezone = await getSchoolTimezone(schoolSlug);
         const targetDate = new Date(data.date);
-        targetDate.setHours(0, 0, 0, 0);
+        const targetDateStr = data.date;
+
+        const schoolNow = getSchoolNow(timezone);
+        const todayStr = `${schoolNow.getFullYear()}-${String(schoolNow.getMonth() + 1).padStart(2, '0')}-${String(schoolNow.getDate()).padStart(2, '0')}`;
+
+        if (targetDateStr > todayStr) {
+            throw new Error("Cannot mark attendance for future dates.");
+        }
 
         await (prisma as any).staffAttendance.upsert({
             where: { userId_date: { userId: data.userId, date: targetDate } },
@@ -625,12 +649,12 @@ export async function getStaffLeaveHistoryAction(userId: string) {
 // CUSTOM STUDENT ATTENDANCE ACTIONS
 // ----------------------------------------------------------------------
 
-export async function getAttendanceDataAction(schoolSlug: string, classroomId: string, dateStr: string) {
+export async function getAttendanceDataAction(schoolSlug: string, classroomId: string, dateStr: string, academicYearId?: string) {
     try {
         const targetDate = new Date(dateStr);
         targetDate.setHours(0, 0, 0, 0);
 
-        // 1. Fetch all students in the class
+        // ... (students fetch)
         const students = await prisma.student.findMany({
             where: {
                 classroomId: classroomId,
@@ -646,15 +670,12 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
             orderBy: { firstName: "asc" }
         });
 
-        // 2. Fetch attendance records for these students on the specific date
-        // Note: We cannot query `studentId` in `students` array directly within findMany easily in one go efficiently without `in`
-        // But since it's one class, we can just fetch all attendance for this class's students on that date.
-
         const studentIds = students.map(s => s.id);
         const attendanceRecords = await prisma.attendance.findMany({
             where: {
                 studentId: { in: studentIds },
-                date: targetDate
+                date: targetDate,
+                academicYearId: academicYearId || undefined
             }
         });
 
@@ -678,10 +699,31 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
     }
 }
 
-export async function markAttendanceAction(studentId: string, date: string | Date, status: string, notes?: string) {
+export async function markAttendanceAction(studentId: string, date: string | Date, status: string, notes?: string, academicYearId?: string) {
     try {
+        const student = await prisma.student.findUnique({
+            where: { id: studentId },
+            include: { school: { select: { timezone: true } } }
+        });
+        const timezone = student?.school?.timezone || "Asia/Kolkata";
         const targetDate = new Date(date);
-        targetDate.setHours(0, 0, 0, 0);
+        const targetDateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+
+        const schoolNow = getSchoolNow(timezone);
+        const todayStr = `${schoolNow.getFullYear()}-${String(schoolNow.getMonth() + 1).padStart(2, '0')}-${String(schoolNow.getDate()).padStart(2, '0')}`;
+
+        // Role-Based Validation
+        const currentUserRes = await getCurrentUserAction();
+        const role = currentUserRes.success ? currentUserRes.data?.role : "STAFF";
+        const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+
+        if (targetDateStr > todayStr) {
+            return { success: false, error: "Cannot mark attendance for future dates." };
+        }
+
+        if (!isAdmin && targetDateStr !== todayStr) {
+            return { success: false, error: "Teachers can only mark attendance for the current date." };
+        }
 
         await prisma.attendance.upsert({
             where: {
@@ -695,7 +737,8 @@ export async function markAttendanceAction(studentId: string, date: string | Dat
                 studentId,
                 date: targetDate,
                 status,
-                notes
+                notes,
+                academicYearId
             }
         });
 
@@ -709,12 +752,16 @@ export async function markAttendanceAction(studentId: string, date: string | Dat
     }
 }
 
-export async function getStudentAttendanceAction(studentId: string) {
+export async function getStudentAttendanceAction(studentId: string, academicYearId?: string) {
     try {
+        const query: any = { studentId };
+        if (academicYearId) {
+            query.academicYearId = academicYearId;
+        }
+
         const attendance = await prisma.attendance.findMany({
-            where: { studentId },
-            orderBy: { date: 'desc' },
-            take: 365
+            where: query,
+            orderBy: { date: 'desc' }
         });
         return { success: true, data: attendance };
     } catch (error: any) {

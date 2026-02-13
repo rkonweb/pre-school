@@ -116,7 +116,7 @@ export default function IntegrationsPage() {
 
     const tabs = [
         { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
-        { id: "sms", label: "SMS Gateway", icon: MessageSquare, color: "text-blue-500", bg: "bg-blue-50" },
+        { id: "sms", label: "SMS Gateway", icon: MessageSquare, color: "text-brand", bg: "bg-brand/5" },
         { id: "payment", label: "Payments", icon: CreditCard, color: "text-purple-500", bg: "bg-purple-50" },
         { id: "email", label: "Email SMTP", icon: Zap, color: "text-orange-500", bg: "bg-orange-50" },
         { id: "maps", label: "Google Maps", icon: MapPin, color: "text-red-500", bg: "bg-red-50" },
@@ -154,7 +154,7 @@ export default function IntegrationsPage() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="h-12 px-6 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-blue-500/20 transition-all hover:bg-blue-700 hover:scale-105 active:scale-95 disabled:opacity-50"
+                    className="h-12 px-6 bg-brand text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 transition-all hover:brightness-110 hover:scale-105 active:scale-95 disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     {saving ? "Syncing..." : "Save Config"}
@@ -286,9 +286,9 @@ export default function IntegrationsPage() {
                                     <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">SMS Gateway Matrix</h3>
                                     <p className="text-[10px] font-black text-zinc-400 tracking-widest uppercase italic">Tier-1 transit for transactional alerts</p>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100">
-                                    <div className={cn("h-2 w-2 rounded-full", config.sms.enabled ? "bg-blue-500 animate-pulse" : "bg-zinc-300")} />
-                                    <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand/5 border border-brand/10">
+                                    <div className={cn("h-2 w-2 rounded-full", config.sms.enabled ? "bg-brand animate-pulse" : "bg-zinc-300")} />
+                                    <span className="text-[9px] font-black text-brand uppercase tracking-widest">
                                         {config.sms.enabled ? "Synchronized" : "Stalled"}
                                     </span>
                                 </div>
@@ -301,13 +301,13 @@ export default function IntegrationsPage() {
                                         onClick={() => setConfig({ ...config, sms: { ...config.sms, enabled: !config.sms.enabled } })}
                                         className={cn(
                                             "w-full h-14 rounded-2xl border flex items-center justify-between px-6 transition-all",
-                                            config.sms.enabled ? "bg-blue-50 border-blue-200 text-blue-900" : "bg-zinc-50 border-zinc-100 text-zinc-400"
+                                            config.sms.enabled ? "bg-brand/5 border-brand/20 text-brand" : "bg-zinc-50 border-zinc-100 text-zinc-400"
                                         )}
                                     >
                                         <span className="text-xs font-black uppercase tracking-widest">Enable SMS</span>
                                         <div className={cn(
                                             "w-10 h-5 rounded-full relative transition-all",
-                                            config.sms.enabled ? "bg-blue-500" : "bg-zinc-200"
+                                            config.sms.enabled ? "bg-brand" : "bg-zinc-200"
                                         )}>
                                             <div className={cn(
                                                 "absolute top-1 w-3 h-3 bg-white rounded-full transition-all",
@@ -321,7 +321,7 @@ export default function IntegrationsPage() {
                                     <select
                                         value={config.sms.provider}
                                         onChange={(e) => setConfig({ ...config, sms: { ...config.sms, provider: e.target.value } })}
-                                        className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 px-6 text-xs font-black text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all uppercase"
+                                        className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 px-6 text-xs font-black text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all uppercase"
                                     >
                                         <option value="Msg91">Msg91 (Recommended)</option>
                                         <option value="Twilio">Twilio</option>
@@ -332,13 +332,13 @@ export default function IntegrationsPage() {
                                 <div className="space-y-3 md:col-span-2">
                                     <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Auth / API Token</label>
                                     <div className="relative group">
-                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 group-focus-within:text-blue-500 transition-colors" />
+                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 group-focus-within:text-brand transition-colors" />
                                         <input
                                             type="password"
                                             placeholder="Enter secure API credentials..."
                                             value={config.sms.apiKey}
                                             onChange={(e) => setConfig({ ...config, sms: { ...config.sms, apiKey: e.target.value } })}
-                                            className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 pl-14 pr-6 text-xs font-bold text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                            className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 pl-14 pr-6 text-xs font-bold text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
                                         />
                                     </div>
                                 </div>
@@ -349,7 +349,7 @@ export default function IntegrationsPage() {
                                         maxLength={6}
                                         value={config.sms.senderId}
                                         onChange={(e) => setConfig({ ...config, sms: { ...config.sms, senderId: e.target.value } })}
-                                        className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 px-6 text-xs font-black text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all uppercase"
+                                        className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 px-6 text-xs font-black text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all uppercase"
                                     />
                                 </div>
                             </div>

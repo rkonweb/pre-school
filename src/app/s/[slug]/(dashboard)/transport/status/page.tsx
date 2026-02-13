@@ -15,7 +15,7 @@ export default async function TransportStatusPage({ params }: { params: { slug: 
     const profile = await prisma.studentTransportProfile.findUnique({
         where: { studentId: (student as any).id }, // Cast for placeholder
         include: {
-            route: { include: { vehicle: true, driver: true } },
+            route: { include: { pickupVehicle: true, driver: true } },
             pickupStop: true,
             dropStop: true
         }
@@ -33,7 +33,12 @@ export default async function TransportStatusPage({ params }: { params: { slug: 
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardTitle>Application Status</CardTitle>
-                        <Badge variant={profile.status === "APPROVED" ? "success" : "warning"}>{profile.status}</Badge>
+                        <Badge
+                            variant={profile.status === "APPROVED" ? "outline" : "warning"}
+                            className={profile.status === "APPROVED" ? "bg-emerald-50 text-emerald-600 border-emerald-200" : ""}
+                        >
+                            {profile.status}
+                        </Badge>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -45,17 +50,17 @@ export default async function TransportStatusPage({ params }: { params: { slug: 
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-4">
                                 <h3 className="font-semibold text-lg flex items-center gap-2">
-                                    <Bus className="h-5 w-5 text-blue-600" />
+                                    <Bus className="h-5 w-5 text-brand" />
                                     Route Details
                                 </h3>
                                 <div className="bg-zinc-50 p-4 rounded-lg space-y-3">
                                     <div>
                                         <p className="text-sm text-zinc-500">Route Name</p>
-                                        <p className="font-medium">{profile.route.name}</p>
+                                        <p className="text-zinc-500">{profile.route?.name || "Not assigned"}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-zinc-500">Vehicle</p>
-                                        <p className="font-medium">{profile.route.vehicle?.model} ({profile.route.vehicle?.registrationNumber})</p>
+                                        <p className="font-medium">{profile.route?.pickupVehicle?.model} ({profile.route?.pickupVehicle?.capacity} seats)</p>
                                     </div>
                                 </div>
                             </div>
@@ -85,8 +90,8 @@ export default async function TransportStatusPage({ params }: { params: { slug: 
                                     Your Stops
                                 </h3>
                                 <div className="grid md:grid-cols-2 gap-4">
-                                    <div className="border border-l-4 border-l-blue-500 p-4 rounded-r-lg bg-blue-50/10">
-                                        <p className="font-bold text-blue-800 mb-1">Pickup</p>
+                                    <div className="border border-l-4 border-l-brand p-4 rounded-r-lg bg-brand/5">
+                                        <p className="font-bold text-brand mb-1">Pickup</p>
                                         <p className="font-medium text-lg">{profile.pickupStop?.name}</p>
                                         <p className="text-zinc-500 flex items-center gap-1 mt-1">
                                             <Clock className="h-4 w-4" /> {profile.pickupStop?.pickupTime}

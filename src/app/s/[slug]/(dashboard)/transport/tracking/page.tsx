@@ -141,7 +141,7 @@ export default function FleetTrackerPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
         );
     }
@@ -151,7 +151,7 @@ export default function FleetTrackerPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                    <div className="h-12 w-12 rounded-xl bg-brand flex items-center justify-center shadow-lg shadow-brand/20">
                         <Bus className="h-6 w-6 text-white" />
                     </div>
                     <div>
@@ -176,7 +176,7 @@ export default function FleetTrackerPage() {
 
                     <button
                         onClick={fetchFleetStatus}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand text-white text-sm font-medium hover:brightness-110 transition-colors shadow-lg shadow-brand/10"
                     >
                         <RefreshCw className="h-4 w-4" />
                         Refresh Now
@@ -192,7 +192,7 @@ export default function FleetTrackerPage() {
                             <p className="text-sm text-zinc-500">Total Vehicles</p>
                             <p className="text-2xl font-bold text-zinc-900">{vehicles.length}</p>
                         </div>
-                        <Bus className="h-8 w-8 text-blue-500" />
+                        <Bus className="h-8 w-8 text-brand" />
                     </div>
                 </div>
 
@@ -242,7 +242,7 @@ export default function FleetTrackerPage() {
                         placeholder="Search by registration, route, or driver..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        className="w-full pl-10 pr-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none"
                     />
                 </div>
 
@@ -254,7 +254,7 @@ export default function FleetTrackerPage() {
                             className={cn(
                                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                                 statusFilter === filter
-                                    ? "bg-blue-500 text-white"
+                                    ? "bg-brand text-white shadow-lg shadow-brand/20"
                                     : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
                             )}
                         >
@@ -327,7 +327,7 @@ export default function FleetTrackerPage() {
                                         className={cn(
                                             "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
                                             vehicle.telemetry
-                                                ? "bg-blue-500 text-white hover:bg-blue-600"
+                                                ? "bg-brand text-white hover:brightness-110 shadow-lg shadow-brand/20"
                                                 : "bg-zinc-100 text-zinc-400 cursor-not-allowed"
                                         )}
                                     >

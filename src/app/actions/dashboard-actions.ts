@@ -1,8 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getSchoolNow } from "@/lib/date-utils";
 
-export async function getDashboardStatsAction(slug: string, staffId?: string) {
+export async function getDashboardStatsAction(slug: string, staffId?: string, academicYearId?: string) {
     try {
         const school = await prisma.school.findUnique({
             where: { slug },
@@ -24,12 +25,14 @@ export async function getDashboardStatsAction(slug: string, staffId?: string) {
 
         if (!school) return { success: false, error: "School not found" };
 
+        const timezone = school.timezone || "Asia/Kolkata";
+
         // Fetch Leave Requests (Frequent Leaves)
         const recentLeaves = await prisma.leaveRequest.findMany({
             where: {
                 user: { schoolId: school.id },
                 status: "APPROVED",
-                startDate: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // Last 30 days
+                startDate: { gte: new Date(getSchoolNow(timezone).getTime() - 30 * 24 * 60 * 60 * 1000) } // Last 30 days
             },
             include: { user: true },
             take: 5
@@ -37,7 +40,10 @@ export async function getDashboardStatsAction(slug: string, staffId?: string) {
 
         // Fetch Exam Results (Academic Performance)
         const recentExams = await prisma.exam.findMany({
-            where: { schoolId: school.id },
+            where: {
+                schoolId: school.id,
+                academicYearId: academicYearId || undefined
+            },
             include: {
                 results: {
                     select: { marks: true }

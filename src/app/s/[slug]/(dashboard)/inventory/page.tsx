@@ -69,7 +69,7 @@ export default function InventoryPage() {
                         <History className="h-4 w-4" />
                         Usage History
                     </button>
-                    <button className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                    <button className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
                         <Plus className="h-4 w-4" />
                         Add Item
                     </button>
@@ -90,7 +90,7 @@ export default function InventoryPage() {
                     onClick={() => setActiveTab("stock")}
                     className={cn(
                         "px-6 py-3 text-sm font-bold transition-all border-b-2",
-                        activeTab === "stock" ? "border-blue-600 text-blue-600" : "border-transparent text-zinc-500 hover:text-zinc-700"
+                        activeTab === "stock" ? "border-brand text-brand" : "border-transparent text-zinc-500 hover:text-zinc-700"
                     )}
                 >
                     Stock Inventory
@@ -99,11 +99,11 @@ export default function InventoryPage() {
                     onClick={() => setActiveTab("requests")}
                     className={cn(
                         "px-6 py-3 text-sm font-bold transition-all border-b-2",
-                        activeTab === "requests" ? "border-blue-600 text-blue-600" : "border-transparent text-zinc-500 hover:text-zinc-700"
+                        activeTab === "requests" ? "border-brand text-brand" : "border-transparent text-zinc-500 hover:text-zinc-700"
                     )}
                 >
                     Supply Requests
-                    <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] text-blue-600 dark:bg-blue-900/30">3</span>
+                    <span className="ml-2 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] text-brand dark:bg-brand/20">3</span>
                 </button>
             </div>
 
@@ -119,7 +119,7 @@ export default function InventoryPage() {
                                     className={cn(
                                         "whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                                         filter === cat
-                                            ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-zinc-50 dark:text-zinc-900"
+                                            ? "bg-brand text-white hover:brightness-110 dark:bg-zinc-50 dark:text-zinc-900"
                                             : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
                                     )}
                                 >
@@ -134,7 +134,7 @@ export default function InventoryPage() {
                                 placeholder="Search items..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
+                                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 py-2 pl-10 pr-4 text-sm focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
                             />
                         </div>
                     </div>
@@ -223,7 +223,7 @@ export default function InventoryPage() {
                                             <span className={cn(
                                                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
                                                 req.status === "PENDING" ? "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400" :
-                                                    req.status === "APPROVED" ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" :
+                                                    req.status === "APPROVED" ? "bg-brand/5 text-brand dark:bg-brand/10 dark:text-brand" :
                                                         "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
                                             )}>
                                                 {req.status}

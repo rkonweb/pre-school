@@ -69,7 +69,7 @@ export default function LibraryInventoryPage() {
         setLoading(true);
         const res = await getBooksAction(slug, search, sortConfig.key, sortConfig.direction, categoryFilter);
         if (res.success) {
-            setBooks(res.data);
+            setBooks(res.data || []);
             if (res.categories) setAvailableCategories(res.categories);
         }
         setLoading(false);
@@ -262,7 +262,7 @@ export default function LibraryInventoryPage() {
                     </button>
                     <button
                         onClick={() => handleOpenModal()}
-                        className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-xl"
+                        className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl"
                     >
                         <Plus className="h-4 w-4" />
                         Add New Book
@@ -279,14 +279,14 @@ export default function LibraryInventoryPage() {
                         placeholder="Search by title, author, or ISBN..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full rounded-2xl border-0 bg-white py-4 pl-12 pr-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-600"
+                        className="w-full rounded-2xl border-0 bg-white py-4 pl-12 pr-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 placeholder:text-zinc-400 focus:ring-2 focus:ring-brand"
                     />
                 </div>
                 <div className="w-full md:w-64">
                     <select
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="w-full h-full rounded-2xl border-0 bg-white px-4 py-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:ring-2 focus:ring-blue-600 appearance-none cursor-pointer"
+                        className="w-full h-full rounded-2xl border-0 bg-white px-4 py-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:ring-2 focus:ring-brand appearance-none cursor-pointer"
                         style={{ backgroundImage: 'none' }}
                     >
                         <option value="All">All Categories</option>
@@ -300,7 +300,7 @@ export default function LibraryInventoryPage() {
             {/* Book List - Table View */}
             {loading ? (
                 <div className="flex justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <Loader2 className="h-8 w-8 animate-spin text-brand" />
                 </div>
             ) : (
                 <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm ring-1 ring-zinc-100">
@@ -314,7 +314,7 @@ export default function LibraryInventoryPage() {
                                     <div className="flex items-center gap-2">
                                         Book
                                         {sortConfig.key === "title" && (
-                                            <span className="text-blue-600">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                                            <span className="text-brand">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
                                         )}
                                     </div>
                                 </th>
@@ -325,7 +325,7 @@ export default function LibraryInventoryPage() {
                                     <div className="flex items-center gap-2">
                                         Stock
                                         {sortConfig.key === "copies" && (
-                                            <span className="text-blue-600">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                                            <span className="text-brand">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
                                         )}
                                     </div>
                                 </th>
@@ -336,7 +336,7 @@ export default function LibraryInventoryPage() {
                                     <div className="flex items-center gap-2">
                                         Details
                                         {sortConfig.key === "category" && (
-                                            <span className="text-blue-600">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                                            <span className="text-brand">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
                                         )}
                                     </div>
                                 </th>
@@ -405,7 +405,7 @@ export default function LibraryInventoryPage() {
                                                     </span>
                                                 )}
                                                 {book.isbn && (
-                                                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-blue-700 border border-blue-100 font-mono text-[10px]">
+                                                    <span className="inline-flex items-center rounded-md bg-brand/5 px-2 py-1 text-brand border border-brand/10 font-mono text-[10px]">
                                                         ISBN: {book.isbn}
                                                     </span>
                                                 )}
@@ -415,7 +415,7 @@ export default function LibraryInventoryPage() {
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={() => handleOpenModal(book)}
-                                                    className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+                                                    className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/40 transition-all shadow-sm"
                                                     title="Edit Book"
                                                 >
                                                     <Edit className="h-3.5 w-3.5" />
@@ -457,7 +457,7 @@ export default function LibraryInventoryPage() {
                             {/* Image Upload Field */}
                             <div className="flex justify-center mb-6">
                                 <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                                    <div className="h-32 w-24 overflow-hidden rounded-xl bg-zinc-100 ring-2 ring-zinc-200 ring-offset-2 transition-all group-hover:ring-blue-500">
+                                    <div className="h-32 w-24 overflow-hidden rounded-xl bg-zinc-100 ring-2 ring-zinc-200 ring-offset-2 transition-all group-hover:ring-brand">
                                         {previewUrl ? (
                                             <img src={previewUrl} alt="Cover Preview" className="h-full w-full object-cover" />
                                         ) : (
@@ -485,7 +485,7 @@ export default function LibraryInventoryPage() {
                                 <input
                                     required
                                     type="text"
-                                    className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
+                                    className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 />
@@ -496,7 +496,7 @@ export default function LibraryInventoryPage() {
                                     <input
                                         required
                                         type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
+                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
                                         value={formData.author}
                                         onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                                     />
@@ -505,7 +505,7 @@ export default function LibraryInventoryPage() {
                                     <label className="mb-1 block text-sm font-medium text-zinc-700">Category</label>
                                     <input
                                         type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
+                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     />
@@ -516,7 +516,7 @@ export default function LibraryInventoryPage() {
                                     <label className="mb-1 block text-sm font-medium text-zinc-700">ISBN</label>
                                     <input
                                         type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
+                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
                                         value={formData.isbn}
                                         onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
                                     />
@@ -525,7 +525,7 @@ export default function LibraryInventoryPage() {
                                     <label className="mb-1 block text-sm font-medium text-zinc-700">Publisher</label>
                                     <input
                                         type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
+                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
                                         value={formData.publisher}
                                         onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
                                     />
@@ -538,7 +538,7 @@ export default function LibraryInventoryPage() {
                                         required
                                         type="number"
                                         min="1"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
+                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
                                         value={formData.copies}
                                         onChange={(e) => setFormData({ ...formData, copies: e.target.value })}
                                     />
@@ -547,7 +547,7 @@ export default function LibraryInventoryPage() {
                                     <label className="mb-1 block text-sm font-medium text-zinc-700">Shelf No.</label>
                                     <input
                                         type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all"
+                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
                                         value={formData.shelfNo}
                                         onChange={(e) => setFormData({ ...formData, shelfNo: e.target.value })}
                                     />
@@ -565,7 +565,7 @@ export default function LibraryInventoryPage() {
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-xl disabled:opacity-50"
+                                    className="flex items-center gap-2 rounded-xl bg-brand px-6 py-2 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl disabled:opacity-50"
                                 >
                                     {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                                     {editingBook ? "Update Book" : "Add Book"}
@@ -591,13 +591,13 @@ export default function LibraryInventoryPage() {
                         </div>
 
                         <div className="space-y-6">
-                            <div className="rounded-xl bg-blue-50 p-4 text-sm text-blue-700 border border-blue-100">
+                            <div className="rounded-xl bg-brand/10 p-4 text-sm text-brand border border-brand/20">
                                 <p className="font-bold mb-1">CSV Format guide:</p>
                                 <p>Headers: Title, Author, ISBN, Category, Copies, Shelf</p>
                             </div>
 
                             <div className="flex w-full items-center justify-center">
-                                <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 hover:border-blue-400 transition-all">
+                                <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 hover:border-brand/40 transition-all">
                                     <div className="flex flex-col items-center justify-center pb-6 pt-5">
                                         <Upload className="mb-2 h-8 w-8 text-zinc-400" />
                                         <p className="mb-2 text-sm text-zinc-500">
@@ -624,7 +624,7 @@ export default function LibraryInventoryPage() {
                             <button
                                 onClick={handleBulkSubmit}
                                 disabled={!bulkFile || isBulkUploading}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-zinc-800 disabled:opacity-50"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 disabled:opacity-50"
                             >
                                 {isBulkUploading && <Loader2 className="h-4 w-4 animate-spin" />}
                                 Upload & Process

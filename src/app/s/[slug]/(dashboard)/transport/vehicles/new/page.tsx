@@ -168,7 +168,7 @@ export default function NewVehiclePage() {
                                 <div className="space-y-6 animate-in fade-in duration-300">
                                     <div className="space-y-4">
                                         <h3 className="text-lg font-semibold flex items-center gap-2">
-                                            <Bus className="h-5 w-5 text-blue-600" />
+                                            <Bus className="h-5 w-5 text-brand" />
                                             Vehicle Details
                                         </h3>
 
@@ -188,7 +188,7 @@ export default function NewVehiclePage() {
                                                 <label className="text-sm font-medium text-zinc-700">Model / Make</label>
                                                 <input
                                                     placeholder="e.g. Tata Marcopolo"
-                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
                                                     value={formData.model}
                                                     onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                                                 />
@@ -199,7 +199,7 @@ export default function NewVehiclePage() {
                                                 <input
                                                     required
                                                     type="number"
-                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
                                                     value={formData.capacity}
                                                     onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                                                 />
@@ -208,7 +208,7 @@ export default function NewVehiclePage() {
                                             <div className="space-y-1.5">
                                                 <label className="text-sm font-medium text-zinc-700">Status</label>
                                                 <select
-                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all bg-white"
                                                     value={formData.status}
                                                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                                 >
@@ -305,7 +305,7 @@ export default function NewVehiclePage() {
                                     {/* Fitness */}
                                     <div className="pt-6 border-t border-zinc-100 space-y-4">
                                         <h3 className="text-lg font-semibold flex items-center gap-2">
-                                            <Wrench className="h-5 w-5 text-indigo-600" />
+                                            <Wrench className="h-5 w-5 text-brand" />
                                             Fitness Certificate
                                         </h3>
                                         <div className="grid md:grid-cols-2 gap-4">
@@ -313,7 +313,7 @@ export default function NewVehiclePage() {
                                                 <label className="text-sm font-medium text-zinc-700">Fitness Expiry Date</label>
                                                 <input
                                                     type="date"
-                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
                                                     value={formData.fitnessExpiry}
                                                     onChange={(e) => setFormData({ ...formData, fitnessExpiry: e.target.value })}
                                                 />
@@ -364,7 +364,7 @@ export default function NewVehiclePage() {
                                                             <label className="text-sm font-medium text-zinc-700">Document Name</label>
                                                             <input
                                                                 placeholder="e.g. Permit, Tax Token"
-                                                                className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                                className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
                                                                 value={doc.name}
                                                                 onChange={(e) => updateDocument(index, "name", e.target.value)}
                                                             />

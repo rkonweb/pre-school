@@ -113,7 +113,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                         <a
                             href="https://console.cloud.google.com/google/maps-apis/credentials"
                             target="_blank"
-                            className="flex items-center gap-2 text-[10px] font-black text-blue-600 hover:text-blue-500 transition-colors uppercase tracking-[0.15em] bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100"
+                            className="flex items-center gap-2 text-[10px] font-black text-brand hover:text-brand/80 transition-colors uppercase tracking-[0.15em] bg-brand/5 px-3 py-1.5 rounded-lg border border-brand/10"
                         >
                             Get API Key <ExternalLink className="h-3 w-3" />
                         </a>
@@ -126,7 +126,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                 value={formData.googleMapsApiKey || ""}
                                 onChange={e => setFormData({ ...formData, googleMapsApiKey: e.target.value })}
                                 placeholder="Paste your Google Maps API Key here..."
-                                className="w-full h-16 bg-zinc-50 border border-zinc-200 rounded-2xl px-6 text-zinc-900 font-mono text-sm focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                                className="w-full h-16 bg-zinc-50 border border-zinc-200 rounded-2xl px-6 text-zinc-900 font-mono text-sm focus:ring-2 focus:ring-brand transition-all outline-none"
                             />
                             {activeKey && (
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -207,7 +207,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                     rows={3}
                                     value={formData.address || ""}
                                     onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 focus:ring-2 focus:ring-blue-600 transition-all font-bold resize-none placeholder:text-zinc-300"
+                                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 focus:ring-2 focus:ring-brand transition-all font-bold resize-none placeholder:text-zinc-300"
                                     placeholder="Enter full physical address..."
                                 />
                             </div>
@@ -217,7 +217,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                     <input
                                         value={formData.city || ""}
                                         onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-blue-600"
+                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-brand"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -225,7 +225,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                     <input
                                         value={formData.state || ""}
                                         onChange={e => setFormData({ ...formData, state: e.target.value })}
-                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-blue-600"
+                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-brand"
                                     />
                                 </div>
                             </div>
@@ -235,7 +235,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                     <input
                                         value={formData.zip || ""}
                                         onChange={e => setFormData({ ...formData, zip: e.target.value })}
-                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-blue-600"
+                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-brand"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -243,7 +243,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                     <input
                                         value={formData.country || ""}
                                         onChange={e => setFormData({ ...formData, country: e.target.value })}
-                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-blue-600"
+                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-brand"
                                     />
                                 </div>
                             </div>
@@ -253,7 +253,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                     <input
                                         value={formData.latitude || ""}
                                         onChange={e => setFormData({ ...formData, latitude: e.target.value })}
-                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-blue-600"
+                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-brand"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -261,7 +261,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                     <input
                                         value={formData.longitude || ""}
                                         onChange={e => setFormData({ ...formData, longitude: e.target.value })}
-                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-blue-600"
+                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 font-bold focus:ring-2 focus:ring-brand"
                                     />
                                 </div>
                             </div>
@@ -353,7 +353,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                 <input
                                     value={formData.email || ""}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 focus:ring-2 focus:ring-blue-600 transition-all font-bold"
+                                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 focus:ring-2 focus:ring-brand transition-all font-bold"
                                 />
                             </div>
                         </div>
@@ -364,7 +364,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                 <input
                                     value={formData.phone || ""}
                                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 focus:ring-2 focus:ring-blue-600 transition-all font-bold"
+                                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 focus:ring-2 focus:ring-brand transition-all font-bold"
                                 />
                             </div>
                         </div>
@@ -382,8 +382,8 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                         Commit Connectivity
                     </button>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 
@@ -430,12 +430,12 @@ function PlacesAutocomplete({ onAddressSelect }: { onAddressSelect: (address: an
     return (
         <div className="relative z-[70]">
             <div className="relative group">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 group-focus-within:text-blue-600 transition-colors" />
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 group-focus-within:text-brand transition-colors" />
                 <input
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     disabled={!ready}
-                    className="w-full h-16 rounded-2xl bg-zinc-50 border border-zinc-200 pl-14 pr-6 font-bold text-zinc-900 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none placeholder:text-zinc-400"
+                    className="w-full h-16 rounded-2xl bg-zinc-50 border border-zinc-200 pl-14 pr-6 font-bold text-zinc-900 focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all outline-none placeholder:text-zinc-400"
                     placeholder="Enter school address to sync coordinates..."
                 />
             </div>

@@ -51,7 +51,7 @@ export function DailyLogBoard() {
                         className={cn(
                             "relative rounded-2xl border p-4 transition-all hover:shadow-md",
                             selectedStudent === student.id
-                                ? "border-blue-600 ring-1 ring-blue-600 bg-blue-50/10 dark:border-blue-500"
+                                ? "border-brand ring-1 ring-brand bg-brand/5 dark:border-brand/50"
                                 : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
                         )}
                         onClick={() => setSelectedStudent(student.id)}
@@ -82,9 +82,9 @@ export function DailyLogBoard() {
                                 <Moon className="h-4 w-4 text-zinc-400 group-hover:text-purple-500" />
                                 <span className="text-[10px] font-medium text-zinc-400 group-hover:text-purple-600">Nap</span>
                             </button>
-                            <button className="flex-1 flex flex-col items-center gap-1 rounded-xl py-2 transition-colors hover:bg-blue-50 dark:hover:bg-blue-950/20 group">
-                                <Droplets className="h-4 w-4 text-zinc-400 group-hover:text-blue-500" />
-                                <span className="text-[10px] font-medium text-zinc-400 group-hover:text-blue-600">Potty</span>
+                            <button className="flex-1 flex flex-col items-center gap-1 rounded-xl py-2 transition-colors hover:bg-brand/5 dark:hover:bg-brand/10 group">
+                                <Droplets className="h-4 w-4 text-zinc-400 group-hover:text-brand" />
+                                <span className="text-[10px] font-medium text-zinc-400 group-hover:text-brand">Potty</span>
                             </button>
                             <button className="flex-1 flex flex-col items-center gap-1 rounded-xl py-2 transition-colors hover:bg-green-50 dark:hover:bg-green-950/20 group">
                                 <Smile className="h-4 w-4 text-zinc-400 group-hover:text-green-500" />

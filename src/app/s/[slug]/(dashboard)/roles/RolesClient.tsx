@@ -327,7 +327,7 @@ export default function RolesClient({
                     className={cn(
                         "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
                         activeTab === "roles"
-                            ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                            ? "border-brand text-brand"
                             : "border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
                     )}
                 >
@@ -338,7 +338,7 @@ export default function RolesClient({
                     className={cn(
                         "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
                         activeTab === "permissions"
-                            ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                            ? "border-brand text-brand"
                             : "border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
                     )}
                 >
@@ -372,7 +372,7 @@ export default function RolesClient({
                                 setNewRoleDesc("");
                                 setNewRolePermissions([]);
                             }}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors shadow-sm shadow-blue-200 dark:shadow-blue-900/20"
+                            className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:brightness-110 font-medium text-sm transition-colors shadow-sm shadow-brand/20"
                         >
                             <Plus className="h-4 w-4" /> Create Custom Role
                         </button>
@@ -393,7 +393,7 @@ export default function RolesClient({
                                     <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Role Name</label>
                                     <input
                                         placeholder="e.g. Finance Manager"
-                                        className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                        className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-brand outline-none transition-all"
                                         value={newRoleName}
                                         onChange={e => setNewRoleName(e.target.value)}
                                     />
@@ -402,7 +402,7 @@ export default function RolesClient({
                                     <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Description</label>
                                     <input
                                         placeholder="Brief description of responsibilities"
-                                        className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                        className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-950 focus:ring-2 focus:ring-brand outline-none transition-all"
                                         value={newRoleDesc}
                                         onChange={e => setNewRoleDesc(e.target.value)}
                                     />
@@ -412,7 +412,7 @@ export default function RolesClient({
                             {/* Permission Matrix */}
                             <div className="space-y-3">
                                 <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                    <Shield className="h-4 w-4 text-blue-600" /> Module Permissions
+                                    <Shield className="h-4 w-4 text-brand" /> Module Permissions
                                 </h4>
                                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-950">
                                     <table className="w-full text-sm">
@@ -435,7 +435,7 @@ export default function RolesClient({
                                                         <tr className={cn(
                                                             "transition-colors",
                                                             module.subModules ? "bg-zinc-50 dark:bg-zinc-900/80" : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50",
-                                                            depth > 0 && "border-l-4 border-l-transparent hover:border-l-blue-500"
+                                                            depth > 0 && "border-l-4 border-l-transparent hover:border-l-brand"
                                                         )}>
                                                             <td className="px-4 py-2" style={{ paddingLeft: `${depth * 1.5 + 1}rem` }}>
                                                                 <div className="flex items-center gap-2">
@@ -467,7 +467,7 @@ export default function RolesClient({
                                                                             <div className="flex flex-col items-center justify-center gap-1">
                                                                                 <input
                                                                                     type="checkbox"
-                                                                                    className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 h-4 w-4 cursor-pointer"
+                                                                                    className="rounded border-zinc-300 text-brand focus:ring-brand h-4 w-4 cursor-pointer"
                                                                                     checked={!!isChecked}
                                                                                     onChange={() => togglePermission(module.key, validAction)}
                                                                                 />
@@ -485,7 +485,7 @@ export default function RolesClient({
                                                                 {module.permissions.includes("manage_own" as any) ? (
                                                                     <input
                                                                         type="checkbox"
-                                                                        className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
+                                                                        className="rounded border-zinc-300 text-brand focus:ring-brand h-4 w-4 cursor-pointer"
                                                                         checked={!!newRolePermissions.find(p => p.module === module.key)?.actions.includes("manage_own" as any)}
                                                                         onChange={() => togglePermission(module.key, "manage_own")}
                                                                     />
@@ -495,7 +495,7 @@ export default function RolesClient({
                                                                 {module.permissions.includes("manage_selected" as any) ? (
                                                                     <input
                                                                         type="checkbox"
-                                                                        className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
+                                                                        className="rounded border-zinc-300 text-brand focus:ring-brand h-4 w-4 cursor-pointer"
                                                                         checked={!!newRolePermissions.find(p => p.module === module.key)?.actions.includes("manage_selected" as any)}
                                                                         onChange={() => togglePermission(module.key, "manage_selected")}
                                                                     />
@@ -520,9 +520,7 @@ export default function RolesClient({
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={handleCreateRole}
-                                    disabled={isSubmittingRole}
-                                    className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
+                                    className="px-4 py-2 bg-brand text-white font-medium rounded-lg hover:brightness-110 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
                                 >
                                     {isSubmittingRole ? (
                                         <><span>Saving...</span></>
@@ -568,7 +566,7 @@ export default function RolesClient({
                                             </button>
                                             <button
                                                 onClick={() => handleEditRole(role)}
-                                                className="text-blue-500 hover:text-blue-700 p-1"
+                                                className="text-brand hover:brightness-110 p-1"
                                                 title="Edit Role"
                                             >
                                                 <Edit className="h-4 w-4" />
@@ -605,7 +603,7 @@ export default function RolesClient({
                                     className={cn(
                                         "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors",
                                         selectedTeacherId === teacher.id
-                                            ? "bg-blue-50 dark:bg-blue-900/20 ring-1 ring-blue-200 dark:ring-blue-800"
+                                            ? "bg-brand/10 ring-1 ring-brand/20"
                                             : "hover:bg-zinc-50 dark:hover:bg-zinc-900"
                                     )}
                                 >
@@ -622,7 +620,7 @@ export default function RolesClient({
                                     </div>
                                     <ChevronRight className={cn(
                                         "ml-auto h-4 w-4 text-zinc-400 transition-transform",
-                                        selectedTeacherId === teacher.id ? "rotate-90 text-blue-500" : ""
+                                        selectedTeacherId === teacher.id ? "rotate-90 text-brand" : ""
                                     )} />
                                 </button>
                             ))}
@@ -650,7 +648,7 @@ export default function RolesClient({
                                             <button
                                                 onClick={saveAccessChanges}
                                                 disabled={isSavingAccess}
-                                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm disabled:opacity-50"
+                                                className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:brightness-110 shadow-sm disabled:opacity-50"
                                             >
                                                 {isSavingAccess ? "Saving..." : <><Save className="h-4 w-4" /> Save Changes</>}
                                             </button>
@@ -659,7 +657,7 @@ export default function RolesClient({
 
                                     {/* Global Role Assignment */}
                                     <div className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg">
-                                        <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                                        <div className="h-8 w-8 rounded-full bg-brand/10 flex items-center justify-center text-brand">
                                             <Shield className="h-4 w-4" />
                                         </div>
                                         <div className="flex-1">
@@ -704,17 +702,17 @@ export default function RolesClient({
                                                         const hasAccess = current.canRead || current.canWrite || current.canEdit || current.canDelete;
 
                                                         return (
-                                                            <tr key={cls.id} className={cn("hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50", hasAccess && "bg-blue-50/10")}>
+                                                            <tr key={cls.id} className={cn("hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50", hasAccess && "bg-brand/10")}>
                                                                 <td className="px-4 py-3 font-medium">
                                                                     <div className="flex items-center gap-2">
-                                                                        <div className={cn("w-1 h-8 rounded-full", hasAccess ? "bg-blue-500" : "bg-zinc-300 dark:bg-zinc-700")} />
+                                                                        <div className={cn("w-1 h-8 rounded-full", hasAccess ? "bg-brand" : "bg-zinc-300 dark:bg-zinc-700")} />
                                                                         <span>{cls.name}</span>
                                                                     </div>
                                                                 </td>
                                                                 <td className="text-center px-2 py-3">
                                                                     <input
                                                                         type="checkbox"
-                                                                        className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                                                        className="rounded border-zinc-300 text-brand focus:ring-brand h-4 w-4"
                                                                         checked={!!current.canRead}
                                                                         onChange={(e) => handleAccessChange(cls.id, 'canRead', e.target.checked)}
                                                                     />
@@ -757,7 +755,7 @@ export default function RolesClient({
                                                     <button
                                                         onClick={saveStaffAccessChanges}
                                                         disabled={isSavingStaffAccess}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white rounded-lg text-xs font-semibold hover:brightness-110 disabled:opacity-50 transition-all"
                                                     >
                                                         {isSavingStaffAccess ? "Saving..." : <><Save className="h-3.5 w-3.5" /> Save Staff Mapping</>}
                                                     </button>
@@ -795,13 +793,13 @@ export default function RolesClient({
                                                             className={cn(
                                                                 "flex items-center gap-2 p-2 border rounded-lg cursor-pointer transition-all",
                                                                 staffAccessChanges.includes(staff.id)
-                                                                    ? "bg-purple-50 border-purple-200 dark:bg-purple-900/10 dark:border-purple-800"
+                                                                    ? "bg-brand/10 border-brand/20 dark:bg-brand/5 dark:border-brand/30"
                                                                     : "bg-white border-zinc-200 dark:bg-zinc-950 dark:border-zinc-800 hover:bg-zinc-50"
                                                             )}
                                                         >
                                                             <input
                                                                 type="checkbox"
-                                                                className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 h-3.5 w-3.5"
+                                                                className="rounded border-zinc-300 text-brand focus:ring-brand h-3.5 w-3.5"
                                                                 checked={staffAccessChanges.includes(staff.id)}
                                                                 onChange={(e) => {
                                                                     if (e.target.checked) {

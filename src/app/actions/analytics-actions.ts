@@ -111,7 +111,14 @@ export interface SmartAnalytics {
     academics: {
         overallPercentage: number;
         totalExams: number;
-        subjectPerformance: { subject: string; average: number; grade: string }[];
+        subjectPerformance: {
+            subject: string;
+            average: number;
+            grade: string;
+            min: number;
+            max: number;
+            count: number;
+        }[];
         bestSubject: string;
         weakestSubject: string;
         trend: "IMPROVING" | "DECLINING" | "STABLE" | "INSUFFICIENT_DATA";
@@ -133,34 +140,40 @@ export interface SmartAnalytics {
     }[];
 }
 
-export async function getStudentSmartAnalyticsAction(schoolSlug: string, studentId: string): Promise<{ success: boolean; data?: SmartAnalytics; error?: string }> {
+export async function getStudentSmartAnalyticsAction(schoolSlug: string, studentId: string, academicYearId?: string): Promise<{ success: boolean; data?: SmartAnalytics; error?: string }> {
     try {
         const userRes = await getCurrentUserAction();
         if (!userRes.success) return { success: false, error: "Unauthorized" };
 
+        const query: any = { studentId };
+        if (academicYearId) query.academicYearId = academicYearId;
+
         // 1. Fetch Academic Data
         const examResults = await prisma.examResult.findMany({
-            where: { studentId },
+            where: {
+                studentId,
+                exam: academicYearId ? { academicYearId } : {}
+            },
             include: { exam: true },
             orderBy: { exam: { date: 'asc' } }
         });
 
         // 2. Fetch Attendance Data
         const attendance = await prisma.attendance.findMany({
-            where: { studentId },
+            where: query,
             orderBy: { date: 'desc' }
         });
 
         // 3. Fetch Health & Activities
         const health = await prisma.studentHealthRecord.findFirst({
-            where: { studentId },
+            where: query,
             orderBy: { recordedAt: 'desc' }
         });
 
         const activities = await prisma.studentActivityRecord.findMany({
-            where: { studentId },
+            where: query,
             orderBy: { date: 'desc' },
-            take: 5
+            take: 10
         });
 
         // --- PROCESSING ANALYTICS ---
@@ -168,7 +181,7 @@ export async function getStudentSmartAnalyticsAction(schoolSlug: string, student
         // Academics
         let totalMarks = 0;
         let totalMax = 0;
-        const subjectStats: Record<string, { total: number; max: number; count: number }> = {};
+        const subjectStats: Record<string, { total: number; maxScore: number; minScore: number; maxAvailable: number; count: number }> = {};
 
         examResults.forEach(res => {
             const marks = res.marks || 0;
@@ -178,18 +191,26 @@ export async function getStudentSmartAnalyticsAction(schoolSlug: string, student
             totalMarks += marks;
             totalMax += max;
 
-            if (!subjectStats[subject]) subjectStats[subject] = { total: 0, max: 0, count: 0 };
+            if (!subjectStats[subject]) {
+                subjectStats[subject] = { total: 0, maxScore: 0, minScore: Infinity, maxAvailable: 0, count: 0 };
+            }
             subjectStats[subject].total += marks;
-            subjectStats[subject].max += max;
+            subjectStats[subject].maxAvailable += max;
             subjectStats[subject].count++;
+
+            if (marks > subjectStats[subject].maxScore) subjectStats[subject].maxScore = marks;
+            if (marks < subjectStats[subject].minScore) subjectStats[subject].minScore = marks;
         });
 
         const subjectPerformance = Object.entries(subjectStats).map(([sub, stats]) => {
-            const avg = stats.max > 0 ? (stats.total / stats.max) * 100 : 0;
+            const avg = stats.maxAvailable > 0 ? (stats.total / stats.maxAvailable) * 100 : 0;
             return {
                 subject: sub,
                 average: avg,
-                grade: calculateGrade(avg)
+                grade: calculateGrade(avg),
+                min: stats.minScore === Infinity ? 0 : stats.minScore,
+                max: stats.maxScore,
+                count: stats.count
             };
         }).sort((a, b) => b.average - a.average);
 
@@ -198,11 +219,17 @@ export async function getStudentSmartAnalyticsAction(schoolSlug: string, student
         const overallPercentage = totalMax > 0 ? (totalMarks / totalMax) * 100 : 0;
 
         // Trend Analysis
-        const examGroups: Record<string, { total: number; max: number; date: Date; title: string }> = {};
+        const examGroups: Record<string, { total: number; max: number; date: Date; title: string, id: string, subjects: any[] }> = {};
         examResults.forEach(r => {
-            if (!examGroups[r.examId]) examGroups[r.examId] = { total: 0, max: 0, date: r.exam.date, title: r.exam.title };
+            if (!examGroups[r.examId]) examGroups[r.examId] = { id: r.examId, total: 0, max: 0, date: r.exam.date, title: r.exam.title, subjects: [] };
             examGroups[r.examId].total += (r.marks || 0);
             examGroups[r.examId].max += (r.exam.maxMarks || 100);
+            examGroups[r.examId].subjects.push({
+                name: r.subject,
+                marks: r.marks,
+                maxMarks: r.exam.maxMarks,
+                grade: calculateGrade(r.exam.maxMarks > 0 ? ((r.marks || 0) / r.exam.maxMarks) * 100 : 0)
+            });
         });
 
         const sortedExams = Object.values(examGroups).sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -289,9 +316,11 @@ export async function getStudentSmartAnalyticsAction(schoolSlug: string, student
                     weakestSubject,
                     trend,
                     examHistory: sortedExams.map(e => ({
+                        id: e.id,
                         name: e.title,
                         date: e.date.toLocaleDateString(),
-                        percentage: e.max > 0 ? (e.total / e.max) * 100 : 0
+                        percentage: e.max > 0 ? (e.total / e.max) * 100 : 0,
+                        subjects: e.subjects
                     }))
                 },
                 attendance: {

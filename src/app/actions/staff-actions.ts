@@ -117,6 +117,7 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
         const bankIfsc = formData.get("bankIfsc") as string;
 
         const linkedin = formData.get("linkedin") as string;
+        const avatarAdjustment = formData.get("avatarAdjustment") as string;
         let customRoleId = formData.get("customRoleId") as string | null;
         if (customRoleId === "") customRoleId = null;
 
@@ -201,6 +202,9 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
                 // Social
                 linkedin,
 
+                // Adjustment
+                avatarAdjustment,
+
                 // Role
                 customRoleId,
 
@@ -275,6 +279,7 @@ export async function updateStaffAction(id: string, formData: FormData) {
 
         const linkedin = formData.get("linkedin") as string;
         const subjects = formData.get("subjects") as string; // New field
+        const avatarAdjustment = formData.get("avatarAdjustment") as string;
         let customRoleId = formData.get("customRoleId") as string | null;
         if (customRoleId === "") customRoleId = null;
 
@@ -305,6 +310,7 @@ export async function updateStaffAction(id: string, formData: FormData) {
             bankAccountNo,
             bankIfsc,
             linkedin,
+            avatarAdjustment,
             customRoleId
         };
 

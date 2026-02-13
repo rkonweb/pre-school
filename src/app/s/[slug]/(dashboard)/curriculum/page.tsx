@@ -63,11 +63,11 @@ export default function SchoolCurriculumPage() {
                         )}
                         <div>
                             <h1 className="text-xl font-black tracking-tighter flex items-center gap-2">
-                                <Sparkles className="h-5 w-5 text-blue-600" />
+                                <Sparkles className="h-5 w-5 text-brand" />
                                 CLASS <span className="text-zinc-400 font-medium">CURRICULUM</span>
                             </h1>
                             {selectedClass && (
-                                <p className="text-[10px] uppercase tracking-[0.2em] font-black text-blue-600 mt-1">
+                                <p className="text-[10px] uppercase tracking-[0.2em] font-black text-brand mt-1">
                                     {selectedClass.name} {selectedDate && `• ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                                 </p>
                             )}
@@ -101,7 +101,7 @@ export default function SchoolCurriculumPage() {
                                             setSelectedClass(cls);
                                             setView("timeline");
                                         }}
-                                        className="group relative h-80 rounded-[2.5rem] bg-white border border-zinc-100 p-8 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-xl hover:border-blue-100 transition-all text-left"
+                                        className="group relative h-80 rounded-[2.5rem] bg-white border border-zinc-100 p-8 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-xl hover:border-brand/30 transition-all text-left"
                                     >
                                         <div
                                             className="absolute -top-24 -right-24 h-48 w-48 blur-[100px] opacity-10 group-hover:opacity-20 transition-opacity"
@@ -114,7 +114,7 @@ export default function SchoolCurriculumPage() {
                                             <h3 className="text-2xl font-black text-zinc-900 mb-2">{cls.name}</h3>
                                             <p className="text-sm text-zinc-400 font-medium">{cls.description || "View curriculum"}</p>
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-600">
+                                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-brand">
                                             View Curriculum
                                             <ChevronRight className="h-4 w-4" />
                                         </div>
@@ -249,7 +249,7 @@ function SchoolCalendarView({ selectedClass, onSelectDate }: any) {
                             onClick={() => date && hasCurriculum(date) && onSelectDate(date)}
                             disabled={!date || !hasCurriculum(date)}
                             className={`aspect-square rounded-2xl flex flex-col items-center justify-center transition-all ${date && hasCurriculum(date)
-                                ? 'bg-blue-50 border-2 border-blue-200 hover:bg-blue-100 cursor-pointer'
+                                ? 'bg-brand/5 border-2 border-brand/20 hover:bg-brand/10 cursor-pointer'
                                 : 'bg-zinc-50 border border-zinc-100 cursor-not-allowed opacity-50'
                                 }`}
                         >
@@ -257,7 +257,7 @@ function SchoolCalendarView({ selectedClass, onSelectDate }: any) {
                                 <>
                                     <span className="text-lg font-black text-zinc-900">{date.getDate()}</span>
                                     {hasCurriculum(date) && (
-                                        <Calendar className="h-3 w-3 text-blue-600 mt-1" />
+                                        <Calendar className="h-3 w-3 text-brand mt-1" />
                                     )}
                                 </>
                             )}
@@ -301,7 +301,7 @@ function SchoolDayViewer({ selectedClass, date, onPreview }: any) {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+                <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full" />
             </div>
         );
     }
@@ -320,7 +320,7 @@ function SchoolDayViewer({ selectedClass, date, onPreview }: any) {
                 </h2>
                 <button
                     onClick={() => window.print()}
-                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 hover:bg-zinc-800 transition-all text-xs font-black uppercase tracking-widest shadow-xl hover:scale-105"
+                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand text-white hover:brightness-110 transition-all text-xs font-black uppercase tracking-widest shadow-xl hover:scale-105"
                 >
                     <Printer className="h-4 w-4" />
                     Print Plan
@@ -448,7 +448,7 @@ function ReadOnlyBlock({ block }: { block: Block }) {
                     {block.data.schedule.map((s: any, i: number) => (
                         <div key={i} className="flex gap-4 items-start">
                             <div className="w-24 shrink-0 flex flex-col items-center justify-center bg-white rounded-xl py-2 border border-zinc-200/50">
-                                <span className="text-[10px] font-black text-blue-600 uppercase">{s.startTime}</span>
+                                <span className="text-[10px] font-black text-brand uppercase">{s.startTime}</span>
                                 <div className="h-3 w-[1px] bg-zinc-200 my-0.5" />
                                 <span className="text-[10px] font-black text-zinc-400 uppercase">{s.endTime}</span>
                             </div>

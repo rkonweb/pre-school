@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { getBillingDashboardAction } from "@/app/actions/billing-dashboard-actions";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { getCookie } from "@/lib/cookies";
 
 export default function BillingDashboard() {
     const params = useParams();
@@ -59,7 +60,8 @@ export default function BillingDashboard() {
         if (!data) setIsLoading(true); // Initial
 
         // Prepare filters
-        const filters: any = {};
+        const academicYearId = getCookie(`academic_year_${slug}`) || undefined;
+        const filters: any = { academicYearId };
         if (statusFilter !== "ALL") filters.status = statusFilter;
 
         const res = await getBillingDashboardAction(slug, {
@@ -125,7 +127,7 @@ export default function BillingDashboard() {
                     </button>
                     <Link
                         href={`/s/${slug}/billing/bulk`}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 shadow-sm shadow-blue-200"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:brightness-110 shadow-sm shadow-brand/20"
                     >
                         <Plus className="h-4 w-4" />
                         Bulk Generate Invoices
@@ -140,7 +142,7 @@ export default function BillingDashboard() {
                     value={currencyFormatter.format(data?.stats?.totalBilled || 0)}
                     subValue="All time"
                     icon={FileText}
-                    color="blue"
+                    color="brand"
                 />
                 <StatCard
                     title="Collected"
@@ -188,7 +190,7 @@ export default function BillingDashboard() {
                                     setSearchTerm(e.target.value);
                                     setPage(1);
                                 }}
-                                className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-800 dark:bg-zinc-950"
+                                className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950"
                             />
                         </div>
 
@@ -198,7 +200,7 @@ export default function BillingDashboard() {
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                                    className="appearance-none rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-8 text-sm font-medium focus:border-blue-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 min-w-[140px]"
+                                    className="appearance-none rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-8 text-sm font-medium focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 min-w-[140px]"
                                 >
                                     <option value="ALL">All Status</option>
                                     <option value="PAID">Paid</option>
@@ -275,7 +277,7 @@ export default function BillingDashboard() {
                                                 <span className={cn(
                                                     "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border",
                                                     inv.status === "PAID" && "bg-emerald-100 text-emerald-700 border-emerald-200",
-                                                    inv.status === "PENDING" && "bg-blue-50 text-blue-700 border-blue-200",
+                                                    inv.status === "PENDING" && "bg-brand/5 text-brand border-brand/20",
                                                     inv.status === "PARTIAL" && "bg-amber-50 text-amber-700 border-amber-200",
                                                     inv.status === "OVERDUE" && "bg-rose-50 text-rose-700 border-rose-200"
                                                 )}>

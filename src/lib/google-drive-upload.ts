@@ -1,7 +1,7 @@
 "use server";
 
 import { google } from 'googleapis';
-import { getGoogleDriveConfigForSchool, GOOGLE_DRIVE_CONFIG, isGoogleDriveConfigured } from './google-drive-config';
+import { getGlobalGoogleDriveConfig, getGoogleDriveConfigForSchool, GOOGLE_DRIVE_CONFIG, isGoogleDriveConfigured } from './google-drive-config';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Readable } from 'stream';
@@ -146,6 +146,9 @@ export async function uploadToGoogleDriveForSchool(
 /**
  * Upload file to Google Drive (using env variables - legacy)
  */
+/**
+ * Upload file to Google Drive (using env variables - legacy)
+ */
 export async function uploadToGoogleDrive(
     file: Buffer,
     fileName: string,
@@ -153,16 +156,17 @@ export async function uploadToGoogleDrive(
     folder: 'homework' | 'worksheets' | 'videos' | 'voice-notes' | 'admissions' = 'worksheets'
 ): Promise<{ success: boolean; url?: string; error?: string }> {
     try {
-        // Check if Google Drive is configured via env
-        if (!isGoogleDriveConfigured()) {
+        const config = await getGlobalGoogleDriveConfig();
+
+        if (!config.enabled || !config.clientEmail || !config.privateKey) {
             console.log('⚠️ Google Drive not configured, using local storage fallback');
             return await uploadToLocal(file, fileName, folder);
         }
 
         // Initialize Google Drive API
         const auth = new google.auth.JWT({
-            email: GOOGLE_DRIVE_CONFIG.clientEmail,
-            key: GOOGLE_DRIVE_CONFIG.privateKey,
+            email: config.clientEmail,
+            key: config.privateKey,
             scopes: ['https://www.googleapis.com/auth/drive.file'],
         });
 
@@ -185,8 +189,8 @@ export async function uploadToGoogleDrive(
         };
 
         // If folder ID is specified, upload to that folder
-        if (GOOGLE_DRIVE_CONFIG.folderId) {
-            fileMetadata.parents = [GOOGLE_DRIVE_CONFIG.folderId];
+        if (config.folderId) {
+            fileMetadata.parents = [config.folderId];
         }
 
         const media = {
@@ -248,7 +252,9 @@ export async function deleteFile(fileUrl: string): Promise<{ success: boolean; e
 
         // Check if it's a Google Drive file
         if (fileUrl.includes('drive.google.com')) {
-            if (!isGoogleDriveConfigured()) {
+            const config = await getGlobalGoogleDriveConfig();
+
+            if (!config.enabled || !config.clientEmail || !config.privateKey) {
                 return { success: false, error: 'Google Drive not configured' };
             }
 
@@ -276,8 +282,8 @@ export async function deleteFile(fileUrl: string): Promise<{ success: boolean; e
 
             // Initialize Google Drive API
             const auth = new google.auth.JWT({
-                email: GOOGLE_DRIVE_CONFIG.clientEmail,
-                key: GOOGLE_DRIVE_CONFIG.privateKey,
+                email: config.clientEmail,
+                key: config.privateKey,
                 scopes: ['https://www.googleapis.com/auth/drive'],
             });
 
@@ -508,20 +514,23 @@ export async function uploadToGoogleDriveNested(
     folderPath: string[]
 ): Promise<{ success: boolean; url?: string; error?: string }> {
     try {
-        if (!isGoogleDriveConfigured()) {
+        const config = await getGlobalGoogleDriveConfig();
+
+        if (!config.enabled || !config.clientEmail || !config.privateKey) {
+            console.log('[UploadFallback] Google Drive not enabled or credentials missing. Using local storage.');
             return await uploadToLocal(file, fileName, folderPath.join('/'));
         }
 
         const auth = new google.auth.JWT({
-            email: GOOGLE_DRIVE_CONFIG.clientEmail,
-            key: GOOGLE_DRIVE_CONFIG.privateKey,
+            email: config.clientEmail,
+            key: config.privateKey,
             scopes: ['https://www.googleapis.com/auth/drive.file'],
         });
 
         const drive = google.drive({ version: 'v3', auth });
 
         // 1. Traverse/Create folder hierarchy
-        let currentParentId = GOOGLE_DRIVE_CONFIG.folderId || undefined;
+        let currentParentId = config.folderId || undefined;
         for (const folderName of folderPath) {
             currentParentId = await getOrCreateFolder(drive, folderName, currentParentId);
         }

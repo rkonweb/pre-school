@@ -231,7 +231,7 @@ export default function MarksEntryPage() {
                         </div>
                     </div>
                 </div>
-                <Button onClick={handleSave} disabled={saving || students.length === 0}>
+                <Button onClick={handleSave} disabled={saving || students.length === 0} className="bg-brand hover:brightness-110">
                     {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     Save Marks
                 </Button>
@@ -321,10 +321,10 @@ export default function MarksEntryPage() {
                                                         </td>
                                                         <td className="p-3">
                                                             <div className={`flex items-center justify-center h-8 px-3 rounded-md border text-xs font-semibold ${data.status === 'PASSED'
-                                                                    ? 'bg-green-50 text-green-700 border-green-200'
-                                                                    : data.status === 'FAILED'
-                                                                        ? 'bg-red-50 text-red-700 border-red-200'
-                                                                        : 'bg-gray-50 text-gray-400 border-gray-200'
+                                                                ? 'bg-green-50 text-green-700 border-green-200'
+                                                                : data.status === 'FAILED'
+                                                                    ? 'bg-red-50 text-red-700 border-red-200'
+                                                                    : 'bg-gray-50 text-gray-400 border-gray-200'
                                                                 }`}>
                                                                 {data.status || "-"}
                                                             </div>

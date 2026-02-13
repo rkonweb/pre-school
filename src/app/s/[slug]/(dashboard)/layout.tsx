@@ -1,10 +1,9 @@
 import { Header } from "@/components/dashboard/Header";
 import { Sidebar } from "@/components/dashboard/Sidebar";
-import { PrismaClient } from "@prisma/client";
+import { SchoolTheme } from "@/components/dashboard/SchoolTheme";
+import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
-
-const prisma = new PrismaClient();
 
 function hexToRgb(hex: string): string {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -51,7 +50,9 @@ export default async function DashboardLayout({
             name: true,
             logo: true,
             brandColor: true,
-            modulesConfig: true
+            modulesConfig: true,
+            timezone: true,
+            dateFormat: true
         } as any
     })) as any;
 
@@ -70,6 +71,7 @@ export default async function DashboardLayout({
                 "--brand-color-rgb": brandColorRgb
             } as any}
         >
+            <SchoolTheme brandColor={brandColor} />
             <Sidebar
                 schoolName={school.name}
                 logo={school.logo}
@@ -84,7 +86,7 @@ export default async function DashboardLayout({
                 })()}
             />
             <div className="flex flex-1 flex-col overflow-hidden">
-                <Header />
+                <Header schoolTimezone={school.timezone} />
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                     {children}
                 </main>

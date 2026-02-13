@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
     BarChart3,
     Building2,
@@ -18,7 +18,8 @@ import {
     Plus,
     Loader2,
     Pencil,
-    Trash2
+    Trash2,
+    Server
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -39,6 +40,7 @@ import { useModal } from "@/components/ui/modal/ModalContext";
 
 export function AdminSidebar() {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const router = useRouter();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(["Training Module"]));
@@ -167,31 +169,49 @@ export function AdminSidebar() {
         { name: "Console Overview", href: "/admin/dashboard", icon: BarChart3 },
         { name: "Tenant Management", href: "/admin/tenants", icon: Building2 },
         { name: "Master Data", href: "/admin/dashboard/master-data", icon: Database },
+        { name: "Marketing Tools", href: "/admin/marketing", icon: Layers },
         { name: "CMS", href: "/admin/cms", icon: FileText },
         { name: "Curriculum Architect", href: "/admin/curriculum", icon: Layers },
     ];
+
+    const schoolResourcesCat = categories.find(c => c.slug === "school-resources" || c.name === "School Resources");
+
+    // Add Document Management as a top-level item if it exists
+    const docManagementNav: NavItem | null = schoolResourcesCat ? {
+        name: "Document Management",
+        href: `/admin/training?categoryId=${schoolResourcesCat.id}`,
+        icon: FileText
+    } : null;
 
     const trainingNav: NavItem = {
         name: "Training Module",
         href: "/admin/training",
         icon: GraduationCap,
         children: [
-            ...categories.map(cat => ({
-                name: cat.name,
-                href: `/admin/training?categoryId=${cat.id}`,
-                id: cat.id,
-                type: 'category'
-            }))
+            ...categories
+                .filter(cat => cat.id !== schoolResourcesCat?.id) // Filter out School Resources
+                .map(cat => ({
+                    name: cat.name,
+                    href: `/admin/training?categoryId=${cat.id}`,
+                    id: cat.id,
+                    type: 'category'
+                }))
         ]
     };
 
     const bottomNavigation: NavItem[] = [
         { name: "Global Monitor", href: "/admin/curriculum/monitor", icon: Globe },
         { name: "System Config", href: "/admin/settings", icon: Settings },
+        { name: "API Management", href: "/admin/settings/apis", icon: Server },
         { name: "Subscription Plans", href: "/admin/subscriptions", icon: CreditCard },
     ];
 
-    const navigation: NavItem[] = [...baseNavigation, trainingNav, ...bottomNavigation];
+    const navigation: NavItem[] = [
+        ...baseNavigation,
+        ...(docManagementNav ? [docManagementNav] : []),
+        trainingNav,
+        ...bottomNavigation
+    ];
 
     return (
         <MotionDiv
@@ -222,7 +242,26 @@ export function AdminSidebar() {
 
             <div className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-4">
                 {navigation.map((item) => {
-                    const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/admin/dashboard");
+                    const currentCategoryId = searchParams.get('categoryId');
+                    let isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/admin/dashboard");
+
+                    // Special handling to DE-SELECT Training Module if we are in Document Management
+                    if (item.name === "Training Module") {
+                        if (schoolResourcesCat && currentCategoryId === schoolResourcesCat.id) {
+                            isActive = false;
+                        }
+                    }
+
+                    // Special handling to SELECT Document Management if we are in it
+                    if (item.name === "Document Management") {
+                        if (schoolResourcesCat && currentCategoryId === schoolResourcesCat.id) {
+                            isActive = true;
+                        } else {
+                            // strictly false if not matching category, because pathname /admin/training matches both
+                            isActive = false;
+                        }
+                    }
+
                     const isExpanded = expandedItems.has(item.name);
                     const isChildActive = item.children?.some(child => {
                         return pathname + window.location.search === child.href;
@@ -266,7 +305,10 @@ export function AdminSidebar() {
                                             ) : (
                                                 <>
                                                     {item.children.map(child => {
-                                                        const isChildSelected = pathname + window.location.search === child.href;
+                                                        // Use pure href string matching if possible, or exact match
+                                                        const isChildSelected = pathname + (searchParams.toString() ? '?' + searchParams.toString() : '') === child.href
+                                                            || (child.href.includes('?') && searchParams.get('categoryId') === new URLSearchParams(child.href.split('?')[1]).get('categoryId'));
+
                                                         return (
                                                             <div key={child.name} className="group relative flex items-center">
                                                                 <Link

@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { createStaffAction } from "@/app/actions/staff-actions";
 import { toast } from "sonner";
 import Image from "next/image";
+import Cropper from "react-easy-crop";
+import { AvatarWithAdjustment } from "./AvatarWithAdjustment";
 
 
 
@@ -42,6 +44,14 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
     const [wasSubmitted, setWasSubmitted] = useState(false);
     const [mounted, setMounted] = useState(false);
 
+    // Cropper State
+    const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+    const [croppedArea, setCroppedArea] = useState<any>(null);
+    const [avatarAdjustment, setAvatarAdjustment] = useState<string>(initialData?.avatarAdjustment || "");
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -62,8 +72,27 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
             const reader = new FileReader();
             reader.onloadend = () => {
                 setAvatarPreview(reader.result as string);
+                setIsCropModalOpen(true);
             };
             reader.readAsDataURL(file);
+        }
+    };
+
+    const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+        setCroppedArea(croppedArea);
+        setCroppedAreaPixels(croppedAreaPixels);
+    };
+
+    const finalizeAdjustment = () => {
+        if (croppedArea) {
+            const adjustment = JSON.stringify({
+                crop,
+                zoom,
+                croppedArea,
+                croppedAreaPixels
+            });
+            setAvatarAdjustment(adjustment);
+            setIsCropModalOpen(false);
         }
     };
 
@@ -121,7 +150,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                 {/* 1. Personal Information */}
                 <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/50">
                     <div className="mb-6 flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100/50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-brand">
                             <User className="h-5 w-5" />
                         </div>
                         <div>
@@ -135,18 +164,41 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                         <div className="flex flex-col items-center gap-3">
                             <div
                                 onClick={() => avatarInputRef.current?.click()}
-                                className="relative flex h-32 w-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-zinc-300 bg-white transition-all hover:border-blue-500 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-blue-500 dark:hover:bg-blue-900/20"
+                                className="relative flex h-32 w-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-zinc-300 bg-white transition-all hover:border-brand hover:bg-brand/5 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-brand dark:hover:bg-brand/10"
                             >
                                 {avatarPreview || initialData?.avatar ? (
-                                    <Image src={avatarPreview || initialData?.avatar} alt="Preview" fill className="object-cover" />
+                                    <AvatarWithAdjustment
+                                        src={avatarPreview || initialData?.avatar}
+                                        adjustment={avatarAdjustment}
+                                        className="h-full w-full"
+                                    />
                                 ) : (
                                     <>
-                                        <Upload className="h-8 w-8 text-zinc-400 group-hover:text-blue-500" />
+                                        <Upload className="h-8 w-8 text-zinc-400 group-hover:text-brand" />
                                         <span className="mt-2 text-xs font-medium text-zinc-500">Upload Photo</span>
                                     </>
                                 )}
                             </div>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => avatarInputRef.current?.click()}
+                                    className="text-[10px] font-black uppercase text-brand hover:underline"
+                                >
+                                    {avatarPreview || initialData?.avatar ? "Change" : "Upload"}
+                                </button>
+                                {(avatarPreview || initialData?.avatar) && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCropModalOpen(true)}
+                                        className="text-[10px] font-black uppercase text-zinc-500 hover:text-brand transition-colors"
+                                    >
+                                        Adjust View
+                                    </button>
+                                )}
+                            </div>
                             <input type="file" ref={avatarInputRef} name="avatarFile" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                            <input type="hidden" name="avatarAdjustment" value={avatarAdjustment} />
                         </div>
 
                         {/* Fields */}
@@ -159,7 +211,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     required
                                     className={cn(
                                         "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
-                                        "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                        "focus:border-brand focus:ring-brand dark:bg-zinc-800",
                                         wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
                                     )}
                                 />
@@ -172,7 +224,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     required
                                     className={cn(
                                         "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
-                                        "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                        "focus:border-brand focus:ring-brand dark:bg-zinc-800",
                                         wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
                                     )}
                                 />
@@ -187,7 +239,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     required
                                     className={cn(
                                         "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
-                                        "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                        "focus:border-brand focus:ring-brand dark:bg-zinc-800",
                                         wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
                                     )}
                                 />
@@ -201,7 +253,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     required
                                     className={cn(
                                         "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
-                                        "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                        "focus:border-brand focus:ring-brand dark:bg-zinc-800",
                                         wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
                                     )}
                                 />
@@ -209,11 +261,11 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
 
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date of Birth</label>
-                                <input name="dateOfBirth" type="date" defaultValue={formatDate(initialData?.dateOfBirth)} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input name="dateOfBirth" type="date" defaultValue={formatDate(initialData?.dateOfBirth)} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Gender</label>
-                                <select name="gender" defaultValue={initialData?.gender} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800">
+                                <select name="gender" defaultValue={initialData?.gender} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800">
                                     <option value="">Select Gender</option>
                                     {genders.length > 0 ? (
                                         genders.map((g) => (
@@ -232,7 +284,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                             </div>
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Blood Group</label>
-                                <select name="bloodGroup" defaultValue={initialData?.bloodGroup} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800">
+                                <select name="bloodGroup" defaultValue={initialData?.bloodGroup} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800">
                                     <option value="">Select Group</option>
                                     {bloodGroups.length > 0 ? (
                                         bloodGroups.map((bg) => (
@@ -280,7 +332,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     id="customRoleId"
                                     name="customRoleId"
                                     defaultValue={initialData?.customRoleId || ""}
-                                    className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
+                                    className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
                                 >
                                     <option value="">No Specific Role (Standard Staff Access)</option>
                                     {roles?.map((role) => (
@@ -326,7 +378,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     onChange={(e) => setSelectedDesignation(e.target.value)}
                                     className={cn(
                                         "w-full appearance-none rounded-xl border px-4 py-3 text-sm font-medium transition-all focus:outline-none focus:ring-4",
-                                        "focus:border-blue-500 focus:ring-blue-500/10 dark:bg-zinc-950 dark:text-zinc-200",
+                                        "focus:border-brand focus:ring-brand/10 dark:bg-zinc-950 dark:text-zinc-200",
                                         wasSubmitted ? "invalid:border-red-500 invalid:ring-4 invalid:ring-red-500/10" : "border-zinc-200 dark:border-zinc-800"
                                     )}
                                 >
@@ -350,7 +402,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     id="department"
                                     name="department"
                                     defaultValue={initialData?.department || ""}
-                                    className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
+                                    className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
                                 >
                                     <option value="">Select Department</option>
                                     {departments.map((dept) => (
@@ -372,13 +424,13 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     {/* Trigger Area */}
                                     <div
                                         onClick={() => setIsSubjectsOpen(!isSubjectsOpen)}
-                                        className="min-h-[3rem] w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium transition-all cursor-pointer flex flex-wrap gap-2 items-center focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950"
+                                        className="min-h-[3rem] w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium transition-all cursor-pointer flex flex-wrap gap-2 items-center focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950"
                                     >
                                         {selectedSubjects.length === 0 ? (
                                             <span className="text-zinc-500">Select Subjects...</span>
                                         ) : (
                                             selectedSubjects.map(sub => (
-                                                <span key={sub} className="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1">
+                                                <span key={sub} className="bg-brand/10 text-brand border border-brand/20 px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1">
                                                     {sub}
                                                     <button type="button" onClick={(e) => { e.stopPropagation(); toggleSubject(sub); }} className="hover:text-blue-900">
                                                         <X className="h-3 w-3" />
@@ -407,7 +459,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                                                 isSelected ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "hover:bg-zinc-50 text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                                                             )}
                                                         >
-                                                            <div className={cn("h-4 w-4 rounded border flex items-center justify-center transition-colors", isSelected ? "bg-blue-600 border-blue-600 text-white" : "border-zinc-300 dark:border-zinc-600")}>
+                                                            <div className={cn("h-4 w-4 rounded border flex items-center justify-center transition-colors", isSelected ? "bg-brand border-brand text-white" : "border-zinc-300 dark:border-zinc-600")}>
                                                                 {isSelected && <Check className="h-3 w-3" />}
                                                             </div>
                                                             {sub.name}
@@ -431,7 +483,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                     id="employmentType"
                                     name="employmentType"
                                     defaultValue={initialData?.employmentType || ""}
-                                    className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
+                                    className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
                                 >
                                     <option value="">Select Type</option>
                                     {employmentTypes.map((type) => (
@@ -455,18 +507,18 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                                 defaultValue={formatDate(initialData?.joiningDate)}
                                 className={cn(
                                     "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1",
-                                    "focus:border-blue-500 focus:ring-blue-500 dark:bg-zinc-800",
+                                    "focus:border-brand focus:ring-brand dark:bg-zinc-800",
                                     wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
                                 )}
                             />
                         </div>
                         <div className="space-y-1.5 sm:col-span-2" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Qualifications</label>
-                            <input name="qualifications" defaultValue={initialData?.qualifications} placeholder="e.g. B.Ed, MA English" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                            <input name="qualifications" defaultValue={initialData?.qualifications} placeholder="e.g. B.Ed, MA English" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
                         <div className="space-y-1.5 sm:col-span-3" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Experience Summary</label>
-                            <textarea name="experience" defaultValue={initialData?.experience} rows={2} placeholder="Brief summary of past experience..." className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                            <textarea name="experience" defaultValue={initialData?.experience} rows={2} placeholder="Brief summary of past experience..." className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
                     </div>
                 </div>
@@ -486,32 +538,32 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-1.5 sm:col-span-2" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Street Address</label>
-                            <input name="address" defaultValue={initialData?.address} placeholder="123 Main St, Apt 4B" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                            <input name="address" defaultValue={initialData?.address} placeholder="123 Main St, Apt 4B" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
                         <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">City</label>
-                            <input name="addressCity" defaultValue={initialData?.addressCity} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                            <input name="addressCity" defaultValue={initialData?.addressCity} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
                         <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">State / Province</label>
-                            <input name="addressState" defaultValue={initialData?.addressState} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                            <input name="addressState" defaultValue={initialData?.addressState} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
                         <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Zip / Postal Code</label>
-                            <input name="addressZip" defaultValue={initialData?.addressZip} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                            <input name="addressZip" defaultValue={initialData?.addressZip} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
                         <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Country</label>
-                            <input name="addressCountry" defaultValue={initialData?.addressCountry} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                            <input name="addressCountry" defaultValue={initialData?.addressCountry} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
                     </div>
 
                     <div className="mt-6 flex flex-wrap gap-4">
                         <div className="flex-1 min-w-[200px] space-y-1.5" suppressHydrationWarning>
                             <div className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                                <Linkedin className="h-4 w-4 text-blue-600" /> LinkedIn Profile
+                                <Linkedin className="h-4 w-4 text-brand" /> LinkedIn Profile
                             </div>
-                            <input name="linkedin" defaultValue={initialData?.linkedin} placeholder="https://linkedin.com/in/..." className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                            <input name="linkedin" defaultValue={initialData?.linkedin} placeholder="https://linkedin.com/in/..." className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                         </div>
                     </div>
                 </div>
@@ -532,15 +584,15 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                         <div className="space-y-4">
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Contact Name</label>
-                                <input name="emergencyContactName" defaultValue={initialData?.emergencyContactName} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input name="emergencyContactName" defaultValue={initialData?.emergencyContactName} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Relationship</label>
-                                <input name="emergencyContactRelation" defaultValue={initialData?.emergencyContactRelation} placeholder="e.g. Spouse, Father" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input name="emergencyContactRelation" defaultValue={initialData?.emergencyContactRelation} placeholder="e.g. Spouse, Father" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Emergency Phone</label>
-                                <input name="emergencyContactPhone" defaultValue={initialData?.emergencyContactPhone} type="tel" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input name="emergencyContactPhone" defaultValue={initialData?.emergencyContactPhone} type="tel" className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
                         </div>
                     </div>
@@ -559,15 +611,15 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                         <div className="space-y-4">
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Bank Name</label>
-                                <input name="bankName" defaultValue={initialData?.bankName} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input name="bankName" defaultValue={initialData?.bankName} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Account Number</label>
-                                <input name="bankAccountNo" defaultValue={initialData?.bankAccountNo} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input name="bankAccountNo" defaultValue={initialData?.bankAccountNo} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
                             <div className="space-y-1.5" suppressHydrationWarning>
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">IFSC / Sort Code</label>
-                                <input name="bankIfsc" defaultValue={initialData?.bankIfsc} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800" />
+                                <input name="bankIfsc" defaultValue={initialData?.bankIfsc} className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800" />
                             </div>
                         </div>
                     </div>
@@ -576,7 +628,7 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                 {/* 5. Documents */}
                 <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/50">
                     <div className="mb-6 flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100/50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-brand">
                             <FileText className="h-5 w-5" />
                         </div>
                         <div>
@@ -588,38 +640,88 @@ export function AddStaffForm({ schoolSlug, onCancel, onSuccess, roles = [], desi
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">CV / Resume</label>
-                            <input type="file" name="cv" accept=".pdf,.doc,.docx" className="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-zinc-800 dark:file:text-zinc-300" />
+                            <input type="file" name="cv" accept=".pdf,.doc,.docx" className="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20 dark:file:bg-zinc-800 dark:file:text-zinc-300" />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">ID Proof (Passport/DL)</label>
-                            <input type="file" name="idProof" accept="image/*,.pdf" className="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-zinc-800 dark:file:text-zinc-300" />
+                            <input type="file" name="idProof" accept="image/*,.pdf" className="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20 dark:file:bg-zinc-800 dark:file:text-zinc-300" />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Qualifications</label>
-                            <input type="file" name="certificate" accept="image/*,.pdf" className="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-zinc-800 dark:file:text-zinc-300" />
+                            <input type="file" name="certificate" accept="image/*,.pdf" className="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20 dark:file:bg-zinc-800 dark:file:text-zinc-300" />
                         </div>
                     </div>
                 </div>
 
             </div>
 
-            {/* Sticky Start Server Action Footer */}
-            <div className="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-zinc-200 bg-white/80 p-6 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="rounded-lg border border-zinc-200 px-6 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-zinc-900"
-                >
-                    {isLoading ? "Saving..." : (initialData ? "Update Staff Profile" : "Create Staff Profile")}
-                </button>
+            {/* Sticky Footer */}
+            <div className="sticky bottom-0 z-20 -mx-6 -mb-6 mt-auto border-t border-zinc-200 bg-white/80 p-6 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
+                <div className="flex items-center justify-end gap-3">
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="rounded-xl border border-zinc-200 px-6 py-2.5 text-sm font-semibold text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="rounded-xl bg-brand px-10 py-2.5 text-sm font-bold text-white shadow-xl shadow-brand/20 transition-all hover:brightness-110 active:scale-95 disabled:opacity-50"
+                    >
+                        {isLoading ? "Saving..." : (staffId ? "Update Staff" : "Add Staff")}
+                    </button>
+                </div>
             </div>
+
+            {/* Crop Modal */}
+            {isCropModalOpen && (avatarPreview || initialData?.avatar) && (
+                <div className="fixed inset-0 z-[100] bg-zinc-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-zinc-900 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95">
+                        <div className="p-8 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                            <h3 className="text-xl font-black text-zinc-900 dark:text-zinc-50 uppercase tracking-tight">Adjust View</h3>
+                            <button type="button" onClick={() => setIsCropModalOpen(false)}>
+                                <X className="h-6 w-6 text-zinc-400 hover:text-zinc-600 transition-colors" />
+                            </button>
+                        </div>
+                        <div className="relative h-[400px] bg-zinc-50 dark:bg-zinc-950">
+                            <Cropper
+                                image={avatarPreview || initialData?.avatar}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={1}
+                                onCropChange={setCrop}
+                                onCropComplete={onCropComplete}
+                                onZoomChange={setZoom}
+                                cropShape="round"
+                                showGrid={false}
+                            />
+                        </div>
+                        <div className="p-8 flex items-center gap-6">
+                            <div className="flex-1 space-y-2">
+                                <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Zoom Level</label>
+                                <input
+                                    type="range"
+                                    min={1}
+                                    max={3}
+                                    step={0.1}
+                                    value={zoom}
+                                    onChange={(e) => setZoom(Number(e.target.value))}
+                                    className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-brand"
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={finalizeAdjustment}
+                                className="px-10 py-4 bg-brand text-white rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-brand/20 active:scale-95"
+                            >
+                                Apply Adjustment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </form>
     );
 }

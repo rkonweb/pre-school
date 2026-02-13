@@ -95,12 +95,13 @@ export default function MediaUploader({ type, onUploadComplete, onCancel }: Medi
                     const ctx = canvas.getContext('2d');
                     ctx?.drawImage(img, 0, 0, width, height);
 
+                    const fileType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
                     canvas.toBlob(
                         (blob) => {
                             if (blob) resolve(blob);
                             else reject(new Error('Compression failed'));
                         },
-                        'image/jpeg',
+                        fileType,
                         0.8
                     );
                 };

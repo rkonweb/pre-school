@@ -56,7 +56,7 @@ export default function SuperAdminLoginPage() {
                     <div className="px-8 pb-10">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-4">
-                                <div>
+                                <div suppressHydrationWarning>
                                     <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5 ml-1">Admin ID</label>
                                     <input
                                         type="email"
@@ -107,7 +107,7 @@ export default function SuperAdminLoginPage() {
                 <div className="mt-8 text-center space-y-4">
                     <div className="text-xs text-zinc-500 bg-zinc-50 p-3 rounded-lg border border-zinc-100">
                         <p className="font-bold mb-1">Test Credentials:</p>
-                        <p className="font-mono">admin@platform.com / masterkey123</p>
+                        <p className="font-mono">admin@platform.com / Strong_Master_P@ssw0rd_2026!</p>
                     </div>
                     <p className="text-xs text-zinc-400 font-medium">
                         Protected by 256-bit Encryption • <span className="text-zinc-500 hover:text-zinc-900 cursor-pointer transition-colors">Security Policy</span>

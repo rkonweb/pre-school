@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function addActivityRecordAction(schoolSlug: string, studentId: string, data: any) {
+export async function addActivityRecordAction(schoolSlug: string, studentId: string, data: any, academicYearId?: string) {
     try {
         const record = await prisma.studentActivityRecord.create({
             data: {
@@ -13,7 +13,8 @@ export async function addActivityRecordAction(schoolSlug: string, studentId: str
                 type: data.type,
                 date: new Date(data.date),
                 description: data.description,
-                achievement: data.achievement
+                achievement: data.achievement,
+                academicYearId
             }
         });
 
@@ -24,10 +25,13 @@ export async function addActivityRecordAction(schoolSlug: string, studentId: str
     }
 }
 
-export async function getStudentActivitiesAction(studentId: string) {
+export async function getStudentActivitiesAction(studentId: string, academicYearId?: string) {
     try {
+        const where: any = { studentId };
+        if (academicYearId) where.academicYearId = academicYearId;
+
         const records = await prisma.studentActivityRecord.findMany({
-            where: { studentId },
+            where,
             orderBy: { date: 'desc' }
         });
         return { success: true, data: records };

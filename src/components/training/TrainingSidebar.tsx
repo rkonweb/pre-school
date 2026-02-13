@@ -284,6 +284,7 @@ export function TrainingSidebar({ modules, activePageId, onSelectPage, onRefresh
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.2, ease: "easeInOut" }}
                                     className="overflow-hidden"
+                                    {...({} as any)}
                                 >
                                     <div className="space-y-0.5 pt-0.5 pb-2">
                                         {module.topics.map((topic: any) => (
@@ -336,6 +337,7 @@ export function TrainingSidebar({ modules, activePageId, onSelectPage, onRefresh
                                                             exit={{ height: 0, opacity: 0 }}
                                                             transition={{ duration: 0.2 }}
                                                             className="overflow-hidden"
+                                                            {...({} as any)}
                                                         >
                                                             <div className="pt-0.5">
                                                                 {topic.pages.map((page: any) => (

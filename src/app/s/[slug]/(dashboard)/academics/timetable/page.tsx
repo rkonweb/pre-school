@@ -255,7 +255,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                                 className={cn(
                                     "h-10 px-5 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2",
                                     isSelected
-                                        ? "bg-blue-600 border-zinc-900 text-white shadow-lg shadow-zinc-200"
+                                        ? "bg-brand border-brand text-white shadow-lg shadow-brand/20"
                                         : "bg-white border-zinc-100 text-zinc-400 hover:border-zinc-300"
                                 )}
                             >
@@ -291,7 +291,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                                     <input
                                         value={period.name}
                                         onChange={e => updatePeriod(index, "name", e.target.value)}
-                                        className="w-full h-10 px-3 rounded-xl bg-zinc-50 border-none text-sm font-bold focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-zinc-300"
+                                        className="w-full h-10 px-3 rounded-xl bg-zinc-50 border-none text-sm font-bold focus:ring-2 focus:ring-brand/10 transition-all placeholder:text-zinc-300"
                                         placeholder="e.g. Period 1"
                                     />
                                 </div>
@@ -300,7 +300,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                                     <div className="flex bg-zinc-100 p-1 rounded-lg h-10">
                                         <button
                                             onClick={() => updatePeriod(index, "type", "CLASS")}
-                                            className={cn("flex-1 rounded-md text-[10px] font-black uppercase transition-all", period.type === "CLASS" ? "bg-white shadow-sm text-blue-600" : "text-zinc-400")}
+                                            className={cn("flex-1 rounded-md text-[10px] font-black uppercase transition-all", period.type === "CLASS" ? "bg-white shadow-sm text-brand" : "text-zinc-400")}
                                         >
                                             Class
                                         </button>
@@ -318,7 +318,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                                         type="time"
                                         value={period.startTime}
                                         onChange={e => updatePeriod(index, "startTime", e.target.value)}
-                                        className="w-full h-10 px-3 rounded-xl bg-zinc-50 border-none text-sm font-bold focus:ring-2 focus:ring-blue-100 transition-all"
+                                        className="w-full h-10 px-3 rounded-xl bg-zinc-50 border-none text-sm font-bold focus:ring-2 focus:ring-brand/10 transition-all"
                                     />
                                 </div>
                                 <div>
@@ -327,7 +327,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                                         type="time"
                                         value={period.endTime}
                                         onChange={e => updatePeriod(index, "endTime", e.target.value)}
-                                        className="w-full h-10 px-3 rounded-xl bg-zinc-50 border-none text-sm font-bold focus:ring-2 focus:ring-blue-100 transition-all"
+                                        className="w-full h-10 px-3 rounded-xl bg-zinc-50 border-none text-sm font-bold focus:ring-2 focus:ring-brand/10 transition-all"
                                     />
                                 </div>
                             </div>
@@ -350,7 +350,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="h-12 px-8 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                        className="h-12 px-8 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                     >
                         <Save className="h-4 w-4" />
                         {isSaving ? "Saving..." : "Save Structure"}
@@ -436,7 +436,7 @@ function SchedulerView({ classrooms, staff, config, slug, onUpdate }: any) {
                         <select
                             value={selectedClassId}
                             onChange={(e) => setSelectedClassId(e.target.value)}
-                            className="w-full h-14 pl-6 pr-10 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600 appearance-none cursor-pointer"
+                            className="w-full h-14 pl-6 pr-10 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-brand appearance-none cursor-pointer"
                         >
                             <option value="">-- Choose a Class --</option>
                             {classrooms.map((c: any) => (
@@ -589,12 +589,12 @@ function Cell({ data, teacher, onClick }: any) {
     const teacherNameDisplay = teacher ? `${teacher.firstName} ${teacher.lastName}` : "No Teacher";
 
     return (
-        <button onClick={onClick} className="w-full h-full rounded-2xl bg-white border border-zinc-200 shadow-sm hover:shadow-md hover:border-blue-300 text-left p-3 transition-all group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-transparent to-blue-50/50 rounded-bl-[3rem] -z-0" />
+        <button onClick={onClick} className="w-full h-full rounded-2xl bg-white border border-zinc-200 shadow-sm hover:shadow-md hover:border-brand/30 text-left p-3 transition-all group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-transparent to-brand/5 rounded-bl-[3rem] -z-0" />
             <div className="relative z-10 flex flex-col h-full">
                 <span className="text-xs font-black text-zinc-900 break-words line-clamp-2">{subjectDisplay}</span>
                 <span className="mt-auto text-[10px] font-bold text-zinc-500 flex items-center gap-1">
-                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                    <div className="h-1.5 w-1.5 rounded-full bg-brand" />
                     {teacherNameDisplay}
                 </span>
             </div>
@@ -719,7 +719,7 @@ function CellEditor({ day, periodId, initialData, staff, slug, currentClassId, o
                                             />
                                             <button
                                                 onClick={() => setSubject(availableSubjects[0])}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-brand/10 text-brand px-2 py-1 rounded hover:bg-brand/20"
                                             >
                                                 Show List
                                             </button>
@@ -746,7 +746,7 @@ function CellEditor({ day, periodId, initialData, staff, slug, currentClassId, o
                                         {availableSubjects.map((s: string) => (
                                             <option key={s} value={s}>{s}</option>
                                         ))}
-                                        <option value="___CUSTOM___" className="text-blue-600 font-bold">+ Other Subject</option>
+                                        <option value="___CUSTOM___" className="text-brand font-bold">+ Other Subject</option>
                                     </select>
                                 );
                             }
@@ -808,7 +808,7 @@ function CellEditor({ day, periodId, initialData, staff, slug, currentClassId, o
                     <button
                         onClick={handleSave}
                         disabled={!!conflict || checking}
-                        className="flex-[2] h-12 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 font-black text-xs uppercase tracking-widest hover:bg-zinc-800 disabled:opacity-50 transition-all shadow-lg shadow-zinc-200"
+                        className="flex-[2] h-12 rounded-2xl bg-brand text-white hover:brightness-110 font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand/20"
                     >
                         Save
                     </button>

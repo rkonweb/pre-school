@@ -28,7 +28,7 @@ export default function ClassroomPage() {
                         Real-time classroom activities and daily planning.
                     </p>
                 </div>
-                <button className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all">
+                <button className="h-12 px-6 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all">
                     <Package className="h-4 w-4" />
                     Request Supplies
                 </button>
@@ -62,10 +62,10 @@ export default function ClassroomPage() {
                                         <div className={cn(
                                             "flex items-center gap-2 text-sm font-medium",
                                             item.status === "completed" ? "text-zinc-400 line-through" :
-                                                item.status === "current" ? "text-blue-600" : "text-zinc-900 dark:text-zinc-50"
+                                                item.status === "current" ? "text-brand" : "text-zinc-900 dark:text-zinc-50"
                                         )}>
                                             {item.event}
-                                            {item.status === "current" && <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />}
+                                            {item.status === "current" && <div className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />}
                                         </div>
                                     </div>
                                 </div>
@@ -74,15 +74,15 @@ export default function ClassroomPage() {
                     </div>
 
                     {/* Announcements/Lesson Plan */}
-                    <div className="rounded-2xl border border-zinc-200 bg-gradient-to-br from-indigo-50 to-white p-6 dark:border-zinc-800 dark:from-indigo-950/10 dark:to-zinc-950">
+                    <div className="rounded-2xl border border-brand/10 bg-gradient-to-br from-brand/[0.03] to-white p-6 dark:border-brand/20 dark:from-brand/[0.05] dark:to-zinc-950">
                         <div className="mb-4 flex items-center gap-2">
-                            <BookOpen className="h-5 w-5 text-indigo-600" />
-                            <h3 className="font-bold">Weekly Theme: "Ocean Wonders"</h3>
+                            <BookOpen className="h-5 w-5 text-brand" />
+                            <h3 className="font-bold whitespace-normal">Weekly Theme: "Ocean Wonders"</h3>
                         </div>
                         <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
                             Focus on marine life and water conservation. Today we are learning about Starfish!
                         </p>
-                        <Link href={`/s/${slug}/classroom/guide`} className="mt-4 flex items-center gap-1 text-xs font-semibold text-indigo-600">
+                        <Link href={`/s/${slug}/classroom/guide`} className="mt-4 flex items-center gap-1 text-xs font-semibold text-brand hover:underline">
                             View Lesson Plan <ChevronRight className="h-3 w-3" />
                         </Link>
                     </div>

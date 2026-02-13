@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { getDashboardStatsAction } from "@/app/actions/dashboard-actions";
 import { Loader2 } from "lucide-react";
+import { getCookie } from "@/lib/cookies";
 
 // --- Types ---
 interface DashboardWidget {
@@ -135,9 +136,9 @@ export function DashboardClient() {
         }
 
         async function loadData() {
-            // Pass staffId to stats action
-            // Note: need to update server action to accept optional staffId
-            const res = await getDashboardStatsAction(slug, staffId);
+            // Pass staffId and academicYearId to stats action
+            const academicYearId = getCookie(`academic_year_${slug}`) || undefined;
+            const res = await getDashboardStatsAction(slug, staffId, academicYearId);
             if (res.success) {
                 setStatsData(res);
             }
@@ -172,7 +173,7 @@ export function DashboardClient() {
     if (isLoading) {
         return (
             <div className="flex h-[60vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
         );
     }
@@ -197,8 +198,8 @@ export function DashboardClient() {
                     className={cn(
                         "flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-xl shadow-zinc-200/50 active:scale-95",
                         isConfiguring
-                            ? "bg-blue-600 text-white hover:bg-blue-700"
-                            : "bg-white text-zinc-600 border border-zinc-200 hover:border-blue-600 hover:text-blue-600"
+                            ? "bg-brand text-white hover:brightness-110"
+                            : "bg-white text-zinc-600 border border-zinc-200 hover:border-brand hover:text-brand"
                     )}
                 >
                     {isConfiguring ? <Check className="h-4 w-4" /> : <Settings2 className="h-4 w-4" />}
@@ -214,7 +215,7 @@ export function DashboardClient() {
                     >
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-black flex items-center gap-2">
-                                <LayoutGrid className="h-5 w-5 text-blue-500" />
+                                <LayoutGrid className="h-5 w-5 text-brand" />
                                 Toggle Dashboard Widgets
                             </h2>
                             <button onClick={() => setIsConfiguring(false)} className="text-zinc-400 hover:text-zinc-900">
@@ -229,14 +230,14 @@ export function DashboardClient() {
                                     className={cn(
                                         "px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-between gap-2 border-2",
                                         w.enabled
-                                            ? "bg-blue-50 border-blue-500 text-blue-600"
+                                            ? "bg-brand/10 border-brand text-brand"
                                             : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:border-zinc-200"
                                     )}
                                 >
                                     {w.title}
                                     <div className={cn(
                                         "h-4 w-4 rounded-full border-2 flex items-center justify-center",
-                                        w.enabled ? "bg-blue-500 border-blue-500" : "border-zinc-700"
+                                        w.enabled ? "bg-brand border-brand" : "border-zinc-700"
                                     )}>
                                         {w.enabled && <Check className="h-3 w-3 text-white" />}
                                     </div>
@@ -349,15 +350,15 @@ function renderWidgetContent(id: string, data: any) {
                         </div>
                     </div>
 
-                    <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm overflow-hidden relative group hover:shadow-xl hover:shadow-blue-500/5 transition-all">
-                        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-500/5 blur-[80px]" />
+                    <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm overflow-hidden relative group hover:shadow-xl hover:shadow-brand/5 transition-all">
+                        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand/5 blur-[80px]" />
                         <div className="relative z-10 flex flex-col h-full justify-between">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="space-y-1">
                                     <h3 className="text-xl font-black text-zinc-900 italic">Live Telemetry</h3>
                                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Real-time GPS clusters</p>
                                 </div>
-                                <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                                <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-brand hover:bg-brand/10 transition-colors">
                                     <ChevronRight className="h-5 w-5" />
                                 </button>
                             </div>
@@ -391,7 +392,7 @@ function renderWidgetContent(id: string, data: any) {
                             <h3 className="text-xl font-black">Academic Achievement Cluster</h3>
                         </div>
                         <div className="flex gap-2">
-                            <button className="px-5 py-2 rounded-xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">Detailed Exams</button>
+                            <button className="px-5 py-2 rounded-xl bg-brand text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-brand/20 active:scale-95">Detailed Exams</button>
                         </div>
                     </div>
 
@@ -418,19 +419,19 @@ function renderWidgetContent(id: string, data: any) {
                 <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                     <div className="flex items-center justify-between border-b border-zinc-100 pb-6 dark:border-zinc-800">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-2xl bg-blue-50 flex items-center justify-center">
-                                <Activity className="h-5 w-5 text-blue-600" />
+                            <div className="h-10 w-10 rounded-2xl bg-brand/10 flex items-center justify-center">
+                                <Activity className="h-5 w-5 text-brand" />
                             </div>
                             <h3 className="text-xl font-black">Audit Stream</h3>
                         </div>
-                        <button className="text-xs font-black text-blue-600 hover:underline px-4 py-2 bg-blue-50 rounded-xl transition-all">
+                        <button className="text-xs font-black text-brand hover:underline px-4 py-2 bg-brand/10 rounded-xl transition-all">
                             Live Logs
                         </button>
                     </div>
                     <div className="mt-8 space-y-8">
                         {(data?.recentActivity || []).map((activity: any) => (
                             <div key={activity.id} className="flex items-start gap-6 relative group">
-                                <div className="mt-1.5 h-3 w-3 rounded-full bg-blue-600 ring-4 ring-blue-50 flex-shrink-0" />
+                                <div className="mt-1.5 h-3 w-3 rounded-full bg-brand ring-4 ring-brand/10 flex-shrink-0" />
                                 <div className="flex-1">
                                     <p className="text-md font-bold text-zinc-900 dark:text-zinc-50">{activity.name}</p>
                                     <p className="text-xs text-zinc-400 font-medium mt-1 uppercase tracking-wider">{activity.type} • {activity.time}</p>
@@ -449,7 +450,7 @@ function renderWidgetContent(id: string, data: any) {
                 <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                     <div className="flex items-center justify-between border-b border-zinc-100 pb-6 dark:border-zinc-800">
                         <h3 className="text-xl font-black">Calendar Sync</h3>
-                        <button className="text-xs font-black text-blue-600">Add Event +</button>
+                        <button className="text-xs font-black text-brand">Add Event +</button>
                     </div>
                     <div className="mt-8 grid sm:grid-cols-3 gap-6">
                         {[
@@ -472,7 +473,7 @@ function renderWidgetContent(id: string, data: any) {
                 <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                     <div className="flex items-center justify-between border-b border-zinc-100 pb-6 dark:border-zinc-800">
                         <h3 className="text-xl font-black">Revenue Analytics</h3>
-                        <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100">Yearly Performance</div>
+                        <div className="px-4 py-2 bg-brand/10 text-brand rounded-xl text-[10px] font-black uppercase tracking-widest border border-brand/20">Yearly Performance</div>
                     </div>
                     <div className="mt-8 flex flex-col md:flex-row gap-12 items-center">
                         <div className="relative h-40 w-40 flex items-center justify-center">
@@ -484,7 +485,7 @@ function renderWidgetContent(id: string, data: any) {
                                 />
                                 <circle
                                     cx="80" cy="80" r="70"
-                                    className="stroke-blue-600 fill-none transition-all duration-1000"
+                                    className="stroke-brand fill-none transition-all duration-1000"
                                     strokeWidth="15"
                                     strokeDasharray="440"
                                     strokeDashoffset="66"
@@ -498,7 +499,7 @@ function renderWidgetContent(id: string, data: any) {
                         </div>
                         <div className="flex-1 space-y-6 w-full">
                             {[
-                                { label: "Fees Received", amount: "$10,500", progress: 85, color: "bg-blue-600" },
+                                { label: "Fees Received", amount: "$10,500", progress: 85, color: "bg-brand" },
                                 { label: "Pending Dues", amount: "$1,950", progress: 15, color: "bg-orange-500" },
                             ].map((item, i) => (
                                 <div key={i} className="space-y-2">

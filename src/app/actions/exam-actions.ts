@@ -17,6 +17,7 @@ export async function createExamAction(schoolSlug: string, data: {
     questionPaperUrl?: string;
     description?: string;
     gradingSystem?: string;
+    academicYearId?: string;
 }) {
     try {
         const userRes = await getCurrentUserAction();
@@ -39,9 +40,10 @@ export async function createExamAction(schoolSlug: string, data: {
                 questionPaperUrl: data.questionPaperUrl,
                 description: data.description,
                 gradingSystem: data.gradingSystem || "MARKS",
+                academicYearId: data.academicYearId,
                 school: { connect: { slug: schoolSlug } },
                 createdBy: { connect: { id: currentUser.id } }
-            }
+            } as any
         });
 
         // INTEGRATION: Create Calendar Events
@@ -56,13 +58,16 @@ export async function createExamAction(schoolSlug: string, data: {
     }
 }
 
-export async function getExamsAction(schoolSlug: string, category?: string) {
+export async function getExamsAction(schoolSlug: string, category?: string, data?: { academicYearId?: string }) {
     try {
         const query: any = {
             school: { slug: schoolSlug }
         };
         if (category) {
             query.category = category;
+        }
+        if (data?.academicYearId) {
+            query.academicYearId = data.academicYearId;
         }
 
         const exams = await prisma.exam.findMany({

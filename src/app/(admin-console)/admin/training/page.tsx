@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { TrainingSidebar } from "@/components/training/TrainingSidebar";
 import { useSearchParams } from "next/navigation";
 import { TrainingEditor } from "@/components/training/TrainingEditor";
+import SimpleDocumentUploader from "@/components/training/SimpleDocumentUploader";
 import {
     getTrainingModulesAction,
     createTrainingModuleAction
@@ -199,7 +200,11 @@ export default function TrainingPage() {
             {/* Editor Area */}
             <div className="flex-1 overflow-hidden relative">
                 {activePageId ? (
-                    <TrainingEditor key={activePageId} pageId={activePageId} />
+                    categoryName === "SCHOOL RESOURCES" ? (
+                        <SimpleDocumentUploader key={activePageId} pageId={activePageId} />
+                    ) : (
+                        <TrainingEditor key={activePageId} pageId={activePageId} />
+                    )
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center text-zinc-300 space-y-4">
                         <div className="h-24 w-24 rounded-3xl bg-zinc-50 flex items-center justify-center">

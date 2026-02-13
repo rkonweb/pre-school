@@ -436,18 +436,18 @@ export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyM
                                                 type="checkbox"
                                                 checked={lt.isPaid}
                                                 onChange={e => updateLeaveType(idx, "isPaid", e.target.checked)}
-                                                className="h-5 w-5 rounded-lg border-zinc-300 text-blue-600 focus:ring-blue-500"
+                                                className="h-5 w-5 rounded-lg border-zinc-300 text-brand focus:ring-brand"
                                             />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 group-hover:text-blue-600">Paid</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 group-hover:text-brand">Paid</span>
                                         </label>
                                         <label className="flex items-center gap-2 cursor-pointer group">
                                             <input
                                                 type="checkbox"
                                                 checked={lt.requiresApproval}
                                                 onChange={e => updateLeaveType(idx, "requiresApproval", e.target.checked)}
-                                                className="h-5 w-5 rounded-lg border-zinc-300 text-blue-600 focus:ring-blue-500"
+                                                className="h-5 w-5 rounded-lg border-zinc-300 text-brand focus:ring-brand"
                                             />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 group-hover:text-blue-600">Approval Required</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 group-hover:text-brand">Approval Required</span>
                                         </label>
                                     </div>
                                 </div>
@@ -466,7 +466,7 @@ export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyM
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="px-10 py-4 bg-blue-600 text-white rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-blue-600/30 transition-all hover:bg-blue-700 active:scale-95"
+                            className="px-10 py-4 bg-brand text-white rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-brand/30 transition-all hover:brightness-110 active:scale-95"
                         >
                             {isLoading ? "Synchronizing..." : editingId ? "Save Changes" : "Create Policy"}
                         </button>
@@ -480,7 +480,7 @@ export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyM
                         <div className="p-10 border-b border-zinc-50 dark:border-zinc-900 flex items-center justify-between">
                             <div className="flex items-center gap-6">
                                 <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-[24px] border border-zinc-100 dark:border-zinc-800">
-                                    <FileText className="h-8 w-8 text-blue-600" />
+                                    <FileText className="h-8 w-8 text-brand" />
                                 </div>
                                 <div>
                                     <h4 className="text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">{policy.name}</h4>
@@ -502,7 +502,7 @@ export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyM
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => handleEdit(policy)}
-                                    className="p-3 text-zinc-300 hover:text-blue-500 transition-colors bg-zinc-50 dark:bg-zinc-900 rounded-[18px] border border-zinc-100 dark:border-zinc-800"
+                                    className="p-3 text-zinc-300 hover:text-brand transition-colors bg-zinc-50 dark:bg-zinc-900 rounded-[18px] border border-zinc-100 dark:border-zinc-800"
                                 >
                                     <Edit3 className="h-5 w-5" />
                                 </button>
@@ -533,7 +533,7 @@ export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyM
 
                             {/* Permission Summary Card */}
                             <div className="p-6 rounded-3xl bg-blue-50/50 dark:bg-blue-900/5 border border-blue-100/50 dark:border-blue-900/20">
-                                <p className="text-[9px] font-black uppercase tracking-widest text-blue-600 mb-4">Short Permissions</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-brand mb-4">Short Permissions</p>
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-[10px] font-bold">
                                         <span className="text-zinc-500">Allowed:</span>

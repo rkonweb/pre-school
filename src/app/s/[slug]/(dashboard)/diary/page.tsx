@@ -7,6 +7,7 @@ import { getDiaryEntriesAction, deleteDiaryEntryAction } from "@/app/actions/dia
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { toast } from "sonner";
 import { DiaryEntryModal } from "@/components/diary/DiaryEntryModal";
+import { getCookie } from "@/lib/cookies";
 
 export default function DiaryPage() {
     const params = useParams();
@@ -43,9 +44,12 @@ export default function DiaryPage() {
         if (showLoader) setIsLoading(true);
         const monthStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`;
 
+        const academicYearId = getCookie(`academic_year_${slug}`) || undefined;
+
         const res = await getDiaryEntriesAction(slug, {
             classroomId: selectedClass,
-            month: monthStr
+            month: monthStr,
+            academicYearId
         });
 
         if (res.success) {
@@ -140,7 +144,7 @@ export default function DiaryPage() {
     function getTypeColor(type: string) {
         switch (type) {
             case "HOMEWORK":
-                return "bg-blue-100 text-blue-700 border-blue-200";
+                return "bg-brand/10 text-brand border-brand/20";
             case "MESSAGE":
                 return "bg-green-100 text-green-700 border-green-200";
             case "ANNOUNCEMENT":
@@ -171,7 +175,7 @@ export default function DiaryPage() {
             {!selectedClass ? (
                 <div className="bg-white rounded-[2rem] border border-zinc-200 p-12 shadow-sm">
                     <div className="max-w-2xl mx-auto text-center space-y-6">
-                        <div className="h-20 w-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-[28px] flex items-center justify-center mx-auto shadow-lg">
+                        <div className="h-20 w-20 bg-gradient-to-br from-brand to-brand/60 rounded-[28px] flex items-center justify-center mx-auto shadow-lg">
                             <BookOpen className="h-10 w-10 text-white" />
                         </div>
                         <div>
@@ -183,11 +187,11 @@ export default function DiaryPage() {
                                 <button
                                     key={classroom.id}
                                     onClick={() => setSelectedClass(classroom.id)}
-                                    className="group relative bg-white border-2 border-zinc-200 rounded-2xl p-6 hover:border-blue-500 hover:shadow-lg transition-all text-left"
+                                    className="group relative bg-white border-2 border-zinc-200 rounded-2xl p-6 hover:border-brand hover:shadow-lg transition-all text-left"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="h-14 w-14 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <span className="text-2xl font-black text-blue-600">
+                                        <div className="h-14 w-14 bg-brand/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <span className="text-2xl font-black text-brand">
                                                 {classroom.name.charAt(0)}
                                             </span>
                                         </div>
@@ -278,20 +282,20 @@ export default function DiaryPage() {
                                         <div
                                             key={day}
                                             className={`relative aspect-square border-2 rounded-2xl p-3 transition-all ${isToday
-                                                ? "border-blue-500 bg-blue-50"
+                                                ? "border-brand bg-brand/5"
                                                 : isPast ? "border-zinc-100 bg-zinc-50/50" : "border-zinc-100 hover:border-zinc-200 hover:bg-zinc-50"
                                                 }`}
                                         >
                                             {/* Date Number */}
                                             <div className="flex items-center justify-between mb-2">
-                                                <div className={`text-sm font-bold ${isToday ? "text-blue-600" : isPast ? "text-zinc-300" : "text-zinc-500"}`}>
+                                                <div className={`text-sm font-bold ${isToday ? "text-brand" : isPast ? "text-zinc-300" : "text-zinc-500"}`}>
                                                     {day}
                                                 </div>
                                                 {/* Add Entry Button */}
                                                 {!isPast && (
                                                     <button
                                                         onClick={() => handleAddEntry(dateStr)}
-                                                        className="h-6 w-6 rounded-lg bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition-colors shadow-sm hover:shadow-md"
+                                                        className="h-6 w-6 rounded-lg bg-brand text-white flex items-center justify-center hover:brightness-110 transition-colors shadow-sm hover:shadow-md"
                                                         title="Add entry"
                                                     >
                                                         <Plus className="h-4 w-4" />

@@ -1,19 +1,42 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { decrypt } from "@/lib/auth-jose";
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
     const url = req.nextUrl;
     let hostname = req.headers.get("host") || "localhost";
+    const requestHeaders = new Headers(req.headers);
 
     // Remove port (e.g. localhost:3000 -> localhost)
     hostname = hostname.split(":")[0];
 
     // 3. Protect Admin Routes (Strict Server-Side Check - HIGHEST PRIORITY)
-    if (url.pathname.startsWith("/admin") && url.pathname !== "/admin/login") {
-        const adminSession = req.cookies.get("admin_session");
-        if (!adminSession) {
-            return NextResponse.redirect(new URL("/admin/login", req.url));
+    if (url.pathname.startsWith("/admin") && !url.pathname.startsWith("/admin/login")) {
+        const adminSession = req.cookies.get("admin_session")?.value;
+        let isValid = false;
+
+        if (adminSession) {
+            try {
+                const payload = await decrypt(adminSession);
+                if (payload?.role === "SUPER_ADMIN" && payload.exp && payload.exp > Math.floor(Date.now() / 1000)) {
+                    isValid = true;
+                }
+            } catch (e) {
+                // Invalid token
+            }
         }
+
+        if (!isValid) {
+            // Clear invalid cookie and redirect
+            const response = NextResponse.redirect(new URL("/admin/login", req.url));
+            response.cookies.delete("admin_session");
+            return response;
+        }
+
+        // Sliding Expiration: Refresh the cookie if valid (activity based extension)
+        // This is tricky in Next.js Middleware as we need to pass a response object down.
+        // For now, reliance on cookie maxAge and client-side activity is simpler.
+        // However, we re-verify strict 15m JWT expiry.
     }
 
     // Allowed Main Domains (No rewrite needed)

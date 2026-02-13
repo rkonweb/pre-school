@@ -36,7 +36,7 @@ export default function LibraryDashboardPage() {
     if (loading) {
         return (
             <div className="flex h-[50vh] items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-blue-600" />
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-brand" />
             </div>
         );
     }
@@ -52,7 +52,7 @@ export default function LibraryDashboardPage() {
                 <div className="flex gap-2">
                     <Link
                         href={`/s/${slug}/library/issue`}
-                        className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-xl"
+                        className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl"
                     >
                         <ArrowUpRight className="h-4 w-4" />
                         Issue Book
@@ -71,7 +71,7 @@ export default function LibraryDashboardPage() {
             <div className="grid gap-6 md:grid-cols-3">
                 <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-zinc-100">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/5 text-brand">
                             <BookOpen className="h-6 w-6" />
                         </div>
                         <div>
@@ -107,7 +107,7 @@ export default function LibraryDashboardPage() {
             {/* Quick Navigation Cards */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {[
-                    { title: "Inventory", icon: Book, href: `/s/${slug}/library/inventory`, color: "blue", desc: "Manage catalog & stock" },
+                    { title: "Inventory", icon: Book, href: `/s/${slug}/library/inventory`, color: "brand", desc: "Manage catalog & stock" },
                     { title: "Issue / Return", icon: ArrowUpRight, href: `/s/${slug}/library/issue`, color: "emerald", desc: "Circulate books" },
                     { title: "Members", icon: Users, href: `/s/${slug}/library/members`, color: "violet", desc: "Borrower history" },
                     { title: "Reports", icon: History, href: `/s/${slug}/library/reports`, color: "orange", desc: "Fines & analysis" },
@@ -117,7 +117,7 @@ export default function LibraryDashboardPage() {
                         href={item.href}
                         className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-100 transition-all hover:scale-[1.02] hover:shadow-md"
                     >
-                        <div className={cn("mb-4 flex h-10 w-10 items-center justify-center rounded-xl", `bg-${item.color}-50 text-${item.color}-600`)}>
+                        <div className={cn("mb-4 flex h-10 w-10 items-center justify-center rounded-xl", item.color === "brand" ? "bg-brand/5 text-brand" : `bg-${item.color}-50 text-${item.color}-600`)}>
                             <item.icon className="h-5 w-5" />
                         </div>
                         <h3 className="font-bold text-zinc-900">{item.title}</h3>
@@ -130,7 +130,7 @@ export default function LibraryDashboardPage() {
             <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-zinc-100">
                 <div className="mb-6 flex items-center justify-between">
                     <h3 className="text-lg font-bold text-zinc-900">Recent Transactions</h3>
-                    <Link href={`/s/${slug}/library/transactions`} className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                    <Link href={`/s/${slug}/library/transactions`} className="text-sm font-medium text-brand hover:brightness-90">
                         View All
                     </Link>
                 </div>

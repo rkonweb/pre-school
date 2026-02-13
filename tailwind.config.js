@@ -11,7 +11,8 @@ module.exports = {
                 // Refreshing Summer Fun Palette
                 navy: '#0C3449',
                 teal: '#2D9CB8',
-                brand: '#2D9CB8', // Alias for brand usage
+                brand: 'var(--brand-color)',
+                primary: 'var(--brand-color)',
                 sky: '#92CCE1',
                 yellow: '#FCC11A',
                 orange: '#FF8800',

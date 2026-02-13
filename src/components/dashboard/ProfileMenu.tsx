@@ -18,6 +18,7 @@ import {
 import { getProfileDataAction } from "@/app/actions/profile-actions";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
 import { cn } from "@/lib/utils";
+import { AvatarWithAdjustment } from "./staff/AvatarWithAdjustment";
 
 export function ProfileMenu() {
     const params = useParams();
@@ -87,7 +88,7 @@ export function ProfileMenu() {
         if (status === "EXPIRING_SOON" || (daysRemaining !== null && daysRemaining < 7)) {
             return "text-amber-600 bg-amber-50 border-amber-200";
         }
-        if (status === "TRIAL") return "text-blue-600 bg-blue-50 border-blue-200";
+        if (status === "TRIAL") return "text-brand bg-brand/5 border-brand/20";
         return "text-emerald-600 bg-emerald-50 border-emerald-200";
     };
 
@@ -125,9 +126,11 @@ export function ProfileMenu() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors p-1"
             >
-                <div className="h-8 w-8 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                    {user?.firstName?.[0] || user?.email?.[0] || <User className="h-4 w-4" />}
-                </div>
+                <AvatarWithAdjustment
+                    src={user?.avatar}
+                    adjustment={user?.avatarAdjustment}
+                    className="h-8 w-8 overflow-hidden rounded-full shadow-lg"
+                />
             </button>
 
             {/* Dropdown Menu */}
@@ -135,7 +138,7 @@ export function ProfileMenu() {
                 <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     {isLoading ? (
                         <div className="p-8 flex items-center justify-center">
-                            <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                            <Loader2 className="h-6 w-6 animate-spin text-brand" />
                         </div>
                     ) : error ? (
                         <div className="p-6">
@@ -149,7 +152,7 @@ export function ProfileMenu() {
                                     setProfileData(null);
                                     setError(null);
                                 }}
-                                className="text-sm text-blue-600 hover:underline font-semibold"
+                                className="text-sm text-brand hover:underline font-semibold"
                             >
                                 Retry
                             </button>
@@ -159,15 +162,17 @@ export function ProfileMenu() {
                             {/* User Info */}
                             <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
                                 <div className="flex items-start gap-3">
-                                    <div className="h-12 w-12 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg flex-shrink-0">
-                                        {user?.firstName?.[0] || user?.email?.[0] || <User className="h-6 w-6" />}
-                                    </div>
+                                    <AvatarWithAdjustment
+                                        src={user?.avatar}
+                                        adjustment={user?.avatarAdjustment}
+                                        className="h-12 w-12 overflow-hidden rounded-full shadow-lg flex-shrink-0"
+                                    />
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-zinc-900 dark:text-zinc-50 truncate">
                                             {user?.firstName} {user?.lastName}
                                         </h3>
                                         <p className="text-sm text-zinc-500 truncate">{user?.email}</p>
-                                        <span className="inline-block mt-1 px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-bold rounded-full">
+                                        <span className="inline-block mt-1 px-2 py-0.5 bg-brand/10 text-brand text-xs font-bold rounded-full">
                                             {user?.role}
                                         </span>
                                     </div>
@@ -292,7 +297,7 @@ export function ProfileMenu() {
                                     {subscription.plan.tier !== "enterprise" && (
                                         <button
                                             onClick={handleUpgrade}
-                                            className="w-full mt-3 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                                            className="w-full mt-3 px-4 py-2.5 bg-gradient-to-r from-brand to-brand/80 text-white font-bold rounded-xl hover:brightness-110 transition-all shadow-lg shadow-brand/20 flex items-center justify-center gap-2"
                                         >
                                             <TrendingUp className="h-4 w-4" />
                                             Upgrade Plan

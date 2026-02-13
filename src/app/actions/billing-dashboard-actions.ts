@@ -10,6 +10,7 @@ interface DashboardOptions {
         status?: string;
         startDate?: string;
         endDate?: string;
+        academicYearId?: string;
     };
     sort?: {
         field: string;
@@ -43,7 +44,8 @@ export async function getBillingDashboardAction(slug: string, options: Dashboard
 
         const statsFees = await prisma.fee.findMany({
             where: {
-                student: { schoolId: school.id }
+                student: { schoolId: school.id },
+                academicYearId: filters.academicYearId || undefined
             },
             select: {
                 amount: true,
@@ -80,6 +82,10 @@ export async function getBillingDashboardAction(slug: string, options: Dashboard
         const whereClause: any = {
             student: { schoolId: school.id }
         };
+
+        if (filters.academicYearId) {
+            whereClause.academicYearId = filters.academicYearId;
+        }
 
         // Search
         if (search) {

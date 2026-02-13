@@ -118,7 +118,7 @@ export default function EditExamPage() {
         try {
             // Dynamically import to avoid server-side issues
             const { uploadFileAction } = await import("@/app/actions/upload-actions");
-            const res = await uploadFileAction(data);
+            const res = await uploadFileAction(data) as any;
 
             if (res.success && res.url) {
                 setFormData(prev => ({ ...prev, questionPaperUrl: res.url! }));
@@ -252,8 +252,13 @@ export default function EditExamPage() {
                         <div className="grid md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Type</Label>
-                                <Select value={formData.type} onValueChange={v => setFormData({ ...formData, type: v })}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                <Select value={formData.type} onValueChange={(v: string) => setFormData({ ...formData, type: v })}>
+                                    <SelectTrigger>
+                                        <SelectValue>
+                                            {formData.type === "TERM" ? "Term Exam" :
+                                                formData.type === "TEST" ? "Unit Test" : "Assessment"}
+                                        </SelectValue>
+                                    </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="TERM">Term Exam</SelectItem>
                                         <SelectItem value="TEST">Unit Test</SelectItem>
@@ -263,8 +268,14 @@ export default function EditExamPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Category</Label>
-                                <Select value={formData.category} onValueChange={v => setFormData({ ...formData, category: v })}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                <Select value={formData.category} onValueChange={(v: string) => setFormData({ ...formData, category: v })}>
+                                    <SelectTrigger>
+                                        <SelectValue>
+                                            {formData.category === "ACADEMIC" ? "Academic" :
+                                                formData.category === "SPORTS" ? "Sports" :
+                                                    formData.category === "ARTS" ? "Arts" : "Co-Scholastic"}
+                                        </SelectValue>
+                                    </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="ACADEMIC">Academic</SelectItem>
                                         <SelectItem value="SPORTS">Sports</SelectItem>

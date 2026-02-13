@@ -209,7 +209,7 @@ export default function PayrollPage() {
                         <button
                             onClick={handleGenerate}
                             disabled={isGenerating}
-                            className="bg-blue-600 dark:bg-zinc-50 text-white dark:text-zinc-900 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-2xl shadow-zinc-900/20 transition-all hover:-translate-y-1 hover:shadow-emerald-500/10 active:scale-95 disabled:opacity-50"
+                            className="bg-brand dark:bg-zinc-50 text-white dark:text-zinc-900 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-2xl shadow-brand/20 transition-all hover:-translate-y-1 hover:brightness-110 active:scale-95 disabled:opacity-50"
                         >
                             {isGenerating ? <Clock className="h-4 w-4 animate-spin text-emerald-500" /> : <Plus className="h-4 w-4" />}
                             Run Payroll Engine
@@ -235,7 +235,7 @@ export default function PayrollPage() {
                             onClick={() => handleViewDetails(p)}
                         >
                             <div className="flex items-start justify-between mb-8">
-                                <div className="p-4 bg-blue-600 dark:bg-white rounded-3xl text-white dark:text-zinc-900 shadow-xl shadow-zinc-900/10 transition-transform group-hover:scale-110">
+                                <div className="p-4 bg-brand dark:bg-white rounded-3xl text-white dark:text-zinc-900 shadow-xl shadow-brand/10 transition-transform group-hover:scale-110">
                                     <Wallet className="h-6 w-6" />
                                 </div>
                                 <StatusBadge status={p.status} />
@@ -293,7 +293,7 @@ export default function PayrollPage() {
                             label="Institutional Gross"
                             value={`₹${stats.totalGross.toLocaleString()}`}
                             icon={TrendingUp}
-                            color="blue"
+                            color="brand"
                             subtitle="Before Deductions"
                         />
                         <StatCard
@@ -314,7 +314,7 @@ export default function PayrollPage() {
                     </div>
 
                     {/* Action Bar */}
-                    <div className="bg-blue-600 dark:bg-zinc-950 text-white rounded-[3rem] p-10 flex flex-col lg:flex-row gap-10 items-center justify-between shadow-3xl shadow-zinc-900/40 relative overflow-hidden group">
+                    <div className="bg-brand dark:bg-zinc-950 text-white rounded-[3rem] p-10 flex flex-col lg:flex-row gap-10 items-center justify-between shadow-3xl shadow-brand/40 relative overflow-hidden group">
                         {/* Background Decoration */}
                         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2" />
 
@@ -471,7 +471,7 @@ export default function PayrollPage() {
                                                                 setSelectedPayslip(p);
                                                                 setIsPayslipOpen(true);
                                                             }}
-                                                            className="h-12 w-12 flex items-center justify-center bg-blue-600 dark:bg-white text-white dark:text-zinc-900 rounded-2xl shadow-xl transition-all hover:scale-110 active:scale-90"
+                                                            className="h-12 w-12 flex items-center justify-center bg-brand dark:bg-white text-white dark:text-zinc-900 rounded-2xl shadow-xl transition-all hover:scale-110 active:scale-90"
                                                         >
                                                             <Eye className="h-5 w-5" />
                                                         </button>
@@ -514,7 +514,7 @@ export default function PayrollPage() {
                     <div className="space-y-12 pb-10">
                         {/* Header Profile */}
                         <div className="text-center space-y-4">
-                            <div className="h-32 w-32 rounded-[3rem] bg-blue-600 mx-auto flex items-center justify-center text-white text-3xl font-black italic shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border-4 border-white">
+                            <div className="h-32 w-32 rounded-[3rem] bg-brand mx-auto flex items-center justify-center text-white text-3xl font-black italic shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border-4 border-white">
                                 {selectedPayslip.user.firstName[0]}{selectedPayslip.user.lastName[0]}
                             </div>
                             <div>
@@ -587,7 +587,7 @@ export default function PayrollPage() {
                         <div className="pt-10 flex gap-4">
                             <button
                                 onClick={handlePrint}
-                                className="flex-1 bg-blue-600 text-white hover:bg-blue-700 py-6 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 shadow-3xl shadow-zinc-900/20 transition-all hover:-translate-y-1 active:scale-95 border-b-4 border-black"
+                                className="flex-1 bg-brand text-white hover:brightness-110 py-6 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 shadow-3xl shadow-brand/20 transition-all hover:-translate-y-1 active:scale-95 border-b-4 border-black"
                             >
                                 <Printer className="h-5 w-5" />
                                 Execute Print Command
@@ -625,7 +625,7 @@ function BreakdownRow({ label, value, isDeduction }: { label: string, value: num
 function StatCard({ label, value, icon: Icon, color, subtitle, isStatus }: { label: string, value: string, icon: any, color: string, subtitle: string, isStatus?: boolean }) {
     const colorClasses: Record<string, string> = {
         emerald: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600",
-        blue: "bg-blue-50 dark:bg-blue-500/10 text-blue-600",
+        brand: "bg-brand/10 text-brand",
         rose: "bg-rose-50 dark:bg-rose-500/10 text-rose-600",
         zinc: "bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white"
     };
@@ -658,7 +658,7 @@ function StatCard({ label, value, icon: Icon, color, subtitle, isStatus }: { lab
 function StatusBadge({ status }: { status: string }) {
     const configs: Record<string, { bg: string, text: string, icon: any, border: string }> = {
         DRAFT: { bg: "bg-zinc-100 dark:bg-zinc-800/50", text: "text-zinc-500", icon: Clock, border: "border-zinc-200" },
-        PROCESSED: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600", icon: TrendingUp, border: "border-blue-500/20" },
+        PROCESSED: { bg: "bg-brand/10", text: "text-brand", icon: TrendingUp, border: "border-brand/20" },
         PAID: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600", icon: CheckCircle2, border: "border-emerald-500/20" },
         UNPAID: { bg: "bg-rose-50 dark:bg-rose-500/10", text: "text-rose-600", icon: AlertCircle, border: "border-rose-500/20" }
     };
@@ -690,7 +690,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                     {school?.logo ? (
                         <img src={school.logo} alt="School Logo" className="h-24 w-auto object-contain" />
                     ) : (
-                        <div className="h-20 w-20 bg-blue-600 flex items-center justify-center text-white text-3xl font-black">{school?.name?.[0]}</div>
+                        <div className="h-20 w-20 bg-brand flex items-center justify-center text-white text-3xl font-black">{school?.name?.[0]}</div>
                     )}
                     <div>
                         <h1 className="text-3xl font-black uppercase tracking-tighter italic">{school?.name}</h1>
@@ -700,7 +700,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                     </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-3 pt-4">
-                    <div className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px]">Payslip Archive</div>
+                    <div className="bg-brand text-white hover:brightness-110 px-8 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px]">Payslip Archive</div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Document Reference</p>
                         <p className="text-sm font-black italic">#{payslip.id.toUpperCase()}</p>
@@ -729,7 +729,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                         )}
                     </div>
                 </div>
-                <div className="p-10 bg-blue-600 text-white hover:bg-blue-700 rounded-[2.5rem] flex flex-col justify-between shadow-2xl">
+                <div className="p-10 bg-brand text-white hover:brightness-110 rounded-[2.5rem] flex flex-col justify-between shadow-2xl">
                     <div className="space-y-1">
                         <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Pay Period Verification</p>
                         <p className="text-2xl font-black italic tracking-tighter">
@@ -742,7 +742,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                             <p className="text-lg font-black">{payslip.totalDays} Total</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest opacity-80">Attendance Rate</p>
+                            <p className="text-[9px] font-black text-brand/80 uppercase tracking-widest opacity-80">Attendance Rate</p>
                             <p className="text-lg font-black">{Math.round((payslip.presentDays / payslip.totalDays) * 100)}% Match</p>
                         </div>
                     </div>

@@ -26,6 +26,7 @@ export async function createHomeworkAction(data: {
     classroomId?: string;
     fromTemplate?: boolean;
     templateId?: string;
+    academicYearId?: string;
 }) {
     try {
         // PERMISSION CHECK
@@ -40,28 +41,21 @@ export async function createHomeworkAction(data: {
             }
         }
 
-        // Note: For 'INDIVIDUAL', we ideally check if those student IDs belong to allowed classes. 
-        // We assume the frontend filtered them, but server-side validation is better.
-        // For MVP speed, we'll assume 'assignedTo INDIVIDUAL' comes with a classroomId context usually, 
-        // but if not, we skip iterating 50 students for now to keep it fast, 
-        // relying on `getStudentsAction` being secured.
-
         const id = Math.random().toString(36).substr(2, 9);
-        // ... rest of create logic ...
         const targetIdsJson = JSON.stringify(data.targetIds);
 
         await prisma.$executeRawUnsafe(
             `INSERT INTO Homework (
                 id, title, description, instructions, videoUrl, voiceNoteUrl, worksheetUrl, attachments,
                 assignedTo, targetIds, scheduledFor, dueDate, isPublished, fromTemplate, templateId,
-                schoolId, createdById, classroomId, createdAt, updatedAt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+                schoolId, createdById, classroomId, academicYearId, createdAt, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
             id, data.title, data.description || null, data.instructions || null,
             data.videoUrl || null, data.voiceNoteUrl || null, data.worksheetUrl || null,
             data.attachments || null, data.assignedTo, targetIdsJson,
             data.scheduledFor?.toISOString() || null, data.dueDate?.toISOString() || null,
             false, data.fromTemplate ? 1 : 0, data.templateId || null,
-            data.schoolId, data.createdById, data.classroomId || null
+            data.schoolId, data.createdById, data.classroomId || null, data.academicYearId || null
         );
 
         // ... scope continue ...
@@ -110,10 +104,15 @@ export async function createHomeworkAction(data: {
 
 // ... publishHomeworkAction ...
 
-export async function getSchoolHomeworkAction(schoolId: string, classroomId?: string) {
+export async function getSchoolHomeworkAction(schoolId: string, classroomId?: string, academicYearId?: string) {
     try {
         let query = `SELECT * FROM Homework WHERE schoolId = ?`;
         const params: any[] = [schoolId];
+
+        if (academicYearId) {
+            query += ` AND academicYearId = ?`;
+            params.push(academicYearId);
+        }
 
         // ---------------------------------------------------------
         // ACCESS CONTROL
@@ -199,7 +198,7 @@ export async function getSchoolHomeworkAction(schoolId: string, classroomId?: st
 // STUDENT / PARENT ACTIONS
 // ============================================
 
-export async function getStudentHomeworkAction(studentId: string) {
+export async function getStudentHomeworkAction(studentId: string, academicYearId?: string) {
     try {
         // PERMISSION CHECK
         const userRes = await getCurrentUserAction();
@@ -234,9 +233,10 @@ export async function getStudentHomeworkAction(studentId: string) {
             FROM Homework h
             LEFT JOIN HomeworkSubmission s ON h.id = s.homeworkId AND s.studentId = ?
             WHERE 
-                (h.assignedTo = 'CLASS' AND h.classroomId = ?)
+                ((h.assignedTo = 'CLASS' AND h.classroomId = ?)
                 OR 
-                (h.assignedTo = 'INDIVIDUAL' AND h.targetIds LIKE ?)
+                (h.assignedTo = 'INDIVIDUAL' AND h.targetIds LIKE ?))
+                ${academicYearId ? `AND h.academicYearId = '${academicYearId}'` : ""}
             ORDER BY h.createdAt DESC
         `, studentId, student.classroomId, `%"${studentId}"%`);
         // Note: LIKE %"id"% is a rough JSON check. Ideally we parse or normalize. 

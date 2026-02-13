@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { X, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-// import { createReportCardAction } from "@/app/actions/report-actions"; // Assuming this exists or will exist
+import { createReportCardAction } from "@/app/actions/report-actions";
 
 interface ReportCardDialogProps {
     slug: string;
     studentId: string;
+    academicYearId?: string;
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export function ReportCardDialog({ slug, studentId, isOpen, onClose, onSuccess }: ReportCardDialogProps) {
+export function ReportCardDialog({ slug, studentId, academicYearId, isOpen, onClose, onSuccess }: ReportCardDialogProps) {
     const [term, setTerm] = useState("");
     const [comments, setComments] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,16 +23,15 @@ export function ReportCardDialog({ slug, studentId, isOpen, onClose, onSuccess }
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // Mock success for now as we might not have the full action ready or imported correctly in this snippet context
-            // const res = await createReportCardAction(slug, studentId, { term, comments });
+            // Use empty marks object for now if the UI doesn't allow marking yet
+            const res = await createReportCardAction(studentId, term, {}, comments, academicYearId);
 
-            // Using a timeout to simulate API call since the action might not be fully linked in my specific context yet
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // In a real scenario, use the actual action.
-            // For now, let's assume success to unblock UI.
-            toast.success("Report card created (Mock)");
-            onSuccess();
+            if (res.success) {
+                toast.success("Report card created");
+                onSuccess();
+            } else {
+                toast.error(res.error || "Failed to create report card");
+            }
 
         } catch (error) {
             toast.error("An error occurred");
@@ -57,7 +57,7 @@ export function ReportCardDialog({ slug, studentId, isOpen, onClose, onSuccess }
                             type="text"
                             value={term}
                             onChange={(e) => setTerm(e.target.value)}
-                            className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-3 px-4 font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-200"
+                            className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-3 px-4 font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-brand"
                             placeholder="e.g. Term 1 2024"
                             required
                         />
@@ -68,7 +68,7 @@ export function ReportCardDialog({ slug, studentId, isOpen, onClose, onSuccess }
                         <textarea
                             value={comments}
                             onChange={(e) => setComments(e.target.value)}
-                            className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-3 px-4 font-medium text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-200 min-h-[100px] resize-none"
+                            className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-3 px-4 font-medium text-zinc-900 outline-none focus:ring-2 focus:ring-brand min-h-[100px] resize-none"
                             placeholder="Teacher's comments..."
                         />
                     </div>
@@ -84,7 +84,7 @@ export function ReportCardDialog({ slug, studentId, isOpen, onClose, onSuccess }
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 py-4 rounded-xl font-black text-xs uppercase tracking-widest bg-zinc-900 text-white hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+                            className="flex-1 py-4 rounded-xl font-black text-xs uppercase tracking-widest bg-brand text-white hover:brightness-110 transition-colors flex items-center justify-center gap-2"
                         >
                             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                             Create

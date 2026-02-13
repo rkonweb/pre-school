@@ -16,6 +16,7 @@ import {
     gradeSubmissionAction,
     getHomeworkTemplatesAction
 } from "@/app/actions/homework-actions";
+import { getCookie } from "@/lib/cookies";
 
 export default function HomeworkPage() {
     const params = useParams();
@@ -36,8 +37,9 @@ export default function HomeworkPage() {
         const schoolRes = await getSchoolSettingsAction(slug);
         if (schoolRes.success && schoolRes.data) {
             setSchoolData(schoolRes.data);
+            const academicYearId = getCookie(`academic_year_${slug}`) || undefined;
             const [homeworkRes, templatesRes] = await Promise.all([
-                getSchoolHomeworkAction(schoolRes.data.id),
+                getSchoolHomeworkAction(schoolRes.data.id, undefined, academicYearId),
                 getHomeworkTemplatesAction()
             ]);
             if (homeworkRes.success) setHomework(homeworkRes.data || []);
@@ -49,7 +51,7 @@ export default function HomeworkPage() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
         );
     }
@@ -61,14 +63,14 @@ export default function HomeworkPage() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-3">
-                            <Sparkles className="h-8 w-8 text-blue-400" />
+                            <Sparkles className="h-8 w-8 text-brand" />
                             Homework & Activities
                         </h1>
                         <p className="text-zinc-400 mt-2 font-medium">Create engaging tasks and track student progress</p>
                     </div>
                     <button
                         onClick={() => setShowBuilder(true)}
-                        className="flex items-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-500 transition-all shadow-2xl hover:scale-105"
+                        className="flex items-center gap-2 px-6 py-4 bg-brand text-white rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-2xl hover:scale-105"
                     >
                         <Plus className="h-5 w-5" />
                         Create Homework
@@ -141,7 +143,7 @@ function HomeworkCard({ homework, onClick }: any) {
             onClick={onClick}
             className="group relative bg-zinc-800/50 backdrop-blur-xl border border-zinc-700 rounded-3xl p-6 cursor-pointer hover:border-blue-500 transition-all"
         >
-            <div className="absolute -top-3 -right-3 h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl">
+            <div className="absolute -top-3 -right-3 h-12 w-12 bg-brand rounded-2xl flex items-center justify-center shadow-xl">
                 <FileText className="h-6 w-6 text-white" />
             </div>
 
@@ -173,9 +175,9 @@ function HomeworkCard({ homework, onClick }: any) {
                     <p className="text-2xl font-black text-white">{stats.total}</p>
                     <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-black">Total</p>
                 </div>
-                <div className="bg-blue-500/20 rounded-xl p-3 text-center">
-                    <p className="text-2xl font-black text-blue-400">{stats.submitted}</p>
-                    <p className="text-[10px] text-blue-500 uppercase tracking-widest font-black">Submitted</p>
+                <div className="bg-brand/20 rounded-xl p-3 text-center">
+                    <p className="text-2xl font-black text-brand">{stats.submitted}</p>
+                    <p className="text-[10px] text-brand uppercase tracking-widest font-black">Submitted</p>
                 </div>
                 <div className="bg-emerald-500/20 rounded-xl p-3 text-center">
                     <p className="text-2xl font-black text-emerald-400">{stats.reviewed}</p>
@@ -217,6 +219,7 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
             dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
             schoolId: schoolData.id,
             createdById: "current-user-id", // TODO: Get from auth
+            academicYearId: getCookie(`academic_year_${schoolData.slug}`) || undefined,
         });
 
         if (result.success) {
@@ -248,7 +251,7 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                     >
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-3xl font-black text-white flex items-center gap-3">
-                                <Sparkles className="h-8 w-8 text-blue-400" />
+                                <Sparkles className="h-8 w-8 text-brand" />
                                 Homework Builder
                             </h2>
                             <button
@@ -270,7 +273,7 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                                     required
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:border-brand focus:outline-none"
                                     placeholder="e.g., Weekend Fun Task - Find Red Objects"
                                 />
                             </div>
@@ -316,7 +319,7 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                                             type="url"
                                             value={formData.videoUrl}
                                             onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-lg bg-blue-600 border border-zinc-700 text-white text-sm focus:border-red-500 focus:outline-none"
+                                            className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:border-brand focus:outline-none"
                                             placeholder="https://..."
                                         />
                                     </div>
@@ -329,7 +332,7 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                                             type="url"
                                             value={formData.voiceNoteUrl}
                                             onChange={(e) => setFormData({ ...formData, voiceNoteUrl: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-lg bg-blue-600 border border-zinc-700 text-white text-sm focus:border-purple-500 focus:outline-none"
+                                            className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:border-brand focus:outline-none"
                                             placeholder="https://..."
                                         />
                                     </div>
@@ -342,7 +345,7 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                                             type="url"
                                             value={formData.worksheetUrl}
                                             onChange={(e) => setFormData({ ...formData, worksheetUrl: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-lg bg-blue-600 border border-zinc-700 text-white text-sm focus:border-emerald-500 focus:outline-none"
+                                            className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:border-brand focus:outline-none"
                                             placeholder="https://..."
                                         />
                                     </div>
@@ -361,8 +364,8 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                                             type="button"
                                             onClick={() => setFormData({ ...formData, assignedTo: type })}
                                             className={`px-4 py-3 rounded-xl font-bold text-sm transition-all ${formData.assignedTo === type
-                                                    ? "bg-blue-600 text-white"
-                                                    : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                                                ? "bg-brand text-white"
+                                                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
                                                 }`}
                                         >
                                             {type === "CLASS" && <Users className="h-4 w-4 inline mr-2" />}
@@ -384,7 +387,7 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                                         type="datetime-local"
                                         value={formData.scheduledFor}
                                         onChange={(e) => setFormData({ ...formData, scheduledFor: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                                        className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:border-brand focus:outline-none"
                                     />
                                 </div>
                                 <div>
@@ -396,15 +399,17 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                                         type="datetime-local"
                                         value={formData.dueDate}
                                         onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:border-blue-500 focus:outline-none"
+                                        className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:border-brand focus:outline-none"
                                     />
                                 </div>
                             </div>
 
+                            <input type="hidden" name="academicYearId" value={getCookie(`academic_year_${schoolData.slug}`) || ""} />
+
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-brand text-white rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? (
                                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -486,7 +491,7 @@ function SubmissionReview({ homework, onClose, onSuccess }: any) {
 
                     {isLoading ? (
                         <div className="flex items-center justify-center py-20">
-                            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                            <Loader2 className="h-8 w-8 animate-spin text-brand" />
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

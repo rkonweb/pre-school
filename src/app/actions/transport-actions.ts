@@ -341,3 +341,41 @@ export async function updateVehicleAction(vehicleId: string, data: any, schoolSl
     }
 }
 
+
+// --- DRIVER MANAGEMENT ---
+
+export async function getDriversAction(schoolSlug: string) {
+    try {
+        const drivers = await prisma.transportDriver.findMany({
+            where: { school: { slug: schoolSlug } },
+            orderBy: { name: 'asc' }
+        });
+        return { success: true, data: drivers };
+    } catch (error: any) {
+        console.error("Error fetching drivers:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function createDriverAction(data: any, schoolSlug: string) {
+    try {
+        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
+        if (!school) throw new Error("School not found");
+
+        await prisma.transportDriver.create({
+            data: {
+                name: data.name,
+                licenseNumber: data.licenseNumber,
+                phone: data.phone,
+                status: data.status || "ACTIVE",
+                schoolId: school.id
+            }
+        });
+
+        revalidatePath(`/s/${schoolSlug}/transport/drivers`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error creating driver:", error);
+        return { success: false, error: error.message };
+    }
+}

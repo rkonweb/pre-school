@@ -39,8 +39,9 @@ import {
     getSiblingsAction
 } from "@/app/actions/admission-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
-import { getClassroomsAction } from "@/app/actions/classroom-actions";
+import { getClassroomsAction, createClassroomAction } from "@/app/actions/classroom-actions";
 import { toast } from "sonner";
+import { useModal } from "@/components/ui/modal/ModalContext";
 
 export default function AdmissionDetailPage() {
     const params = useParams();
@@ -159,7 +160,7 @@ export default function AdmissionDetailPage() {
                 });
             }
         } else {
-            alert(res.error || "Failed to load record");
+            toast.error(res.error || "Failed to load record");
             router.push(`/s/${slug}/admissions`);
         }
         setIsLoading(false);
@@ -216,38 +217,46 @@ export default function AdmissionDetailPage() {
         setIsSaving(false);
     };
 
+    const { openConfirmationModal } = useModal();
+
     const handleInitiateAdmission = async () => {
-        if (!confirm("This will upgrade the inquiry to an Admission Process. An email will be simulated to the parent. Continue?")) return;
+        openConfirmationModal({
+            title: "Initiate Admission Process",
+            message: "This will upgrade the inquiry to an Admission Process. An email will be simulated to the parent. Continue?",
+            confirmText: "Yes, Initiate",
+            cancelText: "Cancel",
+            onConfirm: async () => {
+                setIsSaving(true);
+                const res = await initiateAdmissionAction(slug, id);
+                if (res.success) {
+                    const link = `${window.location.origin}/admission-portal/${res.token}`;
 
-        setIsSaving(true);
-        const res = await initiateAdmissionAction(slug, id);
-        if (res.success) {
-            const link = `${window.location.origin}/admission-portal/${res.token}`;
+                    // Optimistic Update to show Green Box immediately
+                    setFormData((prev: any) => ({
+                        ...prev,
+                        stage: "APPLICATION",
+                        accessToken: res.token
+                    }));
 
-            // Optimistic Update to show Green Box immediately
-            setFormData((prev: any) => ({
-                ...prev,
-                stage: "APPLICATION",
-                accessToken: res.token
-            }));
+                    // Try to auto-copy
+                    navigator.clipboard.writeText(link).catch(() => { });
 
-            // Try to auto-copy
-            navigator.clipboard.writeText(link).catch(() => { });
+                    toast.success("Admission Initiated & Link Copied", {
+                        description: link,
+                        duration: 10000,
+                        action: {
+                            label: "Copy Again",
+                            onClick: () => navigator.clipboard.writeText(link)
+                        }
+                    });
 
-            toast.success("Admission Initiated & Link Copied", {
-                description: link,
-                duration: 10000,
-                action: {
-                    label: "Copy Again",
-                    onClick: () => navigator.clipboard.writeText(link)
+                    // loadData(); // Removed to prevent stale cache indicating INQUIRY stage
+                } else {
+                    toast.error(res.error || "Failed to initiate");
                 }
-            });
-
-            // loadData(); // Removed to prevent stale cache indicating INQUIRY stage
-        } else {
-            toast.error(res.error || "Failed to initiate");
-        }
-        setIsSaving(false);
+                setIsSaving(false);
+            }
+        });
     };
 
     // Helper for fuzzy matching
@@ -270,41 +279,72 @@ export default function AdmissionDetailPage() {
         }
 
         if (!selectedGrade || !selectedSection) {
-            alert("Please select both Grade and Section for enrollment.");
+            toast.error("Please select both Grade and Section for enrollment.");
             return;
         }
 
-        if (allClassrooms.length === 0) {
-            alert("Setup Required: No classrooms found. Please go to Classroom Registry to create them.");
-            return;
-        }
-
-        const matchingClass = findMatchingClassroom(selectedGrade, selectedSection, allClassrooms);
+        // Check if grade/section valid
         const targetName = `${selectedGrade} - ${selectedSection}`;
+        const matchingClass = findMatchingClassroom(selectedGrade, selectedSection, allClassrooms);
+
+        const performEnrollment = async (classId: string) => {
+            setIsSaving(true);
+            try {
+                const res = await approveAdmissionAction(slug, id, classId, selectedGrade);
+                if (res.success) {
+                    toast.success("Success! Student Enrolled.");
+                    loadData();
+                } else {
+                    console.error("Approval Response Error:", res.error);
+                    toast.error(`Approval Failed: ${res.error}`);
+                }
+            } catch (err: any) {
+                console.error("Unexpected Approval Error:", err);
+                toast.error(`Unexpected Error: ${err.message || err}`);
+            }
+            setIsSaving(false);
+        };
 
         if (!matchingClass) {
-            alert(`Classroom "${targetName}" not found. Create it in Registry first.`);
+            openConfirmationModal({
+                title: "Classroom Not Found",
+                message: `Classroom "${targetName}" does not exist. Would you like to create it now and enroll the student?`,
+                confirmText: "Create & Enroll",
+                onConfirm: async () => {
+                    // Create Classroom First
+                    setIsSaving(true);
+                    try {
+
+                        const createRes = await createClassroomAction(slug, targetName);
+
+                        if (createRes.success && createRes.data) {
+                            toast.success(`Classroom "${targetName}" created.`);
+                            // Proceed to enrollment
+                            await performEnrollment(createRes.data.id);
+                            // Refresh classrooms list for future
+                            const { getClassroomsAction } = await import("@/app/actions/classroom-actions");
+                            getClassroomsAction(slug).then((res: any) => {
+                                if (res.success) setAllClassrooms(res.data);
+                            });
+                        } else {
+                            toast.error(`Failed to create classroom: ${createRes.error}`);
+                            setIsSaving(false);
+                        }
+                    } catch (error: any) {
+                        toast.error("Error creating classroom");
+                        setIsSaving(false);
+                    }
+                }
+            });
             return;
         }
 
-        if (!confirm("Confirm Approval? This will create a Formal Student Record.")) return;
-
-        setIsSaving(true);
-        try {
-            const res = await approveAdmissionAction(slug, id, matchingClass.id, selectedGrade);
-            if (res.success) {
-                toast.success("Success! Student Enrolled.");
-                alert("Student Enrolled Successfully!"); // Force feedback
-                loadData();
-            } else {
-                console.error("Approval Response Error:", res.error);
-                alert(`Approval Failed: ${res.error}`);
-            }
-        } catch (err: any) {
-            console.error("Unexpected Approval Error:", err);
-            alert(`Unexpected Error: ${err.message || err}`);
-        }
-        setIsSaving(false);
+        openConfirmationModal({
+            title: "Approve Admission",
+            message: "Confirm Approval? This will create a Formal Student Record.",
+            confirmText: "Approve & Enroll",
+            onConfirm: () => performEnrollment(matchingClass.id)
+        });
     };
 
     const handleUploadDoc = (key: string) => {
@@ -376,17 +416,23 @@ export default function AdmissionDetailPage() {
     };
 
     const handleRemoveDoc = async (key: string) => {
-        if (!confirm("Are you sure you want to remove this document?")) return;
-
-        setIsSaving(true);
-        const res = await removeDocumentAction(slug, id, key);
-        if (res.success) {
-            toast.success("Document removed");
-            loadData();
-        } else {
-            toast.error(res.error || "Removal failed");
-        }
-        setIsSaving(false);
+        openConfirmationModal({
+            title: "Remove Document",
+            message: "Are you sure you want to remove this document? This action cannot be undone.",
+            confirmText: "Yes, Remove",
+            variant: "danger",
+            onConfirm: async () => {
+                setIsSaving(true);
+                const res = await removeDocumentAction(slug, id, key);
+                if (res?.success) {
+                    toast.success("Document removed");
+                    loadData();
+                } else {
+                    toast.error(res?.error || "Removal failed");
+                }
+                setIsSaving(false);
+            }
+        });
     };
 
     if (!mounted || isLoading) {
@@ -423,7 +469,7 @@ export default function AdmissionDetailPage() {
                     {mode === "view" ? (
                         <button
                             onClick={() => setMode("edit")}
-                            className="bg-blue-600 text-white hover:bg-blue-700 h-12 px-6 rounded-2xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-xl shadow-zinc-200"
+                            className="bg-brand text-white hover:brightness-110 h-12 px-6 rounded-2xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-xl shadow-brand/20"
                         >
                             <Edit3 className="h-4 w-4" />
                             Edit Profile
@@ -669,7 +715,7 @@ export default function AdmissionDetailPage() {
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleUploadDoc(doc.key)}
-                                                                    className="h-10 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
+                                                                    className="h-10 px-6 bg-brand text-white hover:brightness-110 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
                                                                 >
                                                                     Upload
                                                                 </button>
@@ -690,7 +736,7 @@ export default function AdmissionDetailPage() {
 
                     {/* Siblings Section (Right Panel) */}
                     {siblings.length > 0 && (
-                        <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-[32px] p-6 text-white shadow-xl shadow-indigo-500/20">
+                        <div className="bg-gradient-to-br from-brand to-brand/80 rounded-[32px] p-6 text-white shadow-xl shadow-brand/20">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                     <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/10">
@@ -711,7 +757,7 @@ export default function AdmissionDetailPage() {
                                         onClick={() => window.open(`/s/${slug}/${sib.type === 'STUDENT' ? 'students' : 'admissions'}/${sib.id}`, '_blank')}
                                         className="w-full bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl p-3 flex items-center gap-3 transition-all text-left group"
                                     >
-                                        <div className="h-8 w-8 bg-white text-indigo-600 rounded-full flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
+                                        <div className="h-8 w-8 bg-white text-brand rounded-full flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
                                             {sib.name?.[0]}
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -779,7 +825,7 @@ export default function AdmissionDetailPage() {
                                         className={cn(
                                             "py-3 px-2 text-[9px] font-black rounded-xl transition-all border-2 text-center",
                                             formData.officialStatus === s.id
-                                                ? "bg-blue-600 border-zinc-900 text-white shadow-lg"
+                                                ? "bg-brand border-brand text-white shadow-lg shadow-brand/20"
                                                 : "bg-zinc-50 border-zinc-50 text-zinc-400"
                                         )}
                                     >
@@ -813,7 +859,7 @@ export default function AdmissionDetailPage() {
 
                         {/* Conversion Section */}
                         {isReadOnly && formData.stage === "INQUIRY" && (
-                            <div className="mt-10 p-8 rounded-[32px] bg-blue-600 text-white shadow-2xl shadow-blue-200">
+                            <div className="mt-10 p-8 rounded-[32px] bg-brand text-white shadow-2xl shadow-brand/20">
                                 <h4 className="text-sm font-black uppercase tracking-widest mb-4">Admission Workflow</h4>
                                 <p className="text-[11px] font-bold leading-relaxed mb-6">
                                     Convert this inquiry into a formal admission process. This will notify the parent to fill the comprehensive enrollment form.
@@ -821,7 +867,7 @@ export default function AdmissionDetailPage() {
                                 <button
                                     onClick={handleInitiateAdmission}
                                     disabled={isSaving}
-                                    className="w-full h-14 bg-white text-blue-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                                    className="w-full h-14 bg-white text-brand rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                                 >
                                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <TrendingUp className="h-4 w-4" />}
                                     Initiate Admission
@@ -864,7 +910,7 @@ export default function AdmissionDetailPage() {
                         )}
 
                         {formData.stage === "INTERVIEW" && (
-                            <div className="mt-10 p-8 rounded-[32px] bg-indigo-600 text-white shadow-2xl shadow-indigo-200">
+                            <div className="mt-10 p-8 rounded-[32px] bg-brand text-white shadow-2xl shadow-brand/20">
                                 <h4 className="text-sm font-black uppercase tracking-widest mb-4">Submission Review</h4>
                                 <p className="text-[11px] font-bold leading-relaxed mb-6">
                                     The parent has completed the comprehensive form. Review all profile sections and documents before final approval.
@@ -872,7 +918,7 @@ export default function AdmissionDetailPage() {
 
                                 <div className="space-y-4 mb-8">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-indigo-200 uppercase tracking-widest px-1">Assign Grade</label>
+                                        <label className="text-[10px] font-black text-brand-foreground/60 uppercase tracking-widest px-1">Assign Grade</label>
                                         <select
                                             value={selectedGrade}
                                             onChange={e => setSelectedGrade(e.target.value)}
@@ -885,7 +931,7 @@ export default function AdmissionDetailPage() {
                                         </select>
                                     </div>
 
-                                    <label className="text-[10px] font-black text-indigo-200 uppercase tracking-widest px-1">Assign Section</label>
+                                    <label className="text-[10px] font-black text-brand-foreground/60 uppercase tracking-widest px-1">Assign Section</label>
                                     <div className="space-y-1">
                                         <select
                                             value={selectedSection}
@@ -913,9 +959,9 @@ export default function AdmissionDetailPage() {
 
                                                 if (!match) {
                                                     return (
-                                                        <p className="text-[10px] font-bold text-red-200 bg-red-500/20 px-3 py-1.5 rounded-lg flex items-center gap-2">
-                                                            <X className="h-3 w-3" />
-                                                            Classroom "{targetName}" not found. Create it in Registry first.
+                                                        <p className="text-[10px] font-bold text-amber-200 bg-amber-500/20 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                                                            <Loader2 className="h-3 w-3" />
+                                                            New classroom "{targetName}" will be created.
                                                         </p>
                                                     );
                                                 }
@@ -935,7 +981,7 @@ export default function AdmissionDetailPage() {
                                     type="button"
                                     onClick={handleApproveAdmission}
                                     disabled={isSaving}
-                                    className="w-full h-14 bg-white text-indigo-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-xl shadow-indigo-900/10"
+                                    className="w-full h-14 bg-white text-brand rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 shadow-xl shadow-brand/10"
                                 >
                                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
                                     Approve & Enroll
@@ -944,7 +990,7 @@ export default function AdmissionDetailPage() {
                         )}
 
                         {formData.stage === "ENROLLED" && (
-                            <div className="mt-10 p-8 rounded-[32px] bg-blue-600 text-white hover:bg-blue-700 shadow-2xl shadow-zinc-200">
+                            <div className="mt-10 p-8 rounded-[32px] bg-brand text-white hover:brightness-110 shadow-2xl shadow-brand/20 transition-all cursor-pointer">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="h-8 w-8 bg-emerald-500 rounded-full flex items-center justify-center">
                                         <CheckCircle2 className="h-4 w-4 text-white" />

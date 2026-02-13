@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/client"
 }
 
 datasource db {
@@ -8,70 +9,91 @@ datasource db {
 }
 
 model School {
-  id                String         @id @default(cuid())
-  name              String
-  slug              String         @unique
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  address           String?
-  email             String?
-  phone             String?
-  brandColor        String?        @default("#2563eb")
-  city              String?
-  country           String?
-  currency          String?        @default("USD")
-  dateFormat        String?        @default("MM/DD/YYYY")
-  facebook          String?
-  foundingYear      String?
-  instagram         String?
-  latitude          String?
-  linkedin          String?
-  logo              String?
-  longitude         String?
-  motto             String?
-  state             String?
-  timezone          String?        @default("UTC-5 (EST)")
-  twitter           String?
-  website           String?
-  youtube           String?
-  zip               String?
-  googleMapsApiKey  String?
-  academicYearEnd   DateTime?
-  academicYearStart DateTime?
-  primaryColor      String?        @default("#2563eb")
-  schoolTimings     String?        @default("9:00 AM - 3:00 PM")
-  secondaryColor    String?
-  workingDays       String?
-  timetableConfig   String?        @default("{}")
-  customDomain      String?        @unique
-  admissions        Admission[]
-  classrooms        Classroom[]
-  diaryEntries      DiaryEntry[]
-  feeStructures     FeeStructure[]
-  leavePolicies     LeavePolicy[]
-  payrolls          Payroll[]
-  roles             Role[]
-  students          Student[]
-  subscription      Subscription?
-  users             User[]
-  payrollSettings   PayrollSettings?
-  modulesConfig     String?        @default("[]")
-  addonsConfig      String?        @default("[]")
-  biometricLogs     BiometricLog[]
-  libraryBooks      LibraryBook[]
+  id                  String               @id @default(cuid())
+  name                String
+  slug                String               @unique
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  address             String?
+  email               String?
+  phone               String?
+  brandColor          String?              @default("#2563eb")
+  city                String?
+  country             String?
+  currency            String?              @default("USD")
+  dateFormat          String?              @default("MM/DD/YYYY")
+  facebook            String?
+  foundingYear        String?
+  instagram           String?
+  latitude            String?
+  linkedin            String?
+  logo                String?
+  printableLogo       String?
+  longitude           String?
+  motto               String?
+  state               String?
+  timezone            String?              @default("UTC-5 (EST)")
+  twitter             String?
+  website             String?
+  youtube             String?
+  zip                 String?
+  googleMapsApiKey    String?
+  academicYearEnd     DateTime?
+  academicYearStart   DateTime?
+  academicYearStartMonth Int?                @default(4)
+  primaryColor        String?              @default("#2563eb")
+  schoolTimings       String?              @default("9:00 AM - 3:00 PM")
+  secondaryColor      String?
+  workingDays         String?
+  timetableConfig     String?              @default("{}")
+  customDomain        String?              @unique
+  modulesConfig       String?              @default("[]")
+  addonsConfig        String?              @default("[]")
+  integrationsConfig  String?              @default("{}")
+  admissions          Admission[]
+  biometricLogs       BiometricLog[]
+  classrooms          Classroom[]
+  diaryEntries        DiaryEntry[]
+  exams               Exam[]
+  feeStructures       FeeStructure[]
+  leavePolicies       LeavePolicy[]
+  libraryBooks        LibraryBook[]
+  librarySettings     LibrarySettings?
   libraryTransactions LibraryTransaction[]
-  librarySettings   LibrarySettings?
+  payrolls            Payroll[]
+  payrollSettings     PayrollSettings?
+  roles               Role[]
+  students            Student[]
+  subscription        Subscription?
+  transportDrivers    TransportDriver[]
+  transportRoutes     TransportRoute[]
+  transportVehicles   TransportVehicle[]
+  users               User[]
+  marketingDesigns    SchoolMarketingDesign[]
+  academicYears       AcademicYear[]
+}
+
+model AcademicYear {
+  id        String   @id @default(cuid())
+  name      String   // e.g. "2023-2024"
+  startDate DateTime
+  endDate   DateTime
+  status    String   @default("ACTIVE") // ACTIVE, ARCHIVED
+  isCurrent Boolean  @default(false)
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   
-  // Transport
-  transportVehicles TransportVehicle[]
-  transportDrivers  TransportDriver[]
-  transportRoutes   TransportRoute[]
-  
-  // Academics & Progress
-  exams             Exam[]
-  
-  // Integrations (WhatsApp, SMS, Payments etc) - JSON String
-  integrationsConfig String?        @default("{}")
+  exams           Exam[]
+  attendance      Attendance[]
+  fees            Fee[]
+  activityRecords StudentActivityRecord[]
+  healthRecords   StudentHealthRecord[]
+  reportCards     ReportCard[]
+  homework        Homework[]
+  diaryEntries    DiaryEntry[]
+
+  @@unique([schoolId, name])
+  @@index([schoolId])
 }
 
 model Admission {
@@ -126,20 +148,20 @@ model Admission {
 }
 
 model User {
-  id                       String            @id @default(cuid())
-  mobile                   String            @unique
+  id                       String                @id @default(cuid())
+  mobile                   String                @unique
   email                    String?
   firstName                String?
   lastName                 String?
   designation              String?
   department               String?
   joiningDate              DateTime?
-  status                   String            @default("ACTIVE")
+  status                   String                @default("ACTIVE")
   avatar                   String?
   address                  String?
-  role                     String            @default("ADMIN")
-  createdAt                DateTime          @default(now())
-  updatedAt                DateTime          @updatedAt
+  role                     String                @default("ADMIN")
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
   schoolId                 String?
   documents                String?
   gender                   String?
@@ -164,31 +186,27 @@ model User {
   twitter                  String?
   instagram                String?
   customRoleId             String?
+  biometricId              String?               @unique
+  BlogPost                 BlogPost[]
   classAccesses            ClassAccess[]
-  managedClassrooms        Classroom[]       @relation("ClassTeacher")
-  diaryEntries             DiaryEntry[]      @relation("DiaryAuthor")
+  managedClassrooms        Classroom[]           @relation("ClassTeacher")
+  diaryEntries             DiaryEntry[]          @relation("DiaryAuthor")
+  createdExams             Exam[]
   leaveBalances            LeaveBalance[]
   leaveRequests            LeaveRequest[]
-  salaryRevisions          SalaryRevision[]
-  managedBy                StaffAccess[]     @relation("StaffMapping")
-  managedStaff             StaffAccess[]     @relation("ManagerMapping")
-  staffAttendance          StaffAttendance[]
-  customRole               Role?             @relation(fields: [customRoleId], references: [id])
-  biometricId              String?           @unique
-  school                   School?           @relation(fields: [schoolId], references: [id])
-  payslips                 Payslip[]
   libraryTransactions      LibraryTransaction[]
+  payslips                 Payslip[]
+  salaryRevisions          SalaryRevision[]
+  managedStaff             StaffAccess[]         @relation("ManagerMapping")
+  managedBy                StaffAccess[]         @relation("StaffMapping")
+  staffAttendance          StaffAttendance[]
+  recordedHealth           StudentHealthRecord[]
+  transportDriver          TransportDriver?
+  school                   School?               @relation(fields: [schoolId], references: [id])
+  customRole               Role?                 @relation(fields: [customRoleId], references: [id])
 
   @@index([role])
   @@index([status])
-  transportDriver TransportDriver?
-  
-  // Progress & Exams
-  createdExams    Exam[]
-  recordedHealth  StudentHealthRecord[]
-  
-  // CMS
-  blogPosts       BlogPost[]
 }
 
 model LeavePolicy {
@@ -213,8 +231,8 @@ model LeavePolicy {
   permissionMaxOccur  Int         @default(2)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
-  role                Role?       @relation(fields: [roleId], references: [id])
   school              School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  role                Role?       @relation(fields: [roleId], references: [id])
   leaveTypes          LeaveType[]
 }
 
@@ -248,34 +266,34 @@ model LeaveBalance {
   year        Int
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, leaveTypeId, year])
 }
 
 model SalaryRevision {
-  id              String   @id @default(cuid())
-  amount          Float
-  currency        String   @default("INR")
-  revisionDate    DateTime @default(now())
-  effectiveDate   DateTime
-  reason          String?
-  type            String   @default("INCREMENT")
-  basic           Float    @default(0)
-  hra             Float    @default(0)
-  allowance       Float    @default(0)
-  tax             Float    @default(0)
-  pf              Float    @default(0)
-  insurance       Float    @default(0)
-  otherDeductions String?   // For legacy support or simple notes
-  customAdditions String?   // JSON Array of {label, amount}
-  customDeductions String?  // JSON Array of {label, amount}
-  netSalary       Float    @default(0)
-  userId          String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  amount           Float
+  currency         String   @default("INR")
+  revisionDate     DateTime @default(now())
+  effectiveDate    DateTime
+  reason           String?
+  type             String   @default("INCREMENT")
+  basic            Float    @default(0)
+  hra              Float    @default(0)
+  allowance        Float    @default(0)
+  tax              Float    @default(0)
+  pf               Float    @default(0)
+  insurance        Float    @default(0)
+  otherDeductions  String?
+  customAdditions  String?
+  customDeductions String?
+  netSalary        Float    @default(0)
+  userId           String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Classroom {
@@ -289,16 +307,17 @@ model Classroom {
   roomNumber   String?
   timetable    String?       @default("[]")
   accesses     ClassAccess[]
-  teacher      User?         @relation("ClassTeacher", fields: [teacherId], references: [id])
   school       School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacher      User?         @relation("ClassTeacher", fields: [teacherId], references: [id])
   diaryEntries DiaryEntry[]
-  students     Student[]
+  students     Student[] @relation("CurrentClass")
+  promotedStudents Student[] @relation("PromotedClass")
 
   @@index([schoolId])
 }
 
 model Student {
-  id                    String           @id @default(cuid())
+  id                    String                   @id @default(cuid())
   firstName             String
   lastName              String
   avatar                String?
@@ -306,7 +325,7 @@ model Student {
   gender                String?
   dateOfBirth           DateTime?
   grade                 String?
-  status                String           @default("ACTIVE")
+  status                String                   @default("ACTIVE")
   parentName            String?
   parentMobile          String?
   parentEmail           String?
@@ -316,28 +335,31 @@ model Student {
   emergencyContactName  String?
   emergencyContactPhone String?
   classroomId           String?
-  transportProfile      StudentTransportProfile?
+  promotedToClassroomId String?
+  promotedToGrade       String?
   schoolId              String
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
   admissionNumber       String?
   joiningDate           DateTime?
+  leavingDate           DateTime?
   attendance            Attendance[]
   conversations         Conversation[]
   diaryRecipients       DiaryRecipient[]
-  fees                  Fee[]
-  reports               ReportCard[]
-  school                School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  classroom             Classroom?       @relation(fields: [classroomId], references: [id])
-  libraryTransactions   LibraryTransaction[]
-
-  // Progress Module
   examResults           ExamResult[]
-  healthRecords         StudentHealthRecord[]
+  fees                  Fee[]
+  libraryTransactions   LibraryTransaction[]
+  reports               ReportCard[]
+  classroom             Classroom?               @relation("CurrentClass", fields: [classroomId], references: [id])
+  promotedToClassroom    Classroom?               @relation("PromotedClass", fields: [promotedToClassroomId], references: [id])
+  school                School                   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   activityRecords       StudentActivityRecord[]
+  healthRecords         StudentHealthRecord[]
+  transportProfile      StudentTransportProfile?
 
   @@index([schoolId])
   @@index([classroomId])
+  @@index([promotedToClassroomId])
   @@index([status])
 }
 
@@ -351,8 +373,12 @@ model Fee {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   description String?
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
   student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
   payments    FeePayment[]
+
+  @@index([academicYearId])
 }
 
 model FeePayment {
@@ -373,11 +399,14 @@ model Attendance {
   status    String
   notes     String?
   studentId String
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, date])
+  @@index([academicYearId])
 }
 
 model ReportCard {
@@ -387,9 +416,13 @@ model ReportCard {
   comments  String?
   published Boolean  @default(false)
   studentId String
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([academicYearId])
 }
 
 model Otp {
@@ -431,8 +464,8 @@ model Subscription {
   endDate   DateTime?
   planId    String
   schoolId  String           @unique
-  school    School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   plan      SubscriptionPlan @relation(fields: [planId], references: [id])
+  school    School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 }
 
 model MasterData {
@@ -494,6 +527,7 @@ model FeeStructure {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   termConfig   String?
+  classIds     String         @default("[]") // JSON array of classroom IDs
   components   FeeComponent[]
   school       School         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 }
@@ -518,52 +552,14 @@ model FeeComponent {
 }
 
 model Curriculum {
-  id             String           @id @default(cuid())
-  name           String
-  slug           String           @unique
-  color          String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  days           DayCurriculum[]
-  academicMonths AcademicMonth[]
-}
-
-model AcademicMonth {
-  id           String        @id @default(cuid())
-  curriculumId String
-  curriculum   Curriculum    @relation(fields: [curriculumId], references: [id], onDelete: Cascade)
-  monthNumber  Int           // 1-10
-  title        String        // "Month 1: Introduction to Learning"
-  description  String?
-  theme        String?       // "Colors and Shapes"
-  objectives   String        @default("[]") // JSON array of learning objectives
-  startDate    DateTime?
-  endDate      DateTime?
-  isCompleted  Boolean       @default(false)
-  days         AcademicDay[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-
-  @@unique([curriculumId, monthNumber])
-  @@index([curriculumId])
-}
-
-model AcademicDay {
-  id          String        @id @default(cuid())
-  monthId     String
-  month       AcademicMonth @relation(fields: [monthId], references: [id], onDelete: Cascade)
-  dayNumber   Int           // 1-20
-  title       String?       // "Day 1: Introduction to Colors"
-  theme       String?       // Daily theme
-  blocks      String        @default("[]") // JSON array of content blocks
-  worksheets  String        @default("[]") // JSON array of worksheet files
-  isCompleted Boolean       @default(false)
-  notes       String?       // Admin notes
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  @@unique([monthId, dayNumber])
-  @@index([monthId])
+  id            String          @id @default(cuid())
+  name          String
+  slug          String          @unique
+  color         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  AcademicMonth AcademicMonth[]
+  days          DayCurriculum[]
 }
 
 model DayCurriculum {
@@ -581,95 +577,22 @@ model DayCurriculum {
 }
 
 model SystemSettings {
-  id              String   @id @default("global")
-  timezone        String   @default("UTC+05:30 (India Standard Time)")
-  currency        String   @default("INR")
-  mfaEnabled      Boolean  @default(true)
-  sessionTimeout  Boolean  @default(false)
-  allowedDomains  String?  @default("*")
-  smtpHost        String?
-  smtpPort        Int?     @default(587)
-  smtpUser        String?
-  smtpPass        String?
-  smtpSender      String?  @default("noreply@pre-school.com")
-  backupEnabled   Boolean  @default(true)
-  backupFrequency String   @default("DAILY")
-  maintenanceMode Boolean  @default(false)
-  updatedAt       DateTime @updatedAt
-  integrationsConfig String? @default("{}") // JSON string for API integrations (Google AI, OpenAI, etc.)
-}
-
-// ============================================================================
-// TEACHERS TRAINING MODULE
-// ============================================================================
-
-model TrainingCategory {
-  id          String           @id @default(cuid())
-  name        String           @unique // e.g., "Teacher", "Nanny"
-  slug        String           @unique // e.g., "teacher", "nanny"
-  description String?
-  modules     TrainingModule[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-}
-
-model TrainingModule {
-  id          String          @id @default(cuid())
-  title       String
-  description String?
-  cover       String?         // URL or Base64
-  role        String          @default("TEACHER") // Deprecated: Use categoryId instead
-  categoryId  String?
-  category    TrainingCategory? @relation(fields: [categoryId], references: [id])
-  isPublished Boolean         @default(false)
-  slug        String          @unique
-  order       Int             @default(0)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  topics      TrainingTopic[]
-}
-
-model TrainingTopic {
-  id          String         @id @default(cuid())
-  moduleId    String
-  module      TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  title       String
-  description String?
-  order       Int            @default(0)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  pages       TrainingPage[]
-
-  @@index([moduleId])
-}
-
-model TrainingPage {
-  id          String        @id @default(cuid())
-  topicId     String
-  topic       TrainingTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  title       String
-  content     String        // HTML content from Tiptap
-  order       Int           @default(0)
-  isPublished Boolean       @default(false)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-
-  @@index([topicId])
-  attachments TrainingAttachment[]
-}
-
-model TrainingAttachment {
-  id          String       @id @default(cuid())
-  pageId      String
-  page        TrainingPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  name        String
-  url         String
-  size        Int          @default(0) // in bytes
-  type        String       @default("file") // 'pdf', 'image', etc.
-  createdAt   DateTime     @default(now())
-
-  @@index([pageId])
+  id                 String   @id @default("global")
+  timezone           String   @default("UTC+05:30 (India Standard Time)")
+  currency           String   @default("INR")
+  mfaEnabled         Boolean  @default(true)
+  sessionTimeout     Boolean  @default(false)
+  allowedDomains     String?  @default("*")
+  smtpHost           String?
+  smtpPort           Int?     @default(587)
+  smtpUser           String?
+  smtpPass           String?
+  smtpSender         String?  @default("noreply@pre-school.com")
+  backupEnabled      Boolean  @default(true)
+  backupFrequency    String   @default("DAILY")
+  maintenanceMode    Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+  integrationsConfig String?  @default("{}")
 }
 
 model Homework {
@@ -693,8 +616,12 @@ model Homework {
   classroomId  String?
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
+  academicYearId String?
+  academicYear   AcademicYear?        @relation(fields: [academicYearId], references: [id])
   readReceipts HomeworkReadReceipt[]
   submissions  HomeworkSubmission[]
+
+  @@index([academicYearId])
 }
 
 model HomeworkSubmission {
@@ -851,12 +778,15 @@ model DiaryEntry {
   requiresAck  Boolean          @default(false)
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
-  classroom    Classroom?       @relation(fields: [classroomId], references: [id])
-  school       School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  academicYearId String?
+  academicYear   AcademicYear?   @relation(fields: [academicYearId], references: [id])
   author       User             @relation("DiaryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  school       School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classroom    Classroom?       @relation(fields: [classroomId], references: [id])
   recipients   DiaryRecipient[]
 
   @@index([schoolId])
+  @@index([academicYearId])
   @@index([classroomId])
   @@index([authorId])
   @@index([scheduledFor])
@@ -874,8 +804,8 @@ model DiaryRecipient {
   acknowledgedAt DateTime?
   acknowledgedBy String?
   createdAt      DateTime   @default(now())
-  student        Student?   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   entry          DiaryEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  student        Student?   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([entryId])
   @@index([studentId])
@@ -908,8 +838,8 @@ model ClassAccess {
   canDelete   Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 
   @@unique([userId, classroomId])
 }
@@ -920,93 +850,72 @@ model StaffAccess {
   staffId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  staff     User     @relation("StaffMapping", fields: [staffId], references: [id], onDelete: Cascade)
   manager   User     @relation("ManagerMapping", fields: [managerId], references: [id], onDelete: Cascade)
+  staff     User     @relation("StaffMapping", fields: [staffId], references: [id], onDelete: Cascade)
 
   @@unique([managerId, staffId])
 }
 
 model Payroll {
-  id            String    @id @default(cuid())
-  month         Int       // 1-12
-  year          Int
-  schoolId      String
-  status        String    @default("DRAFT") // DRAFT, PROCESSED, PAID
-  generatedAt   DateTime  @default(now())
-  processedAt   DateTime?
-  totalAmount   Float     @default(0)
-  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  payslips      Payslip[]
+  id          String    @id @default(cuid())
+  month       Int
+  year        Int
+  schoolId    String
+  status      String    @default("DRAFT")
+  generatedAt DateTime  @default(now())
+  processedAt DateTime?
+  totalAmount Float     @default(0)
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  payslips    Payslip[]
 
   @@unique([schoolId, month, year])
 }
 
 model Payslip {
-  id              String   @id @default(cuid())
-  payrollId       String
-  userId          String
-  
-  // Earnings
-  basic           Float    @default(0)
-  hra             Float    @default(0)
-  allowances      Float    @default(0) 
-  bonus           Float    @default(0)
-  
-  // Deductions
-  tax             Float    @default(0)
-  pf              Float    @default(0) 
-  insurance       Float    @default(0)
-  leaveDeduction  Float    @default(0)
-  otherDeductions Float    @default(0) 
-  customAdditions String?   // JSON Array of {label, amount}
-  customDeductions String?  // JSON Array of {label, amount}
-  
-  // Summary
-  grossSalary     Float    @default(0)
-  netSalary       Float    @default(0)
-  
-  // Context
-  totalDays       Int      @default(0)
-  presentDays     Float    @default(0)
-  absentDays      Float    @default(0)
-  leaveDays       Float    @default(0)
-  
-  month           Int
-  year            Int
-  status          String   @default("UNPAID") // UNPAID, PAID
-  paidAt          DateTime?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  payroll         Payroll  @relation(fields: [payrollId], references: [id], onDelete: Cascade)
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String    @id @default(cuid())
+  payrollId        String
+  userId           String
+  basic            Float     @default(0)
+  hra              Float     @default(0)
+  allowances       Float     @default(0)
+  bonus            Float     @default(0)
+  tax              Float     @default(0)
+  pf               Float     @default(0)
+  insurance        Float     @default(0)
+  leaveDeduction   Float     @default(0)
+  otherDeductions  Float     @default(0)
+  customAdditions  String?
+  customDeductions String?
+  grossSalary      Float     @default(0)
+  netSalary        Float     @default(0)
+  totalDays        Int       @default(0)
+  presentDays      Float     @default(0)
+  absentDays       Float     @default(0)
+  leaveDays        Float     @default(0)
+  month            Int
+  year             Int
+  status           String    @default("UNPAID")
+  paidAt           DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payroll          Payroll   @relation(fields: [payrollId], references: [id], onDelete: Cascade)
 
   @@unique([userId, month, year])
 }
 
 model PayrollSettings {
   id                  String   @id @default(cuid())
-  schoolId           String   @unique
-  
-  // Automated Incentives
+  schoolId            String   @unique
   fullAttendanceBonus Float    @default(0)
   punctualityBonus    Float    @default(0)
-  
-  // Late Coming Rules
-  lateThreshold       Int      @default(3)      // Days allowed late
-  latePenalty         Float    @default(0)      // Deduction per late day after threshold
-  
-  // Overtime / Extras
-  overtimeRate        Float    @default(0)      // Per hour
-  
-  // Work Rules
+  lateThreshold       Int      @default(3)
+  latePenalty         Float    @default(0)
+  overtimeRate        Float    @default(0)
   workDaysPerWeek     Int      @default(6)
   standardWorkHours   Float    @default(8)
-  
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
-  
   school              School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 }
 
@@ -1015,10 +924,10 @@ model BiometricLog {
   deviceId     String
   deviceUserId String
   timestamp    DateTime
-  status       Int      // 0=CheckIn, 1=CheckOut, 255=Unspecified
-  verifyMode   Int?     // 1=Finger, 15=Face, etc.
+  status       Int
+  verifyMode   Int?
   processed    Boolean  @default(false)
-  raw          String?  // Store full raw string if needed
+  raw          String?
   schoolId     String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -1030,20 +939,19 @@ model BiometricLog {
 }
 
 model LibraryBook {
-  id          String   @id @default(cuid())
-  title       String
-  author      String
-  isbn        String?
-  publisher   String?
-  category    String?
-  coverUrl    String?
-  copies      Int      @default(1)
-  shelfNo     String?
-  schoolId    String
-  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id           String               @id @default(cuid())
+  title        String
+  author       String
+  isbn         String?
+  publisher    String?
+  category     String?
+  coverUrl     String?
+  copies       Int                  @default(1)
+  shelfNo      String?
+  schoolId     String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  school       School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   transactions LibraryTransaction[]
 
   @@index([schoolId])
@@ -1051,207 +959,148 @@ model LibraryBook {
   @@index([isbn])
 }
 
-// --- Transport Module ---
-
 model TransportVehicle {
-  id                String   @id @default(cuid())
-  registrationNumber String
-  model             String?
-  capacity          Int
-  schoolId          String
-  school            School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  status            String   @default("ACTIVE") // ACTIVE, MAINTENANCE, INACTIVE
-  gpsDeviceId       String?  // For future integration
-  
-  // Compliance Documents
-  insuranceNumber   String?
-  insuranceExpiry   DateTime?
-  insuranceDocUrl   String?
-  
-  pollutionNumber   String?
-  pollutionExpiry   DateTime?
-  pollutionDocUrl   String?
-  
-  fitnessExpiry     DateTime?
-  fitnessDocUrl     String?
-  
-  permitNumber      String?
-  permitExpiry      DateTime?
-  permitDocUrl      String?
-  
-  rcDocUrl          String?
-  documents         String   @default("[]")
-
-  pickupRoutes      TransportRoute[] @relation("PickupVehicle")
-  dropRoutes        TransportRoute[] @relation("DropVehicle")
-  maintenanceLogs   TransportMaintenance[]
-  telemetry         VehicleTelemetry[]
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                                                              String                 @id @default(cuid())
+  registrationNumber                                              String
+  model                                                           String?
+  capacity                                                        Int
+  schoolId                                                        String
+  status                                                          String                 @default("ACTIVE")
+  gpsDeviceId                                                     String?
+  insuranceNumber                                                 String?
+  insuranceExpiry                                                 DateTime?
+  insuranceDocUrl                                                 String?
+  pollutionNumber                                                 String?
+  pollutionExpiry                                                 DateTime?
+  pollutionDocUrl                                                 String?
+  fitnessExpiry                                                   DateTime?
+  fitnessDocUrl                                                   String?
+  permitNumber                                                    String?
+  permitExpiry                                                    DateTime?
+  permitDocUrl                                                    String?
+  rcDocUrl                                                        String?
+  documents                                                       String                 @default("[]")
+  createdAt                                                       DateTime               @default(now())
+  updatedAt                                                       DateTime               @updatedAt
+  maintenanceLogs                                                 TransportMaintenance[]
+  TransportRoute_TransportRoute_dropVehicleIdToTransportVehicle   TransportRoute[]       @relation("TransportRoute_dropVehicleIdToTransportVehicle")
+  TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle TransportRoute[]       @relation("TransportRoute_pickupVehicleIdToTransportVehicle")
+  school                                                          School                 @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  VehicleTelemetry                                                VehicleTelemetry[]
 
   @@unique([schoolId, registrationNumber])
   @@index([schoolId])
 }
 
 model TransportDriver {
-  id              String   @id @default(cuid())
-  name            String
-  licenseNumber   String
-  phone           String
-  schoolId        String
-  school          School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  status          String   @default("ACTIVE") // ACTIVE, ON_LEAVE, INACTIVE
-  
-  // Optional link to Staff if driver is an employee
-  userId          String?  @unique
-  user            User?    @relation(fields: [userId], references: [id])
-
-  routes          TransportRoute[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String           @id @default(cuid())
+  name          String
+  licenseNumber String
+  phone         String
+  schoolId      String
+  status        String           @default("ACTIVE")
+  userId        String?          @unique
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User?            @relation(fields: [userId], references: [id])
+  school        School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  routes        TransportRoute[]
 
   @@index([schoolId])
 }
 
 model TransportRoute {
-  id          String   @id @default(cuid())
-  name        String   // e.g., "Route 1 - North City"
-  description String?
-  schoolId    String
-  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  
-  pickupVehicleId String?
-  pickupVehicle   TransportVehicle? @relation("PickupVehicle", fields: [pickupVehicleId], references: [id])
-  
-  dropVehicleId   String?
-  dropVehicle     TransportVehicle? @relation("DropVehicle", fields: [dropVehicleId], references: [id])
-  
-  driverId    String?
-  driver      TransportDriver? @relation(fields: [driverId], references: [id])
-
-  stops       TransportStop[]
-  students    StudentTransportProfile[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                                                                String                    @id @default(cuid())
+  name                                                              String
+  description                                                       String?
+  schoolId                                                          String
+  pickupVehicleId                                                   String?
+  dropVehicleId                                                     String?
+  driverId                                                          String?
+  createdAt                                                         DateTime                  @default(now())
+  updatedAt                                                         DateTime                  @updatedAt
+  students                                                          StudentTransportProfile[]
+  driver                                                            TransportDriver?          @relation(fields: [driverId], references: [id])
+  TransportVehicle_TransportRoute_dropVehicleIdToTransportVehicle   TransportVehicle?         @relation("TransportRoute_dropVehicleIdToTransportVehicle", fields: [dropVehicleId], references: [id])
+  TransportVehicle_TransportRoute_pickupVehicleIdToTransportVehicle TransportVehicle?         @relation("TransportRoute_pickupVehicleIdToTransportVehicle", fields: [pickupVehicleId], references: [id])
+  school                                                            School                    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  stops                                                             TransportStop[]
 
   @@index([schoolId])
 }
 
 model TransportStop {
-  id            String   @id @default(cuid())
-  name          String
-  routeId       String
-  route         TransportRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  
-  sequenceOrder Int      // 1, 2, 3...
-  latitude      Float?
-  longitude     Float?
-  pickupTime    String?  // "07:30 AM"
-  dropTime      String?  // "03:30 PM"
-  monthlyFee    Float    @default(0)
-  
-  pickupStudents StudentTransportProfile[] @relation("PickupStop")
+  id             String                    @id @default(cuid())
+  name           String
+  routeId        String
+  sequenceOrder  Int
+  latitude       Float?
+  longitude      Float?
+  pickupTime     String?
+  dropTime       String?
+  monthlyFee     Float                     @default(0)
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
   dropStudents   StudentTransportProfile[] @relation("DropStop")
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  pickupStudents StudentTransportProfile[] @relation("PickupStop")
+  route          TransportRoute            @relation(fields: [routeId], references: [id], onDelete: Cascade)
 
   @@index([routeId])
 }
 
 model StudentTransportProfile {
-  id            String   @id @default(cuid())
-  studentId     String   @unique
-  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  routeId       String?
-  route         TransportRoute? @relation(fields: [routeId], references: [id])
-  
-  pickupStopId  String?
-  pickupStop    TransportStop? @relation("PickupStop", fields: [pickupStopId], references: [id])
-  
-  dropStopId    String?
-  dropStop      TransportStop? @relation("DropStop", fields: [dropStopId], references: [id])
-  
-  transportFee  Float    @default(0)
-  status        String   @default("PENDING") // PENDING, APPROVED, ACTIVE, INACTIVE, REJECTED
-  startDate     DateTime?
-  endDate       DateTime?
-  
-  // Application details
+  id                 String          @id @default(cuid())
+  studentId          String          @unique
+  routeId            String?
+  pickupStopId       String?
+  dropStopId         String?
+  transportFee       Float           @default(0)
+  status             String          @default("PENDING")
+  startDate          DateTime?
+  endDate            DateTime?
   applicationAddress String?
   applicationLat     Float?
   applicationLng     Float?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  dropStop           TransportStop?  @relation("DropStop", fields: [dropStopId], references: [id])
+  pickupStop         TransportStop?  @relation("PickupStop", fields: [pickupStopId], references: [id])
+  route              TransportRoute? @relation(fields: [routeId], references: [id])
+  student            Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([routeId])
 }
 
 model TransportMaintenance {
-  id          String   @id @default(cuid())
+  id          String           @id @default(cuid())
   vehicleId   String
-  vehicle     TransportVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  
-  type        String   // SERVICE, REPAIR, FUEL, OTHER
+  type        String
   cost        Float
   date        DateTime
   description String?
-  fileUrl     String?  // Invoice/Bill
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  fileUrl     String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  vehicle     TransportVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId])
-}
-
-model VehicleTelemetry {
-  id              String   @id @default(cuid())
-  vehicleId       String
-  vehicle         TransportVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  
-  // Location
-  latitude        Float
-  longitude       Float
-  heading         Float?   // Direction in degrees (0-360)
-  speed           Float?   // km/h
-  
-  // Status
-  status          String   @default("MOVING") // MOVING, STOPPED, IDLE
-  delayMinutes    Int      @default(0)
-  nextStopId      String?  // Reference to TransportStop
-  
-  // Timestamps
-  recordedAt      DateTime @default(now())
-  createdAt       DateTime @default(now())
-  
-  @@index([vehicleId])
-  @@index([recordedAt])
 }
 
 model LibraryTransaction {
-  id          String   @id @default(cuid())
-  bookId      String
-  book        LibraryBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  
-  // Polymorphic-like relationship
-  studentId   String?
-  student     Student? @relation(fields: [studentId], references: [id])
-  staffId     String?
-  staff       User?    @relation(fields: [staffId], references: [id])
-  
-  issuedDate  DateTime @default(now())
-  dueDate     DateTime
+  id           String      @id @default(cuid())
+  bookId       String
+  studentId    String?
+  staffId      String?
+  issuedDate   DateTime    @default(now())
+  dueDate      DateTime
   returnedDate DateTime?
-  status      String   @default("ISSUED") // ISSUED, RETURNED, OVERDUE, LOST
-  fineAmount  Float    @default(0)
-  
-  schoolId    String
-  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  status       String      @default("ISSUED")
+  fineAmount   Float       @default(0)
+  schoolId     String
+  school       School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  staff        User?       @relation(fields: [staffId], references: [id])
+  student      Student?    @relation(fields: [studentId], references: [id])
+  book         LibraryBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@index([schoolId])
   @@index([bookId])
@@ -1261,157 +1110,241 @@ model LibraryTransaction {
 }
 
 model LibrarySettings {
-  id          String   @id @default(cuid())
-  schoolId    String   @unique
-  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  
-  maxBooksStudent Int @default(2)
-  maxBooksStaff   Int @default(5)
-  maxDaysStudent  Int @default(7)
-  maxDaysStaff    Int @default(14)
-  finePerDay      Float @default(10)
+  id              String @id @default(cuid())
+  schoolId        String @unique
+  maxBooksStudent Int    @default(2)
+  maxBooksStaff   Int    @default(5)
+  maxDaysStudent  Int    @default(7)
+  maxDaysStaff    Int    @default(14)
+  finePerDay      Float  @default(10)
+  school          School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 }
 
 model Exam {
-  id            String   @id @default(cuid())
-  title         String
-  description   String?
-  date          DateTime
-  type          String   @default("TERM") // TERM, TEST, ETC
-  category      String   @default("ACADEMIC") // ACADEMIC, SPORTS, ARTS, CO_CURRICULAR
-  classrooms    String   @default("[]") // JSON Array of classroom IDs
-  subjects      String   @default("[]") // JSON Array of subject names
-  maxMarks      Float    @default(100)
-  minMarks      Float    @default(0)
+  id               String       @id @default(cuid())
+  title            String
+  description      String?
+  date             DateTime
+  type             String       @default("TERM")
+  category         String       @default("ACADEMIC")
+  classrooms       String       @default("[]")
+  subjects         String       @default("[]")
+  maxMarks         Float        @default(100)
+  minMarks         Float        @default(0)
+  gradingSystem    String       @default("MARKS")
+  schoolId         String
+  createdById      String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
   questionPaperUrl String?
-  gradingSystem String   @default("MARKS") // MARKS, GRADES
-  schoolId      String
-  createdById   String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  results       ExamResult[]
-  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  createdBy     User     @relation(fields: [createdById], references: [id])
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+  createdBy        User         @relation(fields: [createdById], references: [id])
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  results          ExamResult[]
 
   @@index([schoolId])
+  @@index([academicYearId])
 }
 
 model ExamResult {
   id        String   @id @default(cuid())
   marks     Float?
   grade     String?
-  status    String? // PASSED, FAILED
   remarks   String?
-  subject   String? 
+  subject   String?
   examId    String
   studentId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  status    String?
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
 
   @@unique([examId, studentId, subject])
   @@index([studentId])
 }
 
 model StudentHealthRecord {
-  id             String   @id @default(cuid())
-  height         Float?
-  weight         Float?
-  bmi            Float?
-  visionLeft     String?
-  visionRight    String?
-  hearingLeft    String?
-  hearingRight   String?
-  dentalStatus   String?
-  generalHealth  String?
-  bloodPressure  String?
-  pulseRate      Int?
-  recordedAt     DateTime @default(now())
-  recordedById   String?
-  studentId      String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  recordedBy     User?    @relation(fields: [recordedById], references: [id])
+  id            String   @id @default(cuid())
+  height        Float?
+  weight        Float?
+  bmi           Float?
+  visionLeft    String?
+  visionRight   String?
+  hearingLeft   String?
+  hearingRight  String?
+  dentalStatus  String?
+  generalHealth String?
+  bloodPressure String?
+  pulseRate     Int?
+  recordedAt    DateTime @default(now())
+  recordedById  String?
+  studentId     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+  recordedBy    User?    @relation(fields: [recordedById], references: [id])
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
+  @@index([academicYearId])
 }
 
 model StudentActivityRecord {
   id          String   @id @default(cuid())
   title       String
-  category    String // SPORTS, ARTS, CLUB, ETC
-  type        String // PARTICIPATION, AWARD
+  category    String
+  type        String
   date        DateTime
   description String?
-  achievement String? // "First Place", "Gold Medal"
+  achievement String?
   studentId   String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
   student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
+  @@index([academicYearId])
 }
 
-// CMS & Marketing
-model CMSPage {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  content     String
-  isPublished Boolean  @default(false)
-  
-  // SEO
-  metaTitle       String?
-  metaDescription String?
-  metaKeywords    String?
-  ogImage         String?
+model AcademicDay {
+  id            String        @id
+  monthId       String
+  dayNumber     Int
+  title         String?
+  theme         String?
+  blocks        String        @default("[]")
+  worksheets    String        @default("[]")
+  isCompleted   Boolean       @default(false)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime
+  AcademicMonth AcademicMonth @relation(fields: [monthId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  @@unique([monthId, dayNumber])
+  @@index([monthId])
+}
+
+model AcademicMonth {
+  id           String        @id
+  curriculumId String
+  monthNumber  Int
+  title        String
+  description  String?
+  theme        String?
+  objectives   String        @default("[]")
+  startDate    DateTime?
+  endDate      DateTime?
+  isCompleted  Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime
+  AcademicDay  AcademicDay[]
+  Curriculum   Curriculum    @relation(fields: [curriculumId], references: [id], onDelete: Cascade)
+
+  @@unique([curriculumId, monthNumber])
+  @@index([curriculumId])
+}
+
+model BlogPageContent {
+  id         String   @id
+  sectionKey String   @unique
+  title      String?
+  subtitle   String?
+  content    String
+  isEnabled  Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
 }
 
 model BlogPost {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  excerpt     String?
-  content     String
-  coverImage  String?
-  authorId    String
-  isPublished Boolean  @default(false)
-  publishedAt DateTime?
-  tags        String   @default("[]")
-
-  // SEO
+  id              String    @id
+  title           String
+  slug            String    @unique
+  excerpt         String?
+  content         String
+  coverImage      String?
+  authorId        String
+  isPublished     Boolean   @default(false)
+  publishedAt     DateTime?
+  tags            String    @default("[]")
   metaTitle       String?
   metaDescription String?
   metaKeywords    String?
   ogImage         String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  author      User     @relation(fields: [authorId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  User            User      @relation(fields: [authorId], references: [id])
 }
 
-model JobPosting {
-  id          String   @id @default(cuid())
-  title       String
-  department  String
-  location    String
-  type        String
-  description String
-  requirements String?
-  isOpen      Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  applications JobApplication[]
+model CMSPage {
+  id              String   @id
+  title           String
+  slug            String   @unique
+  content         String
+  isPublished     Boolean  @default(false)
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  ogImage         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+}
+
+model CareersPageContent {
+  id         String   @id
+  sectionKey String   @unique
+  title      String?
+  subtitle   String?
+  content    String
+  isEnabled  Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+}
+
+model ContactPageContent {
+  id         String   @id
+  sectionKey String   @unique
+  title      String?
+  subtitle   String?
+  content    String
+  isEnabled  Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+}
+
+model FeaturesPageContent {
+  id         String   @id
+  sectionKey String   @unique
+  title      String?
+  subtitle   String?
+  content    String
+  isEnabled  Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+}
+
+model HomepageContent {
+  id         String   @id
+  sectionKey String   @unique
+  title      String?
+  subtitle   String?
+  content    String
+  isEnabled  Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
 }
 
 model JobApplication {
-  id          String   @id @default(cuid())
+  id          String     @id
   firstName   String
   lastName    String
   email       String
@@ -1420,98 +1353,174 @@ model JobApplication {
   coverLetter String?
   linkedin    String?
   portfolio   String?
-  status      String   @default("PENDING") // PENDING, REVIEWING, INTERVIEW, OFFER, REJECTED
-  
+  status      String     @default("PENDING")
   jobId       String
-  job         JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  JobPosting  JobPosting @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([jobId])
   @@index([email])
+  @@index([jobId])
 }
 
-// Homepage CMS
-model HomepageContent {
-  id          String   @id @default(cuid())
-  sectionKey  String   @unique // e.g., "hero", "features", "pricing", "cta"
-  title       String?
-  subtitle    String?
-  content     String   // JSON string for flexible content
-  isEnabled   Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model JobPosting {
+  id             String           @id
+  title          String
+  department     String
+  location       String
+  type           String
+  description    String
+  requirements   String?
+  isOpen         Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  JobApplication JobApplication[]
 }
 
-// Features Page CMS
-model FeaturesPageContent {
-  id          String   @id @default(cuid())
-  sectionKey  String   @unique // e.g., "hero", "highlight", "features"
-  title       String?
-  subtitle    String?
-  content     String   // JSON string for flexible content
-  isEnabled   Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// Pricing Page CMS
 model PricingPageContent {
-  id          String   @id @default(cuid())
-  sectionKey  String   @unique // e.g., "hero", "faq"
-  title       String?
-  subtitle    String?
-  content     String   // JSON string
-  isEnabled   Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id
+  sectionKey String   @unique
+  title      String?
+  subtitle   String?
+  content    String
+  isEnabled  Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
 }
 
-// Careers Page CMS
-model CareersPageContent {
-  id          String   @id @default(cuid())
-  sectionKey  String   @unique // e.g., "hero", "values"
-  title       String?
-  subtitle    String?
-  content     String   // JSON string
-  isEnabled   Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model TrainingAttachment {
+  id           String       @id
+  pageId       String
+  name         String
+  url          String
+  size         Int          @default(0)
+  type         String       @default("file")
+  createdAt    DateTime     @default(now())
+  TrainingPage TrainingPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
 }
 
-// Contact Page CMS
-model ContactPageContent {
-  id          String   @id @default(cuid())
-  sectionKey  String   @unique // e.g., "hero", "info"
-  title       String?
-  subtitle    String?
-  content     String   // JSON string
-  isEnabled   Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model TrainingCategory {
+  id             String           @id
+  name           String           @unique
+  slug           String           @unique
+  description    String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  TrainingModule TrainingModule[]
 }
 
-// Blog Page CMS (Settings/Layout)
-model BlogPageContent {
-  id          String   @id @default(cuid())
-  sectionKey  String   @unique // e.g., "hero", "sidebar"
-  title       String?
-  subtitle    String?
-  content     String   // JSON string
-  isEnabled   Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model TrainingModule {
+  id               String            @id
+  title            String
+  description      String?
+  cover            String?
+  role             String            @default("TEACHER")
+  categoryId       String?
+  isPublished      Boolean           @default(false)
+  slug             String            @unique
+  order            Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime
+  TrainingCategory TrainingCategory? @relation(fields: [categoryId], references: [id])
+  TrainingTopic    TrainingTopic[]
 }
+
+model TrainingPage {
+  id                 String               @id
+  topicId            String
+  title              String
+  content            String
+  order              Int                  @default(0)
+  isPublished        Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  TrainingAttachment TrainingAttachment[]
+  TrainingTopic      TrainingTopic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+}
+
+model TrainingTopic {
+  id             String         @id
+  moduleId       String
+  title          String
+  description    String?
+  order          Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime
+  TrainingPage   TrainingPage[]
+  TrainingModule TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@index([moduleId])
+}
+
+model VehicleTelemetry {
+  id               String           @id
+  vehicleId        String
+  latitude         Float
+  longitude        Float
+  heading          Float?
+  speed            Float?
+  status           String           @default("MOVING")
+  delayMinutes     Int              @default(0)
+  nextStopId       String?
+  recordedAt       DateTime         @default(now())
+  createdAt        DateTime         @default(now())
+  TransportVehicle TransportVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([recordedAt])
+  @@index([vehicleId])
+}
+
+// ============================================================================
+// MARKETING MATERIALS MODULE
+// ============================================================================
+
+model MarketingTemplate {
+  id           String   @id @default(cuid())
+  name         String
+  type         String   // SOCIAL_POST, BROCHURE, FLYER, WHATSAPP, etc.
+  category     String   // e.g., "Admissions", "Events", "Holidays"
+  baseImageUrl String   // URL of the high-res source image
+  previewUrl   String?  // URL of the thumbnail
+  config       String   @default("{}") // JSON string for customization zones
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([type])
+  @@index([category])
+  designs      SchoolMarketingDesign[]
+}
+
+model MarketingAttribute {
+  id        String   @id @default(cuid())
+  type      String   // "FORMAT" or "CATEGORY"
+  name      String
+  createdAt DateTime @default(now())
+
+  @@unique([type, name])
+  @@index([type])
+}
+
+model SchoolMarketingDesign {
+  id             String            @id @default(cuid())
+  schoolId       String
+  templateId     String
+  customValues   String            @default("{}") // JSON: { zoneId: "value" }
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  school         School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  template       MarketingTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([schoolId, templateId])
+  @@index([schoolId])
+  @@index([templateId])
+}
+
+
+

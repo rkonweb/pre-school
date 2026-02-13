@@ -43,7 +43,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: an
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold">Routes & Stops</h2>
-                <button onClick={() => setIsCreating(true)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg">
+                <button onClick={() => setIsCreating(true)} className="flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg shadow-lg shadow-brand/10 hover:brightness-110 transition-all">
                     <Plus className="h-4 w-4" /> Add Route
                 </button>
             </div>
@@ -93,7 +93,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: an
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
                             <h4 className="font-medium text-sm text-zinc-700">Route Stops</h4>
-                            <button onClick={addStopField} className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                            <button onClick={addStopField} className="text-sm font-medium text-brand hover:brightness-110 flex items-center gap-1">
                                 <Plus className="h-3 w-3" /> Add Stop
                             </button>
                         </div>
@@ -107,7 +107,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: an
                                         </span>
                                         <input
                                             placeholder="Stop Name (e.g. Central Park Gate 1)"
-                                            className="border p-1.5 rounded text-sm flex-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                                            className="border p-1.5 rounded text-sm flex-1 focus:ring-2 focus:ring-brand outline-none"
                                             value={stop.name}
                                             onChange={e => {
                                                 const stops = [...newRoute.stops];
@@ -182,7 +182,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: an
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                 <input
                     placeholder="Search routes by name or vehicle..."
-                    className="w-full border border-zinc-200 pl-10 pr-4 py-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    className="w-full border border-zinc-200 pl-10 pr-4 py-2 rounded-lg text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all"
                     onChange={(e) => {
                         const search = e.target.value.toLowerCase();
                         setRoutes(initialRoutes.filter((r: any) =>
@@ -200,7 +200,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: an
                         {/* Route Header */}
                         <div className="bg-zinc-50/80 p-3 border-b border-zinc-100 flex justify-between items-start">
                             <div className="flex items-center gap-3">
-                                <div className="p-1.5 bg-blue-50 text-blue-600 rounded-md">
+                                <div className="p-1.5 bg-brand/5 text-brand rounded-md">
                                     <Bus className="h-4 w-4" />
                                 </div>
                                 <div>
@@ -240,7 +240,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: an
                                         });
                                         setIsCreating(true);
                                     }}
-                                    className="p-1.5 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                    className="p-1.5 text-zinc-400 hover:text-brand hover:bg-brand/5 rounded-md transition-colors"
                                     title="Edit Route"
                                 >
                                     <Edit2 className="h-3.5 w-3.5" />
@@ -293,7 +293,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: an
                                             </td>
                                             <td className="px-2 py-2 text-right font-medium">
                                                 {stop.monthlyFee > 0 ? (
-                                                    <span className="text-blue-600">₹{stop.monthlyFee}</span>
+                                                    <span className="text-brand">₹{stop.monthlyFee}</span>
                                                 ) : (
                                                     <span className="text-green-600 text-[10px] uppercase">Free</span>
                                                 )}

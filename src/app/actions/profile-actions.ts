@@ -1,9 +1,7 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUserAction } from "./session-actions";
-
-const prisma = new PrismaClient();
 
 export async function getProfileDataAction(slug: string) {
     try {
@@ -114,6 +112,7 @@ export async function getProfileDataAction(slug: string) {
                     mobile: currentUser.mobile,
                     role: currentUser.role,
                     avatar: currentUser.avatar || null,
+                    avatarAdjustment: currentUser.avatarAdjustment || null,
                 },
                 school: {
                     name: school.name,

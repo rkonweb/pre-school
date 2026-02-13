@@ -185,7 +185,7 @@ export default function CommunicationPage() {
                         {activeTab === "announcements" && !isComposing && (
                             <button
                                 onClick={() => setIsComposing(true)}
-                                className="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                                className="p-2 rounded-lg bg-brand text-white hover:brightness-110 transition-colors"
                                 title="New Broadcast"
                             >
                                 <Plus className="h-4 w-4" />
@@ -199,7 +199,7 @@ export default function CommunicationPage() {
                             onClick={() => setActiveTab("messages")}
                             className={cn(
                                 "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all",
-                                activeTab === "messages" ? "bg-white text-blue-600 shadow-sm dark:bg-zinc-800" : "text-zinc-500"
+                                activeTab === "messages" ? "bg-white text-brand shadow-sm dark:bg-zinc-800" : "text-zinc-500"
                             )}
                         >
                             <MessageSquare className="h-3.5 w-3.5" />
@@ -209,7 +209,7 @@ export default function CommunicationPage() {
                             onClick={() => setActiveTab("announcements")}
                             className={cn(
                                 "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all",
-                                activeTab === "announcements" ? "bg-white text-blue-600 shadow-sm dark:bg-zinc-800" : "text-zinc-500"
+                                activeTab === "announcements" ? "bg-white text-brand shadow-sm dark:bg-zinc-800" : "text-zinc-500"
                             )}
                         >
                             <Megaphone className="h-3.5 w-3.5" />
@@ -223,7 +223,7 @@ export default function CommunicationPage() {
                         <input
                             type="text"
                             placeholder={activeTab === "messages" ? "Search chats..." : "Search broadcasts..."}
-                            className="w-full rounded-lg border-0 bg-zinc-100 py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-blue-600 dark:bg-zinc-900"
+                            className="w-full rounded-lg border-0 bg-zinc-100 py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-brand dark:bg-zinc-900"
                         />
                     </div>
                 </div>
@@ -238,7 +238,7 @@ export default function CommunicationPage() {
                                     onClick={() => setSelectedChat(chat)}
                                     className={cn(
                                         "flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50",
-                                        selectedChat.id === chat.id && "bg-blue-50/50 dark:bg-blue-900/10"
+                                        selectedChat.id === chat.id && "bg-brand/5 dark:bg-brand/10"
                                     )}
                                 >
                                     <div className="relative flex-shrink-0">
@@ -255,7 +255,7 @@ export default function CommunicationPage() {
                                         <p className="text-xs text-zinc-500 truncate">{chat.lastMsg}</p>
                                     </div>
                                     {chat.unread > 0 && (
-                                        <div className="mt-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] text-white">
+                                        <div className="mt-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] text-white">
                                             {chat.unread}
                                         </div>
                                     )}
@@ -266,7 +266,7 @@ export default function CommunicationPage() {
                         <div className="p-4 space-y-3">
                             <div className="flex items-center justify-between">
                                 <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">History</p>
-                                <button onClick={() => loadBroadcastHistory()} className="text-zinc-400 hover:text-blue-600">
+                                <button onClick={() => loadBroadcastHistory()} className="text-zinc-400 hover:text-brand">
                                     <History className="h-3 w-3" />
                                 </button>
                             </div>
@@ -326,7 +326,7 @@ export default function CommunicationPage() {
                                 )}>
                                     <div className={cn(
                                         "rounded-2xl px-4 py-2 text-sm shadow-sm",
-                                        msg.sender === "admin" ? "bg-blue-600 text-white rounded-tr-none" : "bg-white dark:bg-zinc-800 rounded-tl-none border border-zinc-100 dark:border-zinc-700"
+                                        msg.sender === "admin" ? "bg-brand text-white rounded-tr-none" : "bg-white dark:bg-zinc-800 rounded-tl-none border border-zinc-100 dark:border-zinc-700"
                                     )}>
                                         {msg.text}
                                     </div>
@@ -349,7 +349,7 @@ export default function CommunicationPage() {
                                     placeholder="Type your message..."
                                     className="flex-1 bg-transparent border-0 text-sm focus:ring-0 placeholder:text-zinc-500"
                                 />
-                                <button className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white"><Send className="h-4 w-4" /></button>
+                                <button className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-white"><Send className="h-4 w-4" /></button>
                             </div>
                         </div>
                     </>
@@ -358,8 +358,8 @@ export default function CommunicationPage() {
                     <div className="flex flex-col h-full overflow-y-auto p-6">
                         {!isComposing ? (
                             <div className="flex flex-col items-center justify-center flex-1 text-center">
-                                <div className="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center dark:bg-blue-900/30 mb-6">
-                                    <Megaphone className="h-8 w-8 text-blue-600" />
+                                <div className="h-20 w-20 rounded-full bg-brand/10 flex items-center justify-center dark:bg-brand/20 mb-6">
+                                    <Megaphone className="h-8 w-8 text-brand" />
                                 </div>
                                 <h2 className="text-2xl font-bold mb-2">{title || "School Broadcasts"}</h2>
                                 <p className="text-zinc-500 max-w-md mb-8">
@@ -379,7 +379,7 @@ export default function CommunicationPage() {
                                         setSelectedClasses([]);
                                         setSelectedStudents([]);
                                     }}
-                                    className="mt-8 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all flex items-center gap-2"
+                                    className="mt-8 px-6 py-3 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:brightness-110 transition-all flex items-center gap-2"
                                 >
                                     <Plus className="h-4 w-4" /> Compose New Broadcast
                                 </button>
@@ -388,7 +388,7 @@ export default function CommunicationPage() {
                             <div className="max-w-2xl mx-auto w-full bg-white dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
                                 <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
                                     <h2 className="text-xl font-bold flex items-center gap-2">
-                                        <Megaphone className="h-5 w-5 text-blue-600" />
+                                        <Megaphone className="h-5 w-5 text-brand" />
                                         Compose New Broadcast
                                     </h2>
                                     <p className="text-sm text-zinc-500 mt-1">Send important updates to your school community.</p>
@@ -411,11 +411,11 @@ export default function CommunicationPage() {
                                                     className={cn(
                                                         "flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all",
                                                         targetType === type.id
-                                                            ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-200"
+                                                            ? "border-brand bg-brand/5 text-brand dark:bg-brand/10 dark:text-brand"
                                                             : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
                                                     )}
                                                 >
-                                                    <type.icon className={cn("h-6 w-6", targetType === type.id ? "text-blue-600" : "text-zinc-400")} />
+                                                    <type.icon className={cn("h-6 w-6", targetType === type.id ? "text-brand" : "text-zinc-400")} />
                                                     <span className="text-xs font-bold text-center">{type.label}</span>
                                                 </button>
                                             ))}
@@ -434,7 +434,7 @@ export default function CommunicationPage() {
                                                         className={cn(
                                                             "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-left",
                                                             selectedClasses.includes(cls.id)
-                                                                ? "bg-blue-600 text-white shadow-sm"
+                                                                ? "bg-brand text-white shadow-sm"
                                                                 : "bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700"
                                                         )}
                                                     >
@@ -465,7 +465,7 @@ export default function CommunicationPage() {
                                                             value={studentSearchTerm}
                                                             onChange={(e) => setStudentSearchTerm(e.target.value)}
                                                             placeholder="Search student by name..."
-                                                            className="w-full rounded-lg border-zinc-200 bg-white dark:bg-zinc-950 pl-9 py-2 text-sm focus:ring-2 focus:ring-blue-600"
+                                                            className="w-full rounded-lg border-zinc-200 bg-white dark:bg-zinc-950 pl-9 py-2 text-sm focus:ring-2 focus:ring-brand"
                                                         />
                                                     </div>
                                                     <select
@@ -490,12 +490,12 @@ export default function CommunicationPage() {
                                                                 onClick={() => toggleStudentSelection(s.id)}
                                                                 className={cn(
                                                                     "flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900",
-                                                                    selectedStudents.includes(s.id) && "bg-blue-50 dark:bg-blue-900/20"
+                                                                    selectedStudents.includes(s.id) && "bg-brand/5 dark:bg-brand/10"
                                                                 )}
                                                             >
                                                                 <div className={cn(
                                                                     "h-4 w-4 shrink-0 rounded border flex items-center justify-center",
-                                                                    selectedStudents.includes(s.id) ? "border-blue-600 bg-blue-600 text-white" : "border-zinc-300"
+                                                                    selectedStudents.includes(s.id) ? "border-brand bg-brand text-white" : "border-zinc-300"
                                                                 )}>
                                                                     {selectedStudents.includes(s.id) && <CheckCircle2 className="h-3 w-3" />}
                                                                 </div>
@@ -522,7 +522,7 @@ export default function CommunicationPage() {
                                                 value={title}
                                                 onChange={(e) => setTitle(e.target.value)}
                                                 placeholder="e.g. Annual Sports Day Update"
-                                                className="w-full rounded-xl border-zinc-200 bg-zinc-50 px-4 py-3 text-sm focus:border-blue-600 focus:bg-white focus:ring-0 dark:border-zinc-800 dark:bg-zinc-900"
+                                                className="w-full rounded-xl border-zinc-200 bg-zinc-50 px-4 py-3 text-sm focus:border-brand focus:bg-white focus:ring-0 dark:border-zinc-800 dark:bg-zinc-900"
                                             />
                                         </div>
                                         <div>
@@ -532,7 +532,7 @@ export default function CommunicationPage() {
                                                 onChange={(e) => setMessage(e.target.value)}
                                                 placeholder="Type your announcement here..."
                                                 rows={6}
-                                                className="w-full rounded-xl border-zinc-200 bg-zinc-50 px-4 py-3 text-sm focus:border-blue-600 focus:bg-white focus:ring-0 dark:border-zinc-800 dark:bg-zinc-900 resize-none"
+                                                className="w-full rounded-xl border-zinc-200 bg-zinc-50 px-4 py-3 text-sm focus:border-brand focus:bg-white focus:ring-0 dark:border-zinc-800 dark:bg-zinc-900 resize-none"
                                             />
                                         </div>
                                     </div>
@@ -548,7 +548,7 @@ export default function CommunicationPage() {
                                     <button
                                         onClick={handleSendBroadcast}
                                         disabled={isSending}
-                                        className="px-8 py-2.5 rounded-xl bg-blue-600 font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        className="px-8 py-2.5 rounded-xl bg-brand font-bold text-white shadow-lg shadow-brand/20 hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                     >
                                         {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                         {isSending ? "Sending..." : "Send Broadcast"}

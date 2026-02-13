@@ -2,23 +2,33 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { format, isFuture, isToday, parseISO } from "date-fns";
+import { getSchoolNow } from "@/lib/date-utils";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Play, CheckCircle2, Clock } from "lucide-react";
 import { AttendanceCard, AttendanceStatus } from "@/components/dashboard/attendance/AttendanceCard";
 import { getAttendanceDataAction, markAttendanceAction } from "@/app/actions/attendance-actions"; // We will rename/export these
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getCookie } from "@/lib/cookies";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 
 interface AttendanceClientProps {
     slug: string;
     classrooms: { id: string; name: string }[];
+    academicYears?: any[];
+    currentAcademicYear?: any;
+    schoolTimezone?: string;
 }
 
-export default function AttendanceClient({ slug, classrooms }: AttendanceClientProps) {
+export default function AttendanceClient({ slug, classrooms, academicYears = [], currentAcademicYear, schoolTimezone = "Asia/Kolkata" }: AttendanceClientProps) {
+    const { role } = useRolePermissions();
+    const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+
     const [date, setDate] = useState("");
 
     useEffect(() => {
-        setDate(new Date().toISOString().split('T')[0]);
-    }, []);
+        const now = getSchoolNow(schoolTimezone);
+        setDate(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`);
+    }, [schoolTimezone]);
     const [selectedClassId, setSelectedClassId] = useState(classrooms[0]?.id || "");
     const [students, setStudents] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -30,14 +40,17 @@ export default function AttendanceClient({ slug, classrooms }: AttendanceClientP
     const loadData = useCallback(async () => {
         if (!selectedClassId || !date) return;
         setIsLoading(true);
-        const res = await getAttendanceDataAction(slug, selectedClassId, date);
+        const cookieId = getCookie(`academic_year_${slug}`);
+        const academicYearId = cookieId || currentAcademicYear?.id || (academicYears.length > 0 ? academicYears[0].id : undefined);
+
+        const res = await getAttendanceDataAction(slug, selectedClassId, date, academicYearId);
         if (res.success) {
             setStudents(res.data || []);
         } else {
             toast.error(res.error || "Failed to load students");
         }
         setIsLoading(false);
-    }, [slug, selectedClassId, date]);
+    }, [slug, selectedClassId, date, currentAcademicYear, academicYears]);
 
     useEffect(() => {
         loadData();
@@ -50,7 +63,10 @@ export default function AttendanceClient({ slug, classrooms }: AttendanceClientP
         setStudents(prev => prev.map(s => s.id === studentId ? { ...s, status: normalizedStatus } : s));
 
         // Server update
-        const res = await markAttendanceAction(studentId, date, normalizedStatus);
+        // Server update
+        const cookieId = getCookie(`academic_year_${slug}`);
+        const academicYearId = cookieId || currentAcademicYear?.id || (academicYears && academicYears.length > 0 ? academicYears[0].id : undefined);
+        const res = await markAttendanceAction(studentId, date, normalizedStatus, undefined, academicYearId);
         if (!res.success) {
             toast.error("Failed to save attendance");
             // Revert on error? For now, we assume success or reload.
@@ -80,7 +96,9 @@ export default function AttendanceClient({ slug, classrooms }: AttendanceClientP
         setIsFocusMode(true);
     };
 
-    const isDateEditable = isToday(parseISO(date));
+    const schoolNow = getSchoolNow(schoolTimezone);
+    const todayStr = `${schoolNow.getFullYear()}-${String(schoolNow.getMonth() + 1).padStart(2, '0')}-${String(schoolNow.getDate()).padStart(2, '0')}`;
+    const isDateEditable = isAdmin || date === todayStr;
 
     // Stats
     const stats = {
@@ -111,7 +129,10 @@ export default function AttendanceClient({ slug, classrooms }: AttendanceClientP
                             type="date"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
-                            max={new Date().toISOString().split('T')[0]} // Disable future
+                            max={(() => {
+                                const now = getSchoolNow(schoolTimezone);
+                                return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                            })()} // Disable future
                             className="bg-transparent px-2 text-sm font-medium text-zinc-900 focus:outline-none dark:text-zinc-50"
                         />
                     </div>
@@ -120,7 +141,7 @@ export default function AttendanceClient({ slug, classrooms }: AttendanceClientP
                     <select
                         value={selectedClassId}
                         onChange={(e) => setSelectedClassId(e.target.value)}
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
                     >
                         {classrooms.length > 0 ? (
                             classrooms.map(c => (
@@ -135,7 +156,7 @@ export default function AttendanceClient({ slug, classrooms }: AttendanceClientP
                     {isDateEditable && students.length > 0 && (
                         <button
                             onClick={startFocusMode}
-                            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                            className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:opacity-50"
                         >
                             <Play className="h-4 w-4" />
                             {unmarkedCount > 0 ? "Take Attendance" : "Review Attendance"}
@@ -170,7 +191,7 @@ export default function AttendanceClient({ slug, classrooms }: AttendanceClientP
 
                             {/* Current Status Indicator */}
                             {students[focusIndex].status && (
-                                <div className="mt-2 text-sm font-medium text-blue-600">
+                                <div className="mt-2 text-sm font-medium text-brand">
                                     Current: {students[focusIndex].status}
                                 </div>
                             )}

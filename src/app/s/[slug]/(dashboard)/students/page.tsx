@@ -11,6 +11,7 @@ import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { Tenant } from "@/types/tenant";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getCookie } from "@/lib/cookies";
 
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 
@@ -66,6 +67,12 @@ export default function StudentsPage() {
             const filters: any = {};
             if (statusFilter !== "all") filters.status = statusFilter;
             if (classFilter !== "all") filters.class = classFilter;
+
+            // Add Academic Year filter
+            const academicYearId = getCookie(`academic_year_${slug}`);
+            if (academicYearId) {
+                filters.academicYearId = academicYearId;
+            }
 
             const res = await getStudentsAction(slug, {
                 page,
@@ -137,13 +144,21 @@ export default function StudentsPage() {
                     </p>
                 </div>
                 {canCreate && (
-                    <button
-                        onClick={() => setIsAddStudentOpen(true)}
-                        className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Add Student
-                    </button>
+                    <div className="flex gap-3">
+                        <Link href={`/s/${slug}/students/promote`}>
+                            <button className="h-12 px-6 bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm hover:scale-[1.02] active:scale-95 transition-all">
+                                <ArrowUpDown className="h-4 w-4" />
+                                Promote
+                            </button>
+                        </Link>
+                        <button
+                            onClick={() => setIsAddStudentOpen(true)}
+                            className="h-12 px-6 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add Student
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -190,7 +205,7 @@ export default function StudentsPage() {
                                 setStatusFilter(e.target.value);
                                 setPage(1);
                             }}
-                            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                         >
                             <option value="all">All Status</option>
                             <option value="ACTIVE">Active</option>
@@ -205,7 +220,7 @@ export default function StudentsPage() {
                             setClassFilter(e.target.value);
                             setPage(1);
                         }}
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                     >
                         <option value="all">All Classes</option>
                         {classrooms.map(c => (
@@ -219,7 +234,7 @@ export default function StudentsPage() {
             <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                 {isLoading && students.length === 0 ? (
                     <div className="flex h-64 items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-zinc-300" />
+                        <Loader2 className="h-8 w-8 animate-spin text-brand" />
                     </div>
                 ) : (
                     <>
@@ -297,7 +312,7 @@ export default function StudentsPage() {
                                                         {canEdit && (
                                                             <Link
                                                                 href={`/s/${slug}/students/${student.id}`}
-                                                                className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-blue-600 hover:border-blue-200 transition-all"
+                                                                className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/30 transition-all"
                                                             >
                                                                 <Edit3 className="h-4 w-4" />
                                                             </Link>

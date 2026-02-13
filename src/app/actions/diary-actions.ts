@@ -8,7 +8,6 @@ import { getEnforcedScope, verifyClassAccess } from "@/lib/access-control";
 // ... existing code ...
 
 export async function createDiaryEntryAction(data: {
-    // ... args ...
     schoolSlug: string;
     title: string;
     content: string;
@@ -20,6 +19,7 @@ export async function createDiaryEntryAction(data: {
     studentIds?: string[];
     priority?: string;
     requiresAck?: boolean;
+    academicYearId?: string;
 }) {
     try {
         // Get current user from session
@@ -80,6 +80,7 @@ export async function createDiaryEntryAction(data: {
                 schoolId: school.id,
                 authorId: currentUser.id,
                 classroomId: data.classroomId || null,
+                academicYearId: data.academicYearId || null,
             }
         });
 
@@ -135,6 +136,7 @@ export async function getDiaryEntriesAction(schoolSlug: string, filters?: {
     type?: string;
     status?: string;
     month?: string; // YYYY-MM format
+    academicYearId?: string;
 }) {
     try {
         const userRes = await getCurrentUserAction();
@@ -155,6 +157,10 @@ export async function getDiaryEntriesAction(schoolSlug: string, filters?: {
         const where: any = {
             schoolId: school.id
         };
+
+        if (filters?.academicYearId) {
+            where.academicYearId = filters.academicYearId;
+        }
 
         // ACCESS CONTROL
         const scope = await getEnforcedScope(currentUser.id, currentUser.role);
@@ -260,7 +266,7 @@ export async function getDiaryEntriesAction(schoolSlug: string, filters?: {
 
 import { verifyParentAccess } from "@/lib/access-control";
 
-export async function getDiaryEntriesForStudentAction(studentId: string) {
+export async function getDiaryEntriesForStudentAction(studentId: string, academicYearId?: string) {
     try {
         // PERMISSION CHECK
         const userRes = await getCurrentUserAction();
@@ -278,13 +284,19 @@ export async function getDiaryEntriesForStudentAction(studentId: string) {
             }
         }
 
+        const query: any = {
+            studentId,
+            entry: {
+                status: "PUBLISHED"
+            }
+        };
+
+        if (academicYearId) {
+            query.entry.academicYearId = academicYearId;
+        }
+
         const recipients = await prisma.diaryRecipient.findMany({
-            where: {
-                studentId,
-                entry: {
-                    status: "PUBLISHED"
-                }
-            },
+            where: query,
             include: {
                 entry: {
                     include: {

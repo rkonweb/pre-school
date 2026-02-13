@@ -24,7 +24,7 @@ import {
 } from "@/app/actions/admission-actions";
 
 const STAGES = [
-    { id: "INQUIRY", label: "Inquiries", color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20" },
+    { id: "INQUIRY", label: "Inquiries", color: "text-brand bg-brand/10 dark:bg-brand/20" },
     { id: "APPLICATION", label: "Applications", color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20" },
     { id: "INTERVIEW", label: "Interviews", color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20" },
     { id: "ENROLLED", label: "Enrolled", color: "text-green-600 bg-green-50 dark:bg-green-900/20" },
@@ -125,7 +125,7 @@ export default function AdmissionsPage() {
                 {canCreate && (
                     <Link
                         href={`/s/${slug}/admissions/new`}
-                        className="h-12 px-6 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-blue-500/20 hover:scale-[1.02] hover:bg-blue-700 active:scale-95 transition-all"
+                        className="h-12 px-6 bg-brand text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all"
                     >
                         <UserPlus className="h-4 w-4" />
                         New Inquiry
@@ -254,7 +254,7 @@ export default function AdmissionsPage() {
                                                 <div className="flex items-center justify-end gap-2">
                                                     <Link
                                                         href={`/s/${slug}/admissions/${app.id}`}
-                                                        className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-blue-600 hover:border-blue-200 transition-all"
+                                                        className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/20 transition-all"
                                                         title="View Details"
                                                     >
                                                         <Eye className="h-4 w-4" />

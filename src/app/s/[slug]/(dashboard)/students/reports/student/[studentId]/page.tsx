@@ -77,7 +77,7 @@ export default function StudentProgressReportPage() {
         switch (type) {
             case "STRENGTH": return <Award className="h-5 w-5 text-yellow-600" />;
             case "WEAKNESS": return <AlertCircle className="h-5 w-5 text-red-600" />;
-            case "TREND": return <TrendingUp className="h-5 w-5 text-blue-600" />;
+            case "TREND": return <TrendingUp className="h-5 w-5 text-brand" />;
             case "ATTENDANCE": return <Calendar className="h-5 w-5 text-orange-600" />;
             default: return <Activity className="h-5 w-5 text-slate-600" />;
         }
@@ -103,11 +103,11 @@ export default function StudentProgressReportPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+                    <div className="h-16 w-16 rounded-full bg-brand/10 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
                         {student.avatar ? (
                             <img src={student.avatar} alt={student.firstName} className="h-full w-full object-cover" />
                         ) : (
-                            <span className="text-2xl font-bold text-blue-600">{student.firstName[0]}</span>
+                            <span className="text-2xl font-bold text-brand">{student.firstName[0]}</span>
                         )}
                     </div>
                     <div>
@@ -130,7 +130,7 @@ export default function StudentProgressReportPage() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {analytics.insights.map((insight, idx) => (
                         <Card key={idx} className={`border-l-4 ${insight.sentiment === 'POSITIVE' ? 'border-l-green-500 bg-green-50/50' :
-                            insight.sentiment === 'NEGATIVE' ? 'border-l-red-500 bg-red-50/50' : 'border-l-blue-500 bg-slate-50'
+                            insight.sentiment === 'NEGATIVE' ? 'border-l-red-500 bg-red-50/50' : 'border-l-brand bg-brand/5'
                             }`}>
                             <CardContent className="p-4 flex gap-3 items-start">
                                 <div className="mt-1">{getInsightIcon(insight.type)}</div>
@@ -225,7 +225,7 @@ export default function StudentProgressReportPage() {
                                         <Tooltip
                                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                         />
-                                        <Line type="monotone" dataKey="percentage" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                        <Line type="monotone" dataKey="percentage" stroke="var(--brand-color)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </CardContent>
@@ -243,7 +243,7 @@ export default function StudentProgressReportPage() {
                                         <XAxis type="number" domain={[0, 100]} hide />
                                         <YAxis dataKey="subject" type="category" width={100} tick={{ fontSize: 12 }} />
                                         <Tooltip cursor={{ fill: 'transparent' }} />
-                                        <Bar dataKey="average" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} background={{ fill: '#f1f5f9' }} />
+                                        <Bar dataKey="average" fill="var(--brand-color)" radius={[0, 4, 4, 0]} barSize={20} background={{ fill: 'rgba(var(--brand-color-rgb), 0.1)' }} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </CardContent>
@@ -353,7 +353,7 @@ export default function StudentProgressReportPage() {
                                     <div className="space-y-6">
                                         {analytics.activities.map((act, i) => (
                                             <div key={i} className="relative pl-6 border-l-2 border-slate-200 last:border-0 pb-4">
-                                                <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-blue-100 border-2 border-blue-500" />
+                                                <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-brand/10 border-2 border-brand" />
                                                 <p className="text-xs text-muted-foreground mb-1">{format(new Date(act.date), "MMMM d, yyyy")}</p>
                                                 <h4 className="font-bold text-sm">{act.title}</h4>
                                                 <p className="text-sm text-slate-600 mt-1">{act.description}</p>

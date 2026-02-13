@@ -12,6 +12,7 @@ interface StudentQueryOptions {
     filters?: {
         status?: string;
         class?: string;
+        academicYearId?: string;
     };
     sort?: {
         field: string;
@@ -92,6 +93,38 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
             whereClause.classroom = { name: filters.class };
         }
 
+        // Academic Year Filter
+        if (filters.academicYearId) {
+            const academicYear = await prisma.academicYear.findUnique({
+                where: { id: filters.academicYearId }
+            });
+
+            if (academicYear) {
+                // Logic: Student must have joined ON or BEFORE the end of the academic year
+                // AND (Leaving Date is NULL OR Leaving Date >= Start of Academic Year)
+                // This captures students present during the academic year.
+
+                // We use explicit AND to combine with existing filters
+                if (!whereClause.AND) whereClause.AND = [];
+
+                // 1. Joined before/during the year
+                whereClause.AND.push({
+                    OR: [
+                        { joiningDate: { lte: academicYear.endDate } },
+                        { joiningDate: null } // Handle missing joining date (assume joined long ago)
+                    ]
+                });
+
+                // 2. Left after start of year or active
+                whereClause.AND.push({
+                    OR: [
+                        { leavingDate: null },
+                        { leavingDate: { gte: academicYear.startDate } }
+                    ]
+                });
+            }
+        }
+
         let orderBy: any = { createdAt: "desc" };
         if (sort && sort.field) {
             if (sort.field === 'name') {
@@ -149,6 +182,7 @@ export async function getStudentAction(id: string) {
             where: { id },
             include: {
                 classroom: true,
+                promotedToClassroom: true,
                 school: true
             }
         });

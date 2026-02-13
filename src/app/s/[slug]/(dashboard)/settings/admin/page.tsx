@@ -91,13 +91,13 @@ export default function AdminSettingsPage() {
                 </div>
                 <button
                     onClick={() => setShowAddModal(true)}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-200"
+                    className="flex items-center gap-2 px-6 py-3 bg-brand text-white hover:brightness-110 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20"
                 >
                     <Plus className="h-4 w-4" /> Add Admin
                 </button>
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-3xl p-6 flex gap-4 text-blue-700 text-sm">
+            <div className="bg-brand/5 border border-brand/10 rounded-3xl p-6 flex gap-4 text-brand text-sm">
                 <ShieldCheck className="h-6 w-6 shrink-0" />
                 <div className="space-y-1">
                     <p className="font-bold">Privileged Access</p>
@@ -113,17 +113,17 @@ export default function AdminSettingsPage() {
                         key={admin.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="group bg-white rounded-[32px] border border-zinc-100 p-6 flex items-center justify-between transition-all hover:border-blue-200 hover:shadow-xl hover:shadow-zinc-200/50"
+                        className="group bg-white rounded-[32px] border border-zinc-100 p-6 flex items-center justify-between transition-all hover:border-brand/40 hover:shadow-xl hover:shadow-brand/5"
                     >
                         <div className="flex items-center gap-6">
                             <div className={`h-16 w-16 border-2 rounded-[22px] flex items-center justify-center text-xl font-black transition-all duration-300 shadow-sm ${admin.status === "ACTIVE"
-                                ? "bg-zinc-50 border-zinc-100 text-zinc-400 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600"
+                                ? "bg-zinc-50 border-zinc-100 text-zinc-400 group-hover:bg-brand group-hover:text-white group-hover:border-brand"
                                 : "bg-red-50 border-red-200 text-red-400"
                                 }`}>
                                 {admin.firstName?.[0]}{admin.lastName?.[0]}
                             </div>
                             <div className="space-y-1">
-                                <p className="text-lg font-black text-zinc-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">
+                                <p className="text-lg font-black text-zinc-900 group-hover:text-brand transition-colors uppercase tracking-tight">
                                     {admin.firstName} {admin.lastName}
                                 </p>
                                 <div className="flex items-center gap-6">
@@ -147,7 +147,7 @@ export default function AdminSettingsPage() {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => handleToggleStatus(admin.id)}
-                                className="h-10 w-10 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all"
+                                className="h-10 w-10 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 hover:bg-brand/5 hover:text-brand hover:border-brand/40 transition-all"
                                 title={admin.status === "ACTIVE" ? "Deactivate" : "Activate"}
                             >
                                 <Power className="h-4 w-4" />
@@ -321,7 +321,7 @@ function AddAdminModal({ isOpen, onClose, schoolId, onSuccess }: any) {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-4 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full py-4 bg-brand text-white hover:brightness-110 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Add Administrator"}
                             </button>
@@ -450,7 +450,7 @@ function EditAdminModal({ isOpen, onClose, admin, onSuccess }: any) {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-4 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full py-4 bg-brand text-white hover:brightness-110 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Update Administrator"}
                             </button>

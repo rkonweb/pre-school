@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getCurrentUserAction } from "./session-actions";
 
-export async function addHealthRecordAction(schoolSlug: string, studentId: string, data: any) {
+export async function addHealthRecordAction(schoolSlug: string, studentId: string, data: any, academicYearId?: string) {
     try {
         const userRes = await getCurrentUserAction();
         if (!userRes.success) return { success: false, error: "Unauthorized" };
@@ -20,7 +20,8 @@ export async function addHealthRecordAction(schoolSlug: string, studentId: strin
                 visionRight: data.visionRight,
                 dentalStatus: data.dentalStatus,
                 generalHealth: data.generalHealth,
-                recordedById: currentUser?.id
+                recordedById: currentUser?.id,
+                academicYearId
             }
         });
 
@@ -31,10 +32,13 @@ export async function addHealthRecordAction(schoolSlug: string, studentId: strin
     }
 }
 
-export async function getStudentHealthHistoryAction(studentId: string) {
+export async function getStudentHealthHistoryAction(studentId: string, academicYearId?: string) {
     try {
+        const where: any = { studentId };
+        if (academicYearId) where.academicYearId = academicYearId;
+
         const records = await prisma.studentHealthRecord.findMany({
-            where: { studentId },
+            where,
             orderBy: { recordedAt: 'desc' },
             include: { recordedBy: { select: { firstName: true, lastName: true } } }
         });

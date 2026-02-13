@@ -120,7 +120,7 @@ export default function IssueBookPage() {
                     <div key={s} className="flex items-center gap-2">
                         <div className={cn(
                             "flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold",
-                            step >= s ? "bg-blue-600 text-white" : "bg-zinc-100 text-zinc-400"
+                            step >= s ? "bg-brand text-white" : "bg-zinc-100 text-zinc-400"
                         )}>
                             {s}
                         </div>
@@ -140,7 +140,7 @@ export default function IssueBookPage() {
                                 onClick={() => { setUserType("student"); setUserQuery(""); setUserResults([]); }}
                                 className={cn(
                                     "flex-1 rounded-xl border-2 p-4 font-bold transition-all",
-                                    userType === "student" ? "border-blue-600 bg-blue-50 text-blue-700" : "border-zinc-100 bg-white text-zinc-500 hover:border-zinc-200"
+                                    userType === "student" ? "border-brand bg-brand/5 text-brand" : "border-zinc-100 bg-white text-zinc-500 hover:border-zinc-200"
                                 )}
                             >
                                 Student
@@ -149,7 +149,7 @@ export default function IssueBookPage() {
                                 onClick={() => { setUserType("staff"); setUserQuery(""); setUserResults([]); }}
                                 className={cn(
                                     "flex-1 rounded-xl border-2 p-4 font-bold transition-all",
-                                    userType === "staff" ? "border-blue-600 bg-blue-50 text-blue-700" : "border-zinc-100 bg-white text-zinc-500 hover:border-zinc-200"
+                                    userType === "staff" ? "border-brand bg-brand/5 text-brand" : "border-zinc-100 bg-white text-zinc-500 hover:border-zinc-200"
                                 )}
                             >
                                 Staff
@@ -162,7 +162,7 @@ export default function IssueBookPage() {
                                 autoFocus
                                 type="text"
                                 placeholder={`Search ${userType}...`}
-                                className="w-full rounded-2xl border-0 bg-zinc-50 py-4 pl-12 pr-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all"
+                                className="w-full rounded-2xl border-0 bg-zinc-50 py-4 pl-12 pr-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:bg-white focus:ring-2 focus:ring-brand transition-all"
                                 value={userQuery}
                                 onChange={(e) => handleUserSearch(e.target.value)}
                             />
@@ -177,7 +177,7 @@ export default function IssueBookPage() {
                                     onClick={() => { setSelectedUser(user); setStep(2); }}
                                     className="flex w-full items-center gap-4 rounded-xl p-3 text-left hover:bg-zinc-50 transition-colors"
                                 >
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-brand">
                                         <User className="h-5 w-5" />
                                     </div>
                                     <div>
@@ -202,8 +202,8 @@ export default function IssueBookPage() {
                             <button onClick={() => setStep(1)} className="text-sm font-medium text-zinc-500 hover:text-zinc-900">Change User</button>
                         </div>
 
-                        <div className="flex items-center gap-3 rounded-xl bg-blue-50 p-4 text-blue-900">
-                            <User className="h-5 w-5 text-blue-600" />
+                        <div className="flex items-center gap-3 rounded-xl bg-brand/5 p-4 text-brand">
+                            <User className="h-5 w-5 text-brand" />
                             <span className="font-medium">Issuing to: <b>{selectedUser?.firstName} {selectedUser?.lastName}</b></span>
                         </div>
 
@@ -213,7 +213,7 @@ export default function IssueBookPage() {
                                 autoFocus
                                 type="text"
                                 placeholder="Search book by title or ISBN..."
-                                className="w-full rounded-2xl border-0 bg-zinc-50 py-4 pl-12 pr-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all"
+                                className="w-full rounded-2xl border-0 bg-zinc-50 py-4 pl-12 pr-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:bg-white focus:ring-2 focus:ring-brand transition-all"
                                 value={bookQuery}
                                 onChange={(e) => handleBookSearch(e.target.value)}
                             />
@@ -286,7 +286,7 @@ export default function IssueBookPage() {
                                 <Calendar className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
                                 <input
                                     type="date"
-                                    className="w-full rounded-2xl border-0 bg-zinc-50 py-4 pl-12 pr-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:bg-white focus:ring-2 focus:ring-blue-600 transition-all font-medium"
+                                    className="w-full rounded-2xl border-0 bg-zinc-50 py-4 pl-12 pr-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:bg-white focus:ring-2 focus:ring-brand transition-all font-medium"
                                     value={dueDate}
                                     onChange={(e) => setDueDate(e.target.value)}
                                 />
@@ -303,7 +303,7 @@ export default function IssueBookPage() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting}
-                                className="flex-[2] flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:scale-[1.02] disabled:opacity-50"
+                                className="flex-[2] flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:scale-[1.02] disabled:opacity-50"
                             >
                                 {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
                                 Confirm Issue

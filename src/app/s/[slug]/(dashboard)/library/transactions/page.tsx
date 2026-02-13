@@ -77,7 +77,7 @@ export default function LibraryTransactionsPage() {
 
             {loading ? (
                 <div className="flex justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <Loader2 className="h-8 w-8 animate-spin text-brand" />
                 </div>
             ) : (
                 <div className="rounded-3xl bg-white shadow-sm ring-1 ring-zinc-100 overflow-hidden">
@@ -104,7 +104,7 @@ export default function LibraryTransactionsPage() {
                                         <tr key={tx.id} className="hover:bg-zinc-50/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-start gap-3">
-                                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand/5 text-brand">
                                                         <BookOpen className="h-5 w-5" />
                                                     </div>
                                                     <div>

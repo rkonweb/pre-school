@@ -13,7 +13,8 @@ import {
     Globe,
     LogOut,
     CreditCard,
-    Fingerprint
+    Fingerprint,
+    CalendarDays
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -114,6 +115,15 @@ export default function SettingsHubPage() {
             color: "text-orange-600",
             bg: "bg-orange-50",
             accent: "orange"
+        },
+        {
+            title: "Academic Years",
+            desc: "Manage school calendar periods, define active sessions and historical archives.",
+            href: `/s/${slug}/settings/academic-years`,
+            icon: CalendarDays,
+            color: "text-rose-500",
+            bg: "bg-rose-50",
+            accent: "rose"
         }
     ];
 

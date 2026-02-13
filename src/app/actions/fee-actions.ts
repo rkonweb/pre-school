@@ -2,11 +2,12 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { eachMonthOfInterval, format } from "date-fns";
 
 import { getCurrentUserAction } from "./session-actions";
 import { verifyClassAccess } from "@/lib/access-control";
 
-export async function createFeeAction(studentId: string, title: string, amount: number, dueDate: Date, description?: string) {
+export async function createFeeAction(studentId: string, title: string, amount: number, dueDate: Date, description?: string, academicYearId?: string) {
     try {
         // PERMISSION CHECK
         const userRes = await getCurrentUserAction();
@@ -34,7 +35,8 @@ export async function createFeeAction(studentId: string, title: string, amount: 
                 amount,
                 dueDate: new Date(dueDate),
                 status: "PENDING",
-                description
+                description,
+                academicYearId
             }
         });
         return { success: true, data: fee };
@@ -43,7 +45,7 @@ export async function createFeeAction(studentId: string, title: string, amount: 
     }
 }
 
-export async function getStudentFeesAction(studentId: string) {
+export async function getStudentFeesAction(studentId: string, academicYearId?: string) {
     try {
         // PERMISSION CHECK
         const userRes = await getCurrentUserAction();
@@ -60,9 +62,17 @@ export async function getStudentFeesAction(studentId: string) {
             }
         }
 
+        const query: any = { studentId };
+        if (academicYearId) {
+            query.academicYearId = academicYearId;
+        }
+
         const fees = await prisma.fee.findMany({
-            where: { studentId },
-            include: { payments: true },
+            where: query,
+            include: {
+                payments: true,
+                academicYear: true
+            },
             orderBy: { dueDate: 'asc' }
         });
         return { success: true, data: fees };
@@ -71,7 +81,7 @@ export async function getStudentFeesAction(studentId: string) {
     }
 }
 
-export async function recordPaymentAction(feeId: string, amount: number, method: string, reference?: string) {
+export async function recordPaymentAction(feeId: string, amount: number, method: string, reference?: string, paymentDate?: Date) {
     try {
         // PERMISSION CHECK
         const userRes = await getCurrentUserAction();
@@ -97,7 +107,8 @@ export async function recordPaymentAction(feeId: string, amount: number, method:
                 feeId,
                 amount,
                 method,
-                reference
+                reference,
+                date: paymentDate ? new Date(paymentDate) : new Date() // Use provided date or now
             }
         });
 
@@ -130,6 +141,188 @@ export async function recordPaymentAction(feeId: string, amount: number, method:
     }
 }
 
+export async function syncStudentFeesAction(studentId: string, schoolSlug: string, forceReset = false) {
+    try {
+        const student = await prisma.student.findUnique({
+            where: { id: studentId },
+            include: { school: true, classroom: true }
+        }) as any;
+
+        if (!student) return { success: false, error: "Student not found" };
+
+        // FALLBACK: If prisma client is out of sync and doesn't fetch new fields, use raw query
+        if (student.promotedToClassroomId === undefined) {
+            const raw: any[] = await prisma.$queryRawUnsafe(
+                `SELECT promotedToClassroomId, promotedToGrade FROM Student WHERE id = ?`,
+                studentId
+            );
+            if (raw && raw.length > 0) {
+                student.promotedToClassroomId = raw[0].promotedToClassroomId;
+                student.promotedToGrade = raw[0].promotedToGrade;
+            }
+        }
+
+        if (forceReset) {
+            // PURGE: Remove all PENDING fees that have NO payments
+            // This cleans up manual mistakes, old duplicates, and specifically "TEST" fees
+            await prisma.fee.deleteMany({
+                where: {
+                    studentId,
+                    status: "PENDING",
+                    payments: { none: {} }
+                }
+            });
+        }
+
+        if (!student.classroomId) return { success: true, message: "No class assigned, skipping fee sync." };
+
+        // 1. Get Academic Years (Current and next if exists)
+        const academicYears = await prisma.academicYear.findMany({
+            where: { schoolId: student.schoolId },
+            orderBy: { startDate: 'desc' }
+        });
+
+        const currentYear = academicYears.find(y => y.isCurrent);
+        // Find next year: One with later start date than current
+        const nextYear = currentYear
+            ? academicYears.find(y => new Date(y.startDate) > new Date(currentYear.startDate))
+            : null;
+
+        const syncYears = [currentYear, nextYear].filter(Boolean);
+
+        const summaries = [];
+
+        for (const year of syncYears) {
+            if (!year) continue;
+
+            const isCurrentYear = year.isCurrent;
+            const targetClassroomId = isCurrentYear
+                ? student.classroomId
+                : ((student as any).promotedToClassroomId || student.classroomId);
+
+            if (!targetClassroomId) continue;
+
+            // 2. Find ALL structures for this year
+            const structures = await prisma.feeStructure.findMany({
+                where: {
+                    schoolId: student.schoolId,
+                    academicYear: year.name,
+                },
+                include: { components: true }
+            });
+
+            // Find ALL matching structures for this student's class
+            const matchingStructures = structures.filter(s => {
+                try {
+                    const classIds = JSON.parse(s.classIds || "[]");
+                    return Array.isArray(classIds) && classIds.includes(targetClassroomId);
+                } catch (e) { return false; }
+            });
+
+            if (matchingStructures.length === 0) continue;
+
+            // 3. FETCH ALL EXISTING FEES FOR THIS YEAR
+            const existingFees = await prisma.fee.findMany({
+                where: {
+                    studentId,
+                    academicYearId: year.id
+                }
+            });
+            const existingTitles = new Set(existingFees.map(f => f.title.trim().toLowerCase()));
+
+            // 4. Generate Fees from ALL matching structures
+            for (const structure of matchingStructures) {
+                for (const component of structure.components) {
+                    if (component.frequency === 'TERM') {
+                        const componentConfig = component.config ? JSON.parse(component.config) : { terms: [] };
+                        const terms = componentConfig.terms || [];
+
+                        for (const term of terms) {
+                            const termName = term.name || `Term ${terms.indexOf(term) + 1}`;
+                            const title = `${component.name} - ${termName}`;
+                            const amount = parseFloat(term.amount);
+                            const dueDate = term.dueDate ? new Date(term.dueDate) : new Date();
+
+                            if (!existingTitles.has(title.trim().toLowerCase())) {
+                                await prisma.fee.create({
+                                    data: {
+                                        studentId,
+                                        academicYearId: year.id,
+                                        title,
+                                        amount,
+                                        dueDate,
+                                        status: "PENDING",
+                                        description: `Auto-generated from ${structure.name}`
+                                    }
+                                });
+                                existingTitles.add(title.trim().toLowerCase());
+                            }
+                        }
+                    } else if (component.frequency === 'MONTHLY') {
+                        // Generate fees for each month in the academic year
+                        const months = eachMonthOfInterval({
+                            start: new Date(year.startDate),
+                            end: new Date(year.endDate)
+                        });
+
+                        for (const monthDate of months) {
+                            const monthName = format(monthDate, "MMMM yyyy");
+                            const title = `${component.name} - ${monthName}`;
+                            const amount = component.amount; // Monthly amount
+
+                            // Default due date: 10th of each month
+                            const dueDate = new Date(monthDate);
+                            dueDate.setDate(10);
+
+                            if (!existingTitles.has(title.trim().toLowerCase())) {
+                                await prisma.fee.create({
+                                    data: {
+                                        studentId,
+                                        academicYearId: year.id,
+                                        title,
+                                        amount,
+                                        dueDate,
+                                        status: "PENDING",
+                                        description: `Monthly fee from ${structure.name}`
+                                    }
+                                });
+                                existingTitles.add(title.trim().toLowerCase());
+                            }
+                        }
+                    } else {
+                        const title = component.name;
+                        const amount = component.amount;
+                        const dueDate = component.dueDate ? new Date(component.dueDate) : new Date();
+
+                        if (!existingTitles.has(title.trim().toLowerCase())) {
+                            await prisma.fee.create({
+                                data: {
+                                    studentId,
+                                    academicYearId: year.id,
+                                    title,
+                                    amount,
+                                    dueDate,
+                                    status: "PENDING",
+                                    description: `Auto-generated from ${structure.name}`
+                                }
+                            });
+                            existingTitles.add(title.trim().toLowerCase());
+                        }
+                    }
+                }
+            }
+            summaries.push(year.name);
+        }
+
+        revalidatePath(`/s/${schoolSlug}/students/${studentId}`);
+        return { success: true, message: `Synced fees for: ${summaries.join(", ")}` };
+
+    } catch (error: any) {
+        console.error("Sync Fee Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
 export async function getFeeStructuresAction(schoolSlug: string) {
     try {
         const structures = await prisma.feeStructure.findMany({
@@ -148,12 +341,12 @@ export async function getFeeStructuresAction(schoolSlug: string) {
 
 export async function updateFeeAction(id: string, data: any) {
     try {
+        // Due Date is NOT updated here to ensure immutability after creation
         const fee = await prisma.fee.update({
             where: { id },
             data: {
                 title: data.title,
                 amount: data.amount,
-                dueDate: new Date(data.dueDate),
                 description: data.description
             }
         });

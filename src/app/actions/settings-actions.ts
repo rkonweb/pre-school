@@ -106,6 +106,28 @@ export async function saveSystemSettingsAction(data: any) {
     }
 }
 
+export async function saveAPISettingsAction(data: any) {
+    try {
+        // Only update API-related fields
+        await prisma.systemSettings.update({
+            where: { id: 'global' },
+            data: {
+                smtpHost: data.smtpHost,
+                smtpPort: Number(data.smtpPort),
+                smtpUser: data.smtpUser,
+                smtpPass: data.smtpPass,
+                smtpSender: data.smtpSender,
+                integrationsConfig: (data as any).integrationsConfig
+            }
+        });
+        revalidatePath("/admin/settings/apis");
+        return { success: true };
+    } catch (error: any) {
+        console.error("saveAPISettingsAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
 export async function getInfrastructureStatsAction() {
     try {
         const schoolsCount = await prisma.school.count();
@@ -186,6 +208,7 @@ export async function getSchoolSettingsAction(slug: string) {
                 city: school.city,
                 state: school.state,
                 logo: school.logo,
+                printableLogo: (school as any).printableLogo,
                 brandColor: school.brandColor || school.primaryColor,
                 primaryColor: school.primaryColor,
                 secondaryColor: school.secondaryColor,
@@ -193,6 +216,7 @@ export async function getSchoolSettingsAction(slug: string) {
                 currency: school.currency || "INR",
                 academicYearStart: school.academicYearStart,
                 academicYearEnd: school.academicYearEnd,
+                academicYearStartMonth: school.academicYearStartMonth || 4,
                 workingDays: (() => {
                     try {
                         return school.workingDays ? JSON.parse(school.workingDays) : ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -243,6 +267,7 @@ export async function updateSchoolProfileAction(slug: string, data: any) {
 
         // Branding
         if (data.logo !== undefined) updateData.logo = data.logo;
+        if (data.printableLogo !== undefined) updateData.printableLogo = data.printableLogo;
         if (data.brandColor || data.primaryColor) {
             const color = data.brandColor || data.primaryColor;
             updateData.brandColor = color;
@@ -270,6 +295,10 @@ export async function updateSchoolProfileAction(slug: string, data: any) {
         // Dates
         if (data.academicYearStart) updateData.academicYearStart = new Date(data.academicYearStart);
         if (data.academicYearEnd) updateData.academicYearEnd = new Date(data.academicYearEnd);
+
+        if (data.academicYearStartMonth !== undefined) {
+            updateData.academicYearStartMonth = parseInt(data.academicYearStartMonth as any);
+        }
 
         const updated = await (prisma as any).school.update({
             where: { id: school.id },

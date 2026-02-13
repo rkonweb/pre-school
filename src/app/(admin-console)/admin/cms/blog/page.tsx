@@ -12,7 +12,7 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
-import { BlogPost } from "@prisma/client"; // Or define interface if needed
+import { BlogPost } from "@/generated/client"; // Or define interface if needed
 
 // Types
 interface BlogSection {

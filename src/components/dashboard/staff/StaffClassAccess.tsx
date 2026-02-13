@@ -65,7 +65,7 @@ export function StaffClassAccess({ staffId, classrooms }: StaffClassAccessProps)
         <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/50">
             <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100/50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-brand">
                         <Shield className="h-5 w-5" />
                     </div>
                     <div>
@@ -96,19 +96,19 @@ export function StaffClassAccess({ staffId, classrooms }: StaffClassAccessProps)
                                 className={cn(
                                     "cursor-pointer rounded-lg border p-3 py-4 transition-all flex items-center justify-between",
                                     hasAccess
-                                        ? "border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/20"
+                                        ? "border-brand/20 bg-brand/5 dark:border-brand/30 dark:bg-brand/10"
                                         : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
                                 )}
                             >
                                 <div className="flex items-center gap-3">
                                     <div className={cn(
                                         "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
-                                        hasAccess ? "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400" : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+                                        hasAccess ? "bg-brand/10 text-brand" : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
                                     )}>
                                         {hasAccess ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                                     </div>
                                     <div>
-                                        <p className={cn("text-sm font-medium", hasAccess ? "text-blue-900 dark:text-blue-100" : "text-zinc-700 dark:text-zinc-300")}>
+                                        <p className={cn("text-sm font-medium", hasAccess ? "text-brand" : "text-zinc-700 dark:text-zinc-300")}>
                                             {classroom.name}
                                         </p>
                                         <p className="text-xs text-zinc-500">
@@ -117,7 +117,7 @@ export function StaffClassAccess({ staffId, classrooms }: StaffClassAccessProps)
                                     </div>
                                 </div>
                                 {hasAccess && (
-                                    <div className="text-blue-600 dark:text-blue-400">
+                                    <div className="text-brand">
                                         <Check className="h-5 w-5" />
                                     </div>
                                 )}

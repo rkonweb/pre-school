@@ -79,24 +79,43 @@ export function RegionalConfig({ slug, initialData }: RegionalConfigProps) {
                                 </select>
                             </div>
                         </div>
-
                         <div className="space-y-1.5 md:col-span-2">
                             <label className="text-[10px] uppercase tracking-widest text-zinc-400 font-black">System Timezone</label>
                             <div className="relative">
                                 <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-300" />
                                 <select
-                                    value={formData.timezone || "UTC-5 (EST)"}
+                                    value={formData.timezone || "Asia/Kolkata"}
                                     onChange={e => setFormData({ ...formData, timezone: e.target.value })}
                                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 font-black focus:ring-2 focus:ring-blue-600 transition-all appearance-none"
                                 >
-                                    <option>UTC-8 (PST) - Pacific Time</option>
-                                    <option>UTC-5 (EST) - Eastern Time</option>
-                                    <option>UTC+0 (GMT) - Universal Time</option>
-                                    <option>UTC+1 (CET) - Central European</option>
-                                    <option>UTC+5:30 (IST) - India Standard</option>
-                                    <option>UTC+8 (SGT) - Singapore Time</option>
+                                    <option value="America/Los_Angeles">UTC-8 (PST) - Pacific Time</option>
+                                    <option value="America/New_York">UTC-5 (EST) - Eastern Time</option>
+                                    <option value="UTC">UTC+0 (GMT) - Universal Time</option>
+                                    <option value="Europe/Paris">UTC+1 (CET) - Central European</option>
+                                    <option value="Asia/Kolkata">UTC+5:30 (IST) - India Standard</option>
+                                    <option value="Asia/Singapore">UTC+8 (SGT) - Singapore Time</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div className="space-y-1.5 md:col-span-2">
+                            <label className="text-[10px] uppercase tracking-widest text-zinc-400 font-black">Academic Year Cycle</label>
+                            <div className="relative">
+                                <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-300" />
+                                <select
+                                    value={formData.academicYearStartMonth || 4}
+                                    onChange={e => setFormData({ ...formData, academicYearStartMonth: parseInt(e.target.value) })}
+                                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 font-black focus:ring-2 focus:ring-blue-600 transition-all appearance-none"
+                                >
+                                    <option value={1}>January Start</option>
+                                    <option value={4}>April Start (Standard)</option>
+                                    <option value={6}>June Start</option>
+                                    <option value={9}>September Start (International)</option>
+                                </select>
+                            </div>
+                            <p className="mt-2 text-[10px] text-zinc-400 font-medium italic">
+                                * Reports will automatically calculate the current year (e.g., 2024-2025) based on this month.
+                            </p>
                         </div>
                     </div>
 
@@ -111,8 +130,8 @@ export function RegionalConfig({ slug, initialData }: RegionalConfigProps) {
                             Update Operations
                         </button>
                     </div>
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+        </div >
     );
 }

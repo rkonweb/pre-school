@@ -20,7 +20,8 @@ import {
     Trash2,
     Activity,
     Users,
-    Key
+    Key,
+    ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getSystemSettingsAction, saveSystemSettingsAction, getInfrastructureStatsAction, testAIIntegrationAction } from "@/app/actions/settings-actions";
@@ -244,223 +245,30 @@ export default function AdminSettingsPage() {
                         </div>
                     </div>
 
-                    {/* Email Gateway */}
-                    <div className="rounded-[2.5rem] bg-white border border-zinc-100 p-8 shadow-sm">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="h-12 w-12 rounded-3xl bg-amber-50 flex items-center justify-center text-amber-600 ring-8 ring-amber-50/50">
-                                <Mail className="h-6 w-6" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tighter">Email Gateway</h3>
-                                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">SMTP configuration for system emails.</p>
-                            </div>
-                        </div>
-                        <div className="grid md:grid-cols-3 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Host</label>
-                                <input
-                                    value={settings.smtpHost || ""}
-                                    onChange={(e) => setSettings({ ...settings, smtpHost: e.target.value })}
-                                    className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 p-4 text-sm font-bold text-zinc-700 outline-none"
-                                    placeholder="smtp.provider.com"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Port</label>
-                                <input
-                                    type="number"
-                                    value={settings.smtpPort || 587}
-                                    onChange={(e) => setSettings({ ...settings, smtpPort: Number(e.target.value) })}
-                                    className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 p-4 text-sm font-bold text-zinc-700 outline-none"
-                                    placeholder="587"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Sender Email</label>
-                                <input
-                                    value={settings.smtpSender || ""}
-                                    onChange={(e) => setSettings({ ...settings, smtpSender: e.target.value })}
-                                    className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 p-4 text-sm font-bold text-zinc-700 outline-none"
-                                    placeholder="noreply@domain.com"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Username</label>
-                                <input
-                                    value={settings.smtpUser || ""}
-                                    onChange={(e) => setSettings({ ...settings, smtpUser: e.target.value })}
-                                    className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 p-4 text-sm font-bold text-zinc-700 outline-none"
-                                />
-                            </div>
-                            <div className="md:col-span-2 space-y-2 text-right">
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 block text-left">API Key / Password</label>
-                                <div className="relative">
-                                    <input
-                                        type="password"
-                                        value={settings.smtpPass || ""}
-                                        onChange={(e) => setSettings({ ...settings, smtpPass: e.target.value })}
-                                        className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 p-4 font-mono text-sm font-bold text-zinc-700 outline-none"
-                                    />
-                                    <Key className="absolute right-4 top-4 h-4 w-4 text-zinc-300" />
-                                </div>
-                            </div>
-                        </div>
+                </div>
+
+                {/* API Management Redirection */}
+                <div
+                    onClick={() => window.location.href = '/admin/settings/apis'}
+                    className="col-span-1 lg:col-span-2 rounded-[2.5rem] bg-gradient-to-br from-zinc-900 to-zinc-800 p-8 shadow-xl text-white relative overflow-hidden group cursor-pointer transition-all hover:scale-[1.01]"
+                >
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Server className="h-32 w-32" />
                     </div>
 
-                    {/* AI Integrations Gateway */}
-                    <div className="rounded-[2.5rem] bg-white border border-zinc-100 p-8 shadow-sm">
-                        <div className="flex items-center justify-between gap-4 mb-8">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-3xl bg-indigo-50 flex items-center justify-center text-indigo-600 ring-8 ring-indigo-50/50">
-                                    <Activity className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tighter">AI Integrations</h3>
-                                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Configure LLM providers for the Page Builder.</p>
-                                </div>
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div className="flex items-center gap-6">
+                            <div className="h-16 w-16 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/10">
+                                <Server className="h-8 w-8 text-indigo-300" />
                             </div>
-
-                            {/* Default Provider Selector */}
-                            <div className="flex items-center gap-2 bg-zinc-50 p-1.5 rounded-2xl border border-zinc-100">
-                                <button
-                                    onClick={() => {
-                                        try {
-                                            const config = JSON.parse(settings.integrationsConfig || "{}");
-                                            config.defaultProvider = 'google';
-                                            setSettings({ ...settings, integrationsConfig: JSON.stringify(config) });
-                                        } catch (e) { }
-                                    }}
-                                    className={cn(
-                                        "px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                        (() => {
-                                            try {
-                                                const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                return (config.defaultProvider || 'google') === 'google';
-                                            } catch (e) { return true; }
-                                        })() ? "bg-white text-zinc-900 shadow-sm border border-zinc-100" : "text-zinc-400 hover:text-zinc-600"
-                                    )}
-                                >
-                                    Google
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        try {
-                                            const config = JSON.parse(settings.integrationsConfig || "{}");
-                                            config.defaultProvider = 'openai';
-                                            setSettings({ ...settings, integrationsConfig: JSON.stringify(config) });
-                                        } catch (e) { }
-                                    }}
-                                    className={cn(
-                                        "px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                        (() => {
-                                            try {
-                                                const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                return config.defaultProvider === 'openai';
-                                            } catch (e) { return false; }
-                                        })() ? "bg-white text-zinc-900 shadow-sm border border-zinc-100" : "text-zinc-400 hover:text-zinc-600"
-                                    )}
-                                >
-                                    OpenAI
-                                </button>
+                            <div>
+                                <h3 className="text-2xl font-black uppercase tracking-tighter">API Connectors</h3>
+                                <p className="text-indigo-200 font-medium mt-1">Manage Email SMTP & AI Integrations</p>
                             </div>
                         </div>
 
-                        <div className="space-y-8">
-                            {/* Google Config */}
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Google AI Studio (Gemini)</label>
-                                    <AIStatusBadge
-                                        apiKey={(() => {
-                                            try {
-                                                const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                return config.googleAiKey || "";
-                                            } catch (e) { return ""; }
-                                        })()}
-                                        provider="google"
-                                    />
-                                </div>
-                                <div className="flex gap-3">
-                                    <div className="relative flex-1">
-                                        <input
-                                            type="password"
-                                            value={(() => {
-                                                try {
-                                                    const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                    return config.googleAiKey || "";
-                                                } catch (e) { return ""; }
-                                            })()}
-                                            onChange={(e) => {
-                                                try {
-                                                    const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                    config.googleAiKey = e.target.value;
-                                                    setSettings({ ...settings, integrationsConfig: JSON.stringify(config) });
-                                                } catch (e) { }
-                                            }}
-                                            className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 p-4 font-mono text-sm font-bold text-zinc-700 outline-none pr-12"
-                                            placeholder="AIzaSy..."
-                                        />
-                                        <Key className="absolute right-4 top-4 h-4 w-4 text-zinc-300" />
-                                    </div>
-                                    <TestKeyButton
-                                        provider="google"
-                                        apiKey={(() => {
-                                            try {
-                                                const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                return config.googleAiKey || "";
-                                            } catch (e) { return ""; }
-                                        })()}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* OpenAI Config */}
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">OpenAI (GPT-4o)</label>
-                                    <AIStatusBadge
-                                        apiKey={(() => {
-                                            try {
-                                                const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                return config.openAiKey || "";
-                                            } catch (e) { return ""; }
-                                        })()}
-                                        provider="openai"
-                                    />
-                                </div>
-                                <div className="flex gap-3">
-                                    <div className="relative flex-1">
-                                        <input
-                                            type="password"
-                                            value={(() => {
-                                                try {
-                                                    const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                    return config.openAiKey || "";
-                                                } catch (e) { return ""; }
-                                            })()}
-                                            onChange={(e) => {
-                                                try {
-                                                    const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                    config.openAiKey = e.target.value;
-                                                    setSettings({ ...settings, integrationsConfig: JSON.stringify(config) });
-                                                } catch (e) { }
-                                            }}
-                                            className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 p-4 font-mono text-sm font-bold text-zinc-700 outline-none pr-12"
-                                            placeholder="sk-..."
-                                        />
-                                        <Key className="absolute right-4 top-4 h-4 w-4 text-zinc-300" />
-                                    </div>
-                                    <TestKeyButton
-                                        provider="openai"
-                                        apiKey={(() => {
-                                            try {
-                                                const config = JSON.parse(settings.integrationsConfig || "{}");
-                                                return config.openAiKey || "";
-                                            } catch (e) { return ""; }
-                                        })()}
-                                    />
-                                </div>
-                            </div>
+                        <div className="h-12 w-12 rounded-full bg-white text-zinc-900 flex items-center justify-center group-hover:bg-indigo-400 group-hover:text-white transition-colors">
+                            <ChevronRight className="h-6 w-6" />
                         </div>
                     </div>
                 </div>

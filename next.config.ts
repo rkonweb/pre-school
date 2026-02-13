@@ -11,10 +11,9 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    // serverActions moved to top level in newer Next.js, but keeping experimental empty if needed
-  },
-  serverActions: {
-    bodySizeLimit: '10mb',
+    serverActions: {
+      bodySizeLimit: '20mb',
+    },
   },
   webpack: (config) => {
     config.resolve.alias.canvas = false;

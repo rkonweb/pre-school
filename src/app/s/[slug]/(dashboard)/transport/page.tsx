@@ -30,8 +30,8 @@ export default async function TransportDashboard({ params }: { params: { slug: s
     });
 
     const stats = [
-        { label: "Total Vehicles", value: totalVehicles, icon: Bus, color: "text-blue-600", bg: "bg-blue-100", href: `/s/${params.slug}/transport/vehicles` },
-        { label: "Active Routes", value: totalRoutes, icon: MapPin, color: "text-purple-600", bg: "bg-purple-100", href: `/s/${params.slug}/transport/routes` },
+        { label: "Total Vehicles", value: totalVehicles, icon: Bus, color: "text-brand", bg: "bg-brand/10", href: `/s/${params.slug}/transport/vehicles` },
+        { label: "Active Routes", value: totalRoutes, icon: MapPin, color: "text-brand", bg: "bg-brand/10", href: `/s/${params.slug}/transport/routes` },
         { label: "Active Students", value: activeStudents, icon: Users, color: "text-green-600", bg: "bg-green-100", href: `/s/${params.slug}/transport/assignments` },
         { label: "Pending Requests", value: pendingRequests, icon: AlertCircle, color: "text-orange-600", bg: "bg-orange-100", href: `/s/${params.slug}/transport/requests` },
     ];
@@ -66,9 +66,9 @@ export default async function TransportDashboard({ params }: { params: { slug: s
                         <CardTitle>Quick Actions</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-2">
-                        <Link href={`/s/${params.slug}/transport/routes`} className="text-blue-600 hover:underline">Manage Routes & Stops</Link>
-                        <Link href={`/s/${params.slug}/transport/requests`} className="text-blue-600 hover:underline">Process Applications</Link>
-                        <Link href={`/s/${params.slug}/transport/vehicles`} className="text-blue-600 hover:underline">Manage Fleet</Link>
+                        <Link href={`/s/${params.slug}/transport/routes`} className="text-brand hover:underline">Manage Routes & Stops</Link>
+                        <Link href={`/s/${params.slug}/transport/requests`} className="text-brand hover:underline">Process Applications</Link>
+                        <Link href={`/s/${params.slug}/transport/vehicles`} className="text-brand hover:underline">Manage Fleet</Link>
                     </CardContent>
                 </Card>
             </div>

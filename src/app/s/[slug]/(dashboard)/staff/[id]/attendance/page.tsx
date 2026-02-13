@@ -181,7 +181,7 @@ export default function IndividualStaffAttendanceReport() {
                 <div className="space-y-4">
                     <button
                         onClick={() => router.back()}
-                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-blue-600 transition-colors group"
+                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-brand transition-colors group"
                     >
                         <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-1" />
                         Back to Team
@@ -198,13 +198,13 @@ export default function IndividualStaffAttendanceReport() {
                         </div>
                         <div>
                             <h1 className="text-4xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50 uppercase italic">
-                                {staff.firstName} <span className="text-blue-600">{staff.lastName}</span>
+                                {staff.firstName} <span className="text-brand">{staff.lastName}</span>
                             </h1>
                             <div className="flex items-center gap-3 mt-1">
                                 <span className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-500">
                                     ID: {staff.id.slice(-6).toUpperCase()}
                                 </span>
-                                <span className="text-blue-500 font-black text-[11px] uppercase tracking-widest italic">{staff.designation || "Staff Member"}</span>
+                                <span className="text-brand font-black text-[11px] uppercase tracking-widest italic">{staff.designation || "Staff Member"}</span>
                             </div>
                         </div>
                     </div>
@@ -216,7 +216,7 @@ export default function IndividualStaffAttendanceReport() {
                             onClick={() => setReportRange("MONTH")}
                             className={cn(
                                 "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                reportRange === "MONTH" ? "bg-white dark:bg-zinc-700 shadow-sm text-blue-600" : "text-zinc-400 hover:text-zinc-600"
+                                reportRange === "MONTH" ? "bg-white dark:bg-zinc-700 shadow-sm text-brand" : "text-zinc-400 hover:text-zinc-600"
                             )}
                         >
                             Month
@@ -225,7 +225,7 @@ export default function IndividualStaffAttendanceReport() {
                             onClick={() => setReportRange("YEAR")}
                             className={cn(
                                 "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                reportRange === "YEAR" ? "bg-white dark:bg-zinc-700 shadow-sm text-blue-600" : "text-zinc-400 hover:text-zinc-600"
+                                reportRange === "YEAR" ? "bg-white dark:bg-zinc-700 shadow-sm text-brand" : "text-zinc-400 hover:text-zinc-600"
                             )}
                         >
                             Year
@@ -252,7 +252,7 @@ export default function IndividualStaffAttendanceReport() {
 
                     <button
                         onClick={() => window.print()}
-                        className="px-4 py-3 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all"
+                        className="px-4 py-3 bg-brand text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 hover:brightness-110 transition-all"
                     >
                         Print PDF
                     </button>
@@ -274,8 +274,8 @@ export default function IndividualStaffAttendanceReport() {
                     value={`${stats?.totalHours?.toFixed(1) || 0}h`}
                     icon={<Timer className="h-6 w-6" />}
                     desc="Lifetime work hours"
-                    color="text-blue-500"
-                    bg="bg-blue-500/10"
+                    color="text-brand"
+                    bg="bg-brand/10"
                 />
                 <MetricCard
                     label="Leave Balance"
@@ -301,8 +301,7 @@ export default function IndividualStaffAttendanceReport() {
                     <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl shadow-zinc-200/50 dark:shadow-none overflow-hidden text-zinc-900 dark:text-zinc-50">
                         <div className="p-8 border-b dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
                             <h2 className="text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase italic flex items-center gap-3">
-                                <Calendar className="h-5 w-5 text-blue-500" />
-                                Attendance <span className="text-blue-600">Log</span>
+                                Attendance <span className="text-brand">Log</span>
                             </h2>
                             <div className="flex items-center gap-4 bg-white dark:bg-zinc-800 p-1 rounded-2xl border dark:border-zinc-700 print:hidden">
                                 <button
@@ -400,7 +399,7 @@ export default function IndividualStaffAttendanceReport() {
 
                 {/* Sidebar: Analytics & Leave Trends (Hidden in Print) */}
                 <div className="space-y-10 print:hidden">
-                    <div className="bg-blue-600 p-10 rounded-[2.5rem] text-white space-y-8 shadow-2xl relative overflow-hidden group">
+                    <div className="bg-brand p-10 rounded-[2.5rem] text-white space-y-8 shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-150 transition-transform duration-1000">
                             <Activity className="h-32 w-32" />
                         </div>
@@ -414,8 +413,7 @@ export default function IndividualStaffAttendanceReport() {
 
                     <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 p-8 shadow-xl">
                         <h3 className="text-lg font-black uppercase italic tracking-tighter mb-6 flex items-center gap-2">
-                            <Briefcase className="h-5 w-5 text-blue-500" />
-                            Leave <span className="text-blue-600">History</span>
+                            Leave <span className="text-brand">History</span>
                         </h3>
                         {/* Leave history list... */}
                         {/* Skipping repeated code for brevity, assuming tool merges correctly or I should include it all? 
@@ -426,7 +424,7 @@ export default function IndividualStaffAttendanceReport() {
                                 <p className="text-center py-6 text-zinc-400 font-black uppercase text-[10px] tracking-widest italic border-2 border-dashed border-zinc-50 rounded-3xl">No records found</p>
                             ) : (
                                 leaves.slice(0, 5).map(leave => (
-                                    <div key={leave.id} className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-transparent hover:border-blue-100 transition-all">
+                                    <div key={leave.id} className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-transparent hover:border-brand/30 transition-all">
                                         <div className="flex justify-between items-start">
                                             <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{leave.type}</div>
                                             <span className={cn(
@@ -442,7 +440,7 @@ export default function IndividualStaffAttendanceReport() {
                                 ))
                             )}
                         </div>
-                        <button className="w-full mt-6 py-3 rounded-2xl border-2 border-zinc-100 dark:border-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-blue-600 hover:bg-zinc-50 transition-all">
+                        <button className="w-full mt-6 py-3 rounded-2xl border-2 border-zinc-100 dark:border-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-brand hover:bg-zinc-50 transition-all">
                             View Full History
                         </button>
                     </div>
@@ -588,7 +586,7 @@ function SmallStatusBadge({ status }: { status: string }) {
         PRESENT: "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400",
         ABSENT: "bg-red-50 text-red-700 border-red-100 dark:bg-red-950/20 dark:text-red-400",
         LATE: "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400",
-        HALF_DAY: "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400",
+        HALF_DAY: "bg-brand/10 text-brand border-brand/20 dark:bg-brand/20 dark:text-brand",
         PENDING: "bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
     };
 

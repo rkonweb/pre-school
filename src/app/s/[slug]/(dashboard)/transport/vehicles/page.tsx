@@ -82,7 +82,7 @@ export default function VehiclesPage() {
     };
 
     return (
-        <div className="flex flex-col gap-8 pb-20">
+        <div className="flex flex-col gap-8 pb-20" style={{ '--brand-color': brandColor } as any}>
             {/* Standardized Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div className="flex items-center gap-6">
@@ -104,7 +104,7 @@ export default function VehiclesPage() {
                 <Link
                     href={`/s/${slug}/transport/vehicles/new`}
                     style={{ backgroundColor: brandColor }}
-                    className="h-12 px-8 text-white hover:opacity-90 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="h-12 px-8 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     Add Vehicle
@@ -167,8 +167,7 @@ export default function VehiclesPage() {
                                                 <td className="px-8 py-6">
                                                     <div className="flex items-center gap-4">
                                                         <div
-                                                            style={{ backgroundColor: brandColor }}
-                                                            className="h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"
+                                                            className="h-12 w-12 rounded-2xl bg-brand flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"
                                                         >
                                                             <Bus className="h-5 w-5" />
                                                         </div>

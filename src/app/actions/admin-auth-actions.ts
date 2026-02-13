@@ -1,18 +1,29 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { encrypt, decrypt } from "@/lib/session";
+
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Strong_Master_P@ssw0rd_2026!";
 
 export async function loginSuperAdminAction(password: string) {
-    // In production, verify against env var or database
-    // For now, hardcoding the secure check matching the frontend
-    if (password === "masterkey123") {
+    if (password === ADMIN_PASSWORD) {
+        // Create secure session token (JWT)
+        const sessionToken = await encrypt({
+            role: "SUPER_ADMIN",
+            user: "root",
+            createdAt: Date.now()
+        });
+
+        // Set secure cookie
         const cookieStore = await cookies();
-        cookieStore.set("admin_session", "true", {
+        cookieStore.set("admin_session", sessionToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
-            // No maxAge: Session cookie (expires on close)
+            maxAge: 15 * 60, // 15 minutes idle timeout
+            path: "/"
         });
+
         return { success: true };
     }
     return { success: false, error: "Invalid credentials" };
@@ -21,12 +32,21 @@ export async function loginSuperAdminAction(password: string) {
 export async function isSuperAdminAuthenticated() {
     try {
         const cookieStore = await cookies();
-        const result = cookieStore.get("admin_session")?.value === "true";
-        console.log("[AUTH] isSuperAdminAuthenticated called, result:", result);
-        return result;
+        const token = cookieStore.get("admin_session")?.value;
+
+        if (!token) return false;
+
+        const payload = await decrypt(token);
+
+        // Check if token is valid and has correct role
+        if (payload?.role === "SUPER_ADMIN") {
+            return true;
+        }
+
+        return false;
     } catch (error) {
         console.error("[AUTH] Error in isSuperAdminAuthenticated:", error);
-        return false; // Fail safely
+        return false;
     }
 }
 

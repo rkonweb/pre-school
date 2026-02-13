@@ -95,7 +95,7 @@ export default function CreateClassPage() {
     if (isLoading) {
         return (
             <div className="flex h-[60vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
         );
     }
@@ -149,7 +149,7 @@ export default function CreateClassPage() {
                                 <select
                                     value={grade}
                                     onChange={e => setGrade(e.target.value)}
-                                    className="w-full h-14 px-4 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600 appearance-none"
+                                    className="w-full h-14 px-4 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-brand appearance-none"
                                     required
                                 >
                                     <option value="">Select...</option>
@@ -171,7 +171,7 @@ export default function CreateClassPage() {
                                 <select
                                     value={section}
                                     onChange={e => setSection(e.target.value)}
-                                    className="w-full h-14 px-4 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600 appearance-none"
+                                    className="w-full h-14 px-4 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-brand appearance-none"
                                 >
                                     <option value="">Select...</option>
                                     {sections?.length > 0 ? sections.map((s: any) => (
@@ -194,7 +194,7 @@ export default function CreateClassPage() {
                                 placeholder="e.g. Science Lab 1, Nursery - Rose"
                                 value={customName}
                                 onChange={e => setCustomName(e.target.value)}
-                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600"
+                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-brand"
                                 required
                             />
                         </div>
@@ -206,7 +206,7 @@ export default function CreateClassPage() {
                             <select
                                 value={teacherId}
                                 onChange={e => setTeacherId(e.target.value)}
-                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600 appearance-none"
+                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-brand appearance-none"
                             >
                                 <option value="">Select Teacher</option>
                                 {staff.map((s: any) => (
@@ -225,7 +225,7 @@ export default function CreateClassPage() {
                                 placeholder="e.g. 101"
                                 value={roomNumber}
                                 onChange={e => setRoomNumber(e.target.value)}
-                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600"
+                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-brand"
                             />
                         </div>
                         <div className="space-y-2">
@@ -235,7 +235,7 @@ export default function CreateClassPage() {
                                 placeholder="30"
                                 value={capacity}
                                 onChange={e => setCapacity(parseInt(e.target.value) || 30)}
-                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-blue-600"
+                                className="w-full h-14 px-6 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-brand"
                                 min={1}
                             />
                         </div>
@@ -250,7 +250,7 @@ export default function CreateClassPage() {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="flex-1 h-14 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="flex-1 h-14 bg-brand text-white hover:brightness-110 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                             {isSaving ? "Creating..." : "Create Class"}

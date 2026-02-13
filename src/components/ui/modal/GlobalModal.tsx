@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useModal } from "./ModalContext";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, AlertTriangle, Info } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 // ============================================================================
@@ -31,30 +31,35 @@ function ConfirmationModal({ title, message, onConfirm, onCancel, confirmText = 
     };
 
     return (
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="p-6">
-                <h3 className="text-lg font-bold text-zinc-900 mb-2">{title}</h3>
-                <p className="text-sm text-zinc-500 mb-6">{message}</p>
-                <div className="flex items-center justify-end gap-3">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-zinc-100">
+            <div className="p-6 text-center">
+                <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${variant === "danger" ? "bg-red-50 text-red-600" : "bg-brand/10 text-brand"}`}>
+                    {variant === "danger" ? <AlertTriangle className="h-8 w-8" /> : <Info className="h-8 w-8" />}
+                </div>
+
+                <h3 className="text-xl font-bold text-zinc-900 mb-2">{title}</h3>
+                <p className="text-sm text-zinc-500 mb-8 max-w-sm mx-auto leading-relaxed">{message}</p>
+
+                <div className="flex items-center justify-center gap-3">
                     <button
                         onClick={() => {
                             if (onCancel) onCancel();
                             closeModal();
                         }}
                         disabled={loading}
-                        className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-600 hover:bg-zinc-100 transition-colors"
+                        className="min-w-[100px] px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-all border border-zinc-200"
                     >
                         {cancelText}
                     </button>
                     <button
                         onClick={handleConfirm}
                         disabled={loading}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium text-white shadow-sm flex items-center gap-2 ${variant === "danger"
-                            ? "bg-red-600 hover:bg-red-700"
-                            : "bg-indigo-600 hover:bg-indigo-700"
+                        className={`min-w-[140px] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white shadow-lg flex items-center justify-center gap-2 hover:-translate-y-0.5 active:translate-y-0 transition-all ${variant === "danger"
+                            ? "bg-red-500 hover:bg-red-600 shadow-red-500/30"
+                            : "bg-brand hover:brightness-110 shadow-brand/30"
                             }`}
                     >
-                        {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                        {loading && <Loader2 className="h-3 w-3 animate-spin" />}
                         {confirmText}
                     </button>
                 </div>
@@ -130,7 +135,7 @@ function InputModal({ title, description, label, placeholder, initialValue = "",
                                 value={value}
                                 onChange={(e) => setValue(e.target.value)}
                                 placeholder={placeholder}
-                                className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
+                                className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-sm"
                             />
                         </div>
                         <div className="flex justify-end gap-3 pt-2">
@@ -145,7 +150,7 @@ function InputModal({ title, description, label, placeholder, initialValue = "",
                             <button
                                 type="submit"
                                 disabled={loading || !value.trim()}
-                                className="px-5 py-2 rounded-xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
+                                className="px-5 py-2 rounded-xl text-sm font-medium text-white bg-brand hover:brightness-110 shadow-lg shadow-brand/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
                             >
                                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                                 {submitText}

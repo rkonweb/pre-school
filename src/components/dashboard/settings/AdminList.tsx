@@ -22,12 +22,12 @@ export function AdminList({ users }: AdminListProps) {
                     <h3 className="text-xl font-black text-zinc-900 tracking-tight">System Access Control</h3>
                     <p className="text-sm text-zinc-500 mt-1 font-medium italic">Manage who has administrative authority over the school dashboard.</p>
                 </div>
-                <button className="flex items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-200">
+                <button className="flex items-center gap-2 px-6 py-3 bg-brand text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20">
                     <Plus className="h-4 w-4" /> Add Admin
                 </button>
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-3xl p-6 flex gap-4 text-blue-700 text-sm">
+            <div className="bg-brand/5 border border-brand/10 rounded-3xl p-6 flex gap-4 text-brand text-sm">
                 <ShieldCheck className="h-6 w-6 shrink-0" />
                 <div className="space-y-1">
                     <p className="font-bold">Privileged Access</p>
@@ -39,13 +39,13 @@ export function AdminList({ users }: AdminListProps) {
 
             <div className="grid gap-4">
                 {users?.map((user) => (
-                    <div key={user.id} className="group bg-white rounded-[32px] border border-zinc-100 p-6 flex items-center justify-between transition-all hover:border-blue-200 hover:shadow-xl hover:shadow-zinc-200/50">
+                    <div key={user.id} className="group bg-white rounded-[32px] border border-zinc-100 p-6 flex items-center justify-between transition-all hover:border-brand/30 hover:shadow-xl hover:shadow-brand/10">
                         <div className="flex items-center gap-6">
-                            <div className="h-16 w-16 bg-zinc-50 border-2 border-zinc-100 rounded-[22px] flex items-center justify-center text-xl font-black text-zinc-400 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-300 shadow-sm">
+                            <div className="h-16 w-16 bg-zinc-50 border-2 border-zinc-100 rounded-[22px] flex items-center justify-center text-xl font-black text-zinc-400 group-hover:bg-brand group-hover:text-white group-hover:border-brand transition-all duration-300 shadow-sm">
                                 {user.firstName?.[0]}{user.lastName?.[0]}
                             </div>
                             <div className="space-y-1">
-                                <p className="text-lg font-black text-zinc-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">
+                                <p className="text-lg font-black text-zinc-900 group-hover:text-brand transition-colors uppercase tracking-tight">
                                     {user.firstName} {user.lastName}
                                 </p>
                                 <div className="flex items-center gap-6">

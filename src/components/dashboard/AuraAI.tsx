@@ -53,7 +53,7 @@ export function AuraAI({ insights }: { insights: AIInsight[] }) {
         switch (severity) {
             case "high": return "text-rose-600 bg-rose-50 border-rose-100";
             case "medium": return "text-amber-600 bg-amber-50 border-amber-100";
-            default: return "text-blue-600 bg-blue-50 border-blue-100";
+            default: return "text-brand bg-brand/5 border-brand/10";
         }
     };
 
@@ -61,14 +61,14 @@ export function AuraAI({ insights }: { insights: AIInsight[] }) {
         <div className="relative z-40 px-4 sm:px-0">
             <div
                 className={cn(
-                    "bg-white/80 backdrop-blur-xl border border-zinc-200 shadow-2xl shadow-blue-500/5 overflow-hidden transition-all duration-500",
+                    "bg-white/80 backdrop-blur-xl border border-zinc-200 shadow-2xl shadow-brand/5 overflow-hidden transition-all duration-500",
                     isExpanded ? "rounded-[32px] w-full" : "rounded-full w-full max-w-2xl mx-auto"
                 )}
             >
                 <div className="flex items-center justify-between p-2 pl-6">
                     <div className="flex items-center gap-4 flex-1">
                         <div className="flex -space-x-2">
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-600 to-violet-600 flex items-center justify-center shadow-lg relative z-10 border-2 border-white">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-brand to-brand/80 flex items-center justify-center shadow-lg relative z-10 border-2 border-white">
                                 <Sparkles className="h-5 w-5 text-white animate-pulse" />
                             </div>
                         </div>
@@ -134,7 +134,7 @@ export function AuraAI({ insights }: { insights: AIInsight[] }) {
                                 {insights.map((insight) => (
                                     <div
                                         key={insight.id}
-                                        className="group p-6 rounded-2xl bg-white border border-zinc-200 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all cursor-pointer relative"
+                                        className="group p-6 rounded-2xl bg-white border border-zinc-200 hover:border-brand/30 hover:shadow-xl hover:shadow-brand/5 transition-all cursor-pointer relative"
                                     >
                                         <div className="flex items-start gap-4">
                                             <div className={cn(
@@ -162,7 +162,7 @@ export function AuraAI({ insights }: { insights: AIInsight[] }) {
                                 </div>
                                 <div className="flex-1 bg-zinc-50 border border-zinc-200 rounded-2xl px-6 py-3 text-sm text-zinc-400 font-bold uppercase tracking-widest flex items-center justify-between">
                                     <span>Ask anything to Aura Intelligence...</span>
-                                    <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                                    <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
                                 </div>
                                 <button className="px-6 py-3 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95">
                                     Analyze

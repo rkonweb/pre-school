@@ -21,6 +21,7 @@ export async function getTrainingCategoriesAction() {
             orderBy: { name: 'asc' },
             select: {
                 id: true,
+                slug: true,
                 name: true
             }
         });

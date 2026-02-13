@@ -489,7 +489,7 @@ export default function NewInquiryPage() {
                                 type="button"
                                 onClick={performSiblingCheck}
                                 disabled={isCheckingSibling}
-                                className="bg-blue-600 text-white hover:bg-blue-700 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-wider hover:bg-zinc-700 transition-all disabled:opacity-50"
+                                className="bg-brand text-white rounded-xl px-4 py-3 text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all disabled:opacity-50"
                             >
                                 {isCheckingSibling ? "..." : "Check"}
                             </button>
@@ -529,7 +529,7 @@ export default function NewInquiryPage() {
                                 <button
                                     type="button"
                                     onClick={() => applySiblingData('father')}
-                                    className="col-span-2 w-full bg-blue-600 text-white hover:bg-blue-700 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-zinc-700 transition-all flex items-center justify-center gap-2"
+                                    className="col-span-2 w-full bg-brand text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2"
                                 >
                                     <Copy className="h-4 w-4" />
                                     Auto Fill Parent Details
@@ -611,7 +611,7 @@ function InputField({ label, value, readOnly, type = "text", onChange, hint, act
         <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{label}</label>
-                {hint && <span className="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">{hint}</span>}
+                {hint && <span className="text-[9px] font-bold text-brand uppercase tracking-tighter">{hint}</span>}
             </div>
             <div className="relative">
                 <input

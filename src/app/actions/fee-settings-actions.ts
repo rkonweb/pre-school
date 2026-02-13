@@ -33,6 +33,7 @@ export async function createFeeStructureAction(schoolSlug: string, data: any) {
                 academicYear: data.academicYear,
                 description: data.description,
                 termConfig: JSON.stringify(data.termConfig),
+                classIds: JSON.stringify(data.classIds || []),
                 schoolId: school.id,
                 components: {
                     create: data.components.map((c: any) => ({
@@ -67,7 +68,8 @@ export async function updateFeeStructureAction(schoolSlug: string, id: string, d
                     name: data.name,
                     academicYear: data.academicYear,
                     description: data.description,
-                    termConfig: JSON.stringify(data.termConfig)
+                    termConfig: JSON.stringify(data.termConfig),
+                    classIds: JSON.stringify(data.classIds || [])
                 }
             });
 

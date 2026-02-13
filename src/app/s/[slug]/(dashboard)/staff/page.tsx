@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { getStaffAction, deleteStaffAction, updateStaffBasicInfoAction } from "@/app/actions/staff-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { toast } from "sonner";
+import { AvatarWithAdjustment } from "@/components/dashboard/staff/AvatarWithAdjustment";
 
 export default function StaffPage() {
     const params = useParams();
@@ -123,7 +124,7 @@ export default function StaffPage() {
                 </div>
                 <Link
                     href={`/s/${slug}/staff/add`}
-                    className="h-12 px-6 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="h-12 px-6 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     Add Staff Member
@@ -159,7 +160,7 @@ export default function StaffPage() {
                     <select
                         value={deptFilter}
                         onChange={(e) => setDeptFilter(e.target.value)}
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                     >
                         <option value="all">All Departments</option>
                         {departments.map(d => (
@@ -170,7 +171,7 @@ export default function StaffPage() {
                     <select
                         value={empTypeFilter}
                         onChange={(e) => setEmpTypeFilter(e.target.value)}
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                     >
                         <option value="all">All Emp. Types</option>
                         {employmentTypes.map(d => (
@@ -181,7 +182,7 @@ export default function StaffPage() {
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                     >
                         <option value="all">All Status</option>
                         <option value="ACTIVE">Active</option>
@@ -196,7 +197,7 @@ export default function StaffPage() {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-blue-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                         >
                             <option value="name">Sort by Name</option>
                             <option value="role">Sort by Role</option>
@@ -205,7 +206,7 @@ export default function StaffPage() {
                         </select>
                         <button
                             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                            className="p-2 text-zinc-500 hover:text-blue-600 transition-colors"
+                            className="p-2 text-zinc-500 hover:text-brand transition-colors"
                         >
                             {sortOrder === "asc" ? "↑" : "↓"}
                         </button>
@@ -251,15 +252,11 @@ export default function StaffPage() {
                             <tr key={person.id} className="group hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 overflow-hidden rounded-full bg-zinc-100 ring-2 ring-white dark:bg-zinc-800 dark:ring-zinc-900 shrink-0">
-                                            {person.avatar ? (
-                                                <img src={person.avatar} alt={person.firstName} className="h-full w-full object-cover" />
-                                            ) : (
-                                                <div className="flex h-full w-full items-center justify-center text-zinc-400">
-                                                    <UserIcon className="h-5 w-5" />
-                                                </div>
-                                            )}
-                                        </div>
+                                        <AvatarWithAdjustment
+                                            src={person.avatar}
+                                            adjustment={person.avatarAdjustment}
+                                            className="h-10 w-10 overflow-hidden rounded-full bg-zinc-100 ring-2 ring-white dark:bg-zinc-800 dark:ring-zinc-900 shrink-0"
+                                        />
                                         <div className="font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
                                             {person.firstName} {person.lastName}
                                         </div>
@@ -282,7 +279,7 @@ export default function StaffPage() {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10 dark:bg-blue-400/10 dark:text-purple-400 dark:ring-purple-400/20 whitespace-nowrap">
+                                    <span className="inline-flex items-center rounded-md bg-brand/5 px-2 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10 whitespace-nowrap">
                                         {person.employmentType ? person.employmentType.replace('_', ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase()) : "-"}
                                     </span>
                                 </td>
@@ -302,7 +299,7 @@ export default function StaffPage() {
                                     <div className="flex items-center justify-end gap-2">
                                         <Link
                                             href={`/s/${slug}/staff/${person.id}/edit`}
-                                            className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-blue-600 hover:border-blue-200 transition-all"
+                                            className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/30 transition-all"
                                             title="Edit Staff"
                                         >
                                             <Edit2 className="h-4 w-4" />
@@ -322,11 +319,13 @@ export default function StaffPage() {
                 </table>
             </div>
 
-            {!isLoading && filteredAndSortedStaff.length === 0 && (
-                <div className="text-center py-20">
-                    <p className="text-zinc-400 font-medium">No staff members found matching your criteria.</p>
-                </div>
-            )}
-        </div>
+            {
+                !isLoading && filteredAndSortedStaff.length === 0 && (
+                    <div className="text-center py-20">
+                        <p className="text-zinc-400 font-medium">No staff members found matching your criteria.</p>
+                    </div>
+                )
+            }
+        </div >
     );
 }

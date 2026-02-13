@@ -16,7 +16,7 @@ interface StatCardProps {
 }
 
 const colorStyles = {
-    blue: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 border-blue-100 dark:border-blue-900/30",
+    blue: "bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand border-brand/20 dark:border-brand/30",
     brand: "bg-brand-soft text-brand dark:bg-brand/20 dark:text-brand border-brand/10 dark:border-brand/30",
     green: "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 border-green-100 dark:border-green-900/30",
     purple: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400 border-purple-100 dark:border-purple-900/30",

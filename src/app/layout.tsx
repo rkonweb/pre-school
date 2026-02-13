@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, Inter, Poppins } from "next/font/google"; // Added Poppins
+import { Toaster } from "sonner";
+import { ModalProvider } from "@/components/ui/modal/ModalContext";
+import { GlobalModalRenderer } from "@/components/ui/modal/GlobalModal";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -47,12 +50,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${outfit.variable} ${inter.variable} ${poppins.variable} antialiased`}
       >
-        {children}
-        {/* <Toaster position="top-right" richColors /> */}
+        <ModalProvider>
+          {children}
+          <GlobalModalRenderer />
+        </ModalProvider>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

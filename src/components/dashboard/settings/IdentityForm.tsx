@@ -43,6 +43,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
     const [aspect, setAspect] = useState(1);
     const [imgNaturalAspect, setImgNaturalAspect] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+    const [croppingTarget, setCroppingTarget] = useState<"logo" | "printableLogo">("logo");
 
     // Phone number management
     const [currentPhone, setCurrentPhone] = useState<string>("");
@@ -67,9 +68,10 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
         setCroppedAreaPixels(croppedAreaPixels);
     };
 
-    const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: "logo" | "printableLogo") => {
         const file = e.target.files?.[0];
         if (file) {
+            setCroppingTarget(target);
             const reader = new FileReader();
             reader.onloadend = () => {
                 const result = reader.result as string;
@@ -88,7 +90,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
     const finalizeLogo = async () => {
         if (tempImage && croppedAreaPixels) {
             const cropped = await getCroppedImg(tempImage, croppedAreaPixels);
-            setFormData({ ...formData, logo: cropped });
+            setFormData({ ...formData, [croppingTarget]: cropped });
             setIsCropModalOpen(false);
         }
     };
@@ -186,7 +188,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                 <div className="flex flex-col md:flex-row gap-10 items-start border-b border-zinc-100 pb-10">
                     <div className="space-y-4">
                         <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">School Seal / Logo</label>
-                        <div className="relative group h-40 w-40 rounded-[32px] bg-zinc-50 border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden transition-all hover:border-blue-500">
+                        <div className="relative group h-40 w-40 rounded-[32px] bg-zinc-50 border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden transition-all hover:border-brand">
                             {formData.logo ? (
                                 <>
                                     <img src={formData.logo} alt="Logo" className="h-full w-full object-cover" />
@@ -198,7 +200,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 <label className="cursor-pointer flex flex-col items-center gap-2">
                                     <Upload className="h-8 w-8 text-zinc-300" />
                                     <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Upload PNG/JPG</span>
-                                    <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                                    <input type="file" id="logo-upload" className="hidden" accept="image/*" onChange={(e) => handleLogoUpload(e, "logo")} />
                                 </label>
                             )}
                         </div>
@@ -211,10 +213,47 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                             This logo is the primary identifier for your school and will appear on official certificates, transcripts, and portal headers.
                         </p>
                         <button
-                            onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
-                            className="text-xs font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors"
+                            onClick={() => document.getElementById('logo-upload')?.click()}
+                            className="text-xs font-black text-brand uppercase tracking-widest hover:text-brand/80 transition-colors"
                         >
                             Change Official Logo
+                        </button>
+                    </div>
+                </div>
+
+                {/* New Printable Logo Section */}
+                <div className="flex flex-col md:flex-row gap-10 items-start border-b border-zinc-100 pb-10">
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Printable Report Logo</label>
+                        <div className="relative group h-40 w-40 rounded-[32px] bg-zinc-50 border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden transition-all hover:border-brand">
+                            {formData.printableLogo ? (
+                                <>
+                                    <img src={formData.printableLogo} alt="Printable Logo" className="h-full w-full object-cover" />
+                                    <button onClick={() => setFormData({ ...formData, printableLogo: "" })} className="absolute top-2 right-2 h-8 w-8 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                                        <X className="h-4 h-4" />
+                                    </button>
+                                </>
+                            ) : (
+                                <label className="cursor-pointer flex flex-col items-center gap-2">
+                                    <Upload className="h-8 w-8 text-zinc-300" />
+                                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Upload B&W / HighRes</span>
+                                    <input type="file" id="printable-logo-upload" className="hidden" accept="image/*" onChange={(e) => handleLogoUpload(e, "printableLogo")} />
+                                </label>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex-1 space-y-4 pt-8">
+                        <div className="flex items-center gap-3">
+                            <h3 className="text-xl font-black text-zinc-900">Printable Transcripts</h3>
+                        </div>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-md">
+                            Upload a high-contrast or specialized logo for printed reports. This ensures documents look professional on paper.
+                        </p>
+                        <button
+                            onClick={() => document.getElementById('printable-logo-upload')?.click()}
+                            className="text-xs font-black text-brand uppercase tracking-widest hover:text-brand/80 transition-colors"
+                        >
+                            Change Printable Logo
                         </button>
                     </div>
                 </div>
@@ -226,7 +265,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                             <input
                                 value={formData.name || ""}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 focus:ring-2 focus:ring-blue-600 transition-all font-bold"
+                                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 focus:ring-2 focus:ring-brand transition-all font-bold"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -234,7 +273,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                             <input
                                 value={formData.motto || ""}
                                 onChange={e => setFormData({ ...formData, motto: e.target.value })}
-                                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 focus:ring-2 focus:ring-blue-600 transition-all font-bold"
+                                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 focus:ring-2 focus:ring-brand transition-all font-bold"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -244,7 +283,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 <input
                                     value={formData.website || ""}
                                     onChange={e => setFormData({ ...formData, website: e.target.value })}
-                                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 focus:ring-2 focus:ring-blue-600 transition-all font-bold"
+                                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 focus:ring-2 focus:ring-brand transition-all font-bold"
                                 />
                             </div>
                         </div>
@@ -257,7 +296,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 type="number"
                                 value={formData.foundingYear || ""}
                                 onChange={e => setFormData({ ...formData, foundingYear: e.target.value })}
-                                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 focus:ring-2 focus:ring-blue-600 transition-all font-bold"
+                                className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 focus:ring-2 focus:ring-brand transition-all font-bold"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -278,8 +317,8 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                 {/* Phone Number Management Section */}
                 <div className="pt-10 border-t border-zinc-100 space-y-6">
                     <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center">
-                            <Phone className="h-6 w-6 text-blue-600" />
+                        <div className="h-12 w-12 rounded-2xl bg-brand/10 flex items-center justify-center">
+                            <Phone className="h-6 w-6 text-brand" />
                         </div>
                         <div>
                             <h3 className="text-xl font-black text-zinc-900">Registered Phone Number</h3>
@@ -299,7 +338,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 <button
                                     onClick={startPhoneChange}
                                     disabled={isPhoneLoading}
-                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all disabled:opacity-50"
+                                    className="px-6 py-3 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand/90 transition-all disabled:opacity-50"
                                 >
                                     {currentPhone ? "Change Number" : "Add Number"}
                                 </button>
@@ -314,7 +353,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 <span className="font-bold text-sm">Verify Current Number</span>
                             </div>
                             <p className="text-sm text-zinc-600">
-                                OTP sent to <span className="font-bold">+91 {currentPhone}</span>. Use <span className="font-black text-blue-600">1234</span> for testing.
+                                OTP sent to <span className="font-bold">+91 {currentPhone}</span>. Use <span className="font-black text-brand">1234</span> for testing.
                             </p>
                             <div className="flex gap-3">
                                 <input
@@ -344,13 +383,13 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                     )}
 
                     {phoneStep === "enter-new" && (
-                        <div className="bg-blue-50 rounded-2xl p-6 space-y-4 border-2 border-blue-200">
-                            <div className="flex items-center gap-2 text-blue-700">
+                        <div className="bg-brand/10 rounded-2xl p-6 space-y-4 border-2 border-brand/20">
+                            <div className="flex items-center gap-2 text-brand">
                                 <Phone className="h-5 w-5" />
                                 <span className="font-bold text-sm">Enter New Phone Number</span>
                             </div>
                             <div className="flex gap-3">
-                                <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-blue-300 bg-white">
+                                <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-brand/30 bg-white">
                                     <span className="font-bold text-zinc-500">+91</span>
                                     <input
                                         type="tel"
@@ -364,7 +403,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 <button
                                     onClick={sendNewPhoneOtp}
                                     disabled={isPhoneLoading || newPhone.length !== 10}
-                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"
+                                    className="px-6 py-3 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand/90 transition-all disabled:opacity-50 flex items-center gap-2"
                                 >
                                     {isPhoneLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                                     Send OTP
@@ -386,7 +425,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 <span className="font-bold text-sm">Verify New Number</span>
                             </div>
                             <p className="text-sm text-zinc-600">
-                                OTP sent to <span className="font-bold">+91 {newPhone}</span>. Use <span className="font-black text-blue-600">1234</span> for testing.
+                                OTP sent to <span className="font-bold">+91 {newPhone}</span>. Use <span className="font-black text-brand">1234</span> for testing.
                             </p>
                             <div className="flex gap-3">
                                 <input
@@ -420,7 +459,8 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="bg-zinc-900 text-white px-10 py-4 rounded-[20px] text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-black transition-all shadow-xl shadow-zinc-200 disabled:opacity-50"
+                        className="text-white px-10 py-5 rounded-[24px] text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:brightness-110 transition-all shadow-2xl disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--brand-color)', boxShadow: '0 25px 50px -12px rgba(var(--brand-color-rgb, 0, 0, 0), 0.25)' }}
                     >
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         Update Identity
@@ -451,7 +491,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                             <button onClick={() => setAspect(1)} className="px-4 py-2 bg-zinc-100 rounded-xl text-[10px] font-bold uppercase">Square</button>
                             <button onClick={() => setAspect(imgNaturalAspect)} className="px-4 py-2 bg-zinc-100 rounded-xl text-[10px] font-bold uppercase">Original</button>
                             <div className="flex-1" />
-                            <button onClick={finalizeLogo} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest">Apply Logo</button>
+                            <button onClick={finalizeLogo} className="px-10 py-4 bg-brand text-white rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all">Apply Logo</button>
                         </div>
                     </div>
                 </div>

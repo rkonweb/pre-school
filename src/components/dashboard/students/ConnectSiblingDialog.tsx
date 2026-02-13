@@ -73,13 +73,13 @@ export function ConnectSiblingDialog({ slug, studentId, currentParentPhone, isOp
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            className="flex-1 bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-3 px-4 font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-200"
+                            className="flex-1 bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-3 px-4 font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-brand"
                             placeholder="Search by name..."
                         />
                         <button
                             onClick={handleSearch}
                             disabled={isLoading}
-                            className="w-14 bg-zinc-900 text-white rounded-2xl flex items-center justify-center hover:bg-zinc-800 transition-colors"
+                            className="w-14 bg-brand text-white rounded-2xl flex items-center justify-center hover:brightness-110 transition-colors"
                         >
                             {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
                         </button>
@@ -95,7 +95,7 @@ export function ConnectSiblingDialog({ slug, studentId, currentParentPhone, isOp
                                 <button
                                     onClick={() => handleConnect(student.id)}
                                     disabled={isSubmitting}
-                                    className="px-4 py-2 bg-blue-100 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-200 transition-colors"
+                                    className="px-4 py-2 bg-brand/10 text-brand rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand/20 transition-colors"
                                 >
                                     Connect
                                 </button>

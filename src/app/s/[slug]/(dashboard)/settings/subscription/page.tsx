@@ -87,7 +87,7 @@ export default function SubscriptionSettingsPage() {
             case "free":
                 return "bg-zinc-100 text-zinc-700 border-zinc-300";
             case "basic":
-                return "bg-blue-100 text-blue-700 border-blue-300";
+                return "bg-brand/10 text-brand border-brand/30";
             case "premium":
                 return "bg-purple-100 text-purple-700 border-purple-300";
             case "enterprise":
@@ -116,7 +116,7 @@ export default function SubscriptionSettingsPage() {
     if (isLoading) {
         return (
             <div className="flex-1 flex items-center justify-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
         );
     }
@@ -344,8 +344,8 @@ export default function SubscriptionSettingsPage() {
                                 className={cn(
                                     "bg-white dark:bg-zinc-900 rounded-2xl border-2 p-6 transition-all",
                                     isCurrentPlan
-                                        ? "border-blue-500 shadow-lg shadow-blue-500/20"
-                                        : "border-zinc-200 dark:border-zinc-800 hover:border-blue-300"
+                                        ? "border-brand shadow-lg shadow-brand/20"
+                                        : "border-zinc-200 dark:border-zinc-800 hover:border-brand/40"
                                 )}
                             >
                                 {/* Plan Header */}
@@ -359,7 +359,7 @@ export default function SubscriptionSettingsPage() {
                                                 {plan.name}
                                             </h3>
                                             {isCurrentPlan && (
-                                                <span className="text-xs font-bold text-blue-600">Current Plan</span>
+                                                <span className="text-xs font-bold text-brand">Current Plan</span>
                                             )}
                                         </div>
                                     </div>
@@ -417,7 +417,7 @@ export default function SubscriptionSettingsPage() {
                                         "w-full py-3 px-4 rounded-xl font-bold transition-all",
                                         isCurrentPlan
                                             ? "bg-zinc-100 text-zinc-400 cursor-not-allowed"
-                                            : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/20"
+                                            : "bg-gradient-to-r from-brand to-brand/80 text-white hover:brightness-110 shadow-lg shadow-brand/20"
                                     )}
                                 >
                                     {isCurrentPlan ? "Current Plan" : isUpgrading ? "Upgrading..." : "Upgrade"}

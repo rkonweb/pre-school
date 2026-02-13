@@ -137,7 +137,7 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
         <div className="space-y-8 mt-12 pt-12 border-t border-zinc-200 dark:border-zinc-800">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100/50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-brand">
                         <IndianRupee className="h-5 w-5" />
                     </div>
                     <div>
@@ -174,15 +174,15 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Basic Pay</label>
-                                    <input name="basic" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                    <input name="basic" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">HRA</label>
-                                    <input name="hra" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                    <input name="hra" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
                                 </div>
                                 <div className="space-y-1.5 sm:col-span-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Other Allowances</label>
-                                    <input name="allowance" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                    <input name="allowance" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
                                 </div>
                             </div>
 
@@ -225,15 +225,15 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Professional Tax</label>
-                                    <input name="tax" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                    <input name="tax" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Provident Fund (PF)</label>
-                                    <input name="pf" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                    <input name="pf" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Insurance</label>
-                                    <input name="insurance" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                    <input name="insurance" type="number" onChange={handleInputChange} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
                                 </div>
                             </div>
 
@@ -274,11 +274,11 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
                         <div className="grid grid-cols-2 gap-4 col-span-2">
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Effective Date</label>
-                                <input name="effectiveDate" type="date" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none ring-4 ring-zinc-500/5 dark:border-zinc-800 dark:bg-zinc-950" />
+                                <input name="effectiveDate" type="date" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none ring-4 ring-brand/5 dark:border-zinc-800 dark:bg-zinc-950" />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Revision Type</label>
-                                <select name="type" className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none ring-4 ring-zinc-500/5 dark:border-zinc-800 dark:bg-zinc-950">
+                                <select name="type" className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none ring-4 ring-brand/5 dark:border-zinc-800 dark:bg-zinc-950">
                                     <option value="INITIAL">Initial Hire</option>
                                     <option value="INCREMENT">Increment</option>
                                     <option value="PROMOTION">Promotion</option>
@@ -286,7 +286,7 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
                             </div>
                             <div className="col-span-2 space-y-1.5">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Revision Reason</label>
-                                <input name="reason" placeholder="e.g. Performance Review Q4" className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-blue-500 focus:outline-none ring-4 ring-zinc-500/5 dark:border-zinc-800 dark:bg-zinc-950" />
+                                <input name="reason" placeholder="e.g. Performance Review Q4" className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none ring-4 ring-brand/5 dark:border-zinc-800 dark:bg-zinc-950" />
                             </div>
                         </div>
 
@@ -300,7 +300,7 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
                             </div>
                             <div className="mt-8 flex items-center justify-between relative z-10 gap-4">
                                 <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">Gross Institutional Cost: ₹ {grossCTC.toLocaleString()}</div>
-                                <button type="submit" disabled={isLoading} className="px-8 py-3 bg-blue-600 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-blue-500 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20">
+                                <button type="submit" disabled={isLoading} className="px-8 py-3 bg-brand rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:brightness-110 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-brand/20">
                                     {isLoading ? "Locking..." : "Save Config"}
                                 </button>
                             </div>
@@ -349,7 +349,7 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
                                                 <Badge label="HRA" value={rev.hra} color="emerald" />
                                                 <Badge label="Allow" value={rev.allowance} color="emerald" />
                                                 {adds.map((a: any, i: number) => (
-                                                    <Badge key={i} label={a.label} value={a.amount} color="blue" />
+                                                    <Badge key={i} label={a.label} value={a.amount} color="brand" />
                                                 ))}
                                             </div>
                                         </td>
@@ -382,11 +382,11 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
     );
 }
 
-function Badge({ label, value, color }: { label: string, value: number, color: 'emerald' | 'blue' | 'rose' }) {
+function Badge({ label, value, color }: { label: string, value: number, color: 'emerald' | 'brand' | 'rose' }) {
     if (value === 0) return null;
     const colors = {
         emerald: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
-        blue: "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
+        brand: "bg-brand/10 text-brand",
         rose: "bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400"
     };
     return (

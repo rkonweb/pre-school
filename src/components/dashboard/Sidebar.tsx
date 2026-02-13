@@ -24,7 +24,8 @@ import {
     Shield,
     Banknote,
     Bus,
-    FileSpreadsheet
+    FileSpreadsheet,
+    Folder
 } from "lucide-react";
 import { useState } from "react";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
@@ -122,7 +123,9 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         { name: "Inventory", href: `/s/${slug}/inventory`, icon: Package }, // Key: inventory
         { name: "Transport", href: `/s/${slug}/transport`, icon: Bus }, // Key: transport
         { name: "Library", href: `/s/${slug}/library`, icon: BookOpen }, // Key: library
+        { name: "Documents", href: `/s/${slug}/documents`, icon: Folder }, // Key: documents
         { name: "Communication", href: `/s/${slug}/communication`, icon: MessageCircle }, // Key: communication
+        { name: "Marketing Tools", href: `/s/${slug}/marketing`, icon: Layers }, // Key: marketing
         { name: "Roles & Permissions", href: `/s/${slug}/roles`, icon: Shield }, // Key: settings (grouped with settings usually, or separate 'roles')
         { name: "Settings", href: `/s/${slug}/settings`, icon: Settings }, // Key: settings
     ];
@@ -147,7 +150,9 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         "Inventory": "inventory",
         "Transport": "transport",
         "Library": "library",
+        "Documents": "documents",
         "Communication": "communication",
+        "Marketing Tools": "marketing",
         "Roles & Permissions": "settings", // Only admins/settings access should see roles
         "Settings": "settings"
     };
@@ -251,7 +256,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                         className={cn(
                                             "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                                             isActive
-                                                ? "bg-brand-soft text-brand dark:bg-brand/20 dark:text-brand"
+                                                ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand"
                                                 : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
                                         )}
                                     >
@@ -276,7 +281,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                         className={cn(
                                             "group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                                             isActive && !isExpanded
-                                                ? "bg-brand-soft text-brand dark:bg-brand/20 dark:text-brand" // Highlight parent if active child but collapsed
+                                                ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand" // Highlight parent if active child but collapsed
                                                 : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
                                         )}
                                     >
@@ -310,7 +315,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                                         className={cn(
                                                             "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 border-l-2 ml-2",
                                                             isChildActive
-                                                                ? "border-brand bg-brand-soft/50 text-brand dark:bg-brand/10 dark:text-brand"
+                                                                ? "border-brand bg-brand/10 text-brand dark:bg-brand/10 dark:text-brand"
                                                                 : "border-transparent text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
                                                         )}
                                                     >

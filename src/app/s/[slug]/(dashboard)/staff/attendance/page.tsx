@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { format, isSameDay, isToday, addDays, subDays } from "date-fns";
 import { SlideOver } from "@/components/ui/SlideOver";
+import { AvatarWithAdjustment } from "@/components/dashboard/staff/AvatarWithAdjustment";
 
 // Actions
 import { getStaffAction } from "@/app/actions/staff-actions";
@@ -213,7 +214,7 @@ export default function StaffAttendancePage() {
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase italic">
-                        Staff <span className="text-blue-600">Attendance</span>
+                        Staff <span className="text-brand">Attendance</span>
                     </h1>
                     <p className="text-zinc-500 font-medium mt-1">Real-time tracking, leave management, and punctuality logs.</p>
                 </div>
@@ -261,8 +262,8 @@ export default function StaffAttendancePage() {
                     title="Active Leaves"
                     value={leaves.filter(l => l.status === "APPROVED" && isSameDay(new Date(l.startDate), new Date())).length.toString()}
                     icon={<Briefcase className="h-5 w-5" />}
-                    color="text-blue-600"
-                    bg="bg-blue-50 dark:bg-blue-950/20"
+                    color="text-brand"
+                    bg="bg-brand/10"
                 />
             </div>
 
@@ -280,7 +281,7 @@ export default function StaffAttendancePage() {
                                         <ChevronLeft className="h-4 w-4" />
                                     </button>
                                     <div className="px-6 py-2 text-sm font-black text-zinc-800 dark:text-zinc-100 flex items-center gap-3">
-                                        <CalendarIcon className="h-4 w-4 text-blue-500" />
+                                        <CalendarIcon className="h-4 w-4 text-brand" />
                                         {format(selectedDate, "EEEE, dd MMM yyyy")}
                                     </div>
                                     <button
@@ -293,20 +294,20 @@ export default function StaffAttendancePage() {
                                 </div>
                                 <button
                                     onClick={() => setSelectedDate(new Date())}
-                                    className="text-[10px] font-black uppercase tracking-widest text-blue-600 border border-blue-100 dark:border-blue-900/50 px-3 py-1.5 rounded-full hover:bg-blue-50 transition-all"
+                                    className="text-[10px] font-black uppercase tracking-widest text-brand border border-brand/20 dark:border-brand/50 px-3 py-1.5 rounded-full hover:bg-brand/5 transition-all"
                                 >
                                     Today
                                 </button>
                             </div>
 
                             <div className="relative group">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 group-focus-within:text-blue-500 transition-colors" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 group-focus-within:text-brand transition-colors" />
                                 <input
                                     type="text"
                                     placeholder="Search staff members..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-12 pr-6 py-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all w-full md:w-80 shadow-inner"
+                                    className="pl-12 pr-6 py-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all w-full md:w-80 shadow-inner"
                                 />
                             </div>
                         </div>
@@ -336,23 +337,19 @@ export default function StaffAttendancePage() {
                                         return (
                                             <tr
                                                 key={person.id}
-                                                className="group hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors cursor-pointer"
+                                                className="group hover:bg-brand/5 dark:hover:bg-brand/10 transition-colors cursor-pointer"
                                                 onClick={() => router.push(`/s/${slug}/staff/${person.id}/attendance`)}
                                             >
                                                 <td className="px-8 py-6">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="h-12 w-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 overflow-hidden shadow-sm">
-                                                            {person.avatar ? (
-                                                                <img src={person.avatar} className="h-full w-full object-cover" />
-                                                            ) : (
-                                                                <div className="flex h-full w-full items-center justify-center font-black text-zinc-400 bg-zinc-50 dark:bg-zinc-800">
-                                                                    {person.firstName?.[0]}{person.lastName?.[0]}
-                                                                </div>
-                                                            )}
-                                                        </div>
+                                                        <AvatarWithAdjustment
+                                                            src={person.avatar}
+                                                            adjustment={person.avatarAdjustment}
+                                                            className="h-12 w-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 overflow-hidden shadow-sm"
+                                                        />
                                                         <div>
                                                             <div className="font-black text-zinc-900 dark:text-zinc-50 tracking-tight">{person.firstName} {person.lastName}</div>
-                                                            <div className="text-[10px] font-black uppercase tracking-widest text-blue-500 mt-0.5">{person.designation || "Staff"}</div>
+                                                            <div className="text-[10px] font-black uppercase tracking-widest text-brand mt-0.5">{person.designation || "Staff"}</div>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -385,7 +382,7 @@ export default function StaffAttendancePage() {
                                                         </span>
                                                         <div className="h-1 w-24 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden shadow-inner">
                                                             <div
-                                                                className="h-full bg-blue-500 transition-all duration-700"
+                                                                className="h-full bg-brand transition-all duration-700"
                                                                 style={{ width: `${Math.min(((attRecord?.totalHours || 0) / 9) * 100, 100)}%` }}
                                                             />
                                                         </div>
@@ -440,12 +437,12 @@ export default function StaffAttendancePage() {
                     <div className="p-8 space-y-8">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h2 className="text-2xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight italic">Leave <span className="text-blue-600">Requests</span></h2>
+                                <h2 className="text-2xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight italic">Leave <span className="text-brand">Requests</span></h2>
                                 <p className="text-sm text-zinc-500 font-medium">Review applications and manage time-off pipeline.</p>
                             </div>
                             <button
                                 onClick={() => setIsFormOpen(true)}
-                                className="flex items-center gap-2.5 bg-blue-600 dark:bg-zinc-50 text-white dark:text-zinc-900 px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-zinc-900/10 transition-all hover:-translate-y-0.5"
+                                className="flex items-center gap-2.5 bg-brand dark:bg-zinc-50 text-white dark:text-zinc-900 px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-brand/10 transition-all hover:brightness-110 hover:-translate-y-0.5"
                             >
                                 <PlusCircle className="h-4 w-4" />
                                 New Application
@@ -460,11 +457,11 @@ export default function StaffAttendancePage() {
                                 </div>
                             ) : (
                                 leaves.map((leave) => (
-                                    <div key={leave.id} className="group relative bg-white dark:bg-zinc-800/40 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-blue-900 transition-all hover:shadow-2xl hover:shadow-blue-500/5">
+                                    <div key={leave.id} className="group relative bg-white dark:bg-zinc-800/40 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 hover:border-brand/40 dark:hover:border-brand/60 transition-all hover:shadow-brand/5">
                                         <div className="flex flex-col gap-6">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-14 w-14 rounded-3xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                                                    <div className="h-14 w-14 rounded-3xl bg-brand/10 flex items-center justify-center text-brand">
                                                         <Briefcase className="h-6 w-6" />
                                                     </div>
                                                     <div>
@@ -472,7 +469,7 @@ export default function StaffAttendancePage() {
                                                         <div className="flex items-center gap-2 mt-0.5">
                                                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{leave.type}</span>
                                                             <div className="w-1 h-1 rounded-full bg-zinc-300" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 italic">Requested on {format(new Date(leave.createdAt), "dd MMM")}</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-brand italic">Requested on {format(new Date(leave.createdAt), "dd MMM")}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -514,13 +511,13 @@ export default function StaffAttendancePage() {
                 {activeTab === "analytics" && (
                     <div className="p-10 space-y-12">
                         <div className="flex flex-col gap-2">
-                            <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-50 tracking-tighter uppercase italic">Monthly <span className="text-blue-600 font-black">Performance</span></h2>
+                            <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-50 tracking-tighter uppercase italic">Monthly <span className="text-brand font-black">Performance</span></h2>
                             <p className="text-zinc-500 font-medium uppercase tracking-[0.1em] text-xs">Dynamic insights based on real-time activity tracking.</p>
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                             <div className="space-y-8">
-                                <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-400 border-l-4 border-blue-500 pl-4 py-1">Attendance Breakdown</h3>
+                                <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-400 border-l-4 border-brand pl-4 py-1">Attendance Breakdown</h3>
                                 <div className="space-y-6">
                                     <AnalyticsProgress label="Total Presences" value={analytics?.totalPresent || 0} max={25} color="bg-emerald-500" />
                                     <AnalyticsProgress label="Late Arrivals" value={analytics?.totalLate || 0} max={25} color="bg-amber-500" />
@@ -539,7 +536,7 @@ export default function StaffAttendancePage() {
                                 <div className="mt-12 flex items-end justify-between gap-4 h-40">
                                     {[30, 75, 45, 100, 80, 60, 45].map((val, i) => (
                                         <div key={i} className="flex-1 bg-zinc-800 rounded-2xl relative group/bar overflow-hidden hover:bg-zinc-700 transition-all cursor-pointer" style={{ height: `${val}%` }}>
-                                            <div className="absolute inset-0 bg-gradient-to-t from-blue-600/50 to-emerald-400/50 opacity-0 group-hover/bar:opacity-100 transition-opacity" />
+                                            <div className="absolute inset-0 bg-brand/30 opacity-0 group-hover/bar:opacity-100 transition-opacity" />
                                         </div>
                                     ))}
                                 </div>
@@ -561,7 +558,7 @@ export default function StaffAttendancePage() {
                 <form onSubmit={handleLeaveSubmit} className="space-y-8 p-1">
                     <div className="space-y-3">
                         <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Staff Member</label>
-                        <select name="userId" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500">
+                        <select name="userId" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand">
                             <option value="">Select Employee</option>
                             {staff.map(s => (
                                 <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
@@ -572,17 +569,17 @@ export default function StaffAttendancePage() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-3">
                             <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Start Date</label>
-                            <input type="date" name="startDate" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500" />
+                            <input type="date" name="startDate" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand" />
                         </div>
                         <div className="space-y-3">
                             <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500">End Date</label>
-                            <input type="date" name="endDate" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500" />
+                            <input type="date" name="endDate" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand" />
                         </div>
                     </div>
 
                     <div className="space-y-3">
                         <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Leave Type</label>
-                        <select name="type" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500">
+                        <select name="type" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand">
                             <option value="PLANNED">Planned Leave</option>
                             <option value="SICK">Sick Leave</option>
                             <option value="UNPLANNED">Unplanned / Casual</option>
@@ -595,13 +592,13 @@ export default function StaffAttendancePage() {
                             name="reason"
                             required
                             placeholder="Briefly describe why you are applying..."
-                            className="w-full h-32 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 resize-none"
+                            className="w-full h-32 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand resize-none"
                         />
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full py-5 rounded-2xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-blue-500/30 transition-all hover:-translate-y-1 active:scale-95"
+                        className="w-full py-5 rounded-2xl bg-brand text-white text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-brand/30 transition-all hover:brightness-110 hover:-translate-y-1 active:scale-95"
                     >
                         Submit Request
                     </button>
@@ -667,7 +664,7 @@ function StatusBadge({ status }: { status: string }) {
         PRESENT: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50",
         ABSENT: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50",
         LATE: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/50",
-        HALF_DAY: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/50",
+        HALF_DAY: "bg-brand/10 text-brand border-brand/20 dark:bg-brand/20 dark:text-brand dark:border-brand/40",
         APPROVED: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20",
         REJECTED: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20",
         PENDING: "bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
