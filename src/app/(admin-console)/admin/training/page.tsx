@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { TrainingSidebar } from "@/components/training/TrainingSidebar";
 import { useSearchParams } from "next/navigation";
 import { TrainingEditor } from "@/components/training/TrainingEditor";
@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { Plus, BookOpen, Loader2 } from "lucide-react";
 import { useModal } from "@/components/ui/modal/ModalContext";
 
-export default function TrainingPage() {
+function TrainingPageContent() {
     const searchParams = useSearchParams();
     const categoryId = searchParams.get("categoryId");
     const roleParam = searchParams.get("role")?.toUpperCase(); // Fallback for old links or direct access
@@ -109,27 +109,6 @@ export default function TrainingPage() {
         const stopResizing = () => setIsResizing(false);
         const resize = (e: MouseEvent) => {
             if (isResizing) {
-                const newWidth = e.clientX - 288; // Subtract AdminSidebar width (approx 288px) or adjust based on layout
-                // Actually, e.clientX is absolute. We need to account for the AdminSidebar on the left.
-                // The main layout starts after the AdminSidebar. The AdminSidebar collapses.
-                // It's safer to rely on movementX, but that accumulates errors.
-                // Let's assume the standard layout for now, or just calculate delta.
-
-                // Better approach:
-                // We don't exactly know the left offset easily without a ref to the container.
-                // But we can constrain the width change. 
-                // Let's rely on standard resizing logic relative to the sidebar container? 
-                // No, just update width based on mouse movement would be delta based.
-                // Let's use logic: newWidth = currentWidth + e.movementX
-                // But we need to use functional state update to access current.
-
-                // Wait, functional update with event listener is tricky due to closure staleness.
-                // Let's use a Ref for the current width or just use e.clientX if we know the offset.
-                // Assuming AdminSidebar is on the left. 
-                // If collapsed: 80px. If expanded: 288px.
-                // This makes e.clientX unreliable unless we track sidebar state.
-
-                // Let's stick to e.movementX for simplicity, it usually works well enough for UI resizing.
                 setSidebarWidth(prev => {
                     const next = prev + e.movementX;
                     if (next < 240) return 240;
@@ -215,5 +194,13 @@ export default function TrainingPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function TrainingPage() {
+    return (
+        <Suspense fallback={<div className="p-8 animate-pulse text-slate-400 font-bold">Loading Training Module...</div>}>
+            <TrainingPageContent />
+        </Suspense>
     );
 }

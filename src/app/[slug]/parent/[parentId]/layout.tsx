@@ -18,13 +18,25 @@ import NotificationCenter from "@/components/notifications/NotificationCenter";
 import PWAInstallPrompt from "@/components/parent/PWAInstallPrompt";
 import { ParentProvider, useParentData } from "@/context/parent-context";
 
-// Wrapper Component
+import { Suspense } from "react";
+
+// Initial wrapper that handles useParams (which doesn't bail out like useSearchParams)
 export default function ParentLayout({ children }: { children: React.ReactNode }) {
     const params = useParams();
-    const searchParams = useSearchParams();
-
-    // Ensure params are available
     const slug = typeof params.slug === 'string' ? params.slug : '';
+
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-zinc-50 flex items-center justify-center animate-pulse text-zinc-400 font-bold">Loading Parent Portal...</div>}>
+            <ParentLayoutSync slug={slug}>
+                {children}
+            </ParentLayoutSync>
+        </Suspense>
+    );
+}
+
+// Intermediate component to safely call useSearchParams
+function ParentLayoutSync({ slug, children }: { slug: string, children: React.ReactNode }) {
+    const searchParams = useSearchParams();
     const phone = searchParams.get("phone") || "";
 
     return (

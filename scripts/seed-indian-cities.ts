@@ -1,5 +1,5 @@
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../src/generated/client";
 
 // Huge list of Indian Cities by State
 // Data source: Simplified list for major coverage
