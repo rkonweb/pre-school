@@ -12,6 +12,8 @@ const TIMEZONE_MAP: Record<string, string> = {
     "UTC+8 (SGT) - Singapore Time": "Asia/Singapore",
     "UTC+05:30 (India Standard Time)": "Asia/Kolkata",
     "UTC-05:00 (Eastern Standard Time)": "America/New_York",
+    "UTC-5 (EST)": "America/New_York",
+    "UTC+05:30 (IST)": "Asia/Kolkata",
 };
 
 export function normalizeTimezone(timezone: string): string {

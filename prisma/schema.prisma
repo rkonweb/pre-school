@@ -32,7 +32,7 @@ model School {
   longitude           String?
   motto               String?
   state               String?
-  timezone            String?              @default("UTC-5 (EST)")
+  timezone            String?              @default("UTC")
   twitter             String?
   website             String?
   youtube             String?
