@@ -8,10 +8,12 @@ import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { toast } from "sonner";
 import { DiaryEntryModal } from "@/components/diary/DiaryEntryModal";
 import { getCookie } from "@/lib/cookies";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 export default function DiaryPage() {
     const params = useParams();
     const slug = params.slug as string;
+    const { confirm: confirmDialog } = useConfirm();
 
     const [selectedClass, setSelectedClass] = useState<string>("");
     const [classrooms, setClassrooms] = useState<any[]>([]);
@@ -61,7 +63,15 @@ export default function DiaryPage() {
     }
 
     async function handleDelete(id: string) {
-        if (!confirm("Are you sure you want to delete this entry?")) return;
+        const confirmed = await confirmDialog({
+            title: "Delete Entry",
+            message: "Are you sure you want to delete this entry? This action cannot be undone.",
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
 
         const res = await deleteDiaryEntryAction(id);
         if (res.success) {

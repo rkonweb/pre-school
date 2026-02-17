@@ -32,9 +32,10 @@ interface TrainingSidebarProps {
     activePageId?: string;
     onSelectPage: (id: string) => void;
     onRefresh?: () => void;
+    readOnly?: boolean;
 }
 
-export function TrainingSidebar({ modules, activePageId, onSelectPage, onRefresh }: TrainingSidebarProps) {
+export function TrainingSidebar({ modules, activePageId, onSelectPage, onRefresh, readOnly = false }: TrainingSidebarProps) {
     const router = useRouter();
     const { openModal } = useModal();
     const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set(modules.map(m => m.id)));
@@ -251,27 +252,31 @@ export function TrainingSidebar({ modules, activePageId, onSelectPage, onRefresh
                             </div>
 
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                    onClick={(e) => handleRenameModule(module.id, module.title, e)}
-                                    className="h-6 w-6 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-blue-600 transition-all"
-                                    title="Rename Module"
-                                >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                    onClick={(e) => handleDeleteModule(module.id, e)}
-                                    className="h-6 w-6 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-red-600 transition-all"
-                                    title="Delete Module"
-                                >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                    onClick={(e) => handleAddTopic(module.id, e)}
-                                    className="h-6 w-6 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-green-600 transition-all"
-                                    title="Add Topic"
-                                >
-                                    <Plus className="h-3.5 w-3.5" />
-                                </button>
+                                {!readOnly && (
+                                    <>
+                                        <button
+                                            onClick={(e) => handleRenameModule(module.id, module.title, e)}
+                                            className="h-6 w-6 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-blue-600 transition-all"
+                                            title="Rename Module"
+                                        >
+                                            <Pencil className="h-3.5 w-3.5" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => handleDeleteModule(module.id, e)}
+                                            className="h-6 w-6 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-red-600 transition-all"
+                                            title="Delete Module"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => handleAddTopic(module.id, e)}
+                                            className="h-6 w-6 rounded hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-green-600 transition-all"
+                                            title="Add Topic"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" />
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -304,27 +309,31 @@ export function TrainingSidebar({ modules, activePageId, onSelectPage, onRefresh
                                                         <span className="text-base font-bold text-zinc-800 truncate">{topic.title}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button
-                                                            onClick={(e) => handleRenameTopic(topic.id, topic.title, e)}
-                                                            className="h-5 w-5 rounded hover:bg-white flex items-center justify-center text-zinc-400 hover:text-blue-600 transition-all shadow-none hover:shadow-sm"
-                                                            title="Rename Topic"
-                                                        >
-                                                            <Pencil className="h-3 w-3" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => handleDeleteTopic(topic.id, e)}
-                                                            className="h-5 w-5 rounded hover:bg-white flex items-center justify-center text-zinc-400 hover:text-red-600 transition-all shadow-none hover:shadow-sm"
-                                                            title="Delete Topic"
-                                                        >
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => handleAddPage(topic.id, e)}
-                                                            className="h-5 w-5 rounded hover:bg-white flex items-center justify-center text-zinc-400 hover:text-green-600 transition-all shadow-none hover:shadow-sm"
-                                                            title="Add Page"
-                                                        >
-                                                            <Plus className="h-3 w-3" />
-                                                        </button>
+                                                        {!readOnly && (
+                                                            <>
+                                                                <button
+                                                                    onClick={(e) => handleRenameTopic(topic.id, topic.title, e)}
+                                                                    className="h-5 w-5 rounded hover:bg-white flex items-center justify-center text-zinc-400 hover:text-blue-600 transition-all shadow-none hover:shadow-sm"
+                                                                    title="Rename Topic"
+                                                                >
+                                                                    <Pencil className="h-3 w-3" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => handleDeleteTopic(topic.id, e)}
+                                                                    className="h-5 w-5 rounded hover:bg-white flex items-center justify-center text-zinc-400 hover:text-red-600 transition-all shadow-none hover:shadow-sm"
+                                                                    title="Delete Topic"
+                                                                >
+                                                                    <Trash2 className="h-3 w-3" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => handleAddPage(topic.id, e)}
+                                                                    className="h-5 w-5 rounded hover:bg-white flex items-center justify-center text-zinc-400 hover:text-green-600 transition-all shadow-none hover:shadow-sm"
+                                                                    title="Add Page"
+                                                                >
+                                                                    <Plus className="h-3 w-3" />
+                                                                </button>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -358,20 +367,24 @@ export function TrainingSidebar({ modules, activePageId, onSelectPage, onRefresh
                                                                             )} />
                                                                             <span className="truncate flex-1">{page.title}</span>
                                                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                                <button
-                                                                                    onClick={(e) => handleRenamePage(page.id, page.title, e)}
-                                                                                    className="h-5 w-5 rounded hover:bg-zinc-200 flex items-center justify-center text-zinc-400 hover:text-blue-600 transition-all"
-                                                                                    title="Rename Page"
-                                                                                >
-                                                                                    <Pencil className="h-3 w-3" />
-                                                                                </button>
-                                                                                <button
-                                                                                    onClick={(e) => handleDeletePage(page.id, e)}
-                                                                                    className="h-5 w-5 rounded hover:bg-zinc-200 flex items-center justify-center text-zinc-400 hover:text-red-600 transition-all"
-                                                                                    title="Delete Page"
-                                                                                >
-                                                                                    <Trash2 className="h-3 w-3" />
-                                                                                </button>
+                                                                                {!readOnly && (
+                                                                                    <>
+                                                                                        <button
+                                                                                            onClick={(e) => handleRenamePage(page.id, page.title, e)}
+                                                                                            className="h-5 w-5 rounded hover:bg-zinc-200 flex items-center justify-center text-zinc-400 hover:text-blue-600 transition-all"
+                                                                                            title="Rename Page"
+                                                                                        >
+                                                                                            <Pencil className="h-3 w-3" />
+                                                                                        </button>
+                                                                                        <button
+                                                                                            onClick={(e) => handleDeletePage(page.id, e)}
+                                                                                            className="h-5 w-5 rounded hover:bg-zinc-200 flex items-center justify-center text-zinc-400 hover:text-red-600 transition-all"
+                                                                                            title="Delete Page"
+                                                                                        >
+                                                                                            <Trash2 className="h-3 w-3" />
+                                                                                        </button>
+                                                                                    </>
+                                                                                )}
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -407,7 +420,9 @@ export function TrainingSidebar({ modules, activePageId, onSelectPage, onRefresh
                             <Book className="h-6 w-6 text-zinc-300" />
                         </div>
                         <p className="text-sm font-medium text-zinc-900">No Modules</p>
-                        <p className="text-xs text-zinc-500 mt-1">Create a module to get started.</p>
+                        <p className="text-xs text-zinc-500 mt-1">
+                            {readOnly ? "No training modules available." : "Create a module to get started."}
+                        </p>
                     </div>
                 )}
             </div>

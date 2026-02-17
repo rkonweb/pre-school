@@ -1,4 +1,4 @@
-export type PermissionType = "view" | "create" | "edit" | "delete" | "manage" | "export" | "mark" | "send" | "review" | "manage_own" | "manage_selected";
+export type PermissionType = "view" | "create" | "edit" | "delete" | "manage" | "export" | "mark" | "send" | "review" | "approve" | "manage_own" | "manage_selected";
 
 export interface ModuleDefinition {
     key: string;
@@ -207,7 +207,15 @@ export const MODULES: ModuleDefinition[] = [
         key: "transport",
         label: "Transport",
         description: "Routes, vehicles and tracking",
-        permissions: ["view", "manage", "create", "edit", "delete"]
+        permissions: ["view", "manage", "create", "edit", "delete"],
+        subModules: [
+            {
+                key: "transport.expenses",
+                label: "Expense Management",
+                description: "Fleet expenditures and claims",
+                permissions: ["view", "create", "edit", "delete", "approve", "review"]
+            }
+        ]
     },
     {
         key: "settings",

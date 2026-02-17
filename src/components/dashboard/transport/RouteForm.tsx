@@ -127,7 +127,7 @@ export function RouteForm({
             if (res.success) {
                 toast.success(routeId ? "Route configuration updated" : "New transport route established");
                 if (onSuccess) onSuccess();
-                else router.push(`/s/${slug}/transport/routes`);
+                else router.push(`/s/${slug}/transport/route/routes`);
             } else {
                 toast.error(res.error || "Operation failed");
             }

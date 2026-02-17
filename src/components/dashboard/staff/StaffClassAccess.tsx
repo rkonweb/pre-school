@@ -8,10 +8,11 @@ import { cn } from "@/lib/utils";
 
 interface StaffClassAccessProps {
     staffId: string;
+    schoolSlug: string;
     classrooms: any[]; // Assuming standard shape
 }
 
-export function StaffClassAccess({ staffId, classrooms }: StaffClassAccessProps) {
+export function StaffClassAccess({ staffId, schoolSlug, classrooms }: StaffClassAccessProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [accessMap, setAccessMap] = useState<Record<string, boolean>>({});
@@ -22,7 +23,7 @@ export function StaffClassAccess({ staffId, classrooms }: StaffClassAccessProps)
 
     async function loadAccess() {
         try {
-            const res = await getStaffClassAccessAction(staffId);
+            const res = await getStaffClassAccessAction(schoolSlug, staffId);
             if (res.success && res.access) {
                 const map: Record<string, boolean> = {};
                 res.access.forEach((a: any) => {
@@ -48,7 +49,7 @@ export function StaffClassAccess({ staffId, classrooms }: StaffClassAccessProps)
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const res = await updateStaffClassAccessBulkAction(staffId, accessMap);
+            const res = await updateStaffClassAccessBulkAction(schoolSlug, staffId, accessMap);
             if (res.success) {
                 toast.success("Access permissions updated");
             } else {

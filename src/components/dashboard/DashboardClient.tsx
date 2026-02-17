@@ -20,7 +20,9 @@ import {
     ChevronRight,
     Search
 } from "lucide-react";
-import { AuraAI } from "./AuraAI";
+
+import { AssistantBriefing } from "./AssistantBriefing";
+import { ModuleHealthGrid } from "./ModuleHealthGrid";
 import {
     DndContext,
     closestCenter,
@@ -43,6 +45,8 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { getDashboardStatsAction } from "@/app/actions/dashboard-actions";
 import { Loader2 } from "lucide-react";
 import { getCookie } from "@/lib/cookies";
+import { DailyReportGenerator } from "@/components/dashboard/DailyReportGenerator";
+
 
 // --- Types ---
 interface DashboardWidget {
@@ -54,6 +58,7 @@ interface DashboardWidget {
 
 const DEFAULT_WIDGETS: DashboardWidget[] = [
     { id: "stats-grid", title: "Summary Stats", type: "stats", enabled: true },
+    { id: "module-health", title: "Module Health", type: "chart", enabled: true },
     { id: "transport-ops", title: "Transport Ops", type: "events", enabled: true },
     { id: "academic-performance", title: "Academic Insights", type: "chart", enabled: true },
     { id: "recent-activity", title: "Recent Activity", type: "list", enabled: true },
@@ -179,94 +184,131 @@ export function DashboardClient() {
     }
 
     return (
-        <div className="flex flex-col gap-10 pb-20">
-            {/* AI Assistant - Aura */}
-            <AuraAI insights={statsData?.aiInsights || []} />
-            {/* Header Area */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                        {staffId ? "Staff Dashboard" : "Admin Intelligence"}
-                    </h1>
-                    <p className="text-sm text-zinc-500 font-medium">
-                        Real-time operational overview for {slug} {staffId && "(Personalized)"}
-                    </p>
-                </div>
+        <div className="min-h-screen bg-[#F8FAFC] relative overflow-hidden">
+            {/* Ambient Background Graphics */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand/10 blur-[130px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full" />
 
-                <button
-                    onClick={() => setIsConfiguring(!isConfiguring)}
-                    className={cn(
-                        "flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-xl shadow-zinc-200/50 active:scale-95",
-                        isConfiguring
-                            ? "bg-brand text-white hover:brightness-110"
-                            : "bg-white text-zinc-600 border border-zinc-200 hover:border-brand hover:text-brand"
-                    )}
-                >
-                    {isConfiguring ? <Check className="h-4 w-4" /> : <Settings2 className="h-4 w-4" />}
-                    {isConfiguring ? "Finish Customizing" : "Customize Dashboard"}
-                </button>
+                {/* Knowledge Grid SVG Pattern - Light Mode */}
+                <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#2563eb" strokeWidth="0.5" />
+                            <circle cx="0" cy="0" r="1.5" fill="#2563eb" fillOpacity="0.3" />
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                </svg>
             </div>
 
-            {/* Config Overlay / Modal */}
-            <AnimatePresence>
-                {isConfiguring && (
-                    <div
-                        className="bg-white border border-zinc-200 text-zinc-900 p-6 rounded-[32px] shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-4 duration-300"
+            <div className="w-full p-6 md:p-12 space-y-12 relative z-10">
+
+
+                {!staffId && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
                     >
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-black flex items-center gap-2">
-                                <LayoutGrid className="h-5 w-5 text-brand" />
-                                Toggle Dashboard Widgets
-                            </h2>
-                            <button onClick={() => setIsConfiguring(false)} className="text-zinc-400 hover:text-zinc-900">
-                                <X className="h-5 w-5" />
-                            </button>
+                        <AssistantBriefing
+                            stats={statsData?.stats}
+                            slug={slug}
+                        />
+                    </motion.div>
+                )}
+
+                {/* Header Area */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
+                    <div className="space-y-1">
+                        <h1 className="text-4xl font-black tracking-tight text-slate-900">
+                            {staffId ? "Personnel Console" : "Unified Intelligence"}
+                        </h1>
+                        <div className="text-sm text-slate-500 font-bold uppercase tracking-[0.2em] flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            Active Signal: {slug} {staffId && "(Restricted View)"}
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {widgets.map(w => (
-                                <button
-                                    key={w.id}
-                                    onClick={() => toggleWidget(w.id)}
-                                    className={cn(
-                                        "px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-between gap-2 border-2",
-                                        w.enabled
-                                            ? "bg-brand/10 border-brand text-brand"
-                                            : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:border-zinc-200"
-                                    )}
-                                >
-                                    {w.title}
-                                    <div className={cn(
-                                        "h-4 w-4 rounded-full border-2 flex items-center justify-center",
-                                        w.enabled ? "bg-brand border-brand" : "border-zinc-700"
-                                    )}>
-                                        {w.enabled && <Check className="h-3 w-3 text-white" />}
-                                    </div>
+                    </div>
+
+
+                    <div className="flex items-center gap-3">
+                        <DailyReportGenerator slug={slug} />
+                        <button
+                            onClick={() => setIsConfiguring(!isConfiguring)}
+                            className={cn(
+                                "flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-200 active:scale-95 border",
+                                isConfiguring
+                                    ? "bg-brand text-white border-brand shadow-brand/20"
+                                    : "bg-white text-slate-600 border-slate-200 hover:border-brand hover:text-brand"
+                            )}
+                        >
+                            {isConfiguring ? <Check className="h-4 w-4" /> : <Settings2 className="h-4 w-4" />}
+                            {isConfiguring ? "Lock Manifest" : "Customize Matrix"}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Config Overlay / Modal */}
+                <AnimatePresence>
+                    {isConfiguring && (
+                        <div
+                            className="bg-white border border-zinc-200 text-zinc-900 p-6 rounded-[32px] shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-4 duration-300"
+                        >
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-lg font-black flex items-center gap-2">
+                                    <LayoutGrid className="h-5 w-5 text-brand" />
+                                    Toggle Dashboard Widgets
+                                </h2>
+                                <button onClick={() => setIsConfiguring(false)} className="text-zinc-400 hover:text-zinc-900">
+                                    <X className="h-5 w-5" />
                                 </button>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {widgets.map(w => (
+                                    <button
+                                        key={w.id}
+                                        onClick={() => toggleWidget(w.id)}
+                                        className={cn(
+                                            "px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-between gap-2 border-2",
+                                            w.enabled
+                                                ? "bg-brand/10 border-brand text-brand"
+                                                : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:border-zinc-200"
+                                        )}
+                                    >
+                                        {w.title}
+                                        <div className={cn(
+                                            "h-4 w-4 rounded-full border-2 flex items-center justify-center",
+                                            w.enabled ? "bg-brand border-brand" : "border-zinc-700"
+                                        )}>
+                                            {w.enabled && <Check className="h-3 w-3 text-white" />}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
+                {/* Draggable Dashboard Content */}
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                >
+                    <SortableContext
+                        items={widgets.map(w => w.id)}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        <div className="grid gap-8">
+                            {widgets.map((widget) => (
+                                <SortableWidget key={widget.id} widget={widget}>
+                                    {renderWidgetContent(widget.id, statsData)}
+                                </SortableWidget>
                             ))}
                         </div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            {/* Draggable Dashboard Content */}
-            <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-            >
-                <SortableContext
-                    items={widgets.map(w => w.id)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    <div className="grid gap-8">
-                        {widgets.map((widget) => (
-                            <SortableWidget key={widget.id} widget={widget}>
-                                {renderWidgetContent(widget.id, statsData)}
-                            </SortableWidget>
-                        ))}
-                    </div>
-                </SortableContext>
-            </DndContext>
+                    </SortableContext>
+                </DndContext>
+            </div>
         </div>
     );
 }
@@ -277,7 +319,12 @@ function renderWidgetContent(id: string, data: any) {
         totalStudents: 0,
         activeStaff: 0,
         attendanceToday: "0%",
-        revenue: "$0"
+        revenue: "0",
+        routesCount: 0,
+        delayedRoutes: 0,
+        collectionPercent: 0,
+        totalFees: 0,
+        totalCollected: 0
     };
 
     switch (id) {
@@ -315,6 +362,9 @@ function renderWidgetContent(id: string, data: any) {
                 </div>
             );
 
+        case "module-health":
+            return <ModuleHealthGrid stats={stats} />;
+
         case "transport-ops":
             return (
                 <div className="grid md:grid-cols-2 gap-8">
@@ -332,7 +382,7 @@ function renderWidgetContent(id: string, data: any) {
                             <div className="flex items-center justify-between p-6 rounded-2xl bg-zinc-50 border border-zinc-100 transition-all hover:bg-white hover:shadow-lg hover:-translate-y-1">
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Active Fleet</p>
-                                    <p className="text-2xl font-black text-zinc-900">12 Routes</p>
+                                    <p className="text-2xl font-black text-zinc-900">{stats.routesCount || 0} Routes</p>
                                 </div>
                                 <div className="h-12 w-12 rounded-xl bg-white border border-zinc-100 flex items-center justify-center">
                                     <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
@@ -341,7 +391,7 @@ function renderWidgetContent(id: string, data: any) {
                             <div className="flex items-center justify-between p-6 rounded-2xl bg-rose-50 border border-rose-100 group transition-all cursor-pointer hover:shadow-xl hover:shadow-rose-100/50">
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Service Delay</p>
-                                    <p className="text-2xl font-black text-rose-600">{stats.delayedRoutes || 1} Vehicle(s)</p>
+                                    <p className="text-2xl font-black text-rose-600">{stats.delayedRoutes || 0} Vehicle(s)</p>
                                 </div>
                                 <div className="h-12 w-12 rounded-xl bg-white border border-rose-100 flex items-center justify-center text-rose-500 italic">
                                     <Clock className="h-5 w-5 animate-pulse" />
@@ -363,18 +413,21 @@ function renderWidgetContent(id: string, data: any) {
                                 </button>
                             </div>
                             <div className="space-y-4">
-                                {[
-                                    { route: "R-NW-12", status: "Moving", speed: "42 km/h", color: "bg-emerald-500" },
-                                    { route: "R-ES-04", status: "Traffic", speed: "12 km/h", color: "bg-amber-500" }
-                                ].map((r, i) => (
-                                    <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-100/50">
-                                        <div className="flex items-center gap-3">
-                                            <div className={cn("h-2 w-2 rounded-full", r.color)} />
-                                            <span className="text-xs font-black text-zinc-600 tracking-wider font-mono">{r.route}</span>
+                                {data?.delayedVehicles?.length > 0 ? (
+                                    data.delayedVehicles.map((v: any, i: number) => (
+                                        <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-100/50">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-2 w-2 rounded-full bg-amber-500" />
+                                                <span className="text-xs font-black text-zinc-600 tracking-wider font-mono">{v.TransportVehicle.registrationNumber}</span>
+                                            </div>
+                                            <span className="text-[10px] font-bold text-zinc-400 uppercase italic">Delayed • {v.delayMinutes}m</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-zinc-400 uppercase italic">{r.status} • {r.speed}</span>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8 text-zinc-400 text-xs font-bold uppercase tracking-widest italic">
+                                        All vehicles on schedule
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
                     </div>
@@ -397,9 +450,8 @@ function renderWidgetContent(id: string, data: any) {
                     </div>
 
                     <div className="grid sm:grid-cols-4 gap-6">
-                        {(data?.academicPerformance || [
-                            { title: "Mid Term", avg: "82%", trend: "up" },
-                            { title: "Unit Test-I", avg: "78%", trend: "stable" }
+                        {(data?.academicPerformance?.length > 0 ? data.academicPerformance : [
+                            { title: "No Exams Recorded", avg: "0%", trend: "stable" }
                         ]).map((perf: any, i: number) => (
                             <div key={i} className="p-6 rounded-3xl border border-zinc-100 bg-zinc-50/50 group hover:bg-white hover:border-violet-200 hover:shadow-xl hover:shadow-violet-100/50 transition-all cursor-pointer">
                                 <div className="flex items-center justify-between mb-4">
@@ -453,17 +505,19 @@ function renderWidgetContent(id: string, data: any) {
                         <button className="text-xs font-black text-brand">Add Event +</button>
                     </div>
                     <div className="mt-8 grid sm:grid-cols-3 gap-6">
-                        {[
-                            { date: "Jan 26", title: "Faculty Workshop", color: "bg-orange-50 border-orange-100 text-orange-700" },
-                            { date: "Jan 28", title: "Sports Day Prep", color: "bg-emerald-50 border-emerald-100 text-emerald-700" },
-                            { date: "Feb 02", title: "Winter Field Trip", color: "bg-blue-50 border-blue-100 text-blue-700" },
-                        ].map((event, i) => (
-                            <div key={i} className={cn("p-6 rounded-3xl border transition-all hover:scale-[1.02] cursor-pointer", event.color)}>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 block mb-2">{event.date.split(' ')[0]}</span>
-                                <span className="text-3xl font-black block mb-4">{event.date.split(' ')[1]}</span>
-                                <p className="font-bold text-sm leading-tight">{event.title}</p>
+                        {data?.upcomingEvents?.length > 0 ? (
+                            data.upcomingEvents.map((event: any, i: number) => (
+                                <div key={i} className={cn("p-6 rounded-3xl border transition-all hover:scale-[1.02] cursor-pointer", event.color)}>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 block mb-2">{event.date.split(' ')[0]}</span>
+                                    <span className="text-3xl font-black block mb-4">{event.date.split(' ')[1]}</span>
+                                    <p className="font-bold text-sm leading-tight">{event.title}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-3 text-center py-12 text-zinc-400 text-xs font-bold uppercase tracking-widest italic">
+                                No upcoming events scheduled
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
             );
@@ -493,14 +547,14 @@ function renderWidgetContent(id: string, data: any) {
                                 />
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className="text-3xl font-black">85%</span>
+                                <span className="text-3xl font-black">{stats.collectionPercent}%</span>
                                 <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Collected</span>
                             </div>
                         </div>
                         <div className="flex-1 space-y-6 w-full">
                             {[
-                                { label: "Fees Received", amount: "$10,500", progress: 85, color: "bg-brand" },
-                                { label: "Pending Dues", amount: "$1,950", progress: 15, color: "bg-orange-500" },
+                                { label: "Fees Received", amount: stats.totalCollected.toLocaleString(), progress: stats.collectionPercent, color: "bg-brand" },
+                                { label: "Pending Dues", amount: (stats.totalFees - stats.totalCollected).toLocaleString(), progress: 100 - stats.collectionPercent, color: "bg-orange-500" },
                             ].map((item, i) => (
                                 <div key={i} className="space-y-2">
                                     <div className="flex justify-between text-sm font-bold">

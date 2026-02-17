@@ -13,14 +13,22 @@ import {
     HardDrive,
     TrendingUp,
     Loader2,
-    AlertCircle
+    AlertCircle,
+    Building2
 } from "lucide-react";
 import { getProfileDataAction } from "@/app/actions/profile-actions";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
 import { cn } from "@/lib/utils";
 import { AvatarWithAdjustment } from "./staff/AvatarWithAdjustment";
+import { BranchSelector } from "./BranchSelector";
 
-export function ProfileMenu() {
+export function ProfileMenu({
+    branches = [],
+    currentBranchId = ""
+}: {
+    branches?: any[];
+    currentBranchId?: string;
+}) {
     const params = useParams();
     const router = useRouter();
     const slug = params.slug as string;
@@ -124,7 +132,7 @@ export function ProfileMenu() {
             {/* Avatar Trigger */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors p-1"
+                className="flex items-center gap-2 rounded-full hover:bg-white/10 transition-colors p-1"
             >
                 <AvatarWithAdjustment
                     src={user?.avatar}
@@ -178,6 +186,25 @@ export function ProfileMenu() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Branch Selection - Only if more than 1 branch */}
+                            {branches.length > 1 && (
+                                <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50">
+                                    <div className="flex items-center gap-2 mb-2 px-1">
+                                        <div className="p-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                                            <Building2 className="h-3.5 w-3.5 text-brand" />
+                                        </div>
+                                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                                            Switch Branch
+                                        </span>
+                                    </div>
+                                    <BranchSelector
+                                        branches={branches}
+                                        currentBranchId={currentBranchId}
+                                        isCollapsed={false}
+                                    />
+                                </div>
+                            )}
 
                             {/* Subscription Info */}
                             {subscription && (

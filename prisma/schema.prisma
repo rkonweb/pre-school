@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -17,7 +17,7 @@ model School {
   address             String?
   email               String?              @unique
   phone               String?              @unique
-  brandColor          String?              @default("#2563eb")
+  brandColor          String?              @default("#AE7B64")
   city                String?
   country             String?
   currency            String?              @default("USD")
@@ -33,6 +33,7 @@ model School {
   motto               String?
   state               String?
   timezone            String?              @default("UTC")
+  maxBranches         Int                  @default(1)
   twitter             String?
   website             String?
   youtube             String?
@@ -41,7 +42,7 @@ model School {
   academicYearEnd     DateTime?
   academicYearStart   DateTime?
   academicYearStartMonth Int?                @default(4)
-  primaryColor        String?              @default("#2563eb")
+  primaryColor        String?              @default("#AE7B64")
   schoolTimings       String?              @default("9:00 AM - 3:00 PM")
   secondaryColor      String?
   workingDays         String?
@@ -76,6 +77,10 @@ model School {
   whatsappTemplates   WhatsAppTemplate[]
   leadAutomationRules LeadAutomationRule[]
   aiSettings          AISettings?
+  transportDailyLogs  TransportDailyLog[]
+  transportExpenses   TransportExpense[]
+  idCardTemplates     IDCardTemplate[]
+  idCardSettings      IDCardSettings?
 }
 
 model AcademicYear {
@@ -145,6 +150,8 @@ model Admission {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   school                School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  branchId              String?
+  branch                Branch?   @relation(fields: [branchId], references: [id])
   
   marketingStatus       String    @default("NEW") // NEW, CONTACTED, INTERESTED, etc.
   score                 Int       @default(50)
@@ -168,6 +175,7 @@ model Admission {
   @@index([stage])
   @@index([parentPhone])
   @@index([parentEmail])
+  @@index([branchId])
 }
 
 model User {
@@ -180,6 +188,7 @@ model User {
   department               String?
   joiningDate              DateTime?
   status                   String                @default("ACTIVE")
+  signupStep               String?
   avatar                   String?
   address                  String?
   role                     String                @default("ADMIN")
@@ -208,6 +217,7 @@ model User {
   linkedin                 String?
   twitter                  String?
   instagram                String?
+  avatarAdjustment         String?
   customRoleId             String?
   biometricId              String?               @unique
   BlogPost                 BlogPost[]
@@ -233,6 +243,8 @@ model User {
   transportDriver          TransportDriver?
   school                   School?               @relation(fields: [schoolId], references: [id])
   customRole               Role?                 @relation(fields: [customRoleId], references: [id])
+  createdExpenses          TransportExpense[]    @relation("ExpenseCreator")
+  approvedExpenses         TransportExpense[]    @relation("ExpenseApprover")
 
   @@index([role])
   @@index([status])
@@ -338,11 +350,14 @@ model Classroom {
   accesses     ClassAccess[]
   school       School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   teacher      User?         @relation("ClassTeacher", fields: [teacherId], references: [id])
+  branchId     String?
+  branch       Branch?       @relation(fields: [branchId], references: [id])
   diaryEntries DiaryEntry[]
   students     Student[] @relation("CurrentClass")
   promotedStudents Student[] @relation("PromotedClass")
 
   @@index([schoolId])
+  @@index([branchId])
 }
 
 model Student {
@@ -382,6 +397,8 @@ model Student {
   classroom             Classroom?               @relation("CurrentClass", fields: [classroomId], references: [id])
   promotedToClassroom    Classroom?               @relation("PromotedClass", fields: [promotedToClassroomId], references: [id])
   school                School                   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  branchId              String?
+  branch                Branch?                  @relation(fields: [branchId], references: [id])
   activityRecords       StudentActivityRecord[]
   healthRecords         StudentHealthRecord[]
   transportProfile      StudentTransportProfile?
@@ -402,12 +419,16 @@ model Fee {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   description String?
+  category    String       @default("GENERAL") // GENERAL, TRANSPORT
   academicYearId String?
   academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
   student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  branchId    String?
+  branch      Branch?      @relation(fields: [branchId], references: [id])
   payments    FeePayment[]
 
   @@index([academicYearId])
+  @@index([category])
 }
 
 model FeePayment {
@@ -474,8 +495,9 @@ model SubscriptionPlan {
   features        String         @default("[]")
   maxStudents     Int            @default(0)
   maxStaff        Int            @default(0)
-  maxStorageGB    Int            @default(0)
-  tier            String         @default("free")
+  maxStorageGB       Int            @default(0)
+  additionalStaffPrice Float          @default(0)
+  tier               String         @default("free")
   supportLevel    String         @default("community")
   isActive        Boolean        @default(true)
   isPopular       Boolean        @default(false)
@@ -521,9 +543,12 @@ model StaffAttendance {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branchId   String?
+  branch     Branch?      @relation(fields: [branchId], references: [id])
   punches    StaffPunch[]
 
   @@unique([userId, date])
+  @@index([branchId])
 }
 
 model StaffPunch {
@@ -981,11 +1006,14 @@ model LibraryBook {
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   school       School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  branchId     String?
+  branch       Branch?              @relation(fields: [branchId], references: [id])
   transactions LibraryTransaction[]
 
   @@index([schoolId])
   @@index([title])
   @@index([isbn])
+  @@index([branchId])
 }
 
 model TransportVehicle {
@@ -1012,13 +1040,18 @@ model TransportVehicle {
   createdAt                                                       DateTime               @default(now())
   updatedAt                                                       DateTime               @updatedAt
   maintenanceLogs                                                 TransportMaintenance[]
+  dailyLogs                                                       TransportDailyLog[]
+  expenses                                                        TransportExpense[]
   TransportRoute_TransportRoute_dropVehicleIdToTransportVehicle   TransportRoute[]       @relation("TransportRoute_dropVehicleIdToTransportVehicle")
   TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle TransportRoute[]       @relation("TransportRoute_pickupVehicleIdToTransportVehicle")
   school                                                          School                 @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  branchId                                                        String?
+  branch                                                          Branch?                @relation(fields: [branchId], references: [id])
   VehicleTelemetry                                                VehicleTelemetry[]
 
   @@unique([schoolId, registrationNumber])
   @@index([schoolId])
+  @@index([branchId])
 }
 
 model TransportDriver {
@@ -1053,9 +1086,12 @@ model TransportRoute {
   TransportVehicle_TransportRoute_dropVehicleIdToTransportVehicle   TransportVehicle?         @relation("TransportRoute_dropVehicleIdToTransportVehicle", fields: [dropVehicleId], references: [id])
   TransportVehicle_TransportRoute_pickupVehicleIdToTransportVehicle TransportVehicle?         @relation("TransportRoute_pickupVehicleIdToTransportVehicle", fields: [pickupVehicleId], references: [id])
   school                                                            School                    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  branchId                                                          String?
+  branch                                                            Branch?                   @relation(fields: [branchId], references: [id])
   stops                                                             TransportStop[]
 
   @@index([schoolId])
+  @@index([branchId])
 }
 
 model TransportStop {
@@ -1073,6 +1109,7 @@ model TransportStop {
   dropStudents   StudentTransportProfile[] @relation("DropStop")
   pickupStudents StudentTransportProfile[] @relation("PickupStop")
   route          TransportRoute            @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  stopLogs       TransportStopLog[]
 
   @@index([routeId])
 }
@@ -1291,7 +1328,7 @@ model BlogPageContent {
 }
 
 model BlogPost {
-  id              String    @id
+  id              String    @id @default(cuid())
   title           String
   slug            String    @unique
   excerpt         String?
@@ -1306,12 +1343,23 @@ model BlogPost {
   metaKeywords    String?
   ogImage         String?
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime
-  User            User      @relation(fields: [authorId], references: [id])
+  updatedAt       DateTime  @updatedAt
+  author          User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model BlogAutomationSettings {
+  id                String   @id @default("global")
+  isEnabled         Boolean  @default(false)
+  scheduledTime     String   @default("09:00")
+  lastRunDate       DateTime?
+  preferredTopics   String?  @default("Early Childhood Ed, Montessori, School Management")
+  tone              String   @default("Professional")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model CMSPage {
-  id              String   @id
+  id              String   @id @default(cuid())
   title           String
   slug            String   @unique
   content         String
@@ -1321,7 +1369,7 @@ model CMSPage {
   metaKeywords    String?
   ogImage         String?
   createdAt       DateTime @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime @updatedAt
 }
 
 model CareersPageContent {
@@ -1554,15 +1602,29 @@ model SchoolMarketingDesign {
 
 
 
+
+
 model Branch {
-  id        String   @id @default(cuid())
-  name      String
-  schoolId  String
-  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  leads     Lead[]
-  users     User[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String              @id @default(cuid())
+  name              String
+  schoolId          String
+  status            String              @default("ACTIVE") // ACTIVE, SUSPENDED, ARCHIVED
+  address           String?
+  phone             String?
+  email             String?
+  school            School              @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  leads             Lead[]
+  users             User[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  students          Student[]
+  classrooms        Classroom[]
+  admissions        Admission[]
+  fees              Fee[]
+  staffAttendance   StaffAttendance[]
+  transportRoutes   TransportRoute[]
+  transportVehicles TransportVehicle[]
+  libraryBooks      LibraryBook[]
 }
 
 model Lead {
@@ -1612,9 +1674,14 @@ model Lead {
   updatedAt              DateTime          @updatedAt
 
   @@index([schoolId])
+  @@index([preferredBranchId])
   @@index([status])
   @@index([mobile])
 }
+
+
+// cleaned up orphaned Lead model lines
+
 
 model FollowUp {
   id           String   @id @default(cuid())
@@ -1693,4 +1760,110 @@ model AISettings {
   school                  School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
+}
+
+model TransportDailyLog {
+  id              String             @id @default(cuid())
+  date            DateTime
+  vehicleId       String
+  routeId         String?
+  driverId        String?
+  totalDistance   Float              @default(0) // km
+  startTime       DateTime?
+  endTime         DateTime?
+  idleMinutes     Int                @default(0)
+  fuelConsumed    Float?             @default(0) // liters
+  avgSpeed        Float?             @default(0) // km/h
+  efficiencyScore Int?               @default(100) // 0-100
+  schoolId        String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  vehicle         TransportVehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  school          School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  stopLogs        TransportStopLog[]
+
+  @@unique([vehicleId, date])
+  @@index([schoolId])
+  @@index([date])
+}
+
+model TransportStopLog {
+  id               String            @id @default(cuid())
+  dailyLogId       String
+  stopId           String
+  scheduledArrival String?           // e.g., "08:30 AM"
+  actualArrival    DateTime?
+  delayMinutes     Int               @default(0)
+  status           String            @default("ON_TIME") // ON_TIME, DELAYED, SKIPPED
+  createdAt        DateTime          @default(now())
+  dailyLog         TransportDailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  stop             TransportStop     @relation(fields: [stopId], references: [id], onDelete: Cascade)
+
+  @@index([dailyLogId])
+}
+
+model TransportExpense {
+  id              String           @id @default(cuid())
+  vehicleId       String
+  schoolId        String
+  category        String           // FUEL, MAINTENANCE, REPAIR, INSURANCE, PERMIT, OTHER
+  amount          Float
+  date            DateTime
+  description     String?
+  receiptUrl      String?
+  status          String           @default("APPROVED") // PENDING, APPROVED, REJECTED
+  rejectionReason String?
+  createdById     String?
+  approvedById    String?
+  
+  isSuspicious    Boolean          @default(false)
+  anomalyReason   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  createdBy       User?            @relation("ExpenseCreator", fields: [createdById], references: [id])
+  approvedBy      User?            @relation("ExpenseApprover", fields: [approvedById], references: [id])
+  vehicle         TransportVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  school          School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId])
+  @@index([vehicleId])
+  @@index([date])
+}
+
+model IDCardTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  layout      String   // JSON string for Konva zones
+  dimensions  String   @default("54x86") // WidthxHeight in mm (CR-80 standard is 85.6 x 53.98)
+  orientation String   @default("VERTICAL") // VERTICAL, HORIZONTAL
+  isSystem    Boolean  @default(false)
+  width       Float    @default(86)
+  height      Float    @default(54)
+  unit        String   @default("mm")
+  bleed       Float    @default(3)
+  safeMargin  Float    @default(5)
+  schoolId    String?
+  school      School?  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  parentTemplateId String?
+  parentTemplate   IDCardTemplate?  @relation("TemplateInheritance", fields: [parentTemplateId], references: [id], onDelete: SetNull)
+  childTemplates   IDCardTemplate[] @relation("TemplateInheritance")
+
+  @@index([schoolId])
+  @@index([parentTemplateId])
+}
+
+model IDCardSettings {
+  id                    String   @id @default(cuid())
+  schoolId              String   @unique
+  school                School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  defaultTemplateId     String?
+  includeQrCode        Boolean  @default(true)
+  qrCodeField          String   @default("admissionNumber") 
+  photoPlaceholder     String?
+  signatureImage       String?
+  updatedAt             DateTime @updatedAt
 }

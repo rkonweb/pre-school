@@ -41,7 +41,9 @@ export async function createExamAction(schoolSlug: string, data: {
                 questionPaperUrl: data.questionPaperUrl,
                 description: data.description,
                 gradingSystem: data.gradingSystem || "MARKS",
-                academicYearId: data.academicYearId,
+                ...(data.academicYearId && {
+                    academicYear: { connect: { id: data.academicYearId } }
+                }),
                 school: { connect: { slug: schoolSlug } },
                 createdBy: { connect: { id: currentUser.id } }
             } as any

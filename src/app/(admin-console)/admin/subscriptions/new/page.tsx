@@ -35,6 +35,7 @@ export default function NewSubscriptionPlanPage() {
         maxStudents: 0,
         maxStaff: 0,
         maxStorageGB: 0,
+        additionalStaffPrice: 0,
         supportLevel: "email" as "community" | "email" | "priority" | "dedicated",
         includedModules: [] as string[],
         currency: "INR" // Default
@@ -49,6 +50,7 @@ export default function NewSubscriptionPlanPage() {
                 name: formData.name,
                 slug: formData.name.toLowerCase().replace(/\s+/g, '-'),
                 price: Number(formData.price),
+                additionalStaffPrice: Number(formData.additionalStaffPrice),
                 currency: formData.currency,
                 billingPeriod: "monthly" as const,
                 description: formData.description,
@@ -230,6 +232,21 @@ export default function NewSubscriptionPlanPage() {
                                 </div>
                             </div>
                             <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-zinc-500 uppercase">Price per Additional User</label>
+                                <div className="relative">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-sm">
+                                        {formData.currency === 'INR' ? '₹' : '$'}
+                                    </div>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={formData.additionalStaffPrice}
+                                        onChange={e => setFormData({ ...formData, additionalStaffPrice: Number(e.target.value) })}
+                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 py-3 pl-8 pr-3 font-bold text-zinc-900 focus:ring-2 focus:ring-blue-600 outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5 col-span-2 md:col-span-1">
                                 <label className="text-xs font-bold text-zinc-500 uppercase">Support Level</label>
                                 <select
                                     value={formData.supportLevel}

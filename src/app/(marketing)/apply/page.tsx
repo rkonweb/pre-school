@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     ArrowRight,
     CheckCircle,
@@ -15,6 +15,11 @@ import { cn } from "@/lib/utils";
 export default function PublicAdmissionPage() {
     const [step, setStep] = useState(1);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const handleNext = (e: React.FormEvent) => {
         e.preventDefault();
@@ -77,7 +82,9 @@ export default function PublicAdmissionPage() {
                                 <div className="grid gap-10">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-navy uppercase tracking-[0.25em] ml-1">Child's Full Name</label>
-                                        <input type="text" required placeholder="Full Name" className="w-full rounded-2xl border-teal/5 bg-slate-50 px-6 py-4 text-navy font-bold focus:ring-4 focus:ring-teal/10 shadow-inner outline-none transition-all placeholder:text-navy/20" />
+                                        {isMounted && (
+                                            <input type="text" required data-lpignore="true" placeholder="Full Name" className="w-full rounded-2xl border-teal/5 bg-slate-50 px-6 py-4 text-navy font-bold focus:ring-4 focus:ring-teal/10 shadow-inner outline-none transition-all placeholder:text-navy/20" />
+                                        )}
                                     </div>
                                     <div className="grid grid-cols-2 gap-8">
                                         <div className="space-y-3">
@@ -101,16 +108,22 @@ export default function PublicAdmissionPage() {
                                 <div className="grid gap-10">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1">Guardian Name</label>
-                                        <input type="text" required placeholder="Father/Mother/Guardian" className="w-full rounded-2xl border-teal/5 bg-slate-50 px-6 py-4 text-navy font-bold focus:ring-4 focus:ring-teal/10 shadow-inner outline-none transition-all placeholder:text-navy/20" />
+                                        {isMounted && (
+                                            <input type="text" required data-lpignore="true" placeholder="Father/Mother/Guardian" className="w-full rounded-2xl border-teal/5 bg-slate-50 px-6 py-4 text-navy font-bold focus:ring-4 focus:ring-teal/10 shadow-inner outline-none transition-all placeholder:text-navy/20" />
+                                        )}
                                     </div>
                                     <div className="grid grid-cols-2 gap-8">
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1">Phone Number</label>
-                                            <input type="tel" required placeholder="+1 (555) 000-0000" className="w-full rounded-2xl border-teal/5 bg-slate-50 px-6 py-4 text-navy font-bold focus:ring-4 focus:ring-teal/10 shadow-inner outline-none transition-all placeholder:text-navy/20" />
+                                            {isMounted && (
+                                                <input type="tel" required data-lpignore="true" placeholder="+1 (555) 000-0000" className="w-full rounded-2xl border-teal/5 bg-slate-50 px-6 py-4 text-navy font-bold focus:ring-4 focus:ring-teal/10 shadow-inner outline-none transition-all placeholder:text-navy/20" />
+                                            )}
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1">Email Address</label>
-                                            <input type="email" required placeholder="parent@example.com" className="w-full rounded-2xl border-teal/5 bg-slate-50 px-6 py-4 text-navy font-bold focus:ring-4 focus:ring-teal/10 shadow-inner outline-none transition-all placeholder:text-navy/20" />
+                                            {isMounted && (
+                                                <input type="email" required data-lpignore="true" placeholder="parent@example.com" className="w-full rounded-2xl border-teal/5 bg-slate-50 px-6 py-4 text-navy font-bold focus:ring-4 focus:ring-teal/10 shadow-inner outline-none transition-all placeholder:text-navy/20" />
+                                            )}
                                         </div>
                                     </div>
                                 </div>

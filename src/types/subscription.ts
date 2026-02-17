@@ -5,6 +5,7 @@ export interface SubscriptionPlan {
     price: number;
     billingPeriod: "monthly" | "yearly";
     currency: string;
+    additionalStaffPrice: number;
     description: string;
     features: string[]; // Display features (marketing text)
     limits: {

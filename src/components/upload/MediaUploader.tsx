@@ -10,9 +10,10 @@ interface MediaUploaderProps {
     type: "PHOTO" | "VIDEO";
     onUploadComplete: (url: string) => void;
     onCancel?: () => void;
+    folder?: 'homework' | 'worksheets' | 'videos' | 'voice-notes' | 'admissions' | 'branding';
 }
 
-export default function MediaUploader({ type, onUploadComplete, onCancel }: MediaUploaderProps) {
+export default function MediaUploader({ type, onUploadComplete, onCancel, folder }: MediaUploaderProps) {
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string>("");
     const [isUploading, setIsUploading] = useState(false);
@@ -149,7 +150,7 @@ export default function MediaUploader({ type, onUploadComplete, onCancel }: Medi
                     file: base64,
                     fileName: file.name,
                     contentType: fileToUpload.type,
-                    folder: type === "PHOTO" ? 'homework' : 'videos',
+                    folder: folder || (type === "PHOTO" ? 'homework' : 'videos'),
                 }),
             });
 
@@ -199,10 +200,10 @@ export default function MediaUploader({ type, onUploadComplete, onCancel }: Medi
             {!file ? (
                 /* @ts-ignore */
                 <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                     onClick={() => fileInputRef.current?.click()}
-                    className="relative border-4 border-dashed border-blue-300 rounded-3xl p-12 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all"
+                    className="relative border-2 border-dashed border-blue-300 rounded-2xl p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all"
                 >
                     <input
                         ref={fileInputRef}
@@ -213,60 +214,60 @@ export default function MediaUploader({ type, onUploadComplete, onCancel }: Medi
                         capture={type === "PHOTO" ? "environment" : "user"}
                     />
 
-                    <div className="h-20 w-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="h-14 w-14 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-md shadow-blue-200">
                         {type === "PHOTO" ? (
-                            <Camera className="h-10 w-10 text-white" />
+                            <Camera className="h-7 w-7 text-white" />
                         ) : (
-                            <Video className="h-10 w-10 text-white" />
+                            <Video className="h-7 w-7 text-white" />
                         )}
                     </div>
 
-                    <h3 className="text-xl font-black text-zinc-900 mb-2">
+                    <h3 className="text-sm font-black text-zinc-900 mb-1">
                         {type === "PHOTO" ? "Take or Upload Photo" : "Record or Upload Video"}
                     </h3>
-                    <p className="text-zinc-600 font-medium">
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight">
                         {type === "PHOTO"
                             ? "Max 5MB • JPG, PNG, WebP"
-                            : "Max 15 seconds • MP4, WebM"}
+                            : "Max 15s • MP4, WebM"}
                     </p>
                 </motion.div>
             ) : (
                 <div className="space-y-4">
                     {/* Preview */}
-                    <div className="relative rounded-2xl overflow-hidden bg-zinc-900">
+                    <div className="relative rounded-xl overflow-hidden bg-zinc-900">
                         {preview ? (
                             type === "PHOTO" ? (
-                                <img src={preview} alt="Preview" className="w-full h-64 object-cover" />
+                                <img src={preview} alt="Preview" className="w-full h-40 object-cover" />
                             ) : (
-                                <video src={preview} controls className="w-full h-64" />
+                                <video src={preview} controls className="w-full h-40" />
                             )
                         ) : (
-                            <div className="w-full h-64 flex items-center justify-center text-zinc-500">
-                                <Loader2 className="h-8 w-8 animate-spin" />
+                            <div className="w-full h-40 flex items-center justify-center text-zinc-500">
+                                <Loader2 className="h-6 w-6 animate-spin" />
                             </div>
                         )}
 
                         {!isUploading && (
                             <button
                                 onClick={handleCancel}
-                                className="absolute top-4 right-4 h-10 w-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                                className="absolute top-2 right-2 h-8 w-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
                             >
-                                <X className="h-5 w-5 text-white" />
+                                <X className="h-4 w-4 text-white" />
                             </button>
                         )}
                     </div>
 
                     {/* File Info */}
-                    <div className="flex items-center justify-between p-4 bg-zinc-100 rounded-xl">
+                    <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl border border-zinc-100">
                         <div className="flex items-center gap-3">
                             {type === "PHOTO" ? (
-                                <Camera className="h-5 w-5 text-blue-600" />
+                                <Camera className="h-4 w-4 text-zinc-400" />
                             ) : (
-                                <Film className="h-5 w-5 text-purple-600" />
+                                <Film className="h-4 w-4 text-zinc-400" />
                             )}
                             <div>
-                                <p className="font-bold text-zinc-900 text-sm">{file.name}</p>
-                                <p className="text-xs text-zinc-500">
+                                <p className="font-black text-zinc-900 text-xs truncate max-w-[150px]">{file.name}</p>
+                                <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">
                                     {(file.size / 1024 / 1024).toFixed(2)} MB
                                 </p>
                             </div>
@@ -309,10 +310,10 @@ export default function MediaUploader({ type, onUploadComplete, onCancel }: Medi
 
                     {/* Upload Button */}
                     {!isUploading && (
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2">
                             <button
                                 onClick={handleCancel}
-                                className="py-3 bg-zinc-200 text-zinc-700 rounded-xl font-bold hover:bg-zinc-300 transition-colors"
+                                className="py-2.5 bg-zinc-50 text-zinc-500 rounded-xl font-black text-[10px] uppercase tracking-widest border border-zinc-100 hover:bg-zinc-100 transition-colors"
                             >
                                 Cancel
                             </button>
@@ -321,9 +322,9 @@ export default function MediaUploader({ type, onUploadComplete, onCancel }: Medi
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={handleUpload}
-                                className="py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2"
+                                className="py-2.5 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
                             >
-                                <Upload className="h-5 w-5" />
+                                <Upload className="h-3 w-3" />
                                 Upload
                             </motion.button>
                         </div>

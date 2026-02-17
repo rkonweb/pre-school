@@ -146,9 +146,9 @@ export default function IndividualStaffAttendanceReport() {
         setIsLoading(true);
         try {
             const [staffRes, attRes, leaveRes] = await Promise.all([
-                getStaffMemberAction(staffId),
-                getStaffAttendanceHistoryAction(staffId),
-                getStaffLeaveHistoryAction(staffId)
+                getStaffMemberAction(slug, staffId),
+                getStaffAttendanceHistoryAction(slug, staffId),
+                getStaffLeaveHistoryAction(slug, staffId)
             ]);
 
             if (staffRes.success) setStaff(staffRes.data);

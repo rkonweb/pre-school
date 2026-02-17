@@ -64,7 +64,16 @@ export function FollowUpManager({ slug, leadId, followUps, onUpdate }: FollowUpM
     }
 
     async function handleComplete(id: string) {
-        if (!confirm("Mark this follow-up as done?")) return;
+        const confirmed = await confirmDialog({
+            title: "Complete Follow-Up",
+            message: "Mark this follow-up as done?",
+            variant: "default",
+            confirmText: "Complete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         await completeFollowUpAction(slug, id, "Completed from Lead Detail");
         if (onUpdate) onUpdate();
     }

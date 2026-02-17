@@ -95,7 +95,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
     );
 
     return (
-        <div className="max-w-4xl space-y-12 animate-in fade-in duration-700">
+        <div className="w-full space-y-12 animate-in fade-in duration-700">
             {/* API Key Management Section */}
             <div className="bg-white rounded-[40px] p-10 shadow-sm border border-zinc-100 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:scale-110 transition-transform">

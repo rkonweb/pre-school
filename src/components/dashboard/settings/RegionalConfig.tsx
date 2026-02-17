@@ -21,7 +21,13 @@ interface RegionalConfigProps {
 }
 
 export function RegionalConfig({ slug, initialData }: RegionalConfigProps) {
-    const [formData, setFormData] = useState(initialData || {});
+    const [formData, setFormData] = useState({
+        currency: "INR",
+        dateFormat: "DD/MM/YYYY",
+        timezone: "Asia/Kolkata",
+        academicYearStartMonth: 4,
+        ...initialData
+    });
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
@@ -52,7 +58,7 @@ export function RegionalConfig({ slug, initialData }: RegionalConfigProps) {
                             <div className="relative">
                                 <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-300" />
                                 <select
-                                    value={formData.currency || "USD"}
+                                    value={formData.currency || "INR"}
                                     onChange={e => setFormData({ ...formData, currency: e.target.value })}
                                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 font-black focus:ring-2 focus:ring-blue-600 transition-all appearance-none uppercase"
                                 >
@@ -69,7 +75,7 @@ export function RegionalConfig({ slug, initialData }: RegionalConfigProps) {
                             <div className="relative">
                                 <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-300" />
                                 <select
-                                    value={formData.dateFormat || "MM/DD/YYYY"}
+                                    value={formData.dateFormat || "DD/MM/YYYY"}
                                     onChange={e => setFormData({ ...formData, dateFormat: e.target.value })}
                                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-4 pl-12 pr-4 font-black focus:ring-2 focus:ring-blue-600 transition-all appearance-none"
                                 >

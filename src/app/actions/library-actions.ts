@@ -323,8 +323,11 @@ export async function getStudentLibraryHistoryAction(slug: string, studentId: st
     }
 }
 
-export async function getStaffLibraryHistoryAction(staffId: string) {
+export async function getStaffLibraryHistoryAction(slug: string, staffId: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const transactions = await prisma.libraryTransaction.findMany({
             where: { staffId },
             include: { book: true },

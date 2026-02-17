@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ActivityTimeline } from "@/components/mobile/ActivityTimeline";
+import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
 import { getStudentActivityFeedAction, getFamilyStudentsAction } from "@/app/actions/parent-actions";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
 import { redirect } from "next/navigation";
@@ -46,7 +47,7 @@ export default async function ParentActivityPage({
     const selectedStudent = students.find(s => s.id === selectedStudentId) || students[0];
 
     // 3. Fetch Feed Data
-    const feedRes = await getStudentActivityFeedAction(selectedStudentId, phone, 50);
+    const feedRes = await getStudentActivityFeedAction(slug, selectedStudentId, phone, 50);
     const activities = (feedRes.success ? feedRes.feed : []) || [];
 
     return (
@@ -103,30 +104,11 @@ export default async function ParentActivityPage({
 
             {/* Activity Feed Container */}
             <div className="pt-8 pb-24">
-                <ActivityTimeline activities={activities} />
+                <ActivityTimeline activities={activities} slug={slug} />
             </div>
 
-            {/* Bottom Navigation (Mobile Style) */}
-            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/80 backdrop-blur-xl border-t border-gray-100 px-8 py-4 flex justify-between items-center z-50 rounded-t-[32px]">
-                <Link href={`/${slug}/parent/mobile/dashboard${preview === "true" ? "?preview=true" : ""}`} className="flex flex-col items-center gap-1">
-                    <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-400">HOME</span>
-                </Link>
-                <div className="flex flex-col items-center gap-1">
-                    <div className="w-14 h-14 rounded-full bg-summer-teal flex items-center justify-center text-white shadow-lg shadow-teal-200 -mt-10 border-4 border-[#F8FAFC]">
-                        <Utensils className="w-7 h-7" />
-                    </div>
-                    <span className="text-[10px] font-bold text-summer-teal">ACTIVITY</span>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                    <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400">
-                        <UserIcon className="w-6 h-6" />
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-400">PROFILE</span>
-                </div>
-            </div>
+            {/* Unified Bottom Nav */}
+            <MobileBottomNav slug={slug} activeTab="ACTIVITY" preview={preview === "true"} />
         </div>
     );
 }

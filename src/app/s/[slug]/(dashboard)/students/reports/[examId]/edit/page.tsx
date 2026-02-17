@@ -12,6 +12,7 @@ import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Save, X, FileText } from "lucide-react";
+import { StandardActionButton } from "@/components/ui/StandardActionButton";
 import Link from "next/link";
 
 export default function EditExamPage() {
@@ -215,9 +216,15 @@ export default function EditExamPage() {
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             <div className="flex items-center gap-4">
-                <Link href={`/s/${slug}/students/reports`}>
-                    <Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button>
-                </Link>
+                <StandardActionButton
+                    asChild
+                    variant="ghost"
+                    icon={ArrowLeft}
+                    iconOnly
+                    tooltip="Back to Reports"
+                >
+                    <Link href={`/s/${slug}/students/reports`} />
+                </StandardActionButton>
                 <h1 className="text-2xl font-bold tracking-tight">Edit Exam</h1>
             </div>
 
@@ -375,16 +382,15 @@ export default function EditExamPage() {
                                             View / Download
                                         </a>
                                     </div>
-                                    <Button
+                                    <StandardActionButton
                                         type="button"
                                         variant="ghost"
-                                        size="sm"
+                                        icon={X}
+                                        iconOnly
                                         onClick={handleRemoveFile}
                                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                        title="Remove file"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </Button>
+                                        tooltip="Remove file"
+                                    />
                                 </div>
                             )}
                         </div>
@@ -398,13 +404,23 @@ export default function EditExamPage() {
                         </div>
 
                         <div className="flex justify-end gap-2 pt-4">
-                            <Link href={`/s/${slug}/students/reports`}>
-                                <Button variant="ghost" type="button">Cancel</Button>
-                            </Link>
-                            <Button type="submit" disabled={saving || uploading}>
-                                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                                {uploading ? "Uploading..." : "Update Exam"}
-                            </Button>
+                            <StandardActionButton
+                                asChild
+                                variant="ghost"
+                                label="Cancel"
+                            >
+                                <Link href={`/s/${slug}/students/reports`} />
+                            </StandardActionButton>
+                            <StandardActionButton
+                                type="submit"
+                                variant="primary"
+                                icon={Save}
+                                label="Update Exam"
+                                loading={saving}
+                                loadingLabel="Updating..."
+                                disabled={uploading}
+                                permission={{ module: 'exams', action: 'edit' }}
+                            />
                         </div>
                     </form>
                 </CardContent>

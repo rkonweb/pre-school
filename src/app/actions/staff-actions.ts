@@ -2,8 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { validateUserSchoolAction } from "./session-actions";
+import { validateUserSchoolAction, hasPermissionAction } from "./session-actions";
 import { basename } from "path";
+import { syncStaff, removeStaffFromIndex } from "@/lib/search-sync";
+
+import { validateBranchAccess } from "@/lib/branch-utils";
 
 function maskStaffPII(staff: any, isAuthorized: boolean) {
     if (!staff) return staff;
@@ -30,10 +33,16 @@ export async function getStaffAction(schoolSlug: string) {
 
         const viewingUser = auth.user;
         const viewingUserId = viewingUser?.id;
+        const currentBranchId = (viewingUser as any).currentBranchId;
+
         let whereClause: any = {
             school: { slug: schoolSlug },
             role: { in: ["STAFF", "ADMIN"] }
         };
+
+        if (currentBranchId) {
+            whereClause.branchId = currentBranchId;
+        }
 
         if (viewingUser && viewingUser.role !== "ADMIN" && viewingUser.role !== "SUPER_ADMIN") {
             let perms: any[] = [];
@@ -55,6 +64,9 @@ export async function getStaffAction(schoolSlug: string) {
                         });
                         const ids = access.map((a: any) => a.staffId);
                         if (!ids.includes(viewingUserId)) ids.push(viewingUserId);
+
+                        // Combine with existing ID filter if any?
+                        // Currently whereClause.id isn't set, but if we need to filter by IDs AND branch, we should be careful.
                         whereClause.id = { in: ids };
                     } else if (attendPerm.actions.includes("manage_own")) {
                         whereClause.id = viewingUserId;
@@ -85,7 +97,14 @@ export async function getStaffAction(schoolSlug: string) {
 export async function createStaffAction(schoolSlug: string, formData: FormData) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (!(await hasPermissionAction(auth.user, "staff", "create"))) {
+            return { success: false, error: "Unauthorized to create staff" };
+        }
+
+        const currentUser = auth.user;
+        const currentBranchId = (currentUser as any).currentBranchId;
 
         const school = await prisma.school.findUnique({
             where: { slug: schoolSlug }
@@ -101,6 +120,41 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
         const department = formData.get("department") as string;
         const joiningDate = formData.get("joiningDate") as string;
         const avatarStr = formData.get("avatar") as string; // Placeholder
+        const formBranchId = formData.get("branchId") as string;
+        const role = formData.get("role") as string || "STAFF";
+
+        // Determine Target Branch
+        let targetBranchId: string | null = null;
+
+        if (role === "ADMIN" && formBranchId === "") {
+            // Intention: Create School Admin (Global)
+            // Permission Check: Only a Global Admin can create another Global Admin
+            if ((currentUser as any).branchId) {
+                return { success: false, error: "Branch Admins cannot create School Admins." };
+            }
+            targetBranchId = null; // Explicitly global
+        } else {
+            // Standard Logic
+            targetBranchId = formBranchId || currentBranchId;
+
+            if (!targetBranchId) {
+                // Fallback: Find Main Branch or First Branch
+                const branches = await prisma.branch.findMany({
+                    where: { schoolId: school.id }
+                });
+                const main = branches.find(b => b.name === 'Main Branch') || branches[0];
+                if (main) targetBranchId = main.id;
+            }
+        }
+
+        // Validate Branch Access
+        if (targetBranchId) {
+            // We need to import validateBranchAccess if it's not available in scope, but it is imported at top.
+            const hasAccess = await validateBranchAccess(currentUser, targetBranchId);
+            if (!hasAccess) {
+                return { success: false, error: "You do not have permission to add staff to this branch." };
+            }
+        }
 
         // Global Phone Uniqueness Check
         if (mobile) {
@@ -189,13 +243,14 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
         }
 
         // Creating User
+        console.log("Creating staff member in database...");
         const staff = await prisma.user.create({
             data: {
                 firstName,
                 lastName,
                 email,
                 mobile,
-                role: "STAFF",
+                role: role, // Use dynamic role
 
                 // Professional
                 designation,
@@ -242,10 +297,13 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
                 documents: JSON.stringify(documents),
 
                 schoolId: school.id,
+                branchId: targetBranchId,
             } as any
         });
-        return { success: true, data: staff };
+        console.log("Staff member created successfully:", staff.id);
+        return { success: true, id: staff.id };
     } catch (error: any) {
+        console.error("CREATE STAFF ERROR:", error);
         return { success: false, error: error.message };
     }
 }
@@ -264,6 +322,15 @@ export async function getStaffMemberAction(schoolSlug: string, id: string) {
             }
         });
 
+        if (!staff) return { success: false, error: "Staff not found" };
+
+        // Branch Check
+        if (auth.user && auth.user.id !== id) { // Allow user to see themselves
+            if (!(await validateBranchAccess(auth.user, staff.branchId))) {
+                return { success: false, error: "Access denied to this branch." };
+            }
+        }
+
         // PII Masking for individual member
         // Staff can see their own full details. ADMINs can see everything.
         const isAuthorized = auth.user && (auth.user.role === 'ADMIN' || auth.user.role === 'SUPER_ADMIN' || auth.user.id === id);
@@ -278,7 +345,24 @@ export async function getStaffMemberAction(schoolSlug: string, id: string) {
 export async function updateStaffAction(schoolSlug: string, id: string, formData: FormData) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (!(await hasPermissionAction(auth.user, "staff", "edit"))) {
+            return { success: false, error: "Unauthorized to update staff" };
+        }
+
+        // Fetch staff to check branch
+        const targetStaff = await prisma.user.findUnique({
+            where: { id },
+            select: { branchId: true }
+        });
+
+        if (!targetStaff) return { success: false, error: "Staff not found" };
+
+        if (!(await validateBranchAccess(auth.user, targetStaff.branchId))) {
+            return { success: false, error: "Access denied to this branch." };
+        }
+
         const firstName = formData.get("firstName") as string;
         const lastName = formData.get("lastName") as string;
         const email = formData.get("email") as string;
@@ -382,6 +466,7 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
             data.avatar = `/uploads/staff/${safeName}`;
         }
 
+        console.log("Updating staff member in database:", id);
         const staff = await prisma.user.update({
             where: { id },
             data: data as any, // Type assertion needed until Prisma Client is regenerated
@@ -391,6 +476,7 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
                 }
             }
         });
+        console.log("Staff member updated successfully:", staff.id);
 
         // Revalidate both the staff list and the edit page
         if (staff.school?.slug) {
@@ -398,8 +484,9 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
             revalidatePath(`/s/${staff.school.slug}/staff/${id}/edit`);
         }
 
-        return { success: true, data: staff };
+        return { success: true, id: staff.id };
     } catch (error: any) {
+        console.error("UPDATE STAFF ERROR:", error);
         return { success: false, error: error.message };
     }
 }
@@ -407,12 +494,25 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
 export async function updateStaffBasicInfoAction(schoolSlug: string, id: string, data: any) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        // Fetch staff to check branch
+        const targetStaff = await prisma.user.findUnique({
+            where: { id },
+            select: { branchId: true }
+        });
+
+        if (!targetStaff) return { success: false, error: "Staff not found" };
+
+        if (!(await validateBranchAccess(auth.user, targetStaff.branchId))) {
+            return { success: false, error: "Access denied to this branch." };
+        }
 
         const updated = await prisma.user.update({
             where: { id },
             data
         });
+        await syncStaff(id);
         revalidatePath(`/s/${schoolSlug}/staff`);
         revalidatePath(`/s/${schoolSlug}/staff/${id}`);
         return { success: true, data: updated };
@@ -425,11 +525,29 @@ export async function updateStaffBasicInfoAction(schoolSlug: string, id: string,
 export async function deleteStaffAction(schoolSlug: string, id: string) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (!(await hasPermissionAction(auth.user, "staff", "delete"))) {
+            return { success: false, error: "Unauthorized to delete staff" };
+        }
+
+        // Fetch staff to check branch
+        const targetStaff = await prisma.user.findUnique({
+            where: { id },
+            select: { branchId: true }
+        });
+
+        if (!targetStaff) return { success: false, error: "Staff not found" };
+
+        if (!(await validateBranchAccess(auth.user, targetStaff.branchId))) {
+            return { success: false, error: "Access denied to this branch." };
+        }
 
         await prisma.user.delete({
             where: { id }
         });
+        await removeStaffFromIndex(id);
+        revalidatePath(`/s/${schoolSlug}/staff`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };

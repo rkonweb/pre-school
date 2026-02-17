@@ -50,5 +50,21 @@ export default function IdentitySettingsPage() {
         </div>
     );
 
-    return <IdentityForm slug={slug} initialData={schoolData} />;
+    return (
+        <div className="flex flex-col gap-6 pb-20">
+            {/* Page Header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                        Institutional Identity
+                    </h1>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        Branding, mission statement, school seal and theme configurations.
+                    </p>
+                </div>
+            </div>
+
+            <IdentityForm slug={slug} initialData={schoolData} />
+        </div>
+    );
 }

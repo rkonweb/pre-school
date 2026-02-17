@@ -20,14 +20,14 @@ export function MarketingHeader() {
     ];
 
     return (
-        <header className="sticky top-0 z-[100] w-full border-b border-slate-200 bg-white/80 backdrop-blur-md transition-all">
+        <header className="sticky top-0 z-[100] w-full border-b border-white/10 bg-navy/95 backdrop-blur-md transition-all">
             <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-8">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-3 group">
                     <div className="h-10 w-10 rounded-xl bg-teal flex items-center justify-center text-white font-bold shadow-lg shadow-teal/20 transition-transform group-hover:scale-105 group-hover:rotate-3">
                         <Building2 className="h-6 w-6" />
                     </div>
-                    <span className="text-2xl font-black tracking-tight text-navy font-heading">Bodhi Board</span>
+                    <span className="text-2xl font-black tracking-tight text-white font-heading">Bodhi Board</span>
                 </Link>
 
                 {/* Desktop Nav */}
@@ -38,7 +38,7 @@ export function MarketingHeader() {
                             href={link.href}
                             className={cn(
                                 "text-sm font-bold transition-colors hover:text-teal",
-                                pathname === link.href ? "text-teal" : "text-navy/60"
+                                pathname === link.href ? "text-teal" : "text-white/80"
                             )}
                         >
                             {link.label}
@@ -49,13 +49,13 @@ export function MarketingHeader() {
                 {/* Desktop Actions */}
                 <div className="hidden lg:flex items-center gap-4">
                     <Link
-                        className="text-sm font-bold text-navy/60 hover:text-navy transition-colors"
+                        className="text-sm font-bold text-white/80 hover:text-white transition-colors"
                         href="/school-login"
                     >
                         Log in
                     </Link>
                     <Link
-                        className="group flex items-center gap-2 rounded-full bg-orange px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-orange/90 hover:shadow-lg hover:shadow-orange/20 active:scale-95"
+                        className="group flex items-center gap-2 rounded-full bg-teal px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-teal/90 hover:shadow-lg hover:shadow-teal/20 active:scale-95"
                         href="/signup"
                     >
                         Get Started <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -64,7 +64,7 @@ export function MarketingHeader() {
 
                 {/* Mobile Menu Toggle */}
                 <button
-                    className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                    className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
                     {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -73,27 +73,27 @@ export function MarketingHeader() {
 
             {/* Mobile Nav */}
             {isMenuOpen && (
-                <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-slate-200 shadow-xl p-4 flex flex-col gap-4 animate-in slide-in-from-top-2">
+                <div className="lg:hidden absolute top-full left-0 w-full bg-navy border-b border-white/10 shadow-xl p-4 flex flex-col gap-4 animate-in slide-in-from-top-2">
                     {navLinks.map((link) => (
                         <Link
                             key={link.href}
                             href={link.href}
-                            className="text-lg font-bold text-navy/70 py-2 px-4 rounded-lg hover:bg-sky/10 hover:text-teal"
+                            className="text-lg font-bold text-white/80 py-2 px-4 rounded-lg hover:bg-white/5 hover:text-teal"
                             onClick={() => setIsMenuOpen(false)}
                         >
                             {link.label}
                         </Link>
                     ))}
-                    <div className="h-px bg-slate-100 my-2" />
+                    <div className="h-px bg-white/10 my-2" />
                     <Link
-                        className="text-lg font-bold text-navy/70 py-2 px-4 rounded-lg hover:bg-slate-50"
+                        className="text-lg font-bold text-white/80 py-2 px-4 rounded-lg hover:bg-white/5"
                         href="/school-login"
                         onClick={() => setIsMenuOpen(false)}
                     >
                         Log in
                     </Link>
                     <Link
-                        className="w-full text-center rounded-xl bg-orange py-3 text-lg font-bold text-white shadow-lg shadow-orange/20 active:scale-95"
+                        className="w-full text-center rounded-xl bg-teal py-3 text-lg font-bold text-white shadow-lg shadow-teal/20 active:scale-95"
                         href="/signup"
                         onClick={() => setIsMenuOpen(false)}
                     >

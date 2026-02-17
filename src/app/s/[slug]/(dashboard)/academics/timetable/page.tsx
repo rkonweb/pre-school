@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { getClassroomsAction, updateClassroomAction } from "@/app/actions/classroom-actions";
 import { getStaffAction } from "@/app/actions/staff-actions";
 import { getTimetableConfigAction, updateTimetableConfigAction, checkTeacherAvailabilityAction } from "@/app/actions/timetable-actions";
+import { getMasterDataAction } from "@/app/actions/master-data-actions";
 
 type PeriodNode = {
     id: string;
@@ -49,6 +50,7 @@ export default function TimetablePage() {
     // Data
     const [classrooms, setClassrooms] = useState<any[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
+    const [subjects, setSubjects] = useState<any[]>([]);
     const [config, setConfig] = useState<TimetableConfig>({ periods: [], workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] });
 
     useEffect(() => {
@@ -58,19 +60,26 @@ export default function TimetablePage() {
     async function loadData(showLoader = true) {
         if (showLoader) setIsLoading(true);
         try {
-            const [classesRes, staffRes, configRes] = await Promise.all([
+            const [classesRes, staffRes, configRes, subjectsRes] = await Promise.all([
                 getClassroomsAction(slug),
                 getStaffAction(slug),
-                getTimetableConfigAction(slug)
+                getTimetableConfigAction(slug),
+                getMasterDataAction("SUBJECT")
             ]);
 
             if (classesRes.success) setClassrooms(classesRes.data || []);
             if (staffRes.success) {
-                // Filter staff to include only those with "Teacher" in their designation
+                // Filter staff to include those with "Teacher" in their designation OR "STAFF" role (as per user logic)
+                // The user specifically said: "School Portal > Staff > with Teacher Role"
+                // But since roles are STAFF/ADMIN/PARENT, we look at designation or customRole if exists.
                 const teachersOnly = (staffRes.data || []).filter((s: any) =>
-                    s.designation && s.designation.toLowerCase().includes("teacher")
+                    (s.designation && s.designation.toLowerCase().includes("teacher")) ||
+                    (s.role === "STAFF")
                 );
                 setStaff(teachersOnly);
+            }
+            if (subjectsRes.success) {
+                setSubjects(subjectsRes.data || []);
             }
             if (configRes.success && configRes.config) {
                 // Ensure defaults
@@ -146,6 +155,7 @@ export default function TimetablePage() {
                         <SchedulerView
                             classrooms={classrooms}
                             staff={staff}
+                            subjects={subjects}
                             config={config}
                             slug={slug}
                             onUpdate={() => loadData(false)}
@@ -362,7 +372,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
 }
 
 // --- Scheduler View ---
-function SchedulerView({ classrooms, staff, config, slug, onUpdate }: any) {
+function SchedulerView({ classrooms, staff, subjects, config, slug, onUpdate }: any) {
     const [selectedClassId, setSelectedClassId] = useState("");
     const [schedule, setSchedule] = useState<any>({});
     const [isSaving, setIsSaving] = useState(false);
@@ -538,6 +548,7 @@ function SchedulerView({ classrooms, staff, config, slug, onUpdate }: any) {
                     periodId={editingCell.periodId}
                     initialData={schedule[editingCell.day]?.[editingCell.periodId] || {}}
                     staff={staff}
+                    subjects={subjects}
                     slug={slug}
                     currentClassId={selectedClassId}
                     onClose={() => setEditingCell(null)}
@@ -602,7 +613,7 @@ function Cell({ data, teacher, onClick }: any) {
     );
 }
 
-function CellEditor({ day, periodId, initialData, staff, slug, currentClassId, onClose, onSave }: any) {
+function CellEditor({ day, periodId, initialData, staff, subjects, slug, currentClassId, onClose, onSave }: any) {
     const [subject, setSubject] = useState(initialData.subject || "");
     const [teacherId, setTeacherId] = useState(initialData.teacherId || "");
 
@@ -674,94 +685,46 @@ function CellEditor({ day, periodId, initialData, staff, slug, currentClassId, o
                     {/* Subject Selector */}
                     <div>
                         <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block ml-1">Subject</label>
-                        {(() => {
-                            const selectedTeacher = staff.find((s: any) => s.id === teacherId);
-                            const availableSubjects = selectedTeacher?.subjects
-                                ? selectedTeacher.subjects.split(",").map((s: any) => s.trim()).filter(Boolean)
-                                : [];
+                        <div className="space-y-2">
+                            <select
+                                className="w-full h-12 px-4 rounded-2xl bg-zinc-50 border-none font-bold text-sm focus:ring-2 focus:ring-zinc-900 transition-all appearance-none cursor-pointer"
+                                value={subjects.some((s: any) => s.name === subject) ? subject : subject ? "___CUSTOM___" : ""}
+                                onChange={(e) => {
+                                    if (e.target.value === "___CUSTOM___") {
+                                        setSubject(""); // Clear to allow custom typing
+                                    } else {
+                                        setSubject(e.target.value);
+                                    }
+                                }}
+                            >
+                                <option value="">Select Subject...</option>
+                                {subjects.map((s: any) => (
+                                    <option key={s.id} value={s.name}>{s.name}</option>
+                                ))}
+                                <option value="___CUSTOM___" className="text-brand font-bold">+ Other / Custom</option>
+                            </select>
 
-                            // Determine if we should show dropdown
-                            // Show dropdown if:
-                            // 1. Teacher has subjects
-                            // 2. AND (Subject is empty OR Subject is in the list)
-                            // Otherwise allow custom input (unless user explicitly wants to switch back)
-
-                            // We use a local state to track "mode" but to keep it simple without adding more useState hooks 
-                            // inside this mapping (which is bad practice), we'll define the state above or use a simple conditional check based on value.
-                            // Actually, adding state to the component is better.
-
-                            // Since I cannot inject useState in the middle of this replace easily without rewriting the whole component,
-                            // I will use a clever trick: Check if current 'subject' is in list. 
-                            // If not in list (and not empty), assume custom.
-                            // BUT user might want to select from list.
-
-                            // Let's rewrite the component state in a previous step? 
-                            // No, I can replace the whole CellEditor function start to add state.
-                            // But for now, let's just stick to the Input if simple. 
-
-                            // User asked for Dropdown. 
-                            // I'll render a SELECT if availableSubjects.length > 0.
-                            // And add an "Other" option.
-
-                            if (availableSubjects.length > 0) {
-                                // Check if current subject is custom (not in list and not empty)
-                                const isCustomValue = subject && !availableSubjects.includes(subject);
-
-                                if (isCustomValue) {
-                                    return (
-                                        <div className="relative">
-                                            <input
-                                                autoFocus
-                                                className="w-full h-12 px-4 rounded-2xl bg-zinc-50 border-none font-bold text-sm focus:ring-2 focus:ring-zinc-900 transition-all placeholder:text-zinc-300 pr-20"
-                                                placeholder="e.g. Mathematics"
-                                                value={subject}
-                                                onChange={(e) => setSubject(e.target.value)}
-                                            />
-                                            <button
-                                                onClick={() => setSubject(availableSubjects[0])}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-brand/10 text-brand px-2 py-1 rounded hover:bg-brand/20"
-                                            >
-                                                Show List
-                                            </button>
-                                        </div>
-                                    );
-                                }
-
-                                return (
-                                    <select
-                                        className="w-full h-12 px-4 rounded-2xl bg-zinc-50 border-none font-bold text-sm focus:ring-2 focus:ring-zinc-900 transition-all appearance-none cursor-pointer"
+                            {/* Show text input only if Subject is not in the list or "Other" was chosen */}
+                            {(!subjects.some((s: any) => s.name === subject) || subject === "") && (
+                                <div className="relative animate-in slide-in-from-top-2 duration-200">
+                                    <input
+                                        autoFocus
+                                        className="w-full h-12 px-4 rounded-2xl bg-white border-2 border-zinc-100 font-bold text-sm focus:ring-2 focus:ring-zinc-900 transition-all placeholder:text-zinc-300"
+                                        placeholder="Type custom subject name..."
                                         value={subject}
-                                        onChange={(e) => {
-                                            if (e.target.value === "___CUSTOM___") {
-                                                setSubject("Custom Subject"); // Temporary placeholder or clear?
-                                                // Ideally clear it so the input renders empty or with "Custom Subject"
-                                                // But the logic above checks !includes(subject). 
-                                                // So "Custom Subject" works if it's not in list.
-                                            } else {
-                                                setSubject(e.target.value);
-                                            }
-                                        }}
-                                    >
-                                        <option value="">Select Subject...</option>
-                                        {availableSubjects.map((s: string) => (
-                                            <option key={s} value={s}>{s}</option>
-                                        ))}
-                                        <option value="___CUSTOM___" className="text-brand font-bold">+ Other Subject</option>
-                                    </select>
-                                );
-                            }
-
-                            // Default Text Input (No subjects available)
-                            return (
-                                <input
-                                    autoFocus
-                                    className="w-full h-12 px-4 rounded-2xl bg-zinc-50 border-none font-bold text-sm focus:ring-2 focus:ring-zinc-900 transition-all placeholder:text-zinc-300"
-                                    placeholder="e.g. Mathematics"
-                                    value={subject}
-                                    onChange={(e) => setSubject(e.target.value)}
-                                />
-                            );
-                        })()}
+                                        onChange={(e) => setSubject(e.target.value)}
+                                    />
+                                    {subject && subjects.some((s: any) => s.name === subject) && (
+                                        <button
+                                            onClick={() => setSubject("")}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div>
@@ -773,7 +736,7 @@ function CellEditor({ day, periodId, initialData, staff, slug, currentClassId, o
                         >
                             <option value="">Select Teacher...</option>
                             {staff.map((s: any) => (
-                                <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
+                                <option key={s.id} value={s.id}>{s.firstName} {s.lastName} ({s.designation || 'Staff'})</option>
                             ))}
                         </select>
                     </div>

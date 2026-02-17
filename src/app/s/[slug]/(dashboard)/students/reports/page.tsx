@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, BarChart, Calendar as CalendarIcon, FileSpreadsheet, Filter, CheckSquare, Square, Printer, Search } from "lucide-react";
+import { Plus, BarChart, Calendar as CalendarIcon, FileSpreadsheet, Filter, CheckSquare, Square, Printer, Search, Edit3, Trash2, X } from "lucide-react";
+import { StandardActionButton } from "@/components/ui/StandardActionButton";
 import { getExamsAction, deleteExamAction } from "@/app/actions/exam-actions";
 import { getAcademicYearsAction } from "@/app/actions/academic-year-actions";
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
@@ -58,9 +59,29 @@ export default function ReportsDashboardPage() {
         let yearId = "all";
 
         if (yearsRes.success && yearsRes.data) {
-            setAcademicYears(yearsRes.data);
-            const current = yearsRes.data.find((y: any) => y.isCurrent);
-            const defaultId = current?.id || getCookie(`academic_year_${slug}`) || "all";
+            // Calculate which year is actually current based on today's date
+            const today = new Date();
+            const actualCurrentYear = yearsRes.data.find((y: any) => {
+                const start = new Date(y.startDate);
+                const end = new Date(y.endDate);
+                return today >= start && today <= end;
+            });
+
+            // Update the years data to mark the actual current year
+            const yearsWithCorrectCurrent = yearsRes.data.map((y: any) => ({
+                ...y,
+                isCurrent: actualCurrentYear ? y.id === actualCurrentYear.id : y.isCurrent
+            }));
+
+            setAcademicYears(yearsWithCorrectCurrent);
+
+            // Logic to match AcademicYearSelector.tsx
+            const cookieValue = getCookie(`academic_year_${slug}`);
+            let yearIdFromCookie = yearsWithCorrectCurrent.find((y: any) => y.id === cookieValue);
+
+            const current = yearIdFromCookie || actualCurrentYear || yearsRes.data.find((y: any) => y.isCurrent) || yearsRes.data[0];
+            const defaultId = current?.id || "all";
+
             yearId = defaultId;
             setSelectedYearId(defaultId);
         } else if (!yearsRes.success) {
@@ -104,7 +125,10 @@ export default function ReportsDashboardPage() {
 
         const res = await getStudentsAction(slug, {
             search: query,
-            filters: { class: classId !== "all" ? classrooms.find(c => c.id === classId)?.name : "all" },
+            filters: {
+                class: classId !== "all" ? classrooms.find(c => c.id === classId)?.name : "all",
+                academicYearId: selectedYearId !== "all" ? selectedYearId : undefined
+            },
             limit: 50
         });
 
@@ -161,12 +185,15 @@ export default function ReportsDashboardPage() {
                     </TabsList>
 
                     {/* Add Exam Button only visible on exams tab ideally, but keeping strictly separated */}
-                    <Link href={`/s/${slug}/students/reports/create`}>
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create Exam
-                        </Button>
-                    </Link>
+                    <StandardActionButton
+                        asChild
+                        variant="primary"
+                        icon={Plus}
+                        label="Create Exam"
+                        permission={{ module: 'exams', action: 'create' }}
+                    >
+                        <Link href={`/s/${slug}/students/reports/create`} />
+                    </StandardActionButton>
                 </div>
 
                 <TabsContent value="exams" className="space-y-6">
@@ -223,15 +250,33 @@ export default function ReportsDashboardPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Link href={`/s/${slug}/students/reports/${exam.id}`}>
-                                                    <Button variant="outline" size="sm">Enter Marks</Button>
-                                                </Link>
-                                                <Link href={`/s/${slug}/students/reports/${exam.id}/edit`}>
-                                                    <Button variant="outline" size="sm">Edit</Button>
-                                                </Link>
-                                                <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(exam.id)}>
-                                                    Delete
-                                                </Button>
+                                                <StandardActionButton
+                                                    asChild
+                                                    variant="view"
+                                                    label="Enter Marks"
+                                                    size="sm"
+                                                    permission={{ module: 'exams', action: 'edit' }}
+                                                >
+                                                    <Link href={`/s/${slug}/students/reports/${exam.id}`} />
+                                                </StandardActionButton>
+                                                <StandardActionButton
+                                                    asChild
+                                                    variant="edit"
+                                                    icon={Edit3}
+                                                    label="Edit"
+                                                    size="sm"
+                                                    permission={{ module: 'exams', action: 'edit' }}
+                                                >
+                                                    <Link href={`/s/${slug}/students/reports/${exam.id}/edit`} />
+                                                </StandardActionButton>
+                                                <StandardActionButton
+                                                    variant="delete"
+                                                    icon={Trash2}
+                                                    label="Delete"
+                                                    size="sm"
+                                                    onClick={() => handleDelete(exam.id)}
+                                                    permission={{ module: 'exams', action: 'delete' }}
+                                                />
                                             </div>
                                         </div>
                                     ))}
@@ -250,13 +295,13 @@ export default function ReportsDashboardPage() {
                                     <p className="text-sm text-muted-foreground">Filter students by class and assessment to print reports in bulk.</p>
                                 </div>
                                 {selectedStudents.length > 0 && (
-                                    <Button
+                                    <StandardActionButton
                                         onClick={() => setIsPrinting(true)}
-                                        className="bg-brand hover:brightness-110 text-white rounded-xl shadow-lg shadow-brand/20 transition-all font-bold"
-                                    >
-                                        <Printer className="mr-2 h-4 w-4" />
-                                        Print {selectedStudents.length} Reports
-                                    </Button>
+                                        variant="primary"
+                                        icon={Printer}
+                                        label={`Print ${selectedStudents.length} Reports`}
+                                        className="shadow-lg shadow-brand/20"
+                                    />
                                 )}
                             </div>
                         </CardHeader>
@@ -405,11 +450,15 @@ export default function ReportsDashboardPage() {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <Link href={`/s/${slug}/students/reports/student/${student.id}`}>
-                                                        <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-brand font-bold text-xs rounded-lg">
-                                                            Single Report
-                                                        </Button>
-                                                    </Link>
+                                                    <StandardActionButton
+                                                        asChild
+                                                        variant="ghost"
+                                                        label="Single Report"
+                                                        size="sm"
+                                                        className="font-bold text-xs"
+                                                    >
+                                                        <Link href={`/s/${slug}/students/reports/student/${student.id}`} />
+                                                    </StandardActionButton>
                                                 </div>
                                             </div>
                                         ))

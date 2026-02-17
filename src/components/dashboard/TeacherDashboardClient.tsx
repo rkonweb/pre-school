@@ -54,7 +54,7 @@ export function TeacherDashboardClient() {
     if (isLoading) {
         return (
             <div className="flex h-[60vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-brand" />
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
             </div>
         );
     }
@@ -142,8 +142,8 @@ export function TeacherDashboardClient() {
                     icon={GraduationCap}
                     label="My Students"
                     value={stats.totalStudents}
-                    color="text-brand"
-                    bg="bg-brand/10"
+                    color="text-indigo-600"
+                    bg="bg-indigo-50"
                 />
                 <QuickStat
                     icon={BookOpen}
@@ -199,15 +199,15 @@ export function TeacherDashboardClient() {
                         </div>
                         <div className="grid sm:grid-cols-2 gap-4">
                             {classrooms.map((c: any) => (
-                                <div key={c.id} onClick={() => navTo(`/academics/classes`)} className="p-5 rounded-2xl border border-zinc-100 hover:border-brand/30 hover:bg-brand/5 transition-all group cursor-pointer relative overflow-hidden">
+                                <div key={c.id} onClick={() => navTo(`/academics/classes`)} className="p-5 rounded-2xl border border-zinc-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all group cursor-pointer relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <ArrowRight className="h-4 w-4 text-brand" />
+                                        <ArrowRight className="h-4 w-4 text-indigo-600" />
                                     </div>
                                     <h3 className="font-bold text-lg text-zinc-900">{c.name}</h3>
                                     <p className="text-zinc-500 text-sm font-medium mb-3">
                                         {c.isClassTeacher ? "Class Teacher" : "Subject Teacher"}
                                     </p>
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 rounded-full text-xs font-bold text-zinc-600 group-hover:bg-white group-hover:text-brand">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 rounded-full text-xs font-bold text-zinc-600 group-hover:bg-white group-hover:text-indigo-600 shadow-sm">
                                         <Users className="h-3 w-3" />
                                         {c.students} Students
                                     </div>
@@ -223,7 +223,7 @@ export function TeacherDashboardClient() {
                                 <BookOpen className="h-5 w-5 text-zinc-400" />
                                 Homework Insights
                             </h2>
-                            <button onClick={() => navTo('/homework')} className="text-sm font-bold text-brand hover:underline">View All</button>
+                            <button onClick={() => navTo('/homework')} className="text-sm font-bold text-indigo-600 hover:underline">View All</button>
                         </div>
                         <div className="space-y-4">
                             {(homeworkPerformance || []).map((h: any) => (
@@ -235,7 +235,7 @@ export function TeacherDashboardClient() {
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <span className="block text-lg font-black text-brand">{h.submitted}</span>
+                                        <span className="block text-lg font-black text-indigo-600">{h.submitted}</span>
                                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Submitted</span>
                                     </div>
                                 </div>
@@ -247,16 +247,16 @@ export function TeacherDashboardClient() {
                     <motion.div variants={itemVariants} className="bg-white rounded-[2rem] border border-zinc-100 p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-xl font-bold flex items-center gap-2">
-                                <Sparkles className="h-5 w-5 text-brand/70" />
+                                <Sparkles className="h-5 w-5 text-indigo-500" />
                                 Recent Messages
                             </h2>
-                            <button onClick={() => navTo('/messages')} className="text-sm font-bold text-brand hover:underline">Open Inbox</button>
+                            <button onClick={() => navTo('/messages')} className="text-sm font-bold text-indigo-600 hover:underline">Open Inbox</button>
                         </div>
                         <div className="space-y-4">
                             {recentMessages.map((msg: any) => (
-                                <div key={msg.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-brand/5 transition-colors border border-transparent hover:border-brand/20 group cursor-pointer" onClick={() => navTo(`/messages/${msg.id}`)}>
+                                <div key={msg.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group cursor-pointer" onClick={() => navTo(`/messages/${msg.id}`)}>
                                     <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-full bg-brand/10 flex items-center justify-center font-bold text-brand">
+                                        <div className="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-indigo-600">
                                             {msg.studentName[0]}
                                         </div>
                                         <div>
@@ -268,7 +268,7 @@ export function TeacherDashboardClient() {
                                         <span className="text-[10px] font-bold text-zinc-400 whitespace-nowrap">
                                             {new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
-                                        <div className="h-2 w-2 rounded-full bg-brand opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="h-2 w-2 rounded-full bg-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                 </div>
                             ))}
@@ -282,7 +282,7 @@ export function TeacherDashboardClient() {
                 {/* Sidebar (1/3) */}
                 <div className="space-y-8">
                     {/* Quick Actions */}
-                    <motion.div variants={itemVariants} className="bg-gradient-to-br from-brand to-brand/80 rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden group">
+                    <motion.div variants={itemVariants} className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200 relative overflow-hidden group">
                         <div className="absolute top-[-20%] right-[-20%] w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
                         <h2 className="text-xl font-bold mb-6 flex items-center gap-2 relative z-10">
                             <Sparkles className="h-5 w-5 opacity-80" />
@@ -306,10 +306,10 @@ export function TeacherDashboardClient() {
 
                     {/* Today's Schedule */}
                     <motion.div variants={itemVariants} className="bg-zinc-900 text-zinc-100 rounded-[2rem] p-6 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-brand rounded-full blur-[60px] opacity-20 pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-[60px] opacity-20 pointer-events-none" />
 
                         <h2 className="text-xl font-bold mb-6 flex items-center gap-2 relative z-10">
-                            <Clock className="h-5 w-5 text-brand" />
+                            <Clock className="h-5 w-5 text-indigo-400" />
                             Today's Schedule
                         </h2>
 
@@ -317,7 +317,7 @@ export function TeacherDashboardClient() {
                             {schedule.map((s: any, i: number) => (
                                 <div key={i} className="flex gap-4 group">
                                     <div className="flex flex-col items-center">
-                                        <div className="h-3 w-3 rounded-full bg-brand ring-4 ring-brand/20 group-hover:scale-110 transition-transform" />
+                                        <div className="h-3 w-3 rounded-full bg-indigo-500 ring-4 ring-indigo-500/20 group-hover:scale-110 transition-transform" />
                                         {i !== schedule.length - 1 && <div className="w-0.5 bg-zinc-800 h-full mt-2" />}
                                     </div>
                                     <div className="pb-2">
@@ -345,7 +345,7 @@ export function TeacherDashboardClient() {
                             {announcements.map((a: any) => (
                                 <div key={a.id} className="p-4 bg-white border border-zinc-100 rounded-2xl shadow-sm">
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-[10px] font-black text-brand bg-brand/10 px-2 py-0.5 rounded-full uppercase tracking-tighter">School</span>
+                                        <span className="text-[10px] font-black text-white bg-indigo-600 px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-sm shadow-indigo-200">School</span>
                                         <span className="text-[10px] font-bold text-zinc-400">
                                             {new Date(a.createdAt).toLocaleDateString()}
                                         </span>

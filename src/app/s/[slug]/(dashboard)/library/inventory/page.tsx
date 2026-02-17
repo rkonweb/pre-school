@@ -26,10 +26,12 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import Papa from "papaparse";
 import Image from "next/image";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 export default function LibraryInventoryPage() {
     const params = useParams();
     const slug = params.slug as string;
+    const { confirm: confirmDialog } = useConfirm();
     const [books, setBooks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
@@ -235,7 +237,16 @@ export default function LibraryInventoryPage() {
     };
 
     async function handleDelete(id: string) {
-        if (!confirm("Are you sure you want to delete this book?")) return;
+        const confirmed = await confirmDialog({
+            title: "Delete Book",
+            message: "Are you sure you want to delete this book?",
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         const res = await deleteBookAction(id, slug);
         if (res.success) {
             toast.success("Book deleted");

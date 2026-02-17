@@ -3,12 +3,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { ArrowRight, CheckCircle2, Users, Receipt, AlertCircle, ChevronRight, GraduationCap } from "lucide-react";
+import { ArrowRight, CheckCircle2, Users, Receipt, AlertCircle, ChevronRight, GraduationCap, X } from "lucide-react";
 import { toast } from "sonner";
+import { StandardActionButton } from "@/components/ui/StandardActionButton";
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { getAcademicYearsAction } from "@/app/actions/academic-year-actions";
 import { getStudentsAction } from "@/app/actions/student-actions";
@@ -289,23 +286,17 @@ export default function PromoteStudentsPage() {
 
 
 
-                        <Button
-                            className="w-full h-11 rounded-xl text-base font-semibold shadow-lg shadow-brand/20 mt-4"
-                            disabled={!targetClassId || !targetYearId || selectedStudents.length === 0 || isPromoting}
+                        <StandardActionButton
                             onClick={handlePromote}
-                        >
-                            {isPromoting ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Promoting...
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <Users className="h-4 w-4" />
-                                    Promote {selectedStudents.length} Students
-                                </div>
-                            )}
-                        </Button>
+                            variant="primary"
+                            icon={Users}
+                            label={`Promote ${selectedStudents.length} Students`}
+                            loading={isPromoting}
+                            loadingLabel="Promoting..."
+                            disabled={!targetClassId || !targetYearId || selectedStudents.length === 0}
+                            className="w-full h-11 rounded-xl text-base font-semibold shadow-lg shadow-brand/20 mt-4"
+                            permission={{ module: 'students.profiles', action: 'edit' }}
+                        />
                     </CardContent>
                 </Card>
 

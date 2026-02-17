@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 export default async function EditStaffPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
     const { slug, id } = await params;
 
-    const staffRes = await getStaffMemberAction(id);
+    const staffRes = await getStaffMemberAction(slug, id);
     if (!staffRes.success || !staffRes.data) {
         return notFound();
     }

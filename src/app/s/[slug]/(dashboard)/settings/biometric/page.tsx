@@ -100,26 +100,26 @@ export default function BiometricSettingsPage() {
             </div>
 
             {/* Quick Connect Guide (Hero) */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-white shadow-lg">
+            <div className="relative overflow-hidden rounded-2xl bg-brand p-8 text-white shadow-lg shadow-brand/20">
                 <div className="relative z-10 grid gap-8 md:grid-cols-2">
                     <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-blue-500/30 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-100 backdrop-blur-sm">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
                             <Router className="h-3 w-3" /> Hardware Setup
                         </div>
                         <h2 className="text-3xl font-bold leading-tight">Connect your Machine in seconds</h2>
-                        <p className="max-w-md text-blue-100">
+                        <p className="max-w-md text-white/80">
                             Simply copy the Server URL below and paste it into your biometric device's "Cloud Server" or "ADMS" settings.
                         </p>
 
                         <div className="mt-4 space-y-2">
-                            <label className="text-xs font-medium uppercase tracking-wider text-blue-200">Server URL Endpoint</label>
+                            <label className="text-xs font-medium uppercase tracking-wider text-white/60">Server URL Endpoint</label>
                             <div className="flex items-center gap-2 rounded-xl bg-white/10 p-2 pr-4 backdrop-blur-md ring-1 ring-white/20 transition-all hover:bg-white/20">
                                 <code className="flex-1 px-3 font-mono text-sm tracking-wide text-white">
                                     https://app.schoolerp.com/api/biometric/push
                                 </code>
                                 <button
                                     onClick={copyToClipboard}
-                                    className="rounded-lg bg-white p-2 text-blue-700 transition-colors hover:bg-blue-50"
+                                    className="rounded-lg bg-white p-2 text-brand transition-colors hover:bg-zinc-100"
                                     title="Copy URL"
                                 >
                                     {copied ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
@@ -137,10 +137,10 @@ export default function BiometricSettingsPage() {
                                 { step: 3, text: "Enter URL and Save. Check for 'Connected' icon." }
                             ].map((item) => (
                                 <div key={item.step} className="flex items-center gap-4">
-                                    <div className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-blue-500 font-bold shadow-sm ring-4 ring-blue-600/30">
+                                    <div className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-white/20 font-bold shadow-sm ring-4 ring-white/10">
                                         {item.step}
                                     </div>
-                                    <span className="font-medium text-blue-50">{item.text}</span>
+                                    <span className="font-medium text-white/90">{item.text}</span>
                                 </div>
                             ))}
                         </div>
@@ -169,7 +169,7 @@ export default function BiometricSettingsPage() {
                         ) : (
                             <div className="flex flex-col gap-3">
                                 {connectedDevices.map((device) => (
-                                    <div key={device.serialNumber} className="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition-all hover:border-blue-300 hover:shadow-md">
+                                    <div key={device.serialNumber} className="relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition-all hover:border-brand/30 hover:shadow-md">
                                         <div className="flex items-start justify-between">
                                             <div>
                                                 <div className="flex items-center gap-2">
@@ -193,12 +193,12 @@ export default function BiometricSettingsPage() {
                         )}
                     </section>
 
-                    <div className="rounded-xl bg-blue-50 p-4 border border-blue-100">
+                    <div className="rounded-xl bg-brand/5 p-4 border border-brand/10">
                         <div className="flex gap-3">
-                            <Info className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                            <Info className="h-5 w-5 text-brand flex-shrink-0" />
                             <div className="space-y-1">
-                                <h4 className="text-sm font-semibold text-blue-900">Need Help?</h4>
-                                <p className="text-sm text-blue-700">
+                                <h4 className="text-sm font-semibold text-brand">Need Help?</h4>
+                                <p className="text-sm text-brand/80">
                                     Most devices use port 80 or 443. Ensure your firewall allows outbound traffic to our server.
                                 </p>
                             </div>
@@ -211,7 +211,7 @@ export default function BiometricSettingsPage() {
                     <div className="flex items-center gap-4 border-b border-zinc-200 pb-2">
                         <button
                             onClick={() => setActiveTab("mapping")}
-                            className={`flex items-center gap-2 border-b-2 pb-2 text-sm font-medium transition-colors ${activeTab === "mapping" ? "border-blue-600 text-blue-600" : "border-transparent text-zinc-500 hover:text-zinc-700"
+                            className={`flex items-center gap-2 border-b-2 pb-2 text-sm font-medium transition-colors ${activeTab === "mapping" ? "border-brand text-brand" : "border-transparent text-zinc-500 hover:text-zinc-700"
                                 }`}
                         >
                             <Users className="h-4 w-4" />
@@ -224,7 +224,7 @@ export default function BiometricSettingsPage() {
                         </button>
                         <button
                             onClick={() => setActiveTab("logs")}
-                            className={`flex items-center gap-2 border-b-2 pb-2 text-sm font-medium transition-colors ${activeTab === "logs" ? "border-blue-600 text-blue-600" : "border-transparent text-zinc-500 hover:text-zinc-700"
+                            className={`flex items-center gap-2 border-b-2 pb-2 text-sm font-medium transition-colors ${activeTab === "logs" ? "border-brand text-brand" : "border-transparent text-zinc-500 hover:text-zinc-700"
                                 }`}
                         >
                             <Activity className="h-4 w-4" />
@@ -275,7 +275,7 @@ export default function BiometricSettingsPage() {
                                                         </td>
                                                         <td className="px-4 py-3">
                                                             <select
-                                                                className="w-full rounded-lg border-zinc-200 text-sm focus:border-blue-500 focus:ring-blue-500"
+                                                                className="w-full rounded-lg border-zinc-200 text-sm focus:border-brand focus:ring-brand"
                                                                 value={selectedUser}
                                                                 onChange={(e) => setSelectedUser(e.target.value)}
                                                             >
@@ -291,7 +291,7 @@ export default function BiometricSettingsPage() {
                                                             <button
                                                                 onClick={() => handleLinkUser(id)}
                                                                 disabled={!selectedUser}
-                                                                className="inline-flex items-center gap-1 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-blue-600 shadow-sm ring-1 ring-inset ring-blue-200 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400 disabled:ring-zinc-200"
+                                                                className="inline-flex items-center gap-1 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-brand shadow-sm ring-1 ring-inset ring-brand/20 transition-colors hover:bg-brand/5 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400 disabled:ring-zinc-200"
                                                             >
                                                                 <LinkIcon className="h-3 w-3" /> Map User
                                                             </button>
@@ -354,8 +354,8 @@ export default function BiometricSettingsPage() {
                                                         </td>
                                                         <td className="px-4 py-3">
                                                             <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${log.statusLabel === 'IN' ? 'bg-green-50 text-green-700 ring-green-600/20' :
-                                                                    log.statusLabel === 'OUT' ? 'bg-yellow-50 text-yellow-800 ring-yellow-600/20' :
-                                                                        'bg-zinc-50 text-zinc-600 ring-zinc-500/10'
+                                                                log.statusLabel === 'OUT' ? 'bg-yellow-50 text-yellow-800 ring-yellow-600/20' :
+                                                                    'bg-zinc-50 text-zinc-600 ring-zinc-500/10'
                                                                 }`}>
                                                                 {log.statusLabel}
                                                             </span>

@@ -64,6 +64,8 @@ export async function createLeadAction(schoolSlug: string, data: CreateLeadInput
             }
         });
 
+        await syncLead(lead.id);
+
         revalidatePath(`/s/${schoolSlug}/admissions/inquiry`);
         return { success: true, leadId: lead.id };
     } catch (error: any) {
@@ -71,6 +73,8 @@ export async function createLeadAction(schoolSlug: string, data: CreateLeadInput
         return { success: false, error: `Backend Error: ${error.message}\nStack: ${error.stack}` };
     }
 }
+
+import { syncLead } from "@/lib/search-sync";
 
 export async function getLeadByIdAction(leadId: string) {
     try {
@@ -156,6 +160,7 @@ export async function updateLeadAction(schoolSlug: string, id: string, data: Par
                 where: { id },
                 data: updateData
             });
+            await syncLead(id);
             revalidatePath(`/s/${schoolSlug}/admissions/inquiry`);
             revalidatePath(`/s/${schoolSlug}/admissions/inquiry/${id}`);
             return { success: true, lead: updated };
@@ -172,6 +177,7 @@ export async function updateLeadAction(schoolSlug: string, id: string, data: Par
             data: updateData
         });
 
+        await syncLead(id);
         revalidatePath(`/s/${schoolSlug}/admissions/inquiry`);
         revalidatePath(`/s/${schoolSlug}/admissions/inquiry/${id}`);
         return { success: true, lead };

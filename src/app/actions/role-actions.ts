@@ -263,6 +263,7 @@ export async function seedDefaultRolesAction(schoolSlug: string) {
         const transportPerms: RolePermission[] = [
             { module: "dashboard", actions: ["view"] },
             { module: "transport", actions: ["view", "manage", "create", "edit", "delete"] },
+            { module: "transport.expenses", actions: ["view", "create", "edit", "delete", "approve", "review"] },
             { module: "students", actions: ["view"] },
             { module: "staff.directory", actions: ["view"] },
             { module: "staff.directory.personal", actions: ["view"] },
@@ -314,6 +315,7 @@ export async function seedDefaultRolesAction(schoolSlug: string) {
         const driverPerms: RolePermission[] = [
             { module: "dashboard", actions: ["view"] },
             { module: "transport", actions: ["view"] },
+            { module: "transport.expenses", actions: ["view", "create"] },
             { module: "students", actions: ["view"] },
         ];
 

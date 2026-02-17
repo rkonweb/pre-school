@@ -56,6 +56,68 @@ async function verifyTransportPermission(schoolSlug: string, requiredAction: "vi
 }
 
 /**
+ * Calculate distance between two coordinates in meters
+ */
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const R = 6371e3; // metres
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+}
+
+/**
+ * Get AI insights for a list of vehicles
+ */
+async function getAIInsights(vehicles: any[]) {
+    return vehicles.map(vehicle => {
+        const telemetry = vehicle.VehicleTelemetry?.[0];
+        const route = vehicle.TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle?.[0];
+        const insights: string[] = [];
+
+        if (telemetry) {
+            // 1. Detect Idling
+            if (telemetry.status === "IDLE" && telemetry.speed === 0) {
+                const idleTime = (new Date().getTime() - new Date(telemetry.recordedAt).getTime()) / (1000 * 60);
+                if (idleTime > 5) insights.push(`Unusual Idling (${Math.floor(idleTime)}m)`);
+            }
+
+            // 2. Detect Route Deviation
+            if (route?.stops?.length > 0) {
+                // Find nearest stop
+                let minDistance = Infinity;
+                route.stops.forEach((stop: any) => {
+                    const dist = calculateDistance(telemetry.latitude, telemetry.longitude, stop.latitude, stop.longitude);
+                    if (dist < minDistance) minDistance = dist;
+                });
+
+                // If further than 500m from ANY stop, flag deviation (rough heuristic)
+                if (minDistance > 500 && telemetry.speed > 5) {
+                    insights.push("Possible Route Deviation");
+                }
+            }
+
+            // 3. Speeding
+            if (telemetry.speed && telemetry.speed > 50) {
+                insights.push("High Speed Alert");
+            }
+        }
+
+        return {
+            vehicleId: vehicle.id,
+            insights
+        };
+    });
+}
+
+/**
  * Get all vehicles with their latest telemetry for the fleet tracker table
  */
 export async function getFleetStatusAction(schoolSlug: string) {
@@ -79,14 +141,9 @@ export async function getFleetStatusAction(schoolSlug: string) {
             include: {
                 TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle: {
                     take: 1,
-                    select: {
-                        id: true,
-                        name: true,
-                        driver: {
-                            select: {
-                                name: true
-                            }
-                        }
+                    include: {
+                        driver: { select: { name: true } },
+                        stops: { select: { latitude: true, longitude: true } }
                     }
                 },
                 VehicleTelemetry: {
@@ -96,9 +153,12 @@ export async function getFleetStatusAction(schoolSlug: string) {
             }
         });
 
+        const insights = await getAIInsights(vehicles);
+
         const fleetStatus = vehicles.map((vehicle: any) => {
             const latestTelemetry = vehicle.VehicleTelemetry?.[0];
             const route = vehicle.TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle?.[0];
+            const vehicleInsights = insights.find(i => i.vehicleId === vehicle.id)?.insights || [];
 
             return {
                 id: vehicle.id,
@@ -107,6 +167,7 @@ export async function getFleetStatusAction(schoolSlug: string) {
                 status: vehicle.status,
                 routeName: route?.name || null,
                 driverName: route?.driver?.name || null,
+                aiInsights: vehicleInsights,
                 telemetry: latestTelemetry ? {
                     latitude: latestTelemetry.latitude,
                     longitude: latestTelemetry.longitude,
@@ -215,6 +276,85 @@ export async function getVehicleTelemetryAction(vehicleId: string) {
 }
 
 /**
+ * Check and trigger proactive alerts based on telemetry
+ */
+async function triggerProactiveAlerts(vehicleId: string, telemetry: any, schoolId: string) {
+    try {
+        // 1. Get the route and its stops/students
+        const route = await prisma.transportRoute.findFirst({
+            where: {
+                OR: [
+                    { pickupVehicleId: vehicleId },
+                    { dropVehicleId: vehicleId }
+                ]
+            },
+            include: {
+                stops: true,
+                students: {
+                    include: {
+                        student: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                                parentMobile: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!route) return;
+
+        // 2. Check for Delay Alert
+        if (telemetry.delayMinutes >= 5) {
+            // Send delay notification to all parents on route
+            const studentIds = route.students.map(s => s.student.id);
+            // In a real app, we'd batch these. Here we'll create a single broadcast notification record
+            await prisma.notification.createMany({
+                data: route.students.map(s => ({
+                    userId: s.student.id,
+                    userType: "STUDENT",
+                    title: "Transport Delay Alert",
+                    message: `Vehicle ${telemetry.vehicleId} on route ${route.name} is delayed by ${telemetry.delayMinutes} minutes.`,
+                    type: "TRANSPORT_DELAY",
+                    relatedId: vehicleId,
+                    relatedType: "TransportVehicle",
+                    createdAt: new Date()
+                }))
+            });
+        }
+
+        // 3. Check for "Bus Nearby" alerts
+        for (const stop of route.stops) {
+            const dist = calculateDistance(telemetry.latitude, telemetry.longitude, stop.latitude!, stop.longitude!);
+            if (dist < 500) { // Within 500m
+                // Find students at this stop
+                const studentsAtStop = route.students.filter(s => s.pickupStopId === stop.id || s.dropStopId === stop.id);
+
+                if (studentsAtStop.length > 0) {
+                    await prisma.notification.createMany({
+                        data: studentsAtStop.map(s => ({
+                            userId: s.student.id,
+                            userType: "STUDENT",
+                            title: "Bus Nearby",
+                            message: `The bus is approaching ${stop.name}. Please be ready!`,
+                            type: "TRANSPORT_NEARBY",
+                            relatedId: stop.id,
+                            relatedType: "TransportStop",
+                            createdAt: new Date()
+                        }))
+                    });
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Alert Trigger Error:", e);
+    }
+}
+
+/**
  * Update vehicle telemetry (called by GPS device or driver app)
  */
 export async function updateVehicleTelemetryAction(
@@ -232,7 +372,7 @@ export async function updateVehicleTelemetryAction(
         // Get vehicle to check school
         const vehicleCheck = await prisma.transportVehicle.findUnique({
             where: { id: vehicleId },
-            include: { school: { select: { slug: true } } }
+            include: { school: { select: { id: true, slug: true } } }
         });
 
         if (!vehicleCheck) {
@@ -247,7 +387,7 @@ export async function updateVehicleTelemetryAction(
 
         const telemetry = await prisma.vehicleTelemetry.create({
             data: {
-                id: `tel-${Date.now()}`, // Explicit ID if missing in schema's autogen? or just random
+                id: `tel-${Date.now()}`,
                 vehicleId,
                 latitude: data.latitude,
                 longitude: data.longitude,
@@ -258,6 +398,9 @@ export async function updateVehicleTelemetryAction(
                 recordedAt: new Date()
             }
         });
+
+        // Trigger proactive alerts in background (non-blocking)
+        triggerProactiveAlerts(vehicleId, telemetry, vehicleCheck.school.id);
 
         return { success: true, data: telemetry };
     } catch (error: any) {

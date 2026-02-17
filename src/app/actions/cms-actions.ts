@@ -107,6 +107,18 @@ export async function getBlogPostBySlugAction(slug: string) {
     }));
 }
 
+export async function getRelatedPostsAction(currentSlug: string) {
+    return withRetry(() => prisma.blogPost.findMany({
+        where: {
+            slug: { not: currentSlug },
+            isPublished: true
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 3,
+        include: { author: { select: { firstName: true, lastName: true } } }
+    }));
+}
+
 export async function createBlogPostAction(data: any, authorId?: string) {
     try {
         let finalAuthorId = authorId;
@@ -138,14 +150,41 @@ export async function createBlogPostAction(data: any, authorId?: string) {
             data: {
                 ...data,
                 authorId: finalAuthorId,
-                isPublished: true
+                isPublished: data.isPublished ?? false
             }
         });
-        revalidatePath('/admin/cms/blog');
+        try {
+            revalidatePath('/blog');
+            revalidatePath('/admin/cms/blog');
+        } catch (e) {
+            console.log("Revalidation skipped (likely background context)");
+        }
         return { success: true, post };
     } catch (error) {
         console.error(error);
         return { success: false, error: 'Failed to create post' };
+    }
+}
+
+export async function updateBlogPostAction(id: string, data: any) {
+    try {
+        // Sanitize data to remove relation objects or immutable fields
+        const { author, id: _id, createdAt, updatedAt, ...cleanData } = data;
+
+        const post = await prisma.blogPost.update({
+            where: { id },
+            data: {
+                ...cleanData,
+                updatedAt: new Date()
+            }
+        });
+        revalidatePath('/blog');
+        revalidatePath(`/blog/${post.slug}`);
+        revalidatePath('/admin/cms/blog');
+        return { success: true, post };
+    } catch (error) {
+        console.error("updateBlogPostAction Error:", error);
+        return { success: false, error: 'Failed to update post' };
     }
 }
 

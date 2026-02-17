@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageSquare, ArrowRight } from "lucide-react";
 
 export default function ContactForm({ formContent }: { formContent: any }) {
     const [formData, setFormData] = useState({ name: "", email: "", message: "" });
     const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,36 +36,45 @@ export default function ContactForm({ formContent }: { formContent: any }) {
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div>
                         <label className="block text-[10px] font-black text-navy uppercase tracking-[0.25em] mb-3 ml-1">Full Name</label>
-                        <input
-                            type="text"
-                            required
-                            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-teal/5 focus:outline-none focus:ring-4 focus:ring-teal/10 focus:bg-white transition-all font-bold text-navy placeholder:text-navy/20 shadow-inner"
-                            placeholder="Jane Doe"
-                            value={formData.name}
-                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                        />
+                        {isMounted && (
+                            <input
+                                type="text"
+                                required
+                                data-lpignore="true"
+                                className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-teal/5 focus:outline-none focus:ring-4 focus:ring-teal/10 focus:bg-white transition-all font-bold text-navy placeholder:text-navy/20 shadow-inner"
+                                placeholder="Jane Doe"
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        )}
                     </div>
                     <div>
                         <label className="block text-[10px] font-black text-navy uppercase tracking-[0.25em] mb-3 ml-1">Email Address</label>
-                        <input
-                            type="email"
-                            required
-                            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-teal/5 focus:outline-none focus:ring-4 focus:ring-teal/10 focus:bg-white transition-all font-bold text-navy placeholder:text-navy/20 shadow-inner"
-                            placeholder="jane@school.com"
-                            value={formData.email}
-                            onChange={e => setFormData({ ...formData, email: e.target.value })}
-                        />
+                        {isMounted && (
+                            <input
+                                type="email"
+                                required
+                                data-lpignore="true"
+                                className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-teal/5 focus:outline-none focus:ring-4 focus:ring-teal/10 focus:bg-white transition-all font-bold text-navy placeholder:text-navy/20 shadow-inner"
+                                placeholder="jane@school.com"
+                                value={formData.email}
+                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                            />
+                        )}
                     </div>
                     <div>
                         <label className="block text-[10px] font-black text-navy uppercase tracking-[0.25em] mb-3 ml-1">Message</label>
-                        <textarea
-                            required
-                            rows={4}
-                            className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-teal/5 focus:outline-none focus:ring-4 focus:ring-teal/10 focus:bg-white transition-all font-bold text-navy placeholder:text-navy/20 shadow-inner resize-none"
-                            placeholder="Tell us about your school..."
-                            value={formData.message}
-                            onChange={e => setFormData({ ...formData, message: e.target.value })}
-                        />
+                        {isMounted && (
+                            <textarea
+                                required
+                                rows={4}
+                                data-lpignore="true"
+                                className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-teal/5 focus:outline-none focus:ring-4 focus:ring-teal/10 focus:bg-white transition-all font-bold text-navy placeholder:text-navy/20 shadow-inner resize-none"
+                                placeholder="Tell us about your school..."
+                                value={formData.message}
+                                onChange={e => setFormData({ ...formData, message: e.target.value })}
+                            />
+                        )}
                     </div>
                     <button
                         type="submit"

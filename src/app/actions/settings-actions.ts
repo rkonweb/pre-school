@@ -7,9 +7,14 @@ import path from "path";
 import { generateText } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
+import { isSuperAdminAuthenticated } from "./admin-auth-actions";
+import { validateUserSchoolAction } from "./session-actions";
 
 export async function getSystemSettingsAction() {
     try {
+        const isAdmin = await isSuperAdminAuthenticated();
+        if (!isAdmin) return { success: false, error: "Unauthorized" };
+
         let settings = await prisma.systemSettings.findUnique({
             where: { id: 'global' }
         });
@@ -62,6 +67,9 @@ export async function getSystemSettingsAction() {
 
 export async function saveSystemSettingsAction(data: any) {
     try {
+        const isAdmin = await isSuperAdminAuthenticated();
+        if (!isAdmin) return { success: false, error: "Unauthorized" };
+
         await prisma.systemSettings.upsert({
             where: { id: 'global' },
             create: {
@@ -108,6 +116,9 @@ export async function saveSystemSettingsAction(data: any) {
 
 export async function saveAPISettingsAction(data: any) {
     try {
+        const isAdmin = await isSuperAdminAuthenticated();
+        if (!isAdmin) return { success: false, error: "Unauthorized" };
+
         // Only update API-related fields
         await prisma.systemSettings.update({
             where: { id: 'global' },
@@ -130,6 +141,9 @@ export async function saveAPISettingsAction(data: any) {
 
 export async function getInfrastructureStatsAction() {
     try {
+        const isAdmin = await isSuperAdminAuthenticated();
+        if (!isAdmin) return { success: false, error: "Unauthorized" };
+
         const schoolsCount = await prisma.school.count();
         const usersCount = await prisma.user.count();
         const studentsCount = await prisma.student.count();
@@ -164,6 +178,9 @@ export async function getInfrastructureStatsAction() {
 
 export async function testAIIntegrationAction(provider: 'google' | 'openai', apiKey: string) {
     try {
+        const isAdmin = await isSuperAdminAuthenticated();
+        if (!isAdmin) return { success: false, error: "Unauthorized" };
+
         if (!apiKey) return { success: false, error: "API Key is required" };
 
         const model = provider === 'google'
@@ -188,6 +205,9 @@ export async function testAIIntegrationAction(provider: 'google' | 'openai', api
 
 export async function getSchoolSettingsAction(slug: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await (prisma as any).school.findUnique({
             where: { slug }
         });
@@ -238,6 +258,9 @@ export async function getSchoolSettingsAction(slug: string) {
 
 export async function updateSchoolProfileAction(slug: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await (prisma as any).school.findUnique({
             where: { slug }
         });
@@ -319,6 +342,9 @@ export async function updateSchoolProfileAction(slug: string, data: any) {
 
 export async function getIntegrationSettingsAction(slug: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await (prisma as any).school.findUnique({
             where: { slug },
             select: { id: true, integrationsConfig: true }
@@ -342,6 +368,9 @@ export async function getIntegrationSettingsAction(slug: string) {
 
 export async function saveIntegrationSettingsAction(slug: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await (prisma as any).school.findUnique({
             where: { slug },
             select: { id: true }

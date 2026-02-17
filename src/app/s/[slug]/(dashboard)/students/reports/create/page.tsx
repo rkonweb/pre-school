@@ -12,6 +12,7 @@ import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, X, Calendar, BookOpen, Users } from "lucide-react";
+import { StandardActionButton } from "@/components/ui/StandardActionButton";
 import { getCookie } from "@/lib/cookies";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -120,9 +121,15 @@ export default function CreateExamPage() {
     return (
         <div className="space-y-6 max-w-4xl mx-auto pb-10">
             <div className="flex items-center gap-4">
-                <Link href={`/s/${slug}/students/reports`}>
-                    <Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button>
-                </Link>
+                <StandardActionButton
+                    asChild
+                    variant="ghost"
+                    icon={ArrowLeft}
+                    iconOnly
+                    tooltip="Back to Reports"
+                >
+                    <Link href={`/s/${slug}/students/reports`} />
+                </StandardActionButton>
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Create new Assessment</h1>
                     <p className="text-muted-foreground text-sm">Configure exam details, subjects, and participants.</p>
@@ -216,19 +223,16 @@ export default function CreateExamPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="relative">
-                                <Button
+                                <StandardActionButton
                                     type="button"
                                     variant="outline"
-                                    className="w-full justify-between text-left font-normal"
+                                    icon={Users}
+                                    label={selectedClasses.length > 0
+                                        ? `${selectedClasses.length} classes selected`
+                                        : "Select Classes"}
                                     onClick={() => setClassDropdownOpen(!classDropdownOpen)}
-                                >
-                                    <span>
-                                        {selectedClasses.length > 0
-                                            ? `${selectedClasses.length} classes selected`
-                                            : "Select Classes"}
-                                    </span>
-                                    <Users className="h-4 w-4 ml-2 opacity-50" />
-                                </Button>
+                                    className="w-full justify-between text-left font-normal"
+                                />
 
                                 {classDropdownOpen && (
                                     <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto p-2 space-y-1">
@@ -284,19 +288,16 @@ export default function CreateExamPage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="relative">
-                                    <Button
+                                    <StandardActionButton
                                         type="button"
                                         variant="outline"
-                                        className="w-full justify-between text-left font-normal"
+                                        icon={BookOpen}
+                                        label={selectedSubjects.length > 0
+                                            ? `${selectedSubjects.length} subjects selected`
+                                            : "Select Subjects"}
                                         onClick={() => setSubjectDropdownOpen(!subjectDropdownOpen)}
-                                    >
-                                        <span>
-                                            {selectedSubjects.length > 0
-                                                ? `${selectedSubjects.length} subjects selected`
-                                                : "Select Subjects"}
-                                        </span>
-                                        <BookOpen className="h-4 w-4 ml-2 opacity-50" />
-                                    </Button>
+                                        className="w-full justify-between text-left font-normal"
+                                    />
 
                                     {subjectDropdownOpen && (
                                         <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto p-2 space-y-1">
@@ -333,9 +334,13 @@ export default function CreateExamPage() {
                                             {selectedSubjects.map(sub => (
                                                 <Badge key={sub} variant="outline" className="pl-2 pr-1 py-1 bg-brand/5 border-brand/20 text-brand">
                                                     {sub}
-                                                    <Button variant="ghost" size="icon" className="h-4 w-4 ml-1 hover:bg-transparent text-brand" onClick={() => removeSubject(sub)}>
-                                                        <X className="h-3 w-3" />
-                                                    </Button>
+                                                    <StandardActionButton
+                                                        variant="ghost"
+                                                        icon={X}
+                                                        iconOnly
+                                                        className="h-4 w-4 ml-1 hover:bg-transparent text-brand"
+                                                        onClick={() => removeSubject(sub)}
+                                                    />
                                                 </Badge>
                                             ))}
                                         </div>
@@ -347,9 +352,15 @@ export default function CreateExamPage() {
                         </Card>
                     )}
 
-                    <Button type="submit" size="lg" className="w-full bg-brand hover:brightness-110" disabled={loading}>
-                        {loading ? "Creating Assessment..." : "Create Assessment"}
-                    </Button>
+                    <StandardActionButton
+                        type="submit"
+                        variant="primary"
+                        label="Create Assessment"
+                        loading={loading}
+                        loadingLabel="Creating Assessment..."
+                        className="w-full h-11 rounded-xl text-base font-semibold shadow-lg shadow-brand/20"
+                        permission={{ module: 'exams', action: 'create' }}
+                    />
                 </div>
 
             </form>

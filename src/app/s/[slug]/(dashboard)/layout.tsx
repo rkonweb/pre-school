@@ -4,12 +4,16 @@ import { SchoolTheme } from "@/components/dashboard/SchoolTheme";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
+import { SidebarProvider } from "@/context/SidebarContext";
+import { ConfirmProvider } from "@/contexts/ConfirmContext";
+import { DashboardLayoutWrapper } from "@/components/dashboard/DashboardLayoutWrapper";
+import { GlobalAuraWrapper } from "@/components/dashboard/GlobalAuraWrapper";
 
 function hexToRgb(hex: string): string {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
-        ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
-        : "37, 99, 235"; // fallback to blue-600
+        ? `${parseInt(result[1], 16)} ${parseInt(result[2], 16)} ${parseInt(result[3], 16)}`
+        : "174 123 100"; // fallback to #AE7B64
 }
 
 export default async function DashboardLayout({
@@ -47,6 +51,7 @@ export default async function DashboardLayout({
     const school = (await prisma.school.findUnique({
         where: { slug },
         select: {
+            id: true,
             name: true,
             logo: true,
             brandColor: true,
@@ -60,37 +65,75 @@ export default async function DashboardLayout({
         notFound();
     }
 
-    const brandColor = school.brandColor || "#2563eb";
+    // ============================================
+    // SUBSCRIPTION CHECK - Block access if expired/suspended
+    // ============================================
+    if (user.role !== "SUPER_ADMIN") {
+        const subscription = await prisma.subscription.findFirst({
+            where: { schoolId: school.id },
+            include: { plan: true }
+        });
+
+        // Check if subscription is expired or inactive
+        const now = new Date();
+        const isExpired = subscription?.endDate && new Date(subscription.endDate) < now;
+        const isInactive = subscription?.status === 'SUSPENDED' || subscription?.status === 'CANCELLED';
+
+        if (isExpired || isInactive || !subscription) {
+            redirect(`/s/${slug}/upgrade`);
+        }
+    }
+
+    const brandColor = school.brandColor || "#AE7B64";
     const brandColorRgb = hexToRgb(brandColor);
 
+    const branches = await prisma.branch.findMany({
+        where: { schoolId: school.id },
+        select: { id: true, name: true }
+    });
+
+    const currentBranchId = user.currentBranchId || (branches.length > 0 ? branches[0].id : "");
+
     return (
-        <div
-            className="flex min-h-screen flex-col lg:flex-row bg-zinc-50 dark:bg-zinc-900"
-            style={{
-                "--brand-color": brandColor,
-                "--brand-color-rgb": brandColorRgb
-            } as any}
-        >
-            <SchoolTheme brandColor={brandColor} />
-            <Sidebar
-                schoolName={school.name}
-                logo={school.logo}
-                user={user}
-                enabledModules={(() => {
-                    try {
-                        return school.modulesConfig ? JSON.parse(school.modulesConfig) : [];
-                    } catch (e) {
-                        console.error("Layout Config Parse Error:", e);
-                        return [];
-                    }
-                })()}
-            />
-            <div className="flex flex-1 flex-col overflow-hidden">
-                <Header schoolTimezone={school.timezone} />
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-                    {children}
-                </main>
-            </div>
-        </div>
+        <SidebarProvider>
+            <ConfirmProvider>
+                <div
+                    className="flex min-h-screen flex-row bg-zinc-50 dark:bg-zinc-900"
+                    style={{
+                        "--brand-color": brandColor,
+                        "--brand-color-rgb": brandColorRgb
+                    } as any}
+                >
+                    <SchoolTheme brandColor={brandColor} />
+                    <Sidebar
+                        schoolName={school.name}
+                        logo={school.logo}
+                        user={user}
+                        enabledModules={(() => {
+                            try {
+                                return school.modulesConfig ? JSON.parse(school.modulesConfig) : [];
+                            } catch (e) {
+                                console.error("Layout Config Parse Error:", e);
+                                return [];
+                            }
+                        })()}
+                    />
+
+                    <DashboardLayoutWrapper>
+                        <Header
+                            schoolName={school.name}
+                            schoolTimezone={school.timezone}
+                            branches={branches}
+                            currentBranchId={currentBranchId}
+                        />
+                        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                            {children}
+                        </main>
+                        {/* Global AI Assistant */}
+                        <GlobalAuraWrapper slug={slug} staffId={user.id} />
+                    </DashboardLayoutWrapper>
+                </div>
+            </ConfirmProvider>
+        </SidebarProvider>
     );
 }

@@ -26,11 +26,11 @@ import { ChevronDown } from "lucide-react"
 
 const SelectContext = React.createContext<any>(null)
 
-export const Select = ({ children, value, onValueChange }: any) => {
+export const Select = ({ children, value, onValueChange, className }: any) => {
     const [open, setOpen] = React.useState(false)
     return (
         <SelectContext.Provider value={{ value, onValueChange, open, setOpen }}>
-            <div className="relative inline-block w-full">{children}</div>
+            <div className={cn("relative inline-block w-full", className)}>{children}</div>
         </SelectContext.Provider>
     )
 }

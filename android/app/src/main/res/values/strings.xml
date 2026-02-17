@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pre-School Parent</string>
+    <string name="title_activity_main">Pre-School Parent</string>
+    <string name="package_name">com.rkonweb.preschool</string>
+    <string name="custom_url_scheme">com.rkonweb.preschool</string>
+</resources>

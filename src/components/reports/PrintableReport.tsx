@@ -46,22 +46,44 @@ const PrintableReport = React.forwardRef<HTMLDivElement, PrintableReportProps>((
                     }
                 }
             `}</style>
-            <div className="text-center border-b-2 border-slate-900 pb-4 mb-4">
-                <div className="flex items-center justify-center gap-4 mb-2">
-                    {(school.printableLogo || school.logo) && (
-                        <img
-                            src={school.printableLogo || school.logo}
-                            alt={school.name}
-                            className="h-24 w-24 object-contain"
-                        />
-                    )}
+            <div className="text-center border-b-2 border-slate-900 pb-4 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="w-24">
+                        {(school.printableLogo || school.logo) && (
+                            <img
+                                src={school.printableLogo || school.logo}
+                                alt={school.name}
+                                className="h-20 w-20 object-contain"
+                            />
+                        )}
+                    </div>
+                    <div className="flex-1 px-4">
+                        <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900 leading-none mb-1">{school.name}</h1>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{school.address || "Progress Through Education"}</p>
+                    </div>
+                    <div className="w-24 flex flex-col items-end gap-1">
+                        <div className="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-lg">
+                            {student.firstName[0]}
+                        </div>
+                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Student Copy</span>
+                    </div>
                 </div>
-                <h2 className="text-lg font-bold uppercase bg-slate-900 text-white inline-block px-6 py-0.5 mt-1">
-                    {isSingleExam ? "Assessment Report" : "Student Annual Progress Report"}
+
+                <h2 className="text-sm font-black uppercase bg-slate-900 text-white inline-block px-8 py-1 tracking-[0.2em]">
+                    {isSingleExam ? "Assessment Report" : "Annual Progress Report"}
                 </h2>
-                <div className="mt-1 flex justify-center gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-600">
-                    <span>Academic Year: {academicYear}</span>
-                    {term && <span className="border-l border-slate-300 pl-6">{term}</span>}
+
+                <div className="mt-3 flex justify-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <div className="flex items-center gap-2">
+                        <span className="h-1 w-1 rounded-full bg-slate-300"></span>
+                        Academic Session: <span className="text-slate-900">{academicYear}</span>
+                    </div>
+                    {term && (
+                        <div className="flex items-center gap-2">
+                            <span className="h-1 w-1 rounded-full bg-slate-300"></span>
+                            Term: <span className="text-slate-900">{term}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -336,15 +358,31 @@ const PrintableReport = React.forwardRef<HTMLDivElement, PrintableReportProps>((
 
                         {/* Insights */}
                         <div className="page-break-inside-avoid">
-                            <h3 className="text-xs font-bold uppercase border-b border-slate-900 mb-2 pb-0.5">Teacher's Observations</h3>
-                            <ul className="list-disc pl-5 text-[11px] space-y-0.5">
+                            <h3 className="text-xs font-black uppercase border-b border-slate-900 mb-3 pb-0.5 tracking-widest">Teacher's Observations</h3>
+                            <div className="grid grid-cols-1 gap-2">
                                 {analytics.insights.map((insight, i) => (
-                                    <li key={i} className="text-slate-800">
-                                        {insight.message}
-                                    </li>
+                                    <div key={i} className={`flex gap-3 p-2 rounded-lg border ${insight.sentiment === 'POSITIVE' ? 'bg-green-50/30 border-green-100' :
+                                            insight.sentiment === 'NEGATIVE' ? 'bg-red-50/30 border-red-100' :
+                                                'bg-slate-50 border-slate-100'
+                                        }`}>
+                                        <div className="mt-0.5">
+                                            {insight.type === 'STRENGTH' ? '⭐' :
+                                                insight.type === 'WEAKNESS' ? '🎯' :
+                                                    insight.type === 'TREND' ? '📈' :
+                                                        insight.type === 'ATTENDANCE' ? '📅' : '📝'}
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-tighter text-slate-400 leading-none mb-1">{insight.type}</p>
+                                            <p className="text-[11px] text-slate-800 leading-tight italic font-medium">"{insight.message}"</p>
+                                        </div>
+                                    </div>
                                 ))}
-                                {analytics.insights.length === 0 && <li className="italic text-slate-500">No specific observations recorded.</li>}
-                            </ul>
+                                {analytics.insights.length === 0 && (
+                                    <div className="text-center py-4 border border-dashed border-slate-200 rounded-lg">
+                                        <p className="text-[11px] text-slate-400 italic">No specific observations recorded for this period.</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 

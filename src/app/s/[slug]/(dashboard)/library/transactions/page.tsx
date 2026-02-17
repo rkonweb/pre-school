@@ -16,10 +16,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 export default function LibraryTransactionsPage() {
     const params = useParams();
     const slug = params.slug as string;
+    const { confirm: confirmDialog } = useConfirm();
     const [filter, setFilter] = useState<"ALL" | "ISSUED" | "RETURNED" | "OVERDUE">("ALL");
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -39,7 +41,16 @@ export default function LibraryTransactionsPage() {
     }
 
     async function handleReturn(id: string) {
-        if (!confirm("Confirm return of this book?")) return;
+        const confirmed = await confirmDialog({
+            title: "Confirm Return",
+            message: "Confirm return of this book?",
+            variant: "info",
+            confirmText: "Confirm Return",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         setProcessingId(id);
         const res = await returnBookAction(id, slug);
         if (res.success) {

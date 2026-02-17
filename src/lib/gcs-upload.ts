@@ -63,7 +63,7 @@ export async function uploadToGCS(
     file: Buffer,
     fileName: string,
     contentType: string,
-    folder: 'homework' | 'worksheets' | 'videos' | 'voice-notes' | 'admissions' = 'homework'
+    folder: 'homework' | 'worksheets' | 'videos' | 'voice-notes' | 'admissions' | 'branding' = 'homework'
 ): Promise<{ success: boolean; url?: string; error?: string }> {
     try {
         // Check if GCS is configured
@@ -139,7 +139,7 @@ export async function deleteFromGCS(fileUrl: string): Promise<{ success: boolean
 export async function getSignedUploadUrl(
     fileName: string,
     contentType: string,
-    folder: 'homework' | 'worksheets' | 'videos' | 'voice-notes' | 'admissions' = 'homework'
+    folder: 'homework' | 'worksheets' | 'videos' | 'voice-notes' | 'admissions' | 'branding' = 'homework'
 ): Promise<{ success: boolean; uploadUrl?: string; publicUrl?: string; error?: string }> {
     try {
         const client = getStorageClient();

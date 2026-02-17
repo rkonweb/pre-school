@@ -1,15 +1,25 @@
 "use server";
 
 import { uploadToGoogleDrive, uploadToGoogleDriveForSchool } from "@/lib/google-drive-upload";
+import { getCurrentUserAction, validateUserSchoolAction } from "./session-actions";
 
 export async function uploadFileAction(formData: FormData) {
     try {
+        const schoolSlug = formData.get("schoolSlug") as string;
+
+        if (schoolSlug) {
+            const auth = await validateUserSchoolAction(schoolSlug);
+            if (!auth.success) return { success: false, error: auth.error };
+        } else {
+            const user = await getCurrentUserAction();
+            if (!user.success) return { success: false, error: "Unauthorized" };
+        }
+
         const file = formData.get("file") as File;
         if (!file) return { success: false, error: "No file provided" };
 
         const buffer = Buffer.from(await file.arrayBuffer());
         const folder = (formData.get("folder") as any) || "worksheets";
-        const schoolSlug = formData.get("schoolSlug") as string;
 
         // Use school-specific config if slug is provided
         if (schoolSlug) {
@@ -41,6 +51,9 @@ export async function uploadFileAction(formData: FormData) {
 // New function specifically for school uploads
 export async function uploadFileForSchoolAction(formData: FormData, schoolSlug: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const file = formData.get("file") as File;
         if (!file) return { success: false, error: "No file provided" };
 
@@ -69,6 +82,14 @@ export async function deleteFileAction(fileUrl: string, schoolSlug?: string) {
     console.log("   School Slug:", schoolSlug);
 
     try {
+        if (schoolSlug) {
+            const auth = await validateUserSchoolAction(schoolSlug);
+            if (!auth.success) return { success: false, error: auth.error };
+        } else {
+            const user = await getCurrentUserAction();
+            if (!user.success) return { success: false, error: "Unauthorized" };
+        }
+
         const { deleteFileForSchool } = await import("@/lib/google-drive-upload");
 
         if (schoolSlug) {
@@ -96,6 +117,9 @@ export async function uploadToSubfolderAction(
     subFolder: string
 ) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const file = formData.get("file") as File;
         if (!file) return { success: false, error: "No file provided" };
 

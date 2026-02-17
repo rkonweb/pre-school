@@ -144,6 +144,7 @@ exports.Prisma.SchoolScalarFieldEnum = {
   motto: 'motto',
   state: 'state',
   timezone: 'timezone',
+  maxBranches: 'maxBranches',
   twitter: 'twitter',
   website: 'website',
   youtube: 'youtube',
@@ -216,6 +217,7 @@ exports.Prisma.AdmissionScalarFieldEnum = {
   schoolId: 'schoolId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  branchId: 'branchId',
   marketingStatus: 'marketingStatus',
   score: 'score',
   counsellorId: 'counsellorId',
@@ -239,6 +241,7 @@ exports.Prisma.UserScalarFieldEnum = {
   department: 'department',
   joiningDate: 'joiningDate',
   status: 'status',
+  signupStep: 'signupStep',
   avatar: 'avatar',
   address: 'address',
   role: 'role',
@@ -267,6 +270,7 @@ exports.Prisma.UserScalarFieldEnum = {
   linkedin: 'linkedin',
   twitter: 'twitter',
   instagram: 'instagram',
+  avatarAdjustment: 'avatarAdjustment',
   customRoleId: 'customRoleId',
   biometricId: 'biometricId',
   branchId: 'branchId'
@@ -358,7 +362,8 @@ exports.Prisma.ClassroomScalarFieldEnum = {
   updatedAt: 'updatedAt',
   capacity: 'capacity',
   roomNumber: 'roomNumber',
-  timetable: 'timetable'
+  timetable: 'timetable',
+  branchId: 'branchId'
 };
 
 exports.Prisma.StudentScalarFieldEnum = {
@@ -387,7 +392,8 @@ exports.Prisma.StudentScalarFieldEnum = {
   updatedAt: 'updatedAt',
   admissionNumber: 'admissionNumber',
   joiningDate: 'joiningDate',
-  leavingDate: 'leavingDate'
+  leavingDate: 'leavingDate',
+  branchId: 'branchId'
 };
 
 exports.Prisma.FeeScalarFieldEnum = {
@@ -400,7 +406,9 @@ exports.Prisma.FeeScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   description: 'description',
-  academicYearId: 'academicYearId'
+  category: 'category',
+  academicYearId: 'academicYearId',
+  branchId: 'branchId'
 };
 
 exports.Prisma.FeePaymentScalarFieldEnum = {
@@ -458,6 +466,7 @@ exports.Prisma.SubscriptionPlanScalarFieldEnum = {
   maxStudents: 'maxStudents',
   maxStaff: 'maxStaff',
   maxStorageGB: 'maxStorageGB',
+  additionalStaffPrice: 'additionalStaffPrice',
   tier: 'tier',
   supportLevel: 'supportLevel',
   isActive: 'isActive',
@@ -495,7 +504,8 @@ exports.Prisma.StaffAttendanceScalarFieldEnum = {
   totalHours: 'totalHours',
   userId: 'userId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  branchId: 'branchId'
 };
 
 exports.Prisma.StaffPunchScalarFieldEnum = {
@@ -871,7 +881,8 @@ exports.Prisma.LibraryBookScalarFieldEnum = {
   shelfNo: 'shelfNo',
   schoolId: 'schoolId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  branchId: 'branchId'
 };
 
 exports.Prisma.TransportVehicleScalarFieldEnum = {
@@ -896,7 +907,8 @@ exports.Prisma.TransportVehicleScalarFieldEnum = {
   rcDocUrl: 'rcDocUrl',
   documents: 'documents',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  branchId: 'branchId'
 };
 
 exports.Prisma.TransportDriverScalarFieldEnum = {
@@ -920,7 +932,8 @@ exports.Prisma.TransportRouteScalarFieldEnum = {
   dropVehicleId: 'dropVehicleId',
   driverId: 'driverId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  branchId: 'branchId'
 };
 
 exports.Prisma.TransportStopScalarFieldEnum = {
@@ -1113,6 +1126,17 @@ exports.Prisma.BlogPostScalarFieldEnum = {
   metaDescription: 'metaDescription',
   metaKeywords: 'metaKeywords',
   ogImage: 'ogImage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BlogAutomationSettingsScalarFieldEnum = {
+  id: 'id',
+  isEnabled: 'isEnabled',
+  scheduledTime: 'scheduledTime',
+  lastRunDate: 'lastRunDate',
+  preferredTopics: 'preferredTopics',
+  tone: 'tone',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1321,6 +1345,10 @@ exports.Prisma.BranchScalarFieldEnum = {
   id: 'id',
   name: 'name',
   schoolId: 'schoolId',
+  status: 'status',
+  address: 'address',
+  phone: 'phone',
+  email: 'email',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1421,6 +1449,84 @@ exports.Prisma.AISettingsScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.TransportDailyLogScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  vehicleId: 'vehicleId',
+  routeId: 'routeId',
+  driverId: 'driverId',
+  totalDistance: 'totalDistance',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  idleMinutes: 'idleMinutes',
+  fuelConsumed: 'fuelConsumed',
+  avgSpeed: 'avgSpeed',
+  efficiencyScore: 'efficiencyScore',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TransportStopLogScalarFieldEnum = {
+  id: 'id',
+  dailyLogId: 'dailyLogId',
+  stopId: 'stopId',
+  scheduledArrival: 'scheduledArrival',
+  actualArrival: 'actualArrival',
+  delayMinutes: 'delayMinutes',
+  status: 'status',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TransportExpenseScalarFieldEnum = {
+  id: 'id',
+  vehicleId: 'vehicleId',
+  schoolId: 'schoolId',
+  category: 'category',
+  amount: 'amount',
+  date: 'date',
+  description: 'description',
+  receiptUrl: 'receiptUrl',
+  status: 'status',
+  rejectionReason: 'rejectionReason',
+  createdById: 'createdById',
+  approvedById: 'approvedById',
+  isSuspicious: 'isSuspicious',
+  anomalyReason: 'anomalyReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.IDCardTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  layout: 'layout',
+  dimensions: 'dimensions',
+  orientation: 'orientation',
+  isSystem: 'isSystem',
+  width: 'width',
+  height: 'height',
+  unit: 'unit',
+  bleed: 'bleed',
+  safeMargin: 'safeMargin',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  parentTemplateId: 'parentTemplateId'
+};
+
+exports.Prisma.IDCardSettingsScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  defaultTemplateId: 'defaultTemplateId',
+  includeQrCode: 'includeQrCode',
+  qrCodeField: 'qrCodeField',
+  photoPlaceholder: 'photoPlaceholder',
+  signatureImage: 'signatureImage',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1494,6 +1600,7 @@ exports.Prisma.ModelName = {
   AcademicMonth: 'AcademicMonth',
   BlogPageContent: 'BlogPageContent',
   BlogPost: 'BlogPost',
+  BlogAutomationSettings: 'BlogAutomationSettings',
   CMSPage: 'CMSPage',
   CareersPageContent: 'CareersPageContent',
   ContactPageContent: 'ContactPageContent',
@@ -1517,7 +1624,12 @@ exports.Prisma.ModelName = {
   LeadInteraction: 'LeadInteraction',
   WhatsAppTemplate: 'WhatsAppTemplate',
   LeadAutomationRule: 'LeadAutomationRule',
-  AISettings: 'AISettings'
+  AISettings: 'AISettings',
+  TransportDailyLog: 'TransportDailyLog',
+  TransportStopLog: 'TransportStopLog',
+  TransportExpense: 'TransportExpense',
+  IDCardTemplate: 'IDCardTemplate',
+  IDCardSettings: 'IDCardSettings'
 };
 
 /**

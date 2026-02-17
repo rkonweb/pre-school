@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { validateUserSchoolAction } from "./session-actions";
+import { validateUserSchoolAction, hasPermissionAction } from "./session-actions";
 import { randomBytes } from "crypto";
 import { calculateLeadScore } from "./lead-scoring";
 
@@ -11,18 +11,26 @@ export async function getAdmissionsAction(slug: string) {
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success) return { success: false, error: auth.error };
 
-        const school = await (prisma as any).school.findUnique({
+        const school = await prisma.school.findUnique({
             where: { slug },
-            include: {
-                admissions: {
-                    orderBy: { dateReceived: 'desc' }
-                }
-            }
+            select: { id: true }
         });
-
         if (!school) return { success: false, error: "School not found" };
 
-        return { success: true, admissions: school.admissions };
+        const currentUser = auth.user;
+        const currentBranchId = (currentUser as any).currentBranchId;
+
+        const where: any = { schoolId: school.id };
+        if (currentBranchId) {
+            where.branchId = currentBranchId;
+        }
+
+        const admissions = await prisma.admission.findMany({
+            where,
+            orderBy: { dateReceived: 'desc' }
+        });
+
+        return { success: true, admissions };
     } catch (error: any) {
         console.error("Fetch Admissions Error:", error);
         return { success: false, error: error.message || "Failed to fetch admissions" };
@@ -31,6 +39,15 @@ export async function getAdmissionsAction(slug: string) {
 
 export async function createInquiryAction(slug: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        // Note: validateUserSchoolAction might return success if public inquiry? 
+        // Actually createInquiryAction is usually internal or public? 
+        // If public (e.g. from website), auth might fail or we might not check it.
+        // Checking existing code: It didn't use validateUserSchoolAction! It just checked school exists.
+        // So this might be a public action.
+        // If public, we can't get currentBranchId from user. 
+        // We must rely on data.branchId or default.
+
         const school = await prisma.school.findUnique({ where: { slug } });
         if (!school) return { success: false, error: "School not found" };
 
@@ -53,11 +70,26 @@ export async function createInquiryAction(slug: string, data: any) {
             }
         }
 
+        // Determine Branch
+        let branchId = data.branchId;
+
+        // If logged in user (internal creation), use their branch
+        // We can try to get session, but this action might be used by public form.
+        // If internal, the UI should pass branchId.
+
+        if (!branchId) {
+            // Default to Main Branch
+            const branches = await prisma.branch.findMany({ where: { schoolId: school.id } });
+            const main = branches.find(b => b.name === 'Main Branch') || branches[0];
+            if (main) branchId = main.id;
+        }
+
         const admission = await (prisma as any).admission.create({
             data: {
                 ...data,
                 dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
                 schoolId: school.id,
+                branchId: branchId,
                 stage: "INQUIRY"
             }
         });
@@ -82,7 +114,11 @@ export async function createInquiryAction(slug: string, data: any) {
 export async function updateAdmissionStageAction(slug: string, admissionId: string, newStage: string) {
     try {
         const auth = await validateUserSchoolAction(slug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (!(await hasPermissionAction(auth.user, "admissions", "edit"))) {
+            return { success: false, error: "Unauthorized to update admission stage" };
+        }
 
         const updated = await (prisma as any).admission.update({
             where: { id: admissionId },
@@ -117,7 +153,11 @@ export async function getAdmissionAction(slug: string, id: string) {
 export async function updateAdmissionAction(slug: string, id: string, data: any) {
     try {
         const auth = await validateUserSchoolAction(slug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (!(await hasPermissionAction(auth.user, "admissions", "edit"))) {
+            return { success: false, error: "Unauthorized to update admission" };
+        }
         // Strip out fields that shouldn't be updated directly or might cause Prisma errors
         // Also remove DateTime fields that might come as strings and we don't intend to update here
         const {
@@ -276,11 +316,27 @@ export async function getAdmissionStatsAction(slug: string) {
 
         if (!school) return { success: false, error: "School not found" };
 
+        const currentUser = auth.user;
+        const currentBranchId = (currentUser as any).currentBranchId;
+
+        const where: any = { schoolId: school.id };
+        if (currentBranchId) {
+            where.branchId = currentBranchId;
+        }
+
+        // Parallel counts for efficiency
+        const [newInquiries, applications, interviews, enrolled] = await Promise.all([
+            prisma.admission.count({ where: { ...where, stage: "INQUIRY" } }),
+            prisma.admission.count({ where: { ...where, stage: "APPLICATION" } }),
+            prisma.admission.count({ where: { ...where, stage: "INTERVIEW" } }),
+            prisma.admission.count({ where: { ...where, stage: "ENROLLED" } })
+        ]);
+
         const stats = {
-            newInquiries: school.admissions.filter((a: any) => a.stage === "INQUIRY").length,
-            applications: school.admissions.filter((a: any) => a.stage === "APPLICATION").length,
-            interviews: school.admissions.filter((a: any) => a.stage === "INTERVIEW").length,
-            enrolled: school.admissions.filter((a: any) => a.stage === "ENROLLED").length,
+            newInquiries,
+            applications,
+            interviews,
+            enrolled,
         };
 
         return { success: true, stats };
@@ -292,7 +348,11 @@ export async function getAdmissionStatsAction(slug: string) {
 export async function deleteAdmissionAction(slug: string, id: string) {
     try {
         const auth = await validateUserSchoolAction(slug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (!(await hasPermissionAction(auth.user, "admissions", "delete"))) {
+            return { success: false, error: "Unauthorized to delete admission" };
+        }
 
         await (prisma as any).admission.delete({
             where: { id }
@@ -377,7 +437,11 @@ export async function approveAdmissionAction(slug: string, id: string, classroom
     console.log(`[APPROVE] Action triggered for Admission: ${id}, Grade: ${grade}, Classroom: ${classroomId}`);
     try {
         const auth = await validateUserSchoolAction(slug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (!(await hasPermissionAction(auth.user, "admissions", "approve"))) {
+            return { success: false, error: "Unauthorized to approve admission" };
+        }
 
         const admission = await (prisma as any).admission.findUnique({
             where: { id },

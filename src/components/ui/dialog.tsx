@@ -72,3 +72,17 @@ export const DialogTitle = ({ className, ...props }: any) => (
         {...props}
     />
 )
+
+export const DialogDescription = ({ className, ...props }: any) => (
+    <p
+        className={cn("text-sm text-zinc-500 dark:text-zinc-400", className)}
+        {...props}
+    />
+)
+
+export const DialogFooter = ({ className, ...props }: any) => (
+    <div
+        className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
+        {...props}
+    />
+)

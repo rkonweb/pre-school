@@ -21,7 +21,8 @@ const INITIAL_PLANS: SubscriptionPlan[] = [
         isActive: true,
         tier: "free",
         sortOrder: 0,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        additionalStaffPrice: 0
     },
     {
         id: "plan_start_001",
@@ -39,7 +40,8 @@ const INITIAL_PLANS: SubscriptionPlan[] = [
         isPopular: true,
         tier: "basic",
         sortOrder: 1,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        additionalStaffPrice: 299
     },
     {
         id: "plan_growth_001",
@@ -56,7 +58,8 @@ const INITIAL_PLANS: SubscriptionPlan[] = [
         isActive: true,
         tier: "premium",
         sortOrder: 2,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        additionalStaffPrice: 299
     }
 ];
 

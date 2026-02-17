@@ -16,10 +16,12 @@ import {
     ChevronRight,
     Users,
     Sparkles,
-    AlertTriangle
+    AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getLeadsAction } from "@/app/actions/lead-actions";
+import { searchLeadsElasticAction } from "@/app/actions/search-actions";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { LeadStatusBadge } from "@/components/dashboard/leads/LeadComponents";
 import { LeadScoreChip, RiskAlertBadge, NextBestActionCard } from "@/components/dashboard/ai/AIComponents";
 import { AIProvider, useAI } from "@/context/AIContext";
@@ -36,24 +38,29 @@ export default function LeadListPage() {
     const [statusFilter, setStatusFilter] = useState("all");
 
     useEffect(() => {
-        loadLeads();
-    }, [slug, statusFilter]);
+        const timer = setTimeout(() => {
+            loadLeads();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [slug, statusFilter, searchTerm]);
 
     async function loadLeads() {
         setIsLoading(true);
-        const res = await getLeadsAction(slug, {
-            status: statusFilter,
-            searchTerm: searchTerm
-        });
+        let res;
+        if (searchTerm && searchTerm.length >= 2) {
+            res = await searchLeadsElasticAction(slug, searchTerm, { status: statusFilter });
+        } else {
+            res = await getLeadsAction(slug, {
+                status: statusFilter,
+                searchTerm: searchTerm
+            });
+        }
+
         if (res.success) setLeads(res.leads || []);
         setIsLoading(false);
     }
 
-    const filteredLeads = leads.filter(lead =>
-        lead.parentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.childName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.mobile.includes(searchTerm)
-    );
+
 
     return (
         <AIProvider>
@@ -88,14 +95,10 @@ export default function LeadListPage() {
                 {/* Filters */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                        <input
-                            type="text"
-                            placeholder="Search by name or mobile..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onBlur={loadLeads}
-                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-brand"
+                        <SearchInput
+                            onSearch={(term) => setSearchTerm(term)}
+                            placeholder="Search by name or mobile (Elasticsearch)..."
+                            className="w-full"
                         />
                     </div>
                     <select
@@ -129,7 +132,7 @@ export default function LeadListPage() {
                                     <th className="px-8 py-5 text-right">Action</th>
                                 </tr>
                             </thead>
-                            <LeadTableBody isLoading={isLoading} leads={filteredLeads} slug={slug} router={router} />
+                            <LeadTableBody isLoading={isLoading} leads={leads} slug={slug} router={router} />
                         </table>
                     </div>
                 </div>

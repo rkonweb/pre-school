@@ -22,6 +22,7 @@ import {
     getAdmissionStatsAction,
     deleteAdmissionAction
 } from "@/app/actions/admission-actions";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 const STAGES = [
     { id: "INQUIRY", label: "Inquiries", color: "text-brand bg-brand/10 dark:bg-brand/20" },
@@ -37,6 +38,7 @@ export default function AdmissionsPage() {
     const router = useRouter();
     const slug = params.slug as string;
     const { can, isLoading: isPermsLoading } = useRolePermissions();
+    const { confirm, alert } = useConfirm();
 
     const [activeStage, setActiveStage] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
@@ -70,13 +72,21 @@ export default function AdmissionsPage() {
     };
 
     const handleDelete = async (id: string, name: string) => {
-        if (confirm(`Are you sure you want to delete ${name}'s inquiry?`)) {
-            const res = await deleteAdmissionAction(slug, id);
-            if (res.success) {
-                loadData();
-            } else {
-                alert(res.error || "Failed to delete");
-            }
+        const confirmed = await confirm({
+            title: "Delete Inquiry",
+            message: `Are you sure you want to delete ${name}'s inquiry? This action cannot be undone.`,
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
+        const res = await deleteAdmissionAction(slug, id);
+        if (res.success) {
+            loadData();
+        } else {
+            await alert("Error", res.error || "Failed to delete", "danger");
         }
     };
 

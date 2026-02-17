@@ -6,14 +6,18 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getStaffAction, deleteStaffAction, updateStaffBasicInfoAction } from "@/app/actions/staff-actions";
+import { searchStaffElasticAction } from "@/app/actions/search-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { toast } from "sonner";
 import { AvatarWithAdjustment } from "@/components/dashboard/staff/AvatarWithAdjustment";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 export default function StaffPage() {
     const params = useParams();
     const router = useRouter();
     const slug = params.slug as string;
+    const { confirm: confirmDialog } = useConfirm();
 
     const [isLoading, setIsLoading] = useState(true);
     const [staff, setStaff] = useState<any[]>([]);
@@ -31,9 +35,15 @@ export default function StaffPage() {
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
     useEffect(() => {
-        loadData();
         loadMasterData();
     }, [slug]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            loadData();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [slug, searchTerm, roleFilter, deptFilter]);
 
     async function loadMasterData() {
         const [desigRes, deptRes, empRes] = await Promise.all([
@@ -48,28 +58,45 @@ export default function StaffPage() {
 
     async function loadData() {
         setIsLoading(true);
-        const res = await getStaffAction(slug);
-        if (res.success) {
-            setStaff(res.data || []);
+        let res;
+        if (searchTerm && searchTerm.length >= 2) {
+            res = await searchStaffElasticAction(slug, searchTerm, {
+                designation: roleFilter,
+                department: deptFilter
+            });
+            if (res.success) {
+                setStaff(res.staff || []);
+            }
         } else {
-            toast.error("Failed to load staff");
+            res = await getStaffAction(slug);
+            if (res.success) {
+                setStaff(res.data || []);
+            }
+        }
+
+        if (!res?.success) {
+            // Toast only on error if explicitly failed, but getStaffAction handles its own errors mostly in returning {success: false}
+            if (res?.error) toast.error("Failed to load staff");
         }
         setIsLoading(false);
     }
 
     const filteredAndSortedStaff = useMemo(() => {
         let result = staff.filter((person) => {
-            const fullName = `${person.firstName} ${person.lastName}`.toLowerCase();
-            const searchMatch = fullName.includes(searchTerm.toLowerCase()) ||
-                (person.designation || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (person.email || "").toLowerCase().includes(searchTerm.toLowerCase());
+            // Logic:
+            // If we performed a search (searchTerm exists), we assume 'staff' from backend is already relevant.
+            // But we still apply dropdown filters on top of it (client-side refinement).
+            // If no search, 'staff' is ALL users, so we apply filters.
 
             const roleMatch = roleFilter === "all" || person.designation === roleFilter;
             const deptMatch = deptFilter === "all" || person.department === deptFilter;
             const empTypeMatch = empTypeFilter === "all" || person.employmentType === empTypeFilter;
             const statusMatch = statusFilter === "all" || person.status === statusFilter;
 
-            return searchMatch && roleMatch && deptMatch && empTypeMatch && statusMatch;
+            // Note: We removed the text 'includes' check because ES handles fuzzy search. 
+            // If we kept it, valid ES fuzzy matches (Jon -> John) would be hidden by the strict JS includes check.
+
+            return roleMatch && deptMatch && empTypeMatch && statusMatch;
         });
 
         result.sort((a, b) => {
@@ -83,7 +110,7 @@ export default function StaffPage() {
         });
 
         return result;
-    }, [staff, searchTerm, roleFilter, deptFilter, statusFilter, sortBy, sortOrder]);
+    }, [staff, roleFilter, deptFilter, empTypeFilter, statusFilter, sortBy, sortOrder]);
 
     const handleUpdateField = async (id: string, field: string, value: string) => {
         // Optimistic update
@@ -99,14 +126,22 @@ export default function StaffPage() {
     };
 
     async function handleDelete(id: string, name: string) {
-        if (confirm(`Are you sure you want to delete ${name}?`)) {
-            const res = await deleteStaffAction(slug, id);
-            if (res.success) {
-                toast.success("Staff member deleted successfully");
-                loadData();
-            } else {
-                toast.error(res.error || "Failed to delete staff member");
-            }
+        const confirmed = await confirmDialog({
+            title: "Delete Staff Member",
+            message: `Are you sure you want to delete ${name}? This action cannot be undone.`,
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
+        const res = await deleteStaffAction(slug, id);
+        if (res.success) {
+            toast.success("Staff member deleted successfully");
+            loadData();
+        } else {
+            toast.error(res.error || "Failed to delete staff member");
         }
     }
 
@@ -134,14 +169,10 @@ export default function StaffPage() {
             {/* Filters & Search */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                    <input
-                        type="text"
-                        placeholder="Search by name, role or email..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
-                        style={{ '--tw-ring-color': 'var(--brand-color)' } as any}
+                    <SearchInput
+                        onSearch={(term) => setSearchTerm(term)}
+                        placeholder="Search by name, role or email (Elasticsearch)..."
+                        className="w-full"
                     />
                 </div>
                 <div className="flex flex-wrap items-center gap-3">

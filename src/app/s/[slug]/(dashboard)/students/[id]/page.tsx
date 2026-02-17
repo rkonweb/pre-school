@@ -5,6 +5,7 @@ import { useState, useEffect, Fragment, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { useParams, useRouter } from "next/navigation";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { useConfirm } from "@/contexts/ConfirmContext";
 import {
     ArrowLeft,
     User,
@@ -54,7 +55,9 @@ import {
     isSameDay,
     addMonths,
     subMonths,
-    isSameYear
+    isSameYear,
+    isAfter,
+    startOfDay
 } from "date-fns";
 import { cn, getCurrencySymbol } from "@/lib/utils";
 import { getStudentAction, updateStudentAction, deleteStudentAction, searchStudentsAction, connectSiblingAction, disconnectSiblingAction } from "@/app/actions/student-actions";
@@ -76,8 +79,10 @@ import { CreateFeeDialog } from "@/components/dashboard/students/CreateFeeDialog
 import { ConnectSiblingDialog } from "@/components/dashboard/students/ConnectSiblingDialog";
 import { PayFeeDialog } from "@/components/dashboard/students/PayFeeDialog";
 import { StudentProgressTab } from "@/components/dashboard/students/StudentProgressTab";
+import HealthRecordManager from "@/components/dashboard/student/HealthRecordManager";
 import { Badge } from "@/components/ui/badge";
 import PrintableReport from "@/components/reports/PrintableReport";
+import { StandardActionButton } from "@/components/ui/StandardActionButton";
 
 // Helper components remain the same
 const SectionTitle = ({ icon: Icon, title, light = false }: any) => (
@@ -95,11 +100,11 @@ const InputField = ({ label, value, onChange, readOnly, type = "text" }: any) =>
         <input
             type={type}
             value={value || ""}
-            readOnly={readOnly}
+            disabled={readOnly}
             onChange={e => onChange(e.target.value)}
             className={cn(
                 "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold transition-all outline-none focus:ring-2 focus:ring-zinc-200",
-                readOnly ? "text-zinc-500 shadow-inner" : "text-zinc-900 border-2 border-zinc-100 bg-white"
+                readOnly ? "text-zinc-500 cursor-not-allowed opacity-75" : "text-zinc-900 border-2 border-zinc-100 bg-white"
             )}
         />
     </div>
@@ -116,12 +121,13 @@ export default function StudentDetailPage() {
     const slug = params.slug as string;
     const id = params.id as string;
     const { can, isLoading: isPermsLoading } = useRolePermissions();
+    const { confirm: confirmDialog } = useConfirm();
 
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [mode, setMode] = useState<"view" | "edit">("view");
-    const [activeTab, setActiveTab] = useState<"profile" | "attendance" | "reports" | "fees" | "library" | "progress">("profile");
+    const [activeTab, setActiveTab] = useState<"profile" | "attendance" | "reports" | "fees" | "library" | "progress" | "health">("profile");
 
     const [student, setStudent] = useState<any>(null);
     const [siblings, setSiblings] = useState<any[]>([]);
@@ -183,15 +189,15 @@ export default function StudentDetailPage() {
             await withTimeout(syncStudentFeesAction(id, slug, force), "Sync Fees");
 
             const [studentRes, gradesRes, classroomsRes, attendanceRes, reportsRes, feesRes, sectionsRes, analyticsRes, libraryRes, yearsRes] = await Promise.all([
-                withTimeout(getStudentAction(id), "Student"),
+                withTimeout(getStudentAction(slug, id), "Student"),
                 withTimeout(getMasterDataAction("GRADE", null), "Grades"),
                 withTimeout(getClassroomsAction(slug), "Classrooms"),
-                withTimeout(getStudentAttendanceAction(id, academicYearId), "Attendance"),
+                withTimeout(getStudentAttendanceAction(slug, id, academicYearId), "Attendance"),
                 withTimeout(getStudentReportsAction(id, academicYearId), "Reports"),
-                withTimeout(getStudentFeesAction(id), "Fees"),
+                withTimeout(getStudentFeesAction(slug, id), "Fees"),
                 withTimeout(getMasterDataAction("SECTION", null), "Sections"),
                 withTimeout(getStudentSmartAnalyticsAction(slug, id, academicYearId), "Analytics"),
-                withTimeout(getStudentLibraryHistoryAction(id), "Library"),
+                withTimeout(getStudentLibraryHistoryAction(slug, id), "Library"),
                 withTimeout(getAcademicYearsAction(slug), "Academic Years")
             ]);
 
@@ -241,7 +247,16 @@ export default function StudentDetailPage() {
     };
 
     const handleDelete = async () => {
-        if (!confirm("Delete student permanently?")) return;
+        const confirmed = await confirmDialog({
+            title: "Delete Student",
+            message: "Delete student permanently? This action cannot be undone.",
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         const res = await deleteStudentAction(slug, id);
         if (res.success) {
             toast.success("Student deleted");
@@ -252,7 +267,16 @@ export default function StudentDetailPage() {
     };
 
     const handleDisconnect = async (siblingId: string) => {
-        if (!confirm("Are you sure you want to remove this sibling linkage?")) return;
+        const confirmed = await confirmDialog({
+            title: "Disconnect Sibling",
+            message: "Are you sure you want to remove this sibling linkage?",
+            variant: "warning",
+            confirmText: "Disconnect",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         const res = await disconnectSiblingAction(slug, siblingId);
         if (res.success) {
             toast.success("Sibling disconnected");
@@ -365,37 +389,35 @@ export default function StudentDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {canEditProfile && (
-                        <button
-                            onClick={() => setMode(mode === "view" ? "edit" : "view")}
-                            className={cn(
-                                "h-12 px-6 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all",
-                                mode === "view" ? "bg-brand text-white hover:brightness-110 shadow-xl shadow-brand/20" : "bg-zinc-100 text-zinc-600"
-                            )}
-                        >
-                            {mode === "view" ? <Edit3 className="h-4 w-4" /> : <X className="h-4 w-4" />}
-                            {mode === "view" ? "Edit Profile" : "Cancel"}
-                        </button>
-                    )}
-                    {mode === "view" && canDeleteProfile && (
-                        <button
+                    <StandardActionButton
+                        onClick={() => setMode(mode === "view" ? "edit" : "view")}
+                        variant={mode === "view" ? "primary" : "ghost"}
+                        icon={mode === "view" ? Edit3 : X}
+                        label={mode === "view" ? "Edit Profile" : "Cancel"}
+                        permission={{ module: 'students.profiles', action: 'edit' }}
+                    />
+                    {mode === "view" && (
+                        <StandardActionButton
                             onClick={handleDelete}
-                            className="h-12 w-12 rounded-2xl border-2 border-red-50 text-red-500 flex items-center justify-center hover:bg-red-50 transition-all"
-                        >
-                            <Trash2 className="h-5 w-5" />
-                        </button>
+                            variant="delete"
+                            icon={Trash2}
+                            iconOnly
+                            tooltip="Delete Student"
+                            permission={{ module: 'students.profiles', action: 'delete' }}
+                        />
                     )}
                 </div>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex p-1.5 bg-zinc-100 rounded-[28px] w-full max-w-2xl overflow-x-auto">
+            <div className="flex p-1.5 bg-zinc-100 rounded-[28px] w-full overflow-x-auto">
                 {[
                     { id: "profile", label: "Profile", icon: User },
                     { id: "attendance", label: "Attendance", icon: Activity },
                     { id: "fees", label: "Fees", icon: Briefcase },
                     { id: "reports", label: "Reports", icon: ClipboardList },
                     { id: "progress", label: "Progress", icon: TrendingUp },
+                    { id: "health", label: "Health", icon: Heart },
                     { id: "library", label: "Library", icon: BookOpen }
                 ].map((tab: any) => (
                     <button
@@ -432,7 +454,7 @@ export default function StudentDetailPage() {
                                             value={student.gender || ""}
                                             onChange={e => setStudent({ ...student, gender: e.target.value })}
                                             className={cn(
-                                                "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold transition-all",
+                                                "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold transition-all disabled:opacity-75 disabled:cursor-not-allowed",
                                                 isReadOnly ? "text-zinc-500 shadow-inner" : "text-zinc-900 border-2 border-zinc-100"
                                             )}
                                         >
@@ -452,16 +474,21 @@ export default function StudentDetailPage() {
                                     {/* Status Update Dropdown (Only in Edit Mode) */}
                                     {!isReadOnly && (
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Status</label>
-                                            <select
-                                                value={student.status || "ACTIVE"}
-                                                onChange={e => setStudent({ ...student, status: e.target.value })}
-                                                className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-4 px-6 font-bold text-zinc-900 transition-all outline-none focus:ring-2 focus:ring-zinc-200"
-                                            >
-                                                <option value="ACTIVE">Active</option>
-                                                <option value="INACTIVE">Inactive</option>
-                                                <option value="ABSENT">Absent</option>
-                                            </select>
+                                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Current Status</label>
+                                            <div className="relative group">
+                                                <select
+                                                    value={student.status || "ACTIVE"}
+                                                    onChange={e => setStudent({ ...student, status: e.target.value })}
+                                                    className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-2xl py-4 px-6 font-bold text-zinc-900 transition-all outline-none focus:ring-2 focus:ring-zinc-200 appearance-none shadow-sm group-hover:bg-white"
+                                                >
+                                                    <option value="ACTIVE">Active</option>
+                                                    <option value="INACTIVE">Inactive</option>
+                                                    <option value="ABSENT">Absent</option>
+                                                </select>
+                                                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <ChevronDown className="h-4 w-4 text-zinc-400 group-hover:text-zinc-600 transition-colors" />
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -478,7 +505,7 @@ export default function StudentDetailPage() {
                                             value={student.bloodGroup || ""}
                                             onChange={e => setStudent({ ...student, bloodGroup: e.target.value })}
                                             className={cn(
-                                                "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold transition-all",
+                                                "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold transition-all disabled:opacity-75 disabled:cursor-not-allowed",
                                                 isReadOnly ? "text-zinc-500" : "text-zinc-900 border-2 border-zinc-100"
                                             )}
                                         >
@@ -502,15 +529,16 @@ export default function StudentDetailPage() {
                                 </div>
                             </div>
 
-                            {!isReadOnly && canEditProfile && (
-                                <button
+                            {!isReadOnly && (
+                                <StandardActionButton
                                     type="submit"
-                                    disabled={isSaving}
-                                    className="w-full h-16 bg-brand text-white rounded-[24px] font-black flex items-center justify-center gap-3 shadow-2xl shadow-brand/20 active:scale-95 transition-all disabled:opacity-50"
-                                >
-                                    {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
-                                    Save Profile changes
-                                </button>
+                                    loading={isSaving}
+                                    variant="primary"
+                                    icon={CheckCircle2}
+                                    label="Save Profile changes"
+                                    className="w-full h-16 rounded-[24px]"
+                                    permission={{ module: 'students.profiles', action: 'edit' }}
+                                />
                             )}
                         </div>
 
@@ -548,7 +576,7 @@ export default function StudentDetailPage() {
                                                 const newGrade = e.target.value;
                                                 setStudent({ ...student, grade: newGrade, classroomId: "" });
                                             }}
-                                            className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-sm appearance-none"
+                                            className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-sm appearance-none disabled:opacity-75 disabled:cursor-not-allowed"
                                         >
                                             <option value="">Select Grade</option>
                                             {grades.map(g => (
@@ -582,7 +610,7 @@ export default function StudentDetailPage() {
                                                     setStudent({ ...student, classroomId: "" });
                                                 }
                                             }}
-                                            className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-sm appearance-none"
+                                            className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-sm appearance-none disabled:opacity-75 disabled:cursor-not-allowed"
                                         >
                                             <option value="">Select Section</option>
                                             {sections && sections.length > 0 ? sections.map((s: any) => (
@@ -673,15 +701,15 @@ export default function StudentDetailPage() {
                             <div className="bg-white rounded-[40px] p-8 border border-zinc-100 shadow-xl shadow-zinc-200/20">
                                 <div className="flex items-center justify-between mb-6">
                                     <SectionTitle icon={Users} title="Siblings" />
-                                    {canEditProfile && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsConnectSiblingOpen(true)}
-                                            className="text-[10px] font-black bg-brand text-white px-3 py-1.5 rounded-lg uppercase tracking-widest hover:brightness-110 transition-all flex items-center gap-1"
-                                        >
-                                            <Plus className="h-3 w-3" /> Connect
-                                        </button>
-                                    )}
+                                    <StandardActionButton
+                                        type="button"
+                                        onClick={() => setIsConnectSiblingOpen(true)}
+                                        variant="primary"
+                                        icon={Plus}
+                                        label="Connect"
+                                        className="h-8 px-3 rounded-lg text-[10px]"
+                                        permission={{ module: 'students.profiles', action: 'edit' }}
+                                    />
                                 </div>
                                 <div className="space-y-4">
                                     {siblings.filter(s => s.id !== student.id).map(sib => (
@@ -693,15 +721,15 @@ export default function StudentDetailPage() {
                                                     <p className="text-[10px] text-zinc-500 font-bold">{sib.classroom?.name || "Unassigned"}</p>
                                                 </div>
                                             </div>
-                                            {canEditProfile && (
-                                                <button
-                                                    onClick={() => handleDisconnect(sib.id)}
-                                                    className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
-                                                    title="Unlink Sibling"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            )}
+                                            <StandardActionButton
+                                                onClick={() => handleDisconnect(sib.id)}
+                                                variant="delete"
+                                                icon={Trash2}
+                                                iconOnly
+                                                tooltip="Unlink Sibling"
+                                                className="opacity-0 group-hover:opacity-100"
+                                                permission={{ module: 'students.profiles', action: 'edit' }}
+                                            />
                                         </div>
                                     ))}
                                     {siblings.filter(s => s.id !== student.id).length === 0 && (
@@ -739,15 +767,13 @@ export default function StudentDetailPage() {
                                         <ChevronRight className="h-5 w-5" />
                                     </button>
                                 </div>
-                                {canAttendance && (
-                                    <button
-                                        onClick={() => setIsAddAttendanceOpen(true)}
-                                        className="h-12 px-6 bg-brand text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:brightness-110 transition-all"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                        Mark Attendance
-                                    </button>
-                                )}
+                                <StandardActionButton
+                                    onClick={() => setIsAddAttendanceOpen(true)}
+                                    variant="primary"
+                                    icon={Plus}
+                                    label="Mark Attendance"
+                                    permission={{ module: 'attendance', action: 'create' }}
+                                />
                             </div>
                         </div>
 
@@ -982,15 +1008,12 @@ export default function StudentDetailPage() {
                                 <p className="text-sm font-medium text-zinc-500 mt-1">Holistic academic and developmental assessment.</p>
                             </div>
                             <div className="flex items-center gap-3">
-                                {analytics && (
-                                    <button
-                                        onClick={() => handlePrint()}
-                                        className="h-12 px-6 bg-zinc-900 text-white hover:bg-zinc-800 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-900/20"
-                                    >
-                                        <Printer className="h-4 w-4" />
-                                        Print Annual Report
-                                    </button>
-                                )}
+                                <StandardActionButton
+                                    onClick={() => handlePrint()}
+                                    variant="outline"
+                                    icon={Printer}
+                                    label="Print Annual Report"
+                                />
                             </div>
                         </div>
 
@@ -1067,19 +1090,21 @@ export default function StudentDetailPage() {
                                                     <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Subject-wise performance breakdown</p>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <button
+                                                    <StandardActionButton
                                                         onClick={() => handlePrintTest()}
-                                                        className="h-10 px-4 rounded-xl bg-zinc-900 text-white font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-zinc-800 transition-all shadow-md"
-                                                    >
-                                                        <Printer className="h-3 w-3" />
-                                                        Print Test Report
-                                                    </button>
-                                                    <button
+                                                        variant="outline"
+                                                        icon={Printer}
+                                                        label="Print Test Report"
+                                                        className="h-10 px-4 rounded-xl text-[10px]"
+                                                    />
+                                                    <StandardActionButton
                                                         onClick={() => setExpandedExamId(null)}
-                                                        className="h-10 w-10 rounded-xl bg-white border border-zinc-100 flex items-center justify-center text-zinc-400 hover:text-red-500 transition-all shadow-sm"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
+                                                        variant="ghost"
+                                                        icon={X}
+                                                        iconOnly
+                                                        tooltip="Close"
+                                                        className="h-10 w-10 rounded-xl"
+                                                    />
                                                 </div>
                                             </div>
 
@@ -1350,32 +1375,43 @@ export default function StudentDetailPage() {
                                                                         <td className="px-8 py-6 text-right">
                                                                             <div className="flex items-center justify-end gap-2">
                                                                                 {fee.status !== 'PAID' && (
-                                                                                    <button
+                                                                                    <StandardActionButton
                                                                                         onClick={() => {
                                                                                             setSelectedFee(fee);
                                                                                             setIsPayFeeOpen(true);
                                                                                         }}
-                                                                                        className="h-9 px-4 rounded-xl bg-zinc-900 text-white font-bold text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-zinc-900/10"
-                                                                                    >
-                                                                                        Pay
-                                                                                    </button>
+                                                                                        variant="view"
+                                                                                        label="Pay"
+                                                                                        className="h-9 px-4 rounded-xl text-[10px]"
+                                                                                    />
                                                                                 )}
-                                                                                <button
+                                                                                <StandardActionButton
                                                                                     onClick={async () => {
-                                                                                        if (confirm('Are you sure you want to delete this invoice?')) {
-                                                                                            const res = await deleteFeeAction(fee.id);
-                                                                                            if (res.success) {
-                                                                                                toast.success("Invoice deleted");
-                                                                                                loadData(true);
-                                                                                            } else {
-                                                                                                toast.error("Failed to delete invoice");
-                                                                                            }
+                                                                                        const confirmed = await confirmDialog({
+                                                                                            title: "Delete Invoice",
+                                                                                            message: "Are you sure you want to delete this invoice?",
+                                                                                            variant: "danger",
+                                                                                            confirmText: "Delete",
+                                                                                            cancelText: "Cancel"
+                                                                                        });
+
+                                                                                        if (!confirmed) return;
+
+                                                                                        const res = await deleteFeeAction(fee.id);
+                                                                                        if (res.success) {
+                                                                                            toast.success("Invoice deleted");
+                                                                                            loadData(true);
+                                                                                        } else {
+                                                                                            toast.error(res.error || "Failed to delete");
                                                                                         }
                                                                                     }}
-                                                                                    className="p-2 hover:bg-red-50 rounded-xl text-zinc-300 hover:text-red-500 transition-colors"
-                                                                                >
-                                                                                    <Trash2 className="h-4 w-4" />
-                                                                                </button>
+                                                                                    variant="delete"
+                                                                                    icon={X}
+                                                                                    iconOnly
+                                                                                    tooltip="Delete Invoice"
+                                                                                    className="h-9 w-9 rounded-xl"
+                                                                                    permission={{ module: 'fees', action: 'delete' }}
+                                                                                />
                                                                             </div>
                                                                         </td>
                                                                     </tr>
@@ -1423,6 +1459,11 @@ export default function StudentDetailPage() {
                 {activeTab === "progress" && (
                     <StudentProgressTab schoolSlug={slug} studentId={id} />
                 )}
+
+                {activeTab === "health" && (
+                    <HealthRecordManager studentId={id} slug={slug} />
+                )}
+
                 {isAddAttendanceOpen && (
                     <AttendanceDialog
                         onClose={() => {

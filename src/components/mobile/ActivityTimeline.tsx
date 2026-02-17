@@ -20,11 +20,13 @@ interface Activity {
 interface ActivityTimelineProps {
     activities: Activity[];
     loading?: boolean;
+    slug: string;
 }
 
 export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
     activities,
-    loading = false
+    loading = false,
+    slug
 }) => {
     if (loading) {
         return (
@@ -87,6 +89,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                             <ActivityCard
                                 key={activity.id}
                                 {...activity}
+                                slug={slug}
                                 index={idx}
                             />
                         ))}

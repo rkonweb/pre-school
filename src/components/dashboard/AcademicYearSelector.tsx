@@ -24,22 +24,34 @@ export function AcademicYearSelector() {
     async function loadYears() {
         try {
             const res = await getAcademicYearsAction(slug);
-            if (res.success) {
+            if (res.success && res.data) {
                 setYears(res.data);
+                const data = res.data;
 
-                // Determine which year is selected
-                // 1. Check Cookie
+                // Determine which year is selected based on current date
+                const today = new Date();
+
+                // 1. Check Cookie first (respects user's manual selection)
                 const cookieValue = getCookie(`academic_year_${slug}`);
-                let yearToSelect = res.data.find((y: any) => y.id === cookieValue);
+                let yearToSelect = data.find((y: any) => y.id === cookieValue);
 
-                // 2. Fallback to Current
+                // 2. Find academic year based on current date (today falls within startDate and endDate)
                 if (!yearToSelect) {
-                    yearToSelect = res.data.find((y: any) => y.isCurrent);
+                    yearToSelect = data.find((y: any) => {
+                        const start = new Date(y.startDate);
+                        const end = new Date(y.endDate);
+                        return today >= start && today <= end;
+                    });
                 }
 
-                // 3. Fallback to Latest
-                if (!yearToSelect && res.data.length > 0) {
-                    yearToSelect = res.data[0];
+                // 3. Fallback to isCurrent flag
+                if (!yearToSelect) {
+                    yearToSelect = data.find((y: any) => y.isCurrent);
+                }
+
+                // 4. Fallback to latest year (most recent startDate)
+                if (!yearToSelect && data.length > 0) {
+                    yearToSelect = data[0]; // Already sorted by startDate desc
                 }
 
                 if (yearToSelect) {
@@ -47,9 +59,11 @@ export function AcademicYearSelector() {
                     // Ensure cookie is set
                     setCookie(`academic_year_${slug}`, yearToSelect.id, 365);
                 }
+            } else {
+                console.error("Failed to load sessions:", res.error);
             }
         } catch (error) {
-            console.error("Failed to load academic years for selector");
+            console.error("Failed to load academic years for selector:", error);
         } finally {
             setIsLoading(false);
         }
@@ -69,35 +83,42 @@ export function AcademicYearSelector() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-100 animate-pulse">
-                <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
-                <div className="h-4 w-20 bg-zinc-200 rounded" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 animate-pulse">
+                <Loader2 className="h-4 w-4 animate-spin text-white/40" />
+                <div className="h-4 w-20 bg-white/20 rounded" />
             </div>
         );
     }
 
-    if (years.length === 0) return null;
+    if (years.length === 0) {
+        return (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/40 text-xs italic">
+                <CalendarDays className="h-4 w-4" />
+                <span>No Sessions Found</span>
+            </div>
+        );
+    }
 
     return (
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 transition-colors text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 active:scale-95"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 transition-colors text-white active:scale-95 backdrop-blur-sm relative z-[1001]"
             >
-                <CalendarDays className="h-4 w-4 text-zinc-500" />
+                <CalendarDays className="h-4 w-4 text-white/70" />
                 <span className="text-sm font-bold tracking-tight">
                     {selectedYear ? selectedYear.name : "Select Year"}
                 </span>
-                <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+                <ChevronDown className={cn("h-4 w-4 transition-transform text-white/70", isOpen && "rotate-180")} />
             </button>
 
             {isOpen && (
                 <>
                     <div
-                        className="fixed inset-0 z-10"
+                        className="fixed inset-0 z-[9998]"
                         onClick={() => setIsOpen(false)}
                     />
-                    <div className="absolute top-full left-0 mt-2 w-48 rounded-2xl bg-white border border-zinc-100 shadow-2xl py-2 z-20 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute top-full left-0 mt-2 w-48 rounded-2xl bg-white border border-zinc-100 shadow-2xl py-2 z-[9999] animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-4 py-2 border-b border-zinc-50 mb-1">
                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Academic Period</span>
                         </div>

@@ -26,6 +26,7 @@ import { createLeavePolicyAction, deleteLeavePolicyAction, updateLeavePolicyActi
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 interface LeaveType {
     name: string;
@@ -98,6 +99,7 @@ const INITIAL_FORM_STATE = {
 };
 
 export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyManagerProps) {
+    const { confirm: confirmDialog } = useConfirm();
     const [policies, setPolicies] = useState<LeavePolicy[]>(initialPolicies);
     const [roles, setRoles] = useState<{ id: string, name: string }[]>([]);
     const [isCreating, setIsCreating] = useState(false);
@@ -177,7 +179,16 @@ export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyM
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure? This will affect staff attendance rules.")) return;
+        const confirmed = await confirmDialog({
+            title: "Delete Leave Policy",
+            message: "Are you sure? This will affect staff attendance rules.",
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         const res = await deleteLeavePolicyAction(schoolSlug, id);
         if (res.success) {
             toast.success("Policy removed");

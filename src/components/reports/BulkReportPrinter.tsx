@@ -58,7 +58,7 @@ export default function BulkReportPrinter({
                 if (!analyticsRes.success) throw new Error("Failed to load analytics");
 
                 // Fetch Student Profiles
-                const studentPromises = studentIds.map(id => getStudentAction(id));
+                const studentPromises = studentIds.map(id => getStudentAction(schoolSlug, id));
                 const studentResults = await Promise.all(studentPromises);
                 const students = studentResults
                     .filter(res => res.success)

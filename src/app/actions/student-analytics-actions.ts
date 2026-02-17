@@ -141,6 +141,55 @@ function processStudentData(examResults: any[], attendance: any[], health: any, 
     const absent = attendance.filter(a => a.status === 'ABSENT').length;
     const attPercentage = totalDays > 0 ? ((present + late) / totalDays) * 100 : 0;
 
+    // --- INSIGHTS GENERATION ---
+    const insights: any[] = [];
+
+    if (bestSubject !== "N/A" && subjectPerformance[0].average >= 90) {
+        insights.push({
+            type: "STRENGTH",
+            message: `Exceptional performance in ${bestSubject} with a ${subjectPerformance[0].average.toFixed(1)}% average.`,
+            sentiment: "POSITIVE"
+        });
+    }
+
+    if (weakestSubject !== "N/A" && subjectPerformance[subjectPerformance.length - 1].average < 50) {
+        insights.push({
+            type: "WEAKNESS",
+            message: `Requires attention in ${weakestSubject} (Avg: ${subjectPerformance[subjectPerformance.length - 1].average.toFixed(1)}%).`,
+            sentiment: "NEGATIVE"
+        });
+    }
+
+    if (trend === "IMPROVING") {
+        insights.push({
+            type: "TREND",
+            message: "Showing a consistent upward trend in recent exams. Keep it up!",
+            sentiment: "POSITIVE"
+        });
+    } else if (trend === "DECLINING") {
+        insights.push({
+            type: "TREND",
+            message: "Performance has dipped slightly in the most recent exams.",
+            sentiment: "NEGATIVE"
+        });
+    }
+
+    if (totalDays > 10 && attPercentage < 75) {
+        insights.push({
+            type: "ATTENDANCE",
+            message: `Low attendance (${attPercentage.toFixed(1)}%). Regular attendance is crucial for improvement.`,
+            sentiment: "NEGATIVE"
+        });
+    }
+
+    if (activities.length > 0) {
+        insights.push({
+            type: "GENERAL",
+            message: `Active participant in ${activities[0].category} activities (${activities.length} achievements recorded).`,
+            sentiment: "POSITIVE"
+        });
+    }
+
     return {
         academics: {
             overallPercentage,
@@ -160,7 +209,7 @@ function processStudentData(examResults: any[], attendance: any[], health: any, 
         attendance: { totalDays, present, absent, late, percentage: attPercentage },
         health,
         activities,
-        insights: [] // Skipping insights for bulk for performance, can add later if needed
+        insights
     };
 }
 

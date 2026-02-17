@@ -33,6 +33,7 @@ export default function CareersPage() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [fileName, setFileName] = useState<string | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
 
     // Form State
@@ -42,7 +43,10 @@ export default function CareersPage() {
         Promise.all([
             getJobPostingsAction().then((data) => setJobs(data as unknown as JobPost[])),
             getCareersPageContentAction().then(setSections)
-        ]).finally(() => setLoading(false));
+        ]).finally(() => {
+            setLoading(false);
+            setIsMounted(true);
+        });
     }, []);
 
     // Filter Logic
@@ -276,22 +280,30 @@ export default function CareersPage() {
                                 <div className="grid md:grid-cols-2 gap-8">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-navy uppercase tracking-[0.25em] ml-1">First Name <span className="text-orange">*</span></label>
-                                        <input required name="firstName" className="w-full p-5 bg-slate-50 border border-teal/5 rounded-2xl font-black text-navy focus:ring-4 focus:ring-teal/10 focus:outline-none transition-all shadow-inner" placeholder="Jane" />
+                                        {isMounted && (
+                                            <input required name="firstName" data-lpignore="true" className="w-full p-5 bg-slate-50 border border-teal/5 rounded-2xl font-black text-navy focus:ring-4 focus:ring-teal/10 focus:outline-none transition-all shadow-inner" placeholder="Jane" />
+                                        )}
                                     </div>
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-navy uppercase tracking-[0.25em] ml-1">Last Name <span className="text-orange">*</span></label>
-                                        <input required name="lastName" className="w-full p-5 bg-slate-50 border border-teal/5 rounded-2xl font-black text-navy focus:ring-4 focus:ring-teal/10 focus:outline-none transition-all shadow-inner" placeholder="Doe" />
+                                        {isMounted && (
+                                            <input required name="lastName" data-lpignore="true" className="w-full p-5 bg-slate-50 border border-teal/5 rounded-2xl font-black text-navy focus:ring-4 focus:ring-teal/10 focus:outline-none transition-all shadow-inner" placeholder="Doe" />
+                                        )}
                                     </div>
                                 </div>
 
                                 <div className="grid md:grid-cols-2 gap-8">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-navy uppercase tracking-[0.25em] ml-1">Email Address <span className="text-orange">*</span></label>
-                                        <input required name="email" type="email" className="w-full p-5 bg-slate-50 border border-teal/5 rounded-2xl font-black text-navy focus:ring-4 focus:ring-teal/10 focus:outline-none transition-all shadow-inner" placeholder="jane@example.com" />
+                                        {isMounted && (
+                                            <input required name="email" type="email" data-lpignore="true" className="w-full p-5 bg-slate-50 border border-teal/5 rounded-2xl font-black text-navy focus:ring-4 focus:ring-teal/10 focus:outline-none transition-all shadow-inner" placeholder="jane@example.com" />
+                                        )}
                                     </div>
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-navy uppercase tracking-[0.25em] ml-1">Phone <span className="text-orange">*</span></label>
-                                        <input required name="phone" className="w-full p-5 bg-slate-50 border border-teal/5 rounded-2xl font-black text-navy focus:ring-4 focus:ring-teal/10 focus:outline-none transition-all shadow-inner" placeholder="+1 (555) 000-0000" />
+                                        {isMounted && (
+                                            <input required name="phone" data-lpignore="true" className="w-full p-5 bg-slate-50 border border-teal/5 rounded-2xl font-black text-navy focus:ring-4 focus:ring-teal/10 focus:outline-none transition-all shadow-inner" placeholder="+1 (555) 000-0000" />
+                                        )}
                                     </div>
                                 </div>
 

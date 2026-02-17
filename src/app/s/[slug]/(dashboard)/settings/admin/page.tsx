@@ -21,10 +21,12 @@ import {
     Building2
 } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 export default function AdminSettingsPage() {
     const params = useParams();
     const slug = params.slug as string;
+    const { confirm: confirmDialog } = useConfirm();
     const [isLoading, setIsLoading] = useState(true);
     const [schoolData, setSchoolData] = useState<any>(null);
     const [admins, setAdmins] = useState<any[]>([]);
@@ -65,7 +67,15 @@ export default function AdminSettingsPage() {
     };
 
     const handleDelete = async (userId: string) => {
-        if (!confirm("Are you sure you want to remove this administrator?")) return;
+        const confirmed = await confirmDialog({
+            title: "Remove Administrator",
+            message: "Are you sure you want to remove this administrator?",
+            variant: "danger",
+            confirmText: "Remove",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
 
         const result = await deleteAdminAction(userId);
         if (result.success) {

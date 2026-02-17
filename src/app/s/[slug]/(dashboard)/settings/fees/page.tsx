@@ -60,14 +60,28 @@ export default function FeeSettingsPage() {
     );
 
     return (
-        <FeeStructureManager
-            slug={slug}
-            initialData={structures}
-            classrooms={classrooms}
-            onRefresh={load}
-            currency={school?.currency}
-            academicYears={academicYears}
-            currentAcademicYear={currentYear}
-        />
+        <div className="flex flex-col gap-6 pb-20">
+            {/* Page Header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                        Fee Configuration
+                    </h1>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        Configure automated incentives, late thresholds, and salary rules.
+                    </p>
+                </div>
+            </div>
+
+            <FeeStructureManager
+                slug={slug}
+                initialData={structures}
+                classrooms={classrooms}
+                onRefresh={load}
+                currency={school?.currency}
+                academicYears={academicYears}
+                currentAcademicYear={currentYear}
+            />
+        </div>
     );
 }

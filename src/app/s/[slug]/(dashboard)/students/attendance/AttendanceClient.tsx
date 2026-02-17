@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { format, isFuture, isToday, parseISO } from "date-fns";
 import { getSchoolNow } from "@/lib/date-utils";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Play, CheckCircle2, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Play, CheckCircle2, Clock, X } from "lucide-react";
+import { StandardActionButton } from "@/components/ui/StandardActionButton";
 import { AttendanceCard, AttendanceStatus } from "@/components/dashboard/attendance/AttendanceCard";
 import { getAttendanceDataAction, markAttendanceAction } from "@/app/actions/attendance-actions"; // We will rename/export these
 import { toast } from "sonner";
@@ -66,7 +67,7 @@ export default function AttendanceClient({ slug, classrooms, academicYears = [],
         // Server update
         const cookieId = getCookie(`academic_year_${slug}`);
         const academicYearId = cookieId || currentAcademicYear?.id || (academicYears && academicYears.length > 0 ? academicYears[0].id : undefined);
-        const res = await markAttendanceAction(studentId, date, normalizedStatus, undefined, academicYearId);
+        const res = await markAttendanceAction(slug, studentId, date, normalizedStatus, undefined, academicYearId);
         if (!res.success) {
             toast.error("Failed to save attendance");
             // Revert on error? For now, we assume success or reload.
@@ -154,13 +155,13 @@ export default function AttendanceClient({ slug, classrooms, academicYears = [],
 
                     {/* Start Attendance Button (Only for Today) */}
                     {isDateEditable && students.length > 0 && (
-                        <button
+                        <StandardActionButton
                             onClick={startFocusMode}
-                            className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:opacity-50"
-                        >
-                            <Play className="h-4 w-4" />
-                            {unmarkedCount > 0 ? "Take Attendance" : "Review Attendance"}
-                        </button>
+                            variant="primary"
+                            icon={Play}
+                            label={unmarkedCount > 0 ? "Take Attendance" : "Review Attendance"}
+                            permission={{ module: 'attendance', action: 'mark' }}
+                        />
                     )}
                 </div>
             </div>

@@ -106,6 +106,7 @@ export default function MasterDataPage() {
         if (type === "STATE") return "COUNTRY";
         if (type === "CITY") return "STATE";
         if (type === "SECTION") return "GRADE";
+        if (type === "DESIGNATION") return "DEPARTMENT";
         return null;
     };
 
@@ -185,21 +186,29 @@ export default function MasterDataPage() {
 
         if (selectedType === "COUNTRY") setSelectedType("STATE");
         else if (selectedType === "STATE") setSelectedType("CITY");
+        else if (selectedType === "GRADE") setSelectedType("SECTION");
+        else if (selectedType === "DEPARTMENT") setSelectedType("DESIGNATION");
     };
 
     const goBackToParent = (index: number) => {
         if (index === -1) {
             setParentChain([]);
             setSelectedParentId(null);
-            setSelectedType("COUNTRY");
+
+            // Logic to determine root type based on current hierarchy
+            if (["STATE", "CITY"].includes(selectedType)) setSelectedType("COUNTRY");
+            else if (selectedType === "SECTION") setSelectedType("GRADE");
+            else if (selectedType === "DESIGNATION") setSelectedType("DEPARTMENT");
         } else {
             const newChain = parentChain.slice(0, index + 1);
             setParentChain(newChain);
             const parent = newChain[newChain.length - 1];
             setSelectedParentId(parent.id);
 
-            if (newChain.length === 1) setSelectedType("STATE");
-            else if (newChain.length === 2) setSelectedType("CITY");
+            // Handle intermediate types
+            if (selectedType === "CITY" && newChain.length === 1) {
+                setSelectedType("STATE");
+            }
         }
     };
 
@@ -250,7 +259,8 @@ export default function MasterDataPage() {
                                         key={type.id}
                                         onClick={() => {
                                             setSelectedType(type.id);
-                                            if (type.id === "GRADE" || type.id === "COUNTRY") {
+                                            // Handle root types vs sub types
+                                            if (["GRADE", "COUNTRY", "DEPARTMENT"].includes(type.id)) {
                                                 setSelectedParentId(null);
                                             } else {
                                                 setSelectedParentId(undefined);
@@ -400,7 +410,7 @@ export default function MasterDataPage() {
                                                             <ChevronDown className="h-3 w-3" />
                                                             {item.children?.length || item._count?.children} children
                                                         </button>
-                                                    ) : (selectedType !== "GRADE" && selectedType !== "CITY") ? (
+                                                    ) : (["COUNTRY", "STATE", "GRADE", "DEPARTMENT"].includes(selectedType)) ? (
                                                         <button
                                                             onClick={() => navigateToChild(item)}
                                                             className="flex items-center gap-1.5 text-[10px] font-black text-zinc-400 hover:text-blue-600 transition-colors"

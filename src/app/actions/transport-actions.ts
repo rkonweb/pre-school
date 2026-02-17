@@ -36,7 +36,7 @@ export async function createRouteAction(schoolSlug: string, data: any) {
             }
         });
 
-        revalidatePath(`/s/${schoolSlug}/transport/routes`);
+        revalidatePath(`/s/${schoolSlug}/transport/route/routes`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -262,7 +262,7 @@ export async function deleteVehicleAction(slug: string, vehicleId: string) {
         await prisma.transportVehicle.delete({
             where: { id: vehicleId }
         });
-        revalidatePath(`/s/${slug}/transport/vehicles`);
+        revalidatePath(`/s/${slug}/transport/fleet/vehicles`);
         return { success: true };
     } catch (error: any) {
         console.error("Error deleting vehicle:", error);
@@ -305,7 +305,7 @@ export async function createVehicleAction(data: any, schoolSlug: string) {
             }
         });
 
-        revalidatePath(`/s/${schoolSlug}/transport/vehicles`);
+        revalidatePath(`/s/${schoolSlug}/transport/fleet/vehicles`);
         return { success: true };
     } catch (error: any) {
         console.error("Error creating vehicle:", error);
@@ -355,7 +355,7 @@ export async function updateVehicleAction(vehicleId: string, data: any, schoolSl
             }
         });
 
-        revalidatePath(`/s/${schoolSlug}/transport/vehicles`);
+        revalidatePath(`/s/${schoolSlug}/transport/fleet/vehicles`);
         return { success: true };
     } catch (error: any) {
         console.error("Error updating vehicle:", error);
@@ -399,10 +399,82 @@ export async function createDriverAction(data: any, schoolSlug: string) {
             }
         });
 
-        revalidatePath(`/s/${schoolSlug}/transport/drivers`);
+        revalidatePath(`/s/${schoolSlug}/transport/fleet/drivers`);
         return { success: true };
     } catch (error: any) {
         console.error("Error creating driver:", error);
         return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Get comprehensive stats for the transport dashboard
+ */
+export async function getTransportDashboardStatsAction(slug: string) {
+    try {
+        const school = await prisma.school.findUnique({
+            where: { slug },
+            include: {
+                transportVehicles: {
+                    include: {
+                        VehicleTelemetry: {
+                            orderBy: { recordedAt: 'desc' },
+                            take: 1
+                        }
+                    }
+                },
+                transportRoutes: {
+                    include: {
+                        driver: true
+                    }
+                }
+            }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
+        // 1. Financial Stats
+        const fees = await prisma.fee.findMany({
+            where: {
+                student: { schoolId: school.id },
+                category: "TRANSPORT"
+            }
+        });
+
+        const totalExpected = fees.reduce((sum, f) => sum + f.amount, 0);
+        const totalCollected = fees.filter(f => f.status === "PAID").reduce((sum, f) => sum + f.amount, 0);
+
+        // 2. Fleet Stats (AI based)
+        const activeVehicles = school.transportVehicles.filter(v => v.status === "ACTIVE").length;
+        const delayedVehicles = school.transportVehicles.filter(v =>
+            v.VehicleTelemetry?.[0] && v.VehicleTelemetry[0].delayMinutes > 0
+        ).length;
+
+        // 3. Driver Stats
+        const totalDrivers = await prisma.transportDriver.count({ where: { schoolId: school.id } });
+        const driversOnRoute = new Set(school.transportRoutes.map(r => r.driverId).filter(Boolean)).size;
+
+        return {
+            success: true,
+            data: {
+                finances: {
+                    totalExpected,
+                    totalCollected,
+                    collectionRate: totalExpected > 0 ? (totalCollected / totalExpected) * 100 : 0
+                },
+                fleet: {
+                    total: school.transportVehicles.length,
+                    active: activeVehicles,
+                    delayed: delayedVehicles
+                },
+                drivers: {
+                    total: totalDrivers,
+                    active: driversOnRoute,
+                    absent: totalDrivers - driversOnRoute
+                }
+            }
+        };
+    } catch (e: any) {
+        return { success: false, error: e.message };
     }
 }

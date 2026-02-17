@@ -18,6 +18,7 @@ import {
     Layers,
     ChevronDown,
     ChevronRight,
+    ChevronLeft,
     LucideIcon,
     NotebookPen,
     LogOut,
@@ -29,10 +30,23 @@ import {
     MapPin,
     TrendingUp,
     Sparkles,
-    Sliders
+    X,
+    PanelLeftClose,
+    PanelLeftOpen,
+    Activity,
+    School,
+    Building2,
+    Palmtree,
+    ShieldCheck,
+    Fingerprint,
+    Zap,
+    CalendarDays,
+    Wallet,
+    Building
 } from "lucide-react";
 import { useState } from "react";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
+import { useSidebar } from "@/context/SidebarContext";
 
 // Define navigation types
 type NavItem = {
@@ -42,7 +56,8 @@ type NavItem = {
     children?: { name: string; href: string; icon: LucideIcon }[];
 };
 
-export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoolName?: string; logo?: string | null; user?: any, enabledModules?: string[] }) {
+export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoolName?: string; logo?: string | null; user?: any; enabledModules?: string[] }) {
+    const { isOpen, isCollapsed, toggleCollapse, setIsOpen } = useSidebar();
     const pathname = usePathname();
     const params = useParams();
     const router = useRouter();
@@ -60,15 +75,8 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
     const displayName = schoolName || "Preschool ERP";
 
     const checkAccess = (permissionKey: string) => {
-        // 1. Super Admins/Admins have full access
         if (user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") return true;
-
-        // 2. Staff without role? Maybe restricted or full? 
-        // Assuming restricted default: if no role, no access (except dashboard?)
         if (!user?.customRole) return permissionKey === "dashboard";
-
-        // 3. Check custom permissions
-        // Parse permissions from JSON string if needed (Prisma might return string or object depending on driver)
         let perms: any[] = [];
         try {
             perms = typeof user.customRole.permissions === 'string'
@@ -77,14 +85,8 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         } catch (e) {
             return false;
         }
-
         if (!perms || !Array.isArray(perms)) return false;
-
-        // Check if user has "view" or any access to the module
-        // Permission structure: { module: 'students', actions: ['view', 'create'] }
         const modulePerm = perms.find(p => p.module === permissionKey || p.module?.startsWith(permissionKey + "."));
-
-        // Return true if any permission exists for this module (checking for 'view' specifically is safer)
         return !!modulePerm?.actions?.includes("view");
     };
 
@@ -122,41 +124,72 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
             href: `/s/${slug}/students`,
             icon: GraduationCap,
             children: [
-                { name: "All Students", href: `/s/${slug}/students`, icon: Users }, // Key: students or students.profiles
-                { name: "Attendance", href: `/s/${slug}/students/attendance`, icon: Clock }, // Key: students.attendance
-                { name: "Progress Reports", href: `/s/${slug}/students/reports`, icon: FileSpreadsheet }, // Key: students.reports
+                { name: "All Students", href: `/s/${slug}/students`, icon: Users },
+                { name: "Attendance", href: `/s/${slug}/students/attendance`, icon: Clock },
+                { name: "Health Records", href: `/s/${slug}/students/health`, icon: Activity },
+                { name: "Progress Reports", href: `/s/${slug}/students/reports`, icon: FileSpreadsheet },
+                { name: "ID Cards", href: `/s/${slug}/students/id-cards`, icon: CreditCard },
             ]
         },
-        { name: "Classes", href: `/s/${slug}/academics/classes`, icon: Layers }, // Key: academics.classes
-        { name: "Timetable", href: `/s/${slug}/academics/timetable`, icon: Clock }, // Key: academics.timetable
-        { name: "Diary", href: `/s/${slug}/diary`, icon: NotebookPen }, // Key: diary
-        { name: "Curriculum", href: `/s/${slug}/curriculum`, icon: FileText }, // Key: academics.curriculum
+        { name: "Classes", href: `/s/${slug}/academics/classes`, icon: Layers },
+        { name: "Timetable", href: `/s/${slug}/academics/timetable`, icon: Clock },
+        { name: "Diary", href: `/s/${slug}/diary`, icon: NotebookPen },
+        { name: "Curriculum", href: `/s/${slug}/curriculum`, icon: FileText },
         {
             name: "Staff",
             href: `/s/${slug}/staff`,
             icon: Briefcase,
             children: [
-                { name: "Staff Directory", href: `/s/${slug}/staff`, icon: Users }, // Key: staff.directory
-                { name: "Attendance", href: `/s/${slug}/staff/attendance`, icon: Clock }, // Key: staff.attendance
-                { name: "Payroll", href: `/s/${slug}/staff/payroll`, icon: Banknote }, // Key: staff.payroll
+                { name: "Staff Directory", href: `/s/${slug}/staff`, icon: Users },
+                { name: "Attendance", href: `/s/${slug}/staff/attendance`, icon: Clock },
+                { name: "Payroll", href: `/s/${slug}/staff/payroll`, icon: Banknote },
             ]
         },
-        { name: "Billing", href: `/s/${slug}/billing`, icon: CreditCard }, // Key: billing
-        { name: "Inventory", href: `/s/${slug}/inventory`, icon: Package }, // Key: inventory
-        { name: "Transport", href: `/s/${slug}/transport`, icon: Bus }, // Key: transport
-        { name: "Library", href: `/s/${slug}/library`, icon: BookOpen }, // Key: library
-        { name: "Documents", href: `/s/${slug}/documents`, icon: Folder }, // Key: documents
-        { name: "Communication", href: `/s/${slug}/communication`, icon: MessageCircle }, // Key: communication
-        { name: "Marketing Tools", href: `/s/${slug}/marketing`, icon: Layers }, // Key: marketing
-        { name: "Roles & Permissions", href: `/s/${slug}/roles`, icon: Shield }, // Key: settings (grouped with settings usually, or separate 'roles')
-        { name: "Settings", href: `/s/${slug}/settings`, icon: Settings }, // Key: settings
+        { name: "Billing", href: `/s/${slug}/billing`, icon: CreditCard },
+        { name: "Inventory", href: `/s/${slug}/inventory`, icon: Package },
+        {
+            name: "Transport",
+            href: `/s/${slug}/transport`,
+            icon: Bus,
+            children: [
+                { name: "Transport Dashboard", href: `/s/${slug}/transport`, icon: LayoutDashboard },
+                { name: "Route", href: `/s/${slug}/transport/route/routes`, icon: MapPin },
+                { name: "Application", href: `/s/${slug}/transport/application/apply`, icon: FileText },
+                { name: "Fleet", href: `/s/${slug}/transport/fleet/vehicles`, icon: Bus },
+                { name: "Analytics & Reports", href: `/s/${slug}/transport/reports/daily`, icon: TrendingUp },
+                { name: "Expense Tracking", href: `/s/${slug}/transport/expenses`, icon: Banknote },
+            ]
+        },
+        { name: "Library", href: `/s/${slug}/library`, icon: BookOpen },
+        { name: "Training Center", href: `/s/${slug}/training`, icon: School },
+        { name: "Documents", href: `/s/${slug}/documents`, icon: Folder },
+        { name: "Communication", href: `/s/${slug}/communication`, icon: MessageCircle },
+        { name: "Marketing Tools", href: `/s/${slug}/marketing`, icon: Layers },
+        { name: "Roles & Permissions", href: `/s/${slug}/roles`, icon: Shield },
+        {
+            name: "Settings", href: `/s/${slug}/settings`, icon: Settings, children: [
+                { name: "Institutional Identity", href: `/s/${slug}/settings/identity`, icon: Building2 },
+                { name: "Academic Years", href: `/s/${slug}/settings/academic-years`, icon: CalendarDays },
+                { name: "Branch Management", href: `/s/${slug}/settings/branches`, icon: Building },
+                { name: "Location & Physicality", href: `/s/${slug}/settings/location`, icon: MapPin },
+                { name: "Fee Configuration", href: `/s/${slug}/settings/fees`, icon: Wallet },
+                { name: "System Access Control", href: `/s/${slug}/settings/admin`, icon: ShieldCheck },
+                { name: "Biometric Integration", href: `/s/${slug}/settings/biometric`, icon: Fingerprint },
+                { name: "Attendance & Leaves", href: `/s/${slug}/settings/leaves`, icon: Palmtree },
+                { name: "Payroll & Disbursement", href: `/s/${slug}/settings/payroll`, icon: Banknote },
+                { name: "Regional Operations", href: `/s/${slug}/settings/config`, icon: Settings },
+                { name: "Connectors & APIs", href: `/s/${slug}/settings/integrations`, icon: Zap },
+                { name: "Subscription & Plan", href: `/s/${slug}/settings/subscription`, icon: CreditCard },
+                { name: "ID Card Templates", href: `/s/${slug}/settings/id-cards`, icon: CreditCard },
+            ]
+        },
     ];
 
-    // Map Nav Names to Permission Keys
+    // Permission map
     const navPermissionMap: Record<string, string> = {
         "Dashboard": "dashboard",
         "Admissions": "admissions",
-        "AI Dashboard": "admissions.dashboard", // Using generic permissions for now
+        "AI Dashboard": "admissions.dashboard",
         "Application Pipeline": "admissions.pipeline",
         "Inquiry Dashboard": "admissions.inquiry.dashboard",
         "Leads (Pipeline)": "admissions.inquiry.pipeline",
@@ -166,34 +199,53 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         "WhatsApp Automation": "admissions.inquiry.automation",
         "Template Library": "admissions.inquiry.templates",
         "Reports": "admissions.inquiry.reports",
-        "Inquiry Settings": "admissions.inquiry.settings", // Note: This might overlap with global settings
+        "Inquiry Settings": "admissions.inquiry.settings",
         "AI Configuration": "admissions.settings",
-        "Students": "students", // Parent check
+        "Students": "students",
         "All Students": "students.profiles",
-        "Attendance": "students.attendance", // Context dependent? But usually student attendance
+        "Attendance": "students.attendance",
+        "Health Records": "students.health",
         "Classroom": "academics.classes",
         "Classes": "academics.classes",
         "Timetable": "academics.timetable",
         "Diary": "diary",
         "Curriculum": "academics.curriculum",
-        "Staff": "staff", // Parent
+        "Staff": "staff",
         "Staff Directory": "staff.directory",
-        "Staff Attendance": "staff.attendance", // Fix name match in loop
+        "Staff Attendance": "staff.attendance",
         "Payroll": "staff.payroll",
         "Billing": "billing",
         "Inventory": "inventory",
         "Transport": "transport",
+        "Transport Dashboard": "transport",
+        "Route": "transport.routes",
+        "Application": "transport.apply",
+        "Fleet": "transport.vehicles",
+        "Analytics & Reports": "transport.reports",
+        "Expense Tracking": "transport.expenses",
         "Library": "library",
+        "Training Center": "training",
         "Documents": "documents",
         "Communication": "communication",
         "Marketing Tools": "marketing",
-        "Roles & Permissions": "settings", // Only admins/settings access should see roles
+        "Roles & Permissions": "settings",
+        "ID Cards": "students.idcards",
+        "ID Card Templates": "settings.idcards",
+        "Institutional Identity": "settings.identity",
+        "Biometric Integration": "settings.biometric",
+        "Location & Physicality": "settings.location",
+        "Attendance & Leaves": "settings.leaves",
+        "System Access Control": "settings.admin",
+        "Payroll & Disbursement": "settings.payroll",
+        "Regional Operations": "settings.config",
+        "Connectors & APIs": "settings.integrations",
+        "Academic Years": "settings.academicyears",
+        "Fee Configuration": "settings.fees",
+        "Branch Management": "settings.branches",
+        "Subscription & Plan": "settings.subscription",
         "Settings": "settings"
     };
 
-    // In map logic below we can use specific handling or just ensure unique names or rely on context
-
-    // Check if module is enabled at SCHOOL level
     const isModuleEnabled = (permissionKey: string) => {
         if (!permissionKey) return true;
         if (!Array.isArray(enabledModules) || enabledModules.length === 0) return true;
@@ -201,202 +253,232 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
     };
 
     const navigation = rawNavigation.reduce((acc: NavItem[], item) => {
-        // 1. Check parent permission
-        // Special case: For groups like "Students", if any child is visible, show parent? 
-        // OR check generic "students" permission?
-        // Let's check generic first.
-
         const permKey = navPermissionMap[item.name];
-
-        // Check school-level permission first
         if (permKey && !isModuleEnabled(permKey)) return acc;
-
         const hasDirectAccess = permKey ? checkAccess(permKey) : false;
 
         if (item.children) {
-            // Filter children
             const visibleChildren = item.children.filter(child => {
-                // Special handling for Attendance which appears twice
                 let childKey = "";
                 if (child.name === "Attendance" && item.name === "Students") childKey = "students.attendance";
                 else if (child.name === "Attendance" && item.name === "Staff") {
-                    // Always allow Staff to see their own attendance logs
                     if (user?.role === "STAFF") return true;
                     childKey = "staff.attendance";
                 }
                 else childKey = navPermissionMap[child.name];
-
-                // Check school-level for child
                 if (!isModuleEnabled(childKey)) return false;
-
                 return checkAccess(childKey);
             });
-
             if (visibleChildren.length > 0) {
-                // If children exist, show parent (even if direct parent view is false, usually UI implies expand capability)
                 acc.push({ ...item, children: visibleChildren });
             }
         } else {
-            // Single item
             if (hasDirectAccess) {
                 acc.push(item);
             }
         }
-
         return acc;
     }, []);
 
     return (
-        <div className="hidden border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 lg:block lg:w-72">
-            <div className="flex h-full flex-col">
-                {/* Logo */}
-                <div className="flex h-28 items-center border-b border-zinc-200 dark:border-zinc-800 justify-center">
-                    <Link href={`/s/${slug}/dashboard`} className="flex items-center justify-center w-full h-full group overflow-hidden">
-                        {logo ? (
-                            <img
-                                src={logo}
-                                alt={displayName}
-                                className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-105"
-                            />
-                        ) : (
-                            <div className="flex flex-row items-center gap-3">
-                                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-lg shadow-brand/20">
-                                    <span className="text-2xl font-black">{displayName[0]}</span>
-                                </div>
-                                <span className="text-zinc-900 dark:text-zinc-50 font-bold truncate leading-tight transition-colors">
-                                    {displayName}
-                                </span>
-                            </div>
+        <>
+            {/* Mobile Overlay */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 z-[140] bg-black/30 backdrop-blur-sm lg:hidden"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+
+            <div className={cn(
+                "fixed inset-y-0 left-0 z-[150] flex flex-col bg-white transition-all duration-300 ease-in-out after:absolute after:right-0 after:top-[94px] after:bottom-0 after:w-px after:bg-zinc-200/80",
+                isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+                isCollapsed ? "lg:w-[100px]" : "lg:w-[272px]",
+                "w-[272px]" // Mobile width
+            )}>
+                <div className="flex h-full flex-col">
+
+                    {/* ─── Floating Collapse Toggle ─── */}
+                    <button
+                        onClick={toggleCollapse}
+                        className={cn(
+                            "absolute -right-3 top-[calc(50%-200px)] z-[160] hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-brand bg-brand text-white shadow-md transition-all hover:bg-brand/90 lg:flex",
+                            isCollapsed ? "" : ""
                         )}
-                    </Link>
-                </div>
+                        title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                    >
+                        {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                    </button>
 
-                {/* Navigation */}
-                <div className="flex-1 overflow-y-auto py-6">
-                    <nav className="space-y-1 px-3">
-                        {navigation.map((item) => {
-                            const isGroup = !!item.children;
-                            const isActive = isGroup
-                                ? pathname.startsWith(item.href)
-                                : pathname === item.href;
-                            const isExpanded = expandedGroups[item.name];
-
-                            // For single items
-                            if (!isGroup) {
-                                return (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        className={cn(
-                                            "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                                            isActive
-                                                ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand"
-                                                : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
-                                        )}
-                                    >
-                                        <item.icon
-                                            className={cn(
-                                                "h-5 w-5 flex-shrink-0 transition-colors",
-                                                isActive
-                                                    ? "text-brand"
-                                                    : "text-zinc-400 group-hover:text-zinc-900 dark:text-zinc-500 dark:group-hover:text-zinc-50"
-                                            )}
-                                        />
-                                        {item.name}
-                                    </Link>
-                                );
-                            }
-
-                            // For grouped items (Tree structure)
-                            return (
-                                <div key={item.name}>
-                                    <button
-                                        onClick={() => toggleGroup(item.name)}
-                                        className={cn(
-                                            "group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                                            isActive && !isExpanded
-                                                ? "bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand" // Highlight parent if active child but collapsed
-                                                : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <item.icon
-                                                className={cn(
-                                                    "h-5 w-5 flex-shrink-0 transition-colors",
-                                                    (isActive && !isExpanded)
-                                                        ? "text-brand"
-                                                        : "text-zinc-400 group-hover:text-zinc-900 dark:text-zinc-500 dark:group-hover:text-zinc-50"
-                                                )}
-                                            />
-                                            {item.name}
-                                        </div>
-                                        {isExpanded ? (
-                                            <ChevronDown className="h-4 w-4 text-zinc-400" />
-                                        ) : (
-                                            <ChevronRight className="h-4 w-4 text-zinc-400" />
-                                        )}
-                                    </button>
-
-                                    {/* Children */}
-                                    {isExpanded && (
-                                        <div className="mt-1 space-y-1 pl-4">
-                                            {item.children!.map((child) => {
-                                                const isChildActive = pathname === child.href; // Exact match or startWith depending on pref
-                                                return (
-                                                    <Link
-                                                        key={child.name}
-                                                        href={child.href}
-                                                        className={cn(
-                                                            "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 border-l-2 ml-2",
-                                                            isChildActive
-                                                                ? "border-brand bg-brand/10 text-brand dark:bg-brand/10 dark:text-brand"
-                                                                : "border-transparent text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
-                                                        )}
-                                                    >
-                                                        {/* Optional: No icon for sub-items to keep clean, or use smaller icon */}
-                                                        <span>{child.name}</span>
-                                                    </Link>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                    {/* ─── Logo Section ─── */}
+                    <div className={cn(
+                        "flex items-center justify-center border-b border-brand/10 bg-brand transition-all",
+                        isCollapsed ? "h-[94px] px-2" : "h-[94px] px-4"
+                    )}>
+                        <Link href={`/s/${slug}/dashboard`} className="flex h-full w-full items-center justify-center group">
+                            {logo ? (
+                                <img
+                                    src={logo}
+                                    alt={displayName}
+                                    className="h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                                />
+                            ) : (
+                                <div
+                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white text-brand shadow-lg transition-transform duration-300 group-hover:scale-105"
+                                >
+                                    <span className="text-xl font-black">
+                                        {displayName[0]}
+                                    </span>
                                 </div>
-                            );
-                        })}
-                    </nav>
-                </div>
+                            )}
+                        </Link>
 
-                {/* User Profile Snippet (Bottom) */}
-                <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand/10 text-brand">
-                                <span className="text-sm font-bold">
-                                    {(user?.firstName?.[0] || "U").toUpperCase()}
-                                </span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50 truncate max-w-[120px]">
-                                    {user?.firstName} {user?.lastName}
-                                </span>
-                                <span className="text-xs text-zinc-500 dark:text-zinc-400 capitalize">
-                                    {user?.role?.toLowerCase() || "Staff"}
-                                </span>
-                            </div>
-                        </div>
-                        <button
-                            onClick={async () => {
-                                await clearUserSessionAction();
-                                router.push(`/school-login`);
-                            }}
-                            className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 hover:text-red-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-red-400 transition-colors"
-                            title="Sign out"
-                        >
-                            <LogOut className="h-5 w-5" />
+                        {/* Mobile Close */}
+                        <button onClick={() => setIsOpen(false)} className="lg:hidden absolute top-4 right-4 p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+                            <X className="h-5 w-5" />
                         </button>
                     </div>
-                </div>
-            </div>
-        </div>
+
+                    {/* ─── Navigation ─── */}
+                    <div className="flex-1 overflow-y-auto py-4 scrollbar-thin">
+                        <nav className="space-y-0.5 px-3">
+                            {navigation.map((item) => {
+                                const isGroup = !!item.children;
+                                const isActive = isGroup
+                                    ? pathname.startsWith(item.href)
+                                    : pathname === item.href;
+                                const isExpanded = expandedGroups[item.name];
+
+                                // ── Single Item ──
+                                if (!isGroup) {
+                                    return (
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            title={isCollapsed ? item.name : ""}
+                                            className={cn(
+                                                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200",
+                                                isActive
+                                                    ? "bg-brand text-white shadow-md shadow-brand/20"
+                                                    : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900",
+                                                isCollapsed && "justify-center px-0"
+                                            )}
+                                        >
+                                            <item.icon
+                                                className={cn(
+                                                    "h-[18px] w-[18px] flex-shrink-0 transition-colors",
+                                                    isActive
+                                                        ? "text-white"
+                                                        : "text-zinc-400 group-hover:text-zinc-600"
+                                                )}
+                                            />
+                                            {!isCollapsed && <span>{item.name}</span>}
+                                        </Link>
+                                    );
+                                }
+
+                                // ── Group Item ──
+                                return (
+                                    <div key={item.name}>
+                                        <button
+                                            onClick={() => toggleGroup(item.name)}
+                                            title={isCollapsed ? item.name : ""}
+                                            className={cn(
+                                                "group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200",
+                                                isActive && !isExpanded
+                                                    ? "bg-brand text-white shadow-md shadow-brand/20"
+                                                    : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900",
+                                                isCollapsed && "justify-center px-0"
+                                            )}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <item.icon
+                                                    className={cn(
+                                                        "h-[18px] w-[18px] flex-shrink-0 transition-colors",
+                                                        (isActive && !isExpanded)
+                                                            ? "text-white"
+                                                            : "text-zinc-400 group-hover:text-zinc-600"
+                                                    )}
+                                                />
+                                                {!isCollapsed && <span>{item.name}</span>}
+                                            </div>
+                                            {!isCollapsed && (
+                                                <ChevronDown
+                                                    className={cn(
+                                                        "h-4 w-4 text-zinc-400 transition-transform duration-200",
+                                                        isExpanded ? "rotate-0" : "-rotate-90"
+                                                    )}
+                                                />
+                                            )}
+                                        </button>
+
+                                        {/* Children */}
+                                        {isExpanded && !isCollapsed && (
+                                            <div className="mt-0.5 ml-[22px] pl-4 border-l border-zinc-200/80 space-y-0.5">
+                                                {item.children!.map((child) => {
+                                                    const isChildActive = pathname === child.href;
+                                                    return (
+                                                        <Link
+                                                            key={child.name}
+                                                            href={child.href}
+                                                            className={cn(
+                                                                "block px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200",
+                                                                isChildActive
+                                                                    ? "text-brand bg-brand/10 font-bold"
+                                                                    : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800"
+                                                            )}
+                                                        >
+                                                            {child.name}
+                                                        </Link>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </nav>
+                    </div>
+
+                    {/* ─── User Profile (Bottom) ─── */}
+                    <div className="border-t border-zinc-100 p-3">
+                        <div className={cn(
+                            "flex items-center",
+                            isCollapsed ? "justify-center" : "justify-between"
+                        )}>
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="flex h-9 w-9 items-center justify-center rounded-full text-white text-sm font-bold flex-shrink-0 bg-indigo-600"
+                                >
+                                    {(user?.firstName?.[0] || "U").toUpperCase()}
+                                </div>
+                                {!isCollapsed && (
+                                    <div className="flex flex-col overflow-hidden">
+                                        <span className="text-sm font-semibold text-zinc-800 truncate max-w-[130px] leading-tight">
+                                            {user?.firstName} {user?.lastName}
+                                        </span>
+                                        <span className="text-xs text-zinc-400 capitalize leading-tight">
+                                            {user?.role?.toLowerCase() || "Staff"}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            {!isCollapsed && (
+                                <button
+                                    onClick={async () => {
+                                        await clearUserSessionAction();
+                                        router.push(`/school-login`);
+                                    }}
+                                    className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 hover:text-red-500 transition-colors"
+                                    title="Sign out"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div >
+            </div >
+        </>
     );
 }

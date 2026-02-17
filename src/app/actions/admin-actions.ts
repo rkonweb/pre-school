@@ -2,122 +2,124 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { validateUserSchoolAction } from "./session-actions";
+import { createAdminSchema, updateAdminSchema } from "@/lib/schemas/admin-schemas";
+import { logAuditEvent, AuditEventType } from "@/lib/audit-logger";
 
-export async function getSchoolAdminsAction(schoolId: string) {
+export async function getSchoolAdminsAction(schoolSlug: string) {
     try {
-        if (!schoolId) {
-            return { success: false, error: "School ID is required" };
-        }
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
 
-        const admins: any[] = await prisma.$queryRawUnsafe(
-            `SELECT * FROM User WHERE schoolId = ? AND role = 'ADMIN' ORDER BY createdAt DESC`,
-            schoolId
-        );
+        const admins = await prisma.user.findMany({
+            where: {
+                school: { slug: schoolSlug },
+                role: "ADMIN"
+            },
+            orderBy: { createdAt: 'desc' }
+        });
 
-        return {
-            success: true,
-            data: admins.map(admin => ({
-                ...admin,
-                joiningDate: admin.joiningDate ? new Date(admin.joiningDate) : null,
-                dateOfBirth: admin.dateOfBirth ? new Date(admin.dateOfBirth) : null,
-                createdAt: new Date(admin.createdAt),
-                updatedAt: new Date(admin.updatedAt),
-            }))
-        };
+        return { success: true, data: admins };
     } catch (error: any) {
         console.error("getSchoolAdminsAction Error:", error);
         return { success: false, error: error.message };
     }
 }
 
-export async function createAdminAction(schoolId: string, data: {
-    mobile: string;
-    email?: string;
-    firstName: string;
-    lastName: string;
-    designation?: string;
-    department?: string;
-}) {
-    try {
-        // Check if mobile already exists
-        const existing: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id FROM User WHERE mobile = ?`,
-            data.mobile
-        );
+export async function createAdminAction(schoolSlug: string, data: unknown) {
+    // 1. Zod Validation
+    const parsed = createAdminSchema.safeParse(data);
+    if (!parsed.success) {
+        return { success: false, error: parsed.error.issues[0].message };
+    }
 
-        if (existing.length > 0) {
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        // 1. Get School ID from Slug
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug },
+            select: { id: true }
+        });
+        if (!school) return { success: false, error: "School not found" };
+
+        // 2. Check Uniqueness
+        const existing = await prisma.user.findFirst({
+            where: { mobile: parsed.data.mobile }
+        });
+
+        if (existing) {
             return { success: false, error: "Mobile number already registered" };
         }
 
-        const id = Math.random().toString(36).substr(2, 9);
+        // 3. Create Admin
+        const newUser = await prisma.user.create({
+            data: {
+                mobile: parsed.data.mobile,
+                email: parsed.data.email || null,
+                firstName: parsed.data.firstName,
+                lastName: parsed.data.lastName,
+                designation: parsed.data.designation || null,
+                department: parsed.data.department || null,
+                role: "ADMIN",
+                schoolId: school.id,
+                status: "ACTIVE",
+                // Default password or auth method handling should be here, 
+                // but for now we follow the existing pattern (likely OTP only)
+            }
+        });
 
-        await prisma.$executeRawUnsafe(
-            `INSERT INTO User (id, mobile, email, firstName, lastName, designation, department, role, schoolId, status, createdAt, updatedAt)
-             VALUES (?, ?, ?, ?, ?, ?, ?, 'ADMIN', ?, 'ACTIVE', datetime('now'), datetime('now'))`,
-            id,
-            data.mobile,
-            data.email || null,
-            data.firstName,
-            data.lastName,
-            data.designation || null,
-            data.department || null,
-            schoolId
+        await logAuditEvent(
+            AuditEventType.ADMIN_CREATED,
+            `Admin created: ${newUser.firstName} ${newUser.lastName}`,
+            { createdAdminId: newUser.id },
+            auth.user?.id,
+            school.id
         );
 
-        revalidatePath(`/s/[slug]/settings/admin`);
-        return { success: true, data: { id } };
+        revalidatePath(`/s/${schoolSlug}/settings/admin`);
+        return { success: true, data: newUser };
     } catch (error: any) {
         console.error("createAdminAction Error:", error);
         return { success: false, error: error.message };
     }
 }
 
-export async function updateAdminAction(userId: string, data: {
-    email?: string;
-    firstName?: string;
-    lastName?: string;
-    designation?: string;
-    department?: string;
-    status?: string;
-}) {
+export async function updateAdminAction(schoolSlug: string, userId: string, data: unknown) {
+    // 1. Zod Validation
+    const parsed = updateAdminSchema.safeParse(data);
+    if (!parsed.success) {
+        return { success: false, error: parsed.error.issues[0].message };
+    }
+
     try {
-        const updates: string[] = [];
-        const values: any[] = [];
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
 
-        if (data.email !== undefined) {
-            updates.push("email = ?");
-            values.push(data.email);
-        }
-        if (data.firstName !== undefined) {
-            updates.push("firstName = ?");
-            values.push(data.firstName);
-        }
-        if (data.lastName !== undefined) {
-            updates.push("lastName = ?");
-            values.push(data.lastName);
-        }
-        if (data.designation !== undefined) {
-            updates.push("designation = ?");
-            values.push(data.designation);
-        }
-        if (data.department !== undefined) {
-            updates.push("department = ?");
-            values.push(data.department);
-        }
-        if (data.status !== undefined) {
-            updates.push("status = ?");
-            values.push(data.status);
-        }
+        // Prevent updating self if strict rules needed, but generally allowed for admins
 
-        updates.push("updatedAt = datetime('now')");
-        values.push(userId);
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                email: parsed.data.email,
+                firstName: parsed.data.firstName,
+                lastName: parsed.data.lastName,
+                designation: parsed.data.designation,
+                department: parsed.data.department,
+                status: parsed.data.status, // ACTIVE / INACTIVE
+            }
+        });
 
-        await prisma.$executeRawUnsafe(
-            `UPDATE User SET ${updates.join(", ")} WHERE id = ?`,
-            ...values
+        await logAuditEvent(
+            AuditEventType.SETTINGS_CHANGED,
+            `Admin updated: ${userId}`,
+            { updatedAdminId: userId, changes: parsed.data },
+            auth.user?.id,
+            auth.user?.schoolId || undefined
         );
 
-        revalidatePath(`/s/[slug]/settings/admin`);
+        revalidatePath(`/s/${schoolSlug}/settings/admin`);
         return { success: true };
     } catch (error: any) {
         console.error("updateAdminAction Error:", error);
@@ -125,14 +127,28 @@ export async function updateAdminAction(userId: string, data: {
     }
 }
 
-export async function deleteAdminAction(userId: string) {
+export async function deleteAdminAction(schoolSlug: string, userId: string) {
     try {
-        await prisma.$executeRawUnsafe(
-            `DELETE FROM User WHERE id = ?`,
-            userId
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        if (auth.user?.id === userId) {
+            return { success: false, error: "Cannot delete yourself." };
+        }
+
+        await prisma.user.delete({
+            where: { id: userId }
+        });
+
+        await logAuditEvent(
+            AuditEventType.ADMIN_DELETED,
+            `Admin deleted: ${userId}`,
+            { deletedAdminId: userId },
+            auth.user?.id,
+            auth.user?.schoolId || undefined
         );
 
-        revalidatePath(`/s/[slug]/settings/admin`);
+        revalidatePath(`/s/${schoolSlug}/settings/admin`);
         return { success: true };
     } catch (error: any) {
         console.error("deleteAdminAction Error:", error);
@@ -140,26 +156,34 @@ export async function deleteAdminAction(userId: string) {
     }
 }
 
-export async function toggleAdminStatusAction(userId: string) {
+export async function toggleAdminStatusAction(schoolSlug: string, userId: string) {
     try {
-        const users: any[] = await prisma.$queryRawUnsafe(
-            `SELECT status FROM User WHERE id = ?`,
-            userId
-        );
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
 
-        if (users.length === 0) {
-            return { success: false, error: "User not found" };
+        if (auth.user?.id === userId) {
+            return { success: false, error: "Cannot deactivate yourself." };
         }
 
-        const newStatus = users[0].status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) return { success: false, error: "User not found" };
 
-        await prisma.$executeRawUnsafe(
-            `UPDATE User SET status = ?, updatedAt = datetime('now') WHERE id = ?`,
-            newStatus,
-            userId
+        const newStatus = user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { status: newStatus }
+        });
+
+        await logAuditEvent(
+            AuditEventType.SETTINGS_CHANGED,
+            `Admin status toggled to ${newStatus}`,
+            { targetUserId: userId, newStatus },
+            auth.user?.id,
+            auth.user?.schoolId || undefined
         );
 
-        revalidatePath(`/s/[slug]/settings/admin`);
+        revalidatePath(`/s/${schoolSlug}/settings/admin`);
         return { success: true, data: { status: newStatus } };
     } catch (error: any) {
         console.error("toggleAdminStatusAction Error:", error);

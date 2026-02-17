@@ -36,7 +36,7 @@ export default function AdminDashboardPage() {
         },
         {
             title: "Monthly Revenue",
-            value: `$${stats?.monthlyRevenue.toLocaleString() || "0"}`,
+            value: `₹${stats?.monthlyRevenue.toLocaleString() || "0"}`,
             sub: "Estimated",
             icon: TrendingUp,
             color: "green"

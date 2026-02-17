@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { uploadToGCS } from '@/lib/gcs-upload';
 import { GCS_CONFIG } from '@/lib/gcs-config';
+import { decrypt } from "@/lib/auth-jose";
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
-import { decrypt } from "@/lib/auth-jose";
-
 export async function POST(request: NextRequest) {
     try {
-        // Authenticate Request
-        const adminSession = request.cookies.get("admin_session")?.value;
-        const userSession = request.cookies.get("userId")?.value;
-        const teacherSession = request.cookies.get("teacher_session")?.value;
+        // Authenticate Request - Next.js 15 Async Cookies
+        const cookieStore = await cookies();
+        const adminSession = cookieStore.get("admin_session")?.value;
+        const userSession = cookieStore.get("userId")?.value;
+        const teacherSession = cookieStore.get("teacher_session")?.value;
+        const dashboardSession = cookieStore.get("session")?.value;
 
         let isAuthenticated = false;
 
@@ -21,13 +23,19 @@ export async function POST(request: NextRequest) {
             if (payload?.role === "SUPER_ADMIN") isAuthenticated = true;
         }
 
-        // 2. Check User (Student/Parent) or Teacher - Strict checks should use session validation logic
-        // For now, checking existence to prevent public abuse, assuming middleware handles the creation validity
+        // 2. Check Dashboard Session (School Admin/Staff)
+        if (!isAuthenticated && dashboardSession) {
+            const payload = await decrypt(dashboardSession);
+            if (payload && payload.userId) isAuthenticated = true;
+        }
+
+        // 3. Fallback: User or Teacher session
         if (!isAuthenticated && (userSession || teacherSession)) {
             isAuthenticated = true;
         }
 
         if (!isAuthenticated) {
+            console.warn("Upload Unauth - Check Cookies names or session expiry.");
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 

@@ -139,7 +139,7 @@ export default function AdmissionDetailPage() {
 
     async function loadData() {
         setIsLoading(true);
-        const res = await getAdmissionAction(id);
+        const res = await getAdmissionAction(slug, id);
         if (res.success && res.admission) {
             const data = res.admission;
             if (data.dateOfBirth) {
@@ -296,7 +296,7 @@ export default function AdmissionDetailPage() {
                     loadData();
                 } else {
                     console.error("Approval Response Error:", res.error);
-                    toast.error(`Approval Failed: ${res.error}`);
+                    toast.error(`Approval Failed: ${'error' in res ? res.error : 'Unknown error'}`);
                 }
             } catch (err: any) {
                 console.error("Unexpected Approval Error:", err);
@@ -736,7 +736,7 @@ export default function AdmissionDetailPage() {
 
                     {/* Siblings Section (Right Panel) */}
                     {siblings.length > 0 && (
-                        <div className="bg-gradient-to-br from-brand to-brand/80 rounded-[32px] p-6 text-white shadow-xl shadow-brand/20">
+                        <div className="bg-gradient-to-br from-slate-700 via-slate-600 to-indigo-600 rounded-[32px] p-6 text-white shadow-xl shadow-slate-400/30">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                     <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/10">

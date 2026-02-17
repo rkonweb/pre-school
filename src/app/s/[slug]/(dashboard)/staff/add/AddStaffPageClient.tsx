@@ -14,9 +14,10 @@ interface AddStaffPageClientProps {
     genders: any[];
     subjects: any[];
     roles: any[];
+    branches: any[];
 }
 
-export function AddStaffPageClient({ slug, designations, departments, employmentTypes, bloodGroups, genders, subjects, roles }: AddStaffPageClientProps) {
+export function AddStaffPageClient({ slug, designations, departments, employmentTypes, bloodGroups, genders, subjects, roles, branches }: AddStaffPageClientProps) {
     const router = useRouter();
 
     return (
@@ -48,6 +49,7 @@ export function AddStaffPageClient({ slug, designations, departments, employment
                     genders={genders}
                     subjects={subjects}
                     roles={roles}
+                    branches={branches}
                     onCancel={() => router.push(`/s/${slug}/staff`)}
                     onSuccess={() => router.push(`/s/${slug}/staff`)}
                 />

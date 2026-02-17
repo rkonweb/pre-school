@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { acknowledgeDiaryEntryAction } from "@/app/actions/parent-actions";
+import { toast } from "sonner";
 
 export type ActivityType = "DIARY" | "ATTENDANCE" | "HOMEWORK";
 
@@ -31,14 +33,19 @@ interface ActivityCardProps {
     attachments?: string[];
     metadata?: {
         status?: string;
-        priority?: string;
+        priority?: 'URGENT' | 'HIGH' | 'NORMAL';
+        requiresAck?: boolean;
+        isAcknowledged?: boolean;
         dueDate?: string | Date;
         isSubmitted?: boolean;
     };
+    studentId?: string;
+    slug: string;
     index: number;
 }
 
-export const ActivityCard: React.FC<ActivityCardProps> = ({
+export const ActivityCard = ({
+    id,
     type,
     category,
     title,
@@ -47,8 +54,11 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     author,
     attachments = [],
     metadata,
+    studentId,
+    slug,
     index
-}) => {
+}: ActivityCardProps) => {
+    const [isAcknowledgeLoading, setIsAcknowledgeLoading] = React.useState(false);
     const date = new Date(timestamp);
 
     // Elegant theme mapping with High Contrast
@@ -99,7 +109,15 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                             {theme.icon}
                         </div>
                         <div>
-                            <h3 className="font-bold text-slate-800 text-[15px] leading-tight">{title}</h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-bold text-slate-800 text-[15px] leading-tight">{title}</h3>
+                                {metadata?.priority === 'URGENT' && (
+                                    <span className="flex items-center gap-1 bg-rose-50 text-rose-600 text-[8px] font-black px-1.5 py-0.5 rounded-md animate-pulse">
+                                        <AlertCircle className="w-2.5 h-2.5" />
+                                        URGENT
+                                    </span>
+                                )}
+                            </div>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider", theme.bg, theme.color)}>
                                     {category || type}
@@ -119,6 +137,45 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                     </p>
                 )}
 
+                {type === "DIARY" && metadata?.requiresAck && !metadata?.isAcknowledged && (
+                    <div className="ml-[52px] mb-4">
+                        <button
+                            disabled={isAcknowledgeLoading}
+                            className="w-full bg-summer-navy text-white text-xs font-black py-3 rounded-2xl shadow-lg shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                            onClick={async () => {
+                                if (!studentId) return;
+                                setIsAcknowledgeLoading(true);
+                                try {
+                                    const res = await acknowledgeDiaryEntryAction(slug, id, studentId);
+                                    if (res.success) {
+                                        toast.success("Successfully acknowledged");
+                                    } else {
+                                        toast.error(res.error || "Failed to acknowledge");
+                                    }
+                                } catch (error) {
+                                    toast.error("Something went wrong");
+                                } finally {
+                                    setIsAcknowledgeLoading(false);
+                                }
+                            }}
+                        >
+                            {isAcknowledgeLoading ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <CheckCircle2 className="w-4 h-4 text-summer-teal" />
+                            )}
+                            ACKNOWLEDGE RECEIPT
+                        </button>
+                    </div>
+                )}
+
+                {type === "DIARY" && metadata?.isAcknowledged && (
+                    <div className="ml-[52px] mb-4 flex items-center gap-2 p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Acknowledged by you</span>
+                    </div>
+                )}
+
                 {/* Metadata / Homework Status */}
                 {type === "HOMEWORK" && metadata?.dueDate && (
                     <div className="ml-[52px] bg-slate-50 rounded-xl p-3 border border-slate-100 flex items-center justify-between mb-3">
@@ -132,14 +189,28 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
                     </div>
                 )}
 
-                {/* Attachments */}
+                {/* Attachments with Thumbnails */}
                 {attachments.length > 0 && (
-                    <div className="ml-[52px] flex gap-2 mb-3">
-                        {attachments.map((url, i) => (
-                            <div key={i} className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
-                                <Paperclip className="w-5 h-5" />
-                            </div>
-                        ))}
+                    <div className="ml-[52px] flex flex-wrap gap-2 mb-3">
+                        {attachments.map((url, i) => {
+                            const isImage = url.match(/\.(jpg|jpeg|png|webp|gif)$/i);
+                            return (
+                                <div key={i} className="relative group">
+                                    <div className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 overflow-hidden transition-transform active:scale-95">
+                                        {isImage ? (
+                                            <img src={url} alt="attachment" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                        ) : (
+                                            <Paperclip className="w-5 h-5" />
+                                        )}
+                                    </div>
+                                    {isImage && (
+                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                            <Eye className="w-4 h-4 text-white" />
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
 

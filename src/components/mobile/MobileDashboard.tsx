@@ -9,7 +9,8 @@ import {
     Menu,
     MessageSquare,
     Bus,
-    Image as ImageIcon
+    Image as ImageIcon,
+    GraduationCap
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -63,8 +64,8 @@ export function MobileDashboard({
                             key={student.id}
                             onClick={() => setSelectedStudentId(student.id)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 border border-transparent ${selectedStudentId === student.id
-                                    ? "bg-white text-[var(--brand-color)] shadow-lg scale-105 font-bold border-white/50"
-                                    : "bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 border-white/10"
+                                ? "bg-white text-[var(--brand-color)] shadow-lg scale-105 font-bold border-white/50"
+                                : "bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 border-white/10"
                                 }`}
                         >
                             <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden border border-white/50">
@@ -97,8 +98,12 @@ export function MobileDashboard({
                             <span className="inline-block px-3 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-wider mb-2">
                                 {activeStudent.grade} • {activeStudent.admissionNumber}
                             </span>
-                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">{activeStudent.name}</h2>
-                            <p className="text-slate-400 text-xs font-medium mt-1">Class Teacher: Mrs. Sharma</p>
+                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">{activeStudent.firstName} {activeStudent.lastName}</h2>
+                            <p className="text-slate-400 text-xs font-medium mt-1">
+                                {activeStudent.classroom?.teacher
+                                    ? `Class Teacher: ${activeStudent.classroom.teacher.lastName || activeStudent.classroom.teacher.firstName}`
+                                    : "Classroom assigned"}
+                            </p>
                         </div>
                         <Link
                             href={`/${slug}/parent/mobile/dashboard/student/${activeStudent.id}`}
@@ -131,6 +136,8 @@ export function MobileDashboard({
                     </div>
                 </motion.div>
 
+                {/* Insights / Stats Grid (Previously Feature Grid) */}
+
                 {/* 3. Feature Grid - High Contrast & Elegant */}
                 <div>
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 pl-2">Quick Actions</h3>
@@ -144,12 +151,20 @@ export function MobileDashboard({
                             idx={0}
                         />
                         <FeatureCard
+                            href={`/${slug}/parent/mobile/chat`}
+                            icon={<MessageSquare className="w-6 h-6" />}
+                            title="Live Chat"
+                            subtitle="Teacher & Office"
+                            color="bg-teal-50 text-teal-600"
+                            idx={1}
+                        />
+                        <FeatureCard
                             href={`/${slug}/parent/mobile/transport?studentId=${activeStudent.id}`}
                             icon={<Bus className="w-6 h-6" />}
                             title="Bus Tracking"
                             subtitle="Live Location"
                             color="bg-amber-50 text-amber-600"
-                            idx={1}
+                            idx={2}
                         />
                         <FeatureCard
                             href={`/${slug}/parent/mobile/media?studentId=${activeStudent.id}`}
@@ -157,15 +172,15 @@ export function MobileDashboard({
                             title="Media Gallery"
                             subtitle="Photos & Videos"
                             color="bg-rose-50 text-rose-600"
-                            idx={2}
+                            idx={3}
                         />
                         <FeatureCard
-                            href="#"
-                            icon={<Calendar className="w-6 h-6" />}
-                            title="Timetable"
-                            subtitle="View Schedule"
-                            color="bg-emerald-50 text-emerald-600"
-                            idx={3}
+                            href={`/${slug}/parent/mobile/academic?studentId=${activeStudent.id}`}
+                            icon={<GraduationCap className="w-6 h-6" />}
+                            title="Academic"
+                            subtitle="Exams & Reports"
+                            color="bg-indigo-50 text-indigo-600"
+                            idx={4}
                         />
                     </div>
                 </div>
@@ -181,7 +196,7 @@ export function MobileDashboard({
                         {[1, 2, 3].map((_, i) => (
                             <div key={i} className="flex gap-4">
                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${i === 0 ? "bg-amber-50 text-amber-500" :
-                                        i === 1 ? "bg-emerald-50 text-emerald-500" : "bg-blue-50 text-blue-500"
+                                    i === 1 ? "bg-emerald-50 text-emerald-500" : "bg-blue-50 text-blue-500"
                                     }`}>
                                     {i === 0 ? <Bus className="w-6 h-6" /> : i === 1 ? <FileText className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
                                 </div>

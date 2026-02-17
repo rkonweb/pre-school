@@ -7,6 +7,8 @@ import { eachMonthOfInterval, format } from "date-fns";
 import { validateUserSchoolAction } from "./session-actions";
 import { verifyClassAccess } from "@/lib/access-control";
 
+import { validateBranchAccess } from "@/lib/branch-utils";
+
 export async function createFeeAction(slug: string, studentId: string, title: string, amount: number, dueDate: Date, description?: string, academicYearId?: string) {
     try {
         // PERMISSION CHECK
@@ -16,10 +18,15 @@ export async function createFeeAction(slug: string, studentId: string, title: st
 
         const student = await prisma.student.findUnique({
             where: { id: studentId },
-            select: { classroomId: true }
+            select: { classroomId: true, branchId: true }
         });
 
         if (!student) return { success: false, error: "Student not found" };
+
+        // Branch Access Check
+        if (!(await validateBranchAccess(currentUser, student.branchId))) {
+            return { success: false, error: "Access denied to this student's branch." };
+        }
 
         if (student.classroomId) {
             const hasAccess = await verifyClassAccess(currentUser.id, currentUser.role, student.classroomId);
@@ -36,7 +43,8 @@ export async function createFeeAction(slug: string, studentId: string, title: st
                 dueDate: new Date(dueDate),
                 status: "PENDING",
                 description,
-                academicYearId
+                academicYearId,
+                branchId: student.branchId
             }
         });
         return { success: true, data: fee };
@@ -53,12 +61,19 @@ export async function getStudentFeesAction(slug: string, studentId: string, acad
             const currentUser = auth.user;
             const student = await prisma.student.findUnique({
                 where: { id: studentId },
-                select: { classroomId: true }
+                select: { classroomId: true, branchId: true } // Fetch branchId too
             });
 
-            if (student && student.classroomId) {
-                const hasAccess = await verifyClassAccess(currentUser.id, currentUser.role, student.classroomId);
-                if (!hasAccess) return { success: true, data: [] }; // Hide
+            if (student) {
+                // Branch Access Check for viewing fees? Usually less strict, but good practice
+                if (!(await validateBranchAccess(currentUser, student.branchId))) {
+                    return { success: false, error: "Access denied." };
+                }
+
+                if (student.classroomId) {
+                    const hasAccess = await verifyClassAccess(currentUser.id, currentUser.role, student.classroomId);
+                    if (!hasAccess) return { success: true, data: [] }; // Hide
+                }
             }
         }
 
@@ -91,10 +106,14 @@ export async function recordPaymentAction(slug: string, feeId: string, amount: n
         // Trace fee -> student -> classroom
         const feeRecord = await prisma.fee.findUnique({
             where: { id: feeId },
-            include: { student: { select: { classroomId: true } } }
+            include: { student: { select: { classroomId: true, branchId: true } } }
         });
 
         if (!feeRecord) return { success: false, error: "Fee not found" };
+
+        if (!(await validateBranchAccess(currentUser, feeRecord.branchId || feeRecord.student.branchId))) {
+            return { success: false, error: "Access denied to this branch." };
+        }
 
         if (feeRecord.student?.classroomId) {
             const hasAccess = await verifyClassAccess(currentUser.id, currentUser.role, feeRecord.student.classroomId);
@@ -143,12 +162,21 @@ export async function recordPaymentAction(slug: string, feeId: string, amount: n
 
 export async function syncStudentFeesAction(studentId: string, schoolSlug: string, forceReset = false) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+        const currentUser = auth.user; // Assuming validateUserSchoolAction returns user
+
         const student = await prisma.student.findUnique({
             where: { id: studentId },
             include: { school: true, classroom: true }
         }) as any;
 
         if (!student) return { success: false, error: "Student not found" };
+
+        // Branch Check
+        if (currentUser && !(await validateBranchAccess(currentUser, student.branchId))) {
+            return { success: false, error: "Access denied to this branch." };
+        }
 
         // FALLBACK: If prisma client is out of sync and doesn't fetch new fields, use raw query
         if (student.promotedToClassroomId === undefined) {
@@ -252,7 +280,8 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
                                         amount,
                                         dueDate,
                                         status: "PENDING",
-                                        description: `Auto-generated from ${structure.name}`
+                                        description: `Auto-generated from ${structure.name}`,
+                                        branchId: student.branchId
                                     }
                                 });
                                 existingTitles.add(title.trim().toLowerCase());
@@ -283,7 +312,8 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
                                         amount,
                                         dueDate,
                                         status: "PENDING",
-                                        description: `Monthly fee from ${structure.name}`
+                                        description: `Monthly fee from ${structure.name}`,
+                                        branchId: student.branchId
                                     }
                                 });
                                 existingTitles.add(title.trim().toLowerCase());
@@ -303,7 +333,8 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
                                     amount,
                                     dueDate,
                                     status: "PENDING",
-                                    description: `Auto-generated from ${structure.name}`
+                                    description: `Auto-generated from ${structure.name}`,
+                                    branchId: student.branchId
                                 }
                             });
                             existingTitles.add(title.trim().toLowerCase());
@@ -342,7 +373,19 @@ export async function getFeeStructuresAction(schoolSlug: string) {
 export async function updateFeeAction(slug: string, id: string, data: any) {
     try {
         const auth = await validateUserSchoolAction(slug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        // Fetch fee to check branch
+        const feeRecord = await prisma.fee.findUnique({
+            where: { id },
+            select: { branchId: true }
+        });
+
+        if (!feeRecord) return { success: false, error: "Fee not found" };
+
+        if (!(await validateBranchAccess(auth.user, feeRecord.branchId))) {
+            return { success: false, error: "Access denied to this branch." };
+        }
 
         // Due Date is NOT updated here to ensure immutability after creation
         const fee = await prisma.fee.update({
@@ -362,7 +405,19 @@ export async function updateFeeAction(slug: string, id: string, data: any) {
 export async function deleteFeeAction(slug: string, id: string) {
     try {
         const auth = await validateUserSchoolAction(slug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        // Fetch fee to check branch
+        const feeRecord = await prisma.fee.findUnique({
+            where: { id },
+            select: { branchId: true }
+        });
+
+        if (!feeRecord) return { success: false, error: "Fee not found" };
+
+        if (!(await validateBranchAccess(auth.user, feeRecord.branchId))) {
+            return { success: false, error: "Access denied to this branch." };
+        }
 
         // Delete payments first
         await prisma.feePayment.deleteMany({

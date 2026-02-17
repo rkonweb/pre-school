@@ -54,7 +54,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 // Sortable Row Component
-function SortableRow({ plan, currency, onEdit, onDelete }: { plan: SubscriptionPlan, currency: string, onEdit: (p: SubscriptionPlan) => void, onDelete: (id: string) => void }) {
+function SortableRow({ plan, currency, onDelete }: { plan: SubscriptionPlan, currency: string, onDelete: (id: string) => void }) {
     const {
         attributes,
         listeners,
@@ -148,9 +148,12 @@ function SortableRow({ plan, currency, onEdit, onDelete }: { plan: SubscriptionP
             </td>
             <td className="px-4 py-3 text-right">
                 <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => onEdit(plan)} className="p-1.5 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Link
+                        href={`/admin/subscriptions/${plan.id}/edit`}
+                        className="p-1.5 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors inline-flex"
+                    >
                         <Edit2 className="h-4 w-4" />
-                    </button>
+                    </Link>
                     <button onClick={() => onDelete(plan.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                         <Trash2 className="h-4 w-4" />
                     </button>
@@ -163,7 +166,6 @@ function SortableRow({ plan, currency, onEdit, onDelete }: { plan: SubscriptionP
 export default function SubscriptionManagementPage() {
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isCreating, setIsCreating] = useState(false);
     const [currency, setCurrency] = useState("INR");
     const [stats, setStats] = useState({
         totalMRR: 0,
@@ -171,26 +173,6 @@ export default function SubscriptionManagementPage() {
         trialTenants: 0,
         churnRate: 0
     });
-
-    const [editingId, setEditingId] = useState<string | null>(null);
-
-    // Initial form state
-    const initialForm = {
-        name: "",
-        slug: "",
-        price: 0,
-        description: "",
-        tier: "free" as any,
-        features: "",
-        maxStudents: 0,
-        maxStaff: 0,
-        maxStorageGB: 0,
-        supportLevel: "community" as any,
-        includedModules: [] as string[]
-    };
-
-    // Form State
-    const [formData, setFormData] = useState(initialForm);
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -246,79 +228,18 @@ export default function SubscriptionManagementPage() {
         }
     };
 
-    const openCreateModal = () => {
-        setEditingId(null);
-        setFormData(initialForm);
-        setIsCreating(true);
-    };
-
-    const openEditModal = (plan: SubscriptionPlan) => {
-        setEditingId(plan.id);
-        setFormData({
-            name: plan.name,
-            slug: plan.slug,
-            price: plan.price,
-            description: plan.description || "",
-            tier: plan.tier,
-            features: plan.features.join(", "),
-            maxStudents: plan.limits.maxStudents,
-            maxStaff: plan.limits.maxStaff,
-            maxStorageGB: plan.limits.maxStorageGB,
-            supportLevel: plan.supportLevel,
-            includedModules: plan.includedModules || []
-        });
-        setIsCreating(true);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this plan?")) return;
         try {
-            const payload = {
-                name: formData.name,
-                slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-'),
-                price: Number(formData.price),
-                currency: currency,
-                billingPeriod: "monthly" as const,
-                description: formData.description,
-                features: formData.features.split(',').map(f => f.trim()).filter(Boolean),
-                limits: {
-                    maxStudents: Number(formData.maxStudents),
-                    maxStaff: Number(formData.maxStaff),
-                    maxStorageGB: Number(formData.maxStorageGB)
-                },
-                isActive: true,
-                tier: formData.tier,
-                supportLevel: formData.supportLevel,
-                includedModules: formData.includedModules
-            };
-
-            let res: any;
-            if (editingId) {
-                res = await updateSubscriptionPlanAction(editingId, payload);
-            } else {
-                res = await createSubscriptionPlanAction(payload);
-            }
-
+            const res = await deleteSubscriptionPlanAction(id);
             if (res.success) {
-                setIsCreating(false);
-                setFormData(initialForm);
                 loadPlans();
             } else {
-                alert(res.error || "Failed to save plan");
+                alert(res.error || "Failed to delete plan");
             }
         } catch (error) {
             console.error(error);
             alert("An unexpected error occurred");
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this plan?")) return;
-        try {
-            await deleteSubscriptionPlanAction(id);
-            loadPlans();
-        } catch (error) {
-            console.error(error);
         }
     };
 
@@ -409,7 +330,6 @@ export default function SubscriptionManagementPage() {
                                             key={plan.id}
                                             plan={plan}
                                             currency={currency}
-                                            onEdit={openEditModal}
                                             onDelete={handleDelete}
                                         />
                                     ))}
@@ -417,209 +337,6 @@ export default function SubscriptionManagementPage() {
                             </tbody>
                         </table>
                     </DndContext>
-                </div>
-            )}
-
-            {/* Create/Edit Modal */}
-            {isCreating && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-8">
-                        <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50 sticky top-0 z-10">
-                            <h3 className="font-bold text-lg text-zinc-900">{editingId ? 'Edit Subscription Plan' : 'New Subscription Plan'}</h3>
-                            <button onClick={() => setIsCreating(false)} className="text-zinc-400 hover:text-zinc-900">
-                                <XCircle className="h-5 w-5" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-
-                            {/* Basic Info */}
-                            <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-zinc-900 uppercase flex items-center gap-2">
-                                    <Settings className="h-4 w-4" /> Basic Details
-                                </h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">Plan Name</label>
-                                        <input
-                                            required
-                                            value={formData.name}
-                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                                            placeholder="e.g. Starter"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">Tier Type</label>
-                                        <select
-                                            value={formData.tier}
-                                            onChange={e => setFormData({ ...formData, tier: e.target.value as any })}
-                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                                        >
-                                            <option value="free">Free Tier</option>
-                                            <option value="basic">Basic</option>
-                                            <option value="premium">Premium</option>
-                                            <option value="enterprise">Enterprise</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">Price (Monthly {currency})</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            required
-                                            value={formData.price}
-                                            onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
-                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">Support Level</label>
-                                        <select
-                                            value={formData.supportLevel}
-                                            onChange={e => setFormData({ ...formData, supportLevel: e.target.value as any })}
-                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                                        >
-                                            <option value="community">Community / Self-Serve</option>
-                                            <option value="email">Email Support</option>
-                                            <option value="priority">Priority 24/7</option>
-                                            <option value="dedicated">Dedicated Manager</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase">Description</label>
-                                    <textarea
-                                        required
-                                        rows={2}
-                                        value={formData.description}
-                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                                        placeholder="Brief summary..."
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="h-px bg-zinc-100" />
-
-                            {/* Limits */}
-                            <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-zinc-900 uppercase flex items-center gap-2">
-                                    <Box className="h-4 w-4" /> Resource Limits
-                                </h4>
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">Max Students</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            required
-                                            value={formData.maxStudents}
-                                            onChange={e => setFormData({ ...formData, maxStudents: Number(e.target.value) })}
-                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">Max Staff</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            required
-                                            value={formData.maxStaff}
-                                            onChange={e => setFormData({ ...formData, maxStaff: Number(e.target.value) })}
-                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase">Storage (GB)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            required
-                                            value={formData.maxStorageGB}
-                                            onChange={e => setFormData({ ...formData, maxStorageGB: Number(e.target.value) })}
-                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="h-px bg-zinc-100" />
-
-                            {/* Modules */}
-                            <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-zinc-900 uppercase flex items-center gap-2">
-                                    <Settings className="h-4 w-4" /> Enabled Modules
-                                </h4>
-
-                                <div className="space-y-6">
-                                    {(Object.keys(MODULE_CATEGORIES) as Array<keyof typeof MODULE_CATEGORIES>).map(catKey => {
-                                        const categoryModules = ALL_MODULES.filter(m => m.category === catKey);
-                                        if (categoryModules.length === 0) return null;
-
-                                        return (
-                                            <div key={catKey} className="space-y-2">
-                                                <h5 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{MODULE_CATEGORIES[catKey]}</h5>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    {categoryModules.map(mod => (
-                                                        <label key={mod.id} className="flex items-start gap-3 p-3 rounded-xl border border-zinc-100 hover:bg-zinc-50 cursor-pointer transition-colors group">
-                                                            <div className={cn(
-                                                                "mt-0.5 h-4 w-4 rounded border flex items-center justify-center transition-colors shrink-0",
-                                                                formData.includedModules.includes(mod.id) ? "bg-blue-600 border-blue-600" : "border-zinc-300 bg-white group-hover:border-zinc-400"
-                                                            )}>
-                                                                {formData.includedModules.includes(mod.id) && <CheckCircle2 className="h-3 w-3 text-white" />}
-                                                            </div>
-                                                            <input
-                                                                type="checkbox"
-                                                                className="hidden"
-                                                                checked={formData.includedModules.includes(mod.id)}
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) setFormData(p => ({ ...p, includedModules: [...p.includedModules, mod.id] }));
-                                                                    else setFormData(p => ({ ...p, includedModules: p.includedModules.filter(x => x !== mod.id) }));
-                                                                }}
-                                                            />
-                                                            <div className="space-y-0.5">
-                                                                <span className="text-xs font-bold text-zinc-700 block">{mod.label}</span>
-                                                                <span className="text-[10px] text-zinc-400 block leading-snug">{mod.description}</span>
-                                                            </div>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-zinc-500 uppercase">Marketing Features (Display only)</label>
-                                <textarea
-                                    rows={2}
-                                    value={formData.features}
-                                    onChange={e => setFormData({ ...formData, features: e.target.value })}
-                                    className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                                    placeholder="Comma separated list for pricing card display..."
-                                />
-                            </div>
-
-                            <div className="pt-4 flex justify-end gap-3 sticky bottom-0 bg-white border-t border-zinc-100 py-4 -mx-6 px-6">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreating(false)}
-                                    className="px-4 py-2 rounded-xl text-sm font-bold text-zinc-500 hover:bg-zinc-100"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-6 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20"
-                                >
-                                    {editingId ? 'Save Changes' : 'Create Plan'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             )}
         </div>

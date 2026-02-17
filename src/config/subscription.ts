@@ -24,13 +24,13 @@ export const ADDONS = [
 
 export const PLANS = [
     {
-        id: "Free",
-        name: "FREE",
+        id: "Starter",
+        name: "Starter",
         price: 0,
         color: "blue",
         limit: "Up to 25 Students",
         features: ["Up to 25 Students", "Basic Reporting", "Email Support"],
-        permissionKey: "plan_free"
+        permissionKey: "plan_starter"
     },
     {
         id: "Growth",
@@ -42,20 +42,20 @@ export const PLANS = [
         permissionKey: "plan_growth"
     },
     {
-        id: "Premium",
-        name: "Premium",
+        id: "Enterprise",
+        name: "Enterprise",
         price: 4999,
         color: "zinc",
         limit: "Up to 1000 Students",
         features: ["Up to 1000 Students", "Dedicated Manager", "SLA", "API Access"],
-        permissionKey: "plan_premium"
+        permissionKey: "plan_enterprise"
     }
 ];
 
 export const PLAN_PRICES: Record<string, number> = {
-    FREE: 0,
+    Starter: 0,
     Growth: 1999,
-    Premium: 4999
+    Enterprise: 4999
 };
 
 export function calculateMRR(plan: string, activeAddonIds: string[] = []) {

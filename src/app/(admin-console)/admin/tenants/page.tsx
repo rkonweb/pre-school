@@ -155,7 +155,7 @@ export default function TenantManagementPage() {
             <div className="grid gap-6 md:grid-cols-4">
                 <StatCard
                     title="Monthly Recurring Revenue"
-                    value={`$${stats.totalMRR.toLocaleString()}`}
+                    value={`₹${stats.totalMRR.toLocaleString()}`}
                     subValue="+8.2% vs last month"
                     icon={TrendingUp}
                     color="green"
@@ -258,14 +258,19 @@ export default function TenantManagementPage() {
                                             <div className="flex flex-col gap-1">
                                                 <span className={cn(
                                                     "inline-flex w-fit items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-md border",
-                                                    tenant.plan === "Enterprise" ? "bg-purple-50 text-purple-700 border-purple-100" :
-                                                        tenant.plan === "Growth" ? "bg-blue-50 text-blue-700 border-blue-100" :
-                                                            "bg-zinc-100 text-zinc-700 border-zinc-200"
+                                                    (tenant.plan || "").toLowerCase().includes("enterprise") ? "bg-purple-50 text-purple-700 border-purple-100" :
+                                                        (tenant.plan || "").toLowerCase().includes("growth") ? "bg-blue-50 text-blue-700 border-blue-100" :
+                                                            (tenant.plan || "").toLowerCase().includes("premium") ? "bg-amber-50 text-amber-700 border-amber-100" :
+                                                                "bg-zinc-100 text-zinc-700 border-zinc-200"
                                                 )}>
-                                                    {tenant.plan === "Enterprise" && <ShieldCheck className="h-3 w-3" />}
+                                                    {(tenant.plan || "").toLowerCase().includes("enterprise") && <ShieldCheck className="h-3 w-3" />}
                                                     {tenant.plan}
                                                 </span>
-                                                <span className="text-[10px] text-zinc-400 font-medium">Auto-renew: Jan 30</span>
+                                                <span className="text-[10px] text-zinc-400 font-medium">
+                                                    {tenant.subscriptionEndDate
+                                                        ? `Ends: ${new Date(tenant.subscriptionEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                                                        : "No Expiry"}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5 text-center">
@@ -285,7 +290,7 @@ export default function TenantManagementPage() {
                                         </td>
                                         <td className="px-6 py-5 text-right">
                                             <div className="font-mono font-bold text-zinc-700 group-hover:text-zinc-900">
-                                                ${tenant.mrr.toLocaleString()}
+                                                ₹{tenant.mrr.toLocaleString()}
                                             </div>
                                             <div className="text-[10px] text-zinc-400 font-medium">
                                                 {tenant.students} Students

@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['react-pdf', 'pdfjs-dist'],
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

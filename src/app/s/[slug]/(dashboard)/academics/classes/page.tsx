@@ -17,11 +17,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getClassroomsAction, deleteClassroomAction } from "@/app/actions/classroom-actions";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 export default function ClassesPage() {
     const params = useParams();
     const router = useRouter();
     const slug = params.slug as string;
+    const { confirm: confirmDialog } = useConfirm();
 
     const [isLoading, setIsLoading] = useState(true);
     const [classrooms, setClassrooms] = useState<any[]>([]);
@@ -56,7 +58,15 @@ export default function ClassesPage() {
     );
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this class? This cannot be undone.")) return;
+        const confirmed = await confirmDialog({
+            title: "Delete Class",
+            message: "Are you sure you want to delete this class? This cannot be undone.",
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
 
         try {
             const res = await deleteClassroomAction(slug, id);

@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/training-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model TrainingCategory {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  slug        String           @unique
+  description String?
+  modules     TrainingModule[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model TrainingModule {
+  id          String            @id @default(cuid())
+  title       String
+  description String?
+  cover       String?
+  role        String            @default("TEACHER")
+  categoryId  String?
+  category    TrainingCategory? @relation(fields: [categoryId], references: [id])
+  isPublished Boolean           @default(false)
+  slug        String            @unique
+  order       Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  topics      TrainingTopic[]
+}
+
+model TrainingTopic {
+  id          String         @id @default(cuid())
+  moduleId    String
+  module      TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  order       Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  pages       TrainingPage[]
+
+  @@index([moduleId])
+}
+
+model TrainingPage {
+  id          String               @id @default(cuid())
+  topicId     String
+  topic       TrainingTopic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  title       String
+  content     String
+  order       Int                  @default(0)
+  isPublished Boolean              @default(false)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  attachments TrainingAttachment[]
+
+  @@index([topicId])
+}
+
+model TrainingAttachment {
+  id        String       @id @default(cuid())
+  pageId    String
+  page      TrainingPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  name      String
+  url       String
+  size      Int          @default(0) // in bytes
+  type      String       @default("file") // 'pdf', 'image', etc.
+  createdAt DateTime     @default(now())
+
+  @@index([pageId])
+}

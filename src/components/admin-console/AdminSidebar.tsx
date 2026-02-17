@@ -172,6 +172,7 @@ export function AdminSidebar() {
         { name: "Marketing Tools", href: "/admin/marketing", icon: Layers },
         { name: "CMS", href: "/admin/cms", icon: FileText },
         { name: "Curriculum Architect", href: "/admin/curriculum", icon: Layers },
+        { name: "ID Card Architect", href: "/admin/id-card-templates", icon: CreditCard },
     ];
 
     const schoolResourcesCat = categories.find(c => c.slug === "school-resources" || c.name === "School Resources");

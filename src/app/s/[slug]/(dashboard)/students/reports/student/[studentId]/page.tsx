@@ -48,7 +48,7 @@ export default function StudentProgressReportPage() {
         setIsLoading(true);
         try {
             const [studentRes, analyticsRes] = await Promise.all([
-                getStudentAction(studentId),
+                getStudentAction(slug, studentId),
                 getStudentSmartAnalyticsAction(slug, studentId)
             ]);
 

@@ -31,6 +31,7 @@ import {
 } from "@/app/actions/role-actions";
 import { cn } from "@/lib/utils";
 import { MODULES, RolePermission } from "@/lib/permissions-config";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 interface RolesClientProps {
     schoolSlug: string;
@@ -45,6 +46,7 @@ export default function RolesClient({
     initialTeachers,
     classrooms
 }: RolesClientProps) {
+    const { confirm: confirmDialog } = useConfirm();
     const [activeTab, setActiveTab] = useState<"roles" | "permissions">("roles");
     const [roles, setRoles] = useState(initialRoles);
 
@@ -206,7 +208,16 @@ export default function RolesClient({
     };
 
     const handleDeleteRole = async (roleId: string) => {
-        if (!confirm("Are you sure you want to delete this role?")) return;
+        const confirmed = await confirmDialog({
+            title: "Delete Role",
+            message: "Are you sure you want to delete this role?",
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         const res = await deleteRoleAction(schoolSlug, roleId);
         if (res.success) {
             setRoles(roles.filter(r => r.id !== roleId));
@@ -351,7 +362,16 @@ export default function RolesClient({
                     <div className="flex justify-end gap-3">
                         <button
                             onClick={async () => {
-                                if (!confirm("Add standard roles? Existing roles with same name will be skipped.")) return;
+                                const confirmed = await confirmDialog({
+                                    title: "Add Standard Roles",
+                                    message: "Add standard roles? Existing roles with same name will be skipped.",
+                                    variant: "info",
+                                    confirmText: "Add Roles",
+                                    cancelText: "Cancel"
+                                });
+
+                                if (!confirmed) return;
+
                                 const res = await seedDefaultRolesAction(schoolSlug);
                                 if (res.success) {
                                     toast.success(`Done: ${res.created} created, ${res.updated || 0} updated`);

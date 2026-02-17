@@ -6,6 +6,7 @@ import { addSalaryRevisionAction, deleteSalaryRevisionAction } from "@/app/actio
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useConfirm } from "@/contexts/ConfirmContext";
 
 interface CustomItem {
     id: string;
@@ -39,6 +40,7 @@ interface SalaryPackageSectionProps {
 }
 
 export function SalaryPackageSection({ staffId, salaryRevisions: initialRevisions }: SalaryPackageSectionProps) {
+    const { confirm: confirmDialog } = useConfirm();
     const [revisions, setRevisions] = useState<SalaryRevision[]>(initialRevisions);
     const [isAdding, setIsAdding] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -125,7 +127,16 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this record?")) return;
+        const confirmed = await confirmDialog({
+            title: "Delete Salary Record",
+            message: "Are you sure you want to delete this record?",
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         const res = await deleteSalaryRevisionAction(id);
         if (res.success) {
             toast.success("Record deleted");

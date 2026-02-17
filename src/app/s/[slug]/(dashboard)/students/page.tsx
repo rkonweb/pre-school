@@ -1,17 +1,22 @@
 "use client";
 
-import { Plus, Search, MoreHorizontal, Filter, ArrowUpDown, Edit3, Trash2, Loader2, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Filter, ArrowUpDown, Edit3, Trash2, Loader2, ChevronUp, ChevronDown, Phone, Calendar, Hash } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
+import { format } from "date-fns";
 import { useParams } from "next/navigation";
 import { SlideOver } from "@/components/ui/SlideOver";
 import { AddStudentForm } from "@/components/dashboard/students/AddStudentForm";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { getStudentsAction, deleteStudentAction, updateStudentAction } from "@/app/actions/student-actions";
+import { searchStudentsElasticAction } from "@/app/actions/search-actions";
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { Tenant } from "@/types/tenant";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getCookie } from "@/lib/cookies";
+import { useConfirm } from "@/contexts/ConfirmContext";
+import { StandardActionButton } from "@/components/ui/StandardActionButton";
 
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 
@@ -19,10 +24,12 @@ export default function StudentsPage() {
     const params = useParams();
     const slug = params.slug as string;
     const { can, isLoading: isPermsLoading } = useRolePermissions();
+    const { confirm: confirmDialog } = useConfirm();
 
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [classFilter, setClassFilter] = useState("all");
+    const [genderFilter, setGenderFilter] = useState("all");
 
     // Sort Config
     const [sortConfig, setSortConfig] = useState<{ field: string, direction: "asc" | "desc" }>({
@@ -51,7 +58,7 @@ export default function StudentsPage() {
             loadData();
         }, 500);
         return () => clearTimeout(timer);
-    }, [slug, page, searchTerm, statusFilter, classFilter, sortConfig]);
+    }, [slug, page, searchTerm, statusFilter, classFilter, genderFilter, sortConfig]);
 
     const loadClassrooms = async () => {
         const res = await getClassroomsAction(slug);
@@ -67,6 +74,7 @@ export default function StudentsPage() {
             const filters: any = {};
             if (statusFilter !== "all") filters.status = statusFilter;
             if (classFilter !== "all") filters.class = classFilter;
+            if (genderFilter !== "all") filters.gender = genderFilter;
 
             // Add Academic Year filter
             const academicYearId = getCookie(`academic_year_${slug}`);
@@ -74,18 +82,36 @@ export default function StudentsPage() {
                 filters.academicYearId = academicYearId;
             }
 
-            const res = await getStudentsAction(slug, {
-                page,
-                limit: 10,
-                search: searchTerm,
-                filters,
-                sort: sortConfig
-            });
-
-            if (res.success) {
-                setStudents(res.students || []);
-                setPaginationInfo(res.pagination);
+            let res;
+            if (searchTerm && searchTerm.length >= 2) {
+                res = await searchStudentsElasticAction(slug, searchTerm, filters);
+                if (res.success) {
+                    setStudents(res.students || []);
+                    // Elastic search specific pagination/total handling if needed
+                    // For now, we might receive total hits
+                    setPaginationInfo({
+                        page: 1,
+                        limit: 50,
+                        total: res.total,
+                        totalPages: Math.ceil((res.total || 0) / 50)
+                    });
+                }
             } else {
+                res = await getStudentsAction(slug, {
+                    page,
+                    limit: 10,
+                    search: searchTerm,
+                    filters,
+                    sort: sortConfig
+                });
+
+                if (res.success) {
+                    setStudents(res.students || []);
+                    setPaginationInfo(res.pagination);
+                }
+            }
+
+            if (!res.success) {
                 toast.error("Failed to load students");
             }
 
@@ -110,7 +136,16 @@ export default function StudentsPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this student?")) return;
+        const confirmed = await confirmDialog({
+            title: "Delete Student",
+            message: "Are you sure you want to delete this student? This action cannot be undone.",
+            variant: "danger",
+            confirmText: "Delete",
+            cancelText: "Cancel"
+        });
+
+        if (!confirmed) return;
+
         const res = await deleteStudentAction(slug, id);
         if (res.success) {
             toast.success("Student deleted");
@@ -143,23 +178,23 @@ export default function StudentsPage() {
                         Manage your student profiles and enrollment status.
                     </p>
                 </div>
-                {canCreate && (
-                    <div className="flex gap-3">
-                        <Link href={`/s/${slug}/students/promote`}>
-                            <button className="h-12 px-6 bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm hover:scale-[1.02] active:scale-95 transition-all">
-                                <ArrowUpDown className="h-4 w-4" />
-                                Promote
-                            </button>
-                        </Link>
-                        <button
-                            onClick={() => setIsAddStudentOpen(true)}
-                            className="h-12 px-6 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Add Student
-                        </button>
-                    </div>
-                )}
+                <div className="flex gap-3">
+                    <StandardActionButton
+                        asChild
+                        variant="outline"
+                        icon={ArrowUpDown}
+                        label="Promote"
+                    >
+                        <Link href={`/s/${slug}/students/promote`} />
+                    </StandardActionButton>
+                    <StandardActionButton
+                        variant="primary"
+                        icon={Plus}
+                        label="Add Student"
+                        onClick={() => setIsAddStudentOpen(true)}
+                        permission={{ module: 'students.profiles', action: 'create' }}
+                    />
+                </div>
             </div>
 
             <SlideOver
@@ -183,17 +218,13 @@ export default function StudentsPage() {
             {/* Filters & Actions */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                    <input
-                        type="text"
-                        placeholder="Search students..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
+                    <SearchInput
+                        onSearch={(term) => {
+                            setSearchTerm(term);
                             setPage(1);
                         }}
-                        className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:ring-2 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
-                        style={{ '--tw-ring-color': 'var(--brand-color)' } as any}
+                        placeholder="Search students (Elasticsearch)..."
+                        className="w-full"
                     />
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -227,6 +258,19 @@ export default function StudentsPage() {
                             <option key={c.id} value={c.name}>{c.name}</option>
                         ))}
                     </select>
+
+                    <select
+                        value={genderFilter}
+                        onChange={(e) => {
+                            setGenderFilter(e.target.value);
+                            setPage(1);
+                        }}
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                    >
+                        <option value="all">All Genders</option>
+                        <option value="MALE">Male</option>
+                        <option value="FEMALE">Female</option>
+                    </select>
                 </div>
             </div>
 
@@ -242,14 +286,23 @@ export default function StudentsPage() {
                             <table className="w-full text-left text-sm">
                                 <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-800/50 dark:text-zinc-400">
                                     <tr>
+                                        <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 transition-colors" onClick={() => handleSort('admissionNumber')}>
+                                            <div className="flex items-center gap-1">Adm No <SortIcon field="admissionNumber" /></div>
+                                        </th>
                                         <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 transition-colors" onClick={() => handleSort('name')}>
                                             <div className="flex items-center gap-1">Student Name <SortIcon field="name" /></div>
                                         </th>
                                         <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 transition-colors" onClick={() => handleSort('class')}>
                                             <div className="flex items-center gap-1">Class <SortIcon field="class" /></div>
                                         </th>
+                                        <th className="px-6 py-4 font-medium">
+                                            Gender
+                                        </th>
                                         <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 transition-colors" onClick={() => handleSort('parent')}>
-                                            <div className="flex items-center gap-1">Parent <SortIcon field="parent" /></div>
+                                            <div className="flex items-center gap-1">Parent Contact <SortIcon field="parent" /></div>
+                                        </th>
+                                        <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 transition-colors" onClick={() => handleSort('joiningDate')}>
+                                            <div className="flex items-center gap-1">Joined <SortIcon field="joiningDate" /></div>
                                         </th>
                                         <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 transition-colors" onClick={() => handleSort('status')}>
                                             <div className="flex items-center gap-1">Status <SortIcon field="status" /></div>
@@ -264,6 +317,9 @@ export default function StudentsPage() {
                                                 key={student.id}
                                                 className="group transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                                             >
+                                                <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">
+                                                    {student.admissionNumber || "-"}
+                                                </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <img
@@ -290,8 +346,22 @@ export default function StudentsPage() {
                                                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">
                                                     {student.class}
                                                 </td>
+                                                <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-xs">
+                                                    {student.gender}
+                                                </td>
                                                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">
-                                                    {student.parent}
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-medium">{student.parent}</span>
+                                                        {student.parentMobile && (
+                                                            <div className="flex items-center gap-1 text-xs text-zinc-500">
+                                                                <Phone className="h-3 w-3" />
+                                                                {student.parentMobile}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-xs">
+                                                    {student.joiningDate ? format(new Date(student.joiningDate), 'MMM d, yyyy') : '-'}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span
@@ -309,29 +379,29 @@ export default function StudentsPage() {
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        {canEdit && (
-                                                            <Link
-                                                                href={`/s/${slug}/students/${student.id}`}
-                                                                className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/30 transition-all"
-                                                            >
-                                                                <Edit3 className="h-4 w-4" />
-                                                            </Link>
-                                                        )}
-                                                        {canDelete && (
-                                                            <button
-                                                                onClick={() => handleDelete(student.id)}
-                                                                className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-red-600 hover:border-red-200 transition-all"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
-                                                        )}
+                                                        <StandardActionButton
+                                                            asChild
+                                                            variant="view"
+                                                            icon={Edit3}
+                                                            tooltip="View/Edit Profile"
+                                                            permission={{ module: 'students.profiles', action: 'edit' }}
+                                                        >
+                                                            <Link href={`/s/${slug}/students/${student.id}`} />
+                                                        </StandardActionButton>
+                                                        <StandardActionButton
+                                                            variant="delete"
+                                                            icon={Trash2}
+                                                            tooltip="Delete Student"
+                                                            onClick={() => handleDelete(student.id)}
+                                                            permission={{ module: 'students.profiles', action: 'delete' }}
+                                                        />
                                                     </div>
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-12 text-center text-zinc-500">
+                                            <td colSpan={8} className="px-6 py-12 text-center text-zinc-500">
                                                 No students found matching your search.
                                             </td>
                                         </tr>
@@ -346,20 +416,20 @@ export default function StudentsPage() {
                                     Page <span className="font-bold text-zinc-900">{paginationInfo?.page || 1}</span> of <span className="font-medium">{paginationInfo?.totalPages || 1}</span> ({paginationInfo?.total || 0} students)
                                 </span>
                                 <div className="flex gap-2">
-                                    <button
+                                    <StandardActionButton
+                                        variant="outline"
+                                        label="Previous"
                                         onClick={() => setPage(p => p - 1)}
                                         disabled={!hasPrevPage}
-                                        className="rounded-md border border-zinc-200 px-3 py-1 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-zinc-800 dark:hover:bg-zinc-900"
-                                    >
-                                        Previous
-                                    </button>
-                                    <button
+                                        className="h-9 px-3 text-xs"
+                                    />
+                                    <StandardActionButton
+                                        variant="outline"
+                                        label="Next"
                                         onClick={() => setPage(p => p + 1)}
                                         disabled={!hasNextPage}
-                                        className="rounded-md border border-zinc-200 px-3 py-1 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-zinc-800 dark:hover:bg-zinc-900"
-                                    >
-                                        Next
-                                    </button>
+                                        className="h-9 px-3 text-xs"
+                                    />
                                 </div>
                             </div>
                         </div>

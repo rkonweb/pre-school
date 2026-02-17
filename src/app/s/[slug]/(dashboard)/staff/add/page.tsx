@@ -10,10 +10,17 @@ export default async function AddStaffPage({ params }: { params: Promise<{ slug:
     const { data: genders } = await getMasterDataAction("GENDER");
     const { data: subjects } = await getMasterDataAction("SUBJECT");
 
-    // Fetch Roles
+    // Fetch Roles & Branches
     const { getRolesAction } = await import("@/app/actions/role-actions");
-    const rolesRes = await getRolesAction(slug);
+    const { getBranchesAction } = await import("@/app/actions/branch-actions");
+
+    const [rolesRes, branchesRes] = await Promise.all([
+        getRolesAction(slug),
+        getBranchesAction(slug)
+    ]);
+
     const roles = rolesRes.success ? rolesRes.roles : [];
+    const branches = branchesRes.success ? branchesRes.data : [];
 
     return (
         <AddStaffPageClient
@@ -25,6 +32,7 @@ export default async function AddStaffPage({ params }: { params: Promise<{ slug:
             genders={genders || []}
             subjects={subjects || []}
             roles={roles || []}
+            branches={branches || []}
         />
     );
 }

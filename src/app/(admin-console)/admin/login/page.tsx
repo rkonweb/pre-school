@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     ShieldCheck,
@@ -17,6 +17,11 @@ export default function SuperAdminLoginPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({ email: "", password: "" });
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,28 +61,36 @@ export default function SuperAdminLoginPage() {
                     <div className="px-8 pb-10">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-4">
-                                <div suppressHydrationWarning>
+                                <div>
                                     <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5 ml-1">Admin ID</label>
-                                    <input
-                                        type="email"
-                                        required
-                                        className="block w-full rounded-xl border-zinc-200 bg-zinc-50 px-4 py-3 text-zinc-900 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:bg-white transition-all text-sm font-medium placeholder:text-zinc-400"
-                                        placeholder="admin@platform.com"
-                                        value={formData.email}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    />
+                                    <div className="relative">
+                                        {isMounted && (
+                                            <input
+                                                type="email"
+                                                required
+                                                data-lpignore="true"
+                                                className="block w-full rounded-xl border-zinc-200 bg-zinc-50 px-4 py-3 text-zinc-900 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:bg-white transition-all text-sm font-medium placeholder:text-zinc-400"
+                                                placeholder="admin@platform.com"
+                                                value={formData.email}
+                                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                            />
+                                        )}
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5 ml-1">Security Key</label>
                                     <div className="relative">
-                                        <input
-                                            type="password"
-                                            required
-                                            className="block w-full rounded-xl border-zinc-200 bg-zinc-50 px-4 py-3 text-zinc-900 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:bg-white transition-all text-sm font-medium placeholder:text-zinc-400 pr-10"
-                                            placeholder="••••••••••••"
-                                            value={formData.password}
-                                            onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                        />
+                                        {isMounted && (
+                                            <input
+                                                type="password"
+                                                required
+                                                data-lpignore="true"
+                                                className="block w-full rounded-xl border-zinc-200 bg-zinc-50 px-4 py-3 text-zinc-900 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:bg-white transition-all text-sm font-medium placeholder:text-zinc-400 pr-10"
+                                                placeholder="••••••••••••"
+                                                value={formData.password}
+                                                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                            />
+                                        )}
                                         <KeyRound className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                                     </div>
                                 </div>

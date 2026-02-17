@@ -5,7 +5,7 @@ export interface Tenant {
     brandColor: string;
     adminName: string;
     email: string;
-    plan: "Starter" | "Growth" | "Enterprise";
+    plan: string;
     status: "ACTIVE" | "TRIAL" | "PAST_DUE" | "SUSPENDED";
     students: number;
     mrr: number;
@@ -45,6 +45,18 @@ export interface Tenant {
     // Admin Extras
     adminPhone?: string;
     adminDesignation?: string;
+    adminUserId?: string;
+    adminEmail?: string;
+
+    // Subscription Details
+    planId?: string;
+    subscriptionStatus?: string;
+    subscriptionStartDate?: string;
+    subscriptionEndDate?: string;
+
+    // Branch Management
+    maxBranches?: number;
+    branches?: { id: string; name: string; status: string; }[];
 }
 
 export type CreateTenantInput = Omit<Tenant, "id" | "students" | "mrr" | "joinedDate" | "status" | "lastActive">;

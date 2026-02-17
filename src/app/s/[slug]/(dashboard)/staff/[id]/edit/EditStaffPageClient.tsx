@@ -64,6 +64,7 @@ export function EditStaffPageClient({ slug, roles, designations, departments, em
 
                 <StaffClassAccess
                     staffId={staffId}
+                    schoolSlug={slug}
                     classrooms={classrooms}
                 />
 

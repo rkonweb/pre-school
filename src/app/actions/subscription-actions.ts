@@ -90,22 +90,90 @@ export async function getSubscriptionPlansAction(retries = 0) {
             }
         }
 
-        return plans.map(p => ({
-            ...p,
-            description: p.description || "",
-            createdAt: p.createdAt.toISOString(),
-            updatedAt: p.updatedAt.toISOString(),
-            features: JSON.parse(p.features || "[]") as string[],
-            includedModules: JSON.parse(p.includedModules || "[]") as string[],
-            limits: {
-                maxStudents: p.maxStudents,
-                maxStaff: p.maxStaff,
-                maxStorageGB: p.maxStorageGB
+        return plans.map(p => {
+            const safeParse = (str: string | null) => {
+                if (!str) return [];
+                try {
+                    return typeof str === 'string' ? JSON.parse(str) : str;
+                } catch (e) {
+                    console.error("SafeParse Error:", e, str);
+                    return [];
+                }
+            };
+
+            return {
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                description: p.description || "",
+                price: p.price,
+                currency: p.currency,
+                additionalStaffPrice: p.additionalStaffPrice,
+                tier: p.tier,
+                isPopular: p.isPopular,
+                isActive: p.isActive,
+                supportLevel: p.supportLevel,
+                sortOrder: p.sortOrder,
+                createdAt: p.createdAt.toISOString(),
+                updatedAt: p.updatedAt.toISOString(),
+                features: safeParse(p.features),
+                includedModules: safeParse(p.includedModules),
+                limits: {
+                    maxStudents: p.maxStudents,
+                    maxStaff: p.maxStaff,
+                    maxStorageGB: p.maxStorageGB
+                }
             }
-        })) as SubscriptionPlanType[];
+        }) as any[];
     } catch (error: any) {
         console.error("getSubscriptionPlansAction Error:", error);
         return [];
+    }
+}
+
+export async function getSubscriptionPlanByIdAction(id: string) {
+    try {
+        const plan = await prisma.subscriptionPlan.findUnique({
+            where: { id }
+        });
+
+        if (!plan) return null;
+
+        const safeParse = (str: string | null) => {
+            if (!str) return [];
+            try {
+                return typeof str === 'string' ? JSON.parse(str) : str;
+            } catch (e) {
+                return [];
+            }
+        };
+
+        return {
+            id: plan.id,
+            name: plan.name,
+            slug: plan.slug,
+            description: plan.description || "",
+            price: plan.price,
+            currency: plan.currency,
+            additionalStaffPrice: plan.additionalStaffPrice,
+            tier: plan.tier,
+            isPopular: plan.isPopular,
+            isActive: plan.isActive,
+            supportLevel: plan.supportLevel,
+            sortOrder: plan.sortOrder,
+            createdAt: plan.createdAt.toISOString(),
+            updatedAt: plan.updatedAt.toISOString(),
+            features: safeParse(plan.features),
+            includedModules: safeParse(plan.includedModules),
+            limits: {
+                maxStudents: plan.maxStudents,
+                maxStaff: plan.maxStaff,
+                maxStorageGB: plan.maxStorageGB
+            }
+        } as any;
+    } catch (error: any) {
+        console.error("getSubscriptionPlanByIdAction Error:", error);
+        return null;
     }
 }
 
@@ -140,13 +208,11 @@ export async function getSubscriptionStatsAction() {
 
 export async function createSubscriptionPlanAction(data: CreateSubscriptionPlanInput) {
     try {
-        await prisma.subscriptionPlan.create({
+        const newPlan = await prisma.subscriptionPlan.create({
             data: {
                 name: data.name,
                 slug: data.slug,
                 description: data.description,
-                price: data.price,
-                currency: data.currency,
                 billingPeriod: data.billingPeriod,
                 features: JSON.stringify(data.features),
                 maxStudents: data.limits.maxStudents,
@@ -159,6 +225,10 @@ export async function createSubscriptionPlanAction(data: CreateSubscriptionPlanI
                 includedModules: JSON.stringify(data.includedModules)
             }
         });
+
+        if (data.additionalStaffPrice) {
+            await prisma.$executeRaw`UPDATE SubscriptionPlan SET additionalStaffPrice = ${data.additionalStaffPrice} WHERE id = ${newPlan.id}`;
+        }
 
         revalidatePath("/admin/subscriptions");
         return { success: true };
@@ -177,6 +247,11 @@ export async function updateSubscriptionPlanAction(id: string, data: Partial<Sub
         if (data.features) updateData.features = JSON.stringify(data.features);
         if (data.includedModules) updateData.includedModules = JSON.stringify(data.includedModules);
 
+        // Remove additionalStaffPrice from updateData to prevent client error
+        if ('additionalStaffPrice' in updateData) {
+            delete updateData.additionalStaffPrice;
+        }
+
         if (data.limits) {
             if (data.limits.maxStudents !== undefined) updateData.maxStudents = data.limits.maxStudents;
             if (data.limits.maxStaff !== undefined) updateData.maxStaff = data.limits.maxStaff;
@@ -189,6 +264,10 @@ export async function updateSubscriptionPlanAction(id: string, data: Partial<Sub
             data: updateData
         });
 
+        if (data.additionalStaffPrice !== undefined) {
+            await prisma.$executeRaw`UPDATE SubscriptionPlan SET additionalStaffPrice = ${data.additionalStaffPrice} WHERE id = ${id}`;
+        }
+
         revalidatePath("/admin/subscriptions");
         return { success: true };
     } catch (error: any) {
@@ -199,6 +278,16 @@ export async function updateSubscriptionPlanAction(id: string, data: Partial<Sub
 
 export async function deleteSubscriptionPlanAction(id: string) {
     try {
+        // Check for usage
+        const usageCount = await prisma.subscription.count({
+            where: { planId: id }
+        });
+
+        if (usageCount > 0) {
+            // Soft delete instead? Or just error.
+            return { success: false, error: `Cannot delete plan. It is used by ${usageCount} subscriptions. Deactivate it instead.` };
+        }
+
         await prisma.subscriptionPlan.delete({
             where: { id }
         });
@@ -261,12 +350,29 @@ export async function getAvailablePlansAction() {
             }
         });
 
-        // Parse JSON fields
-        const parsedPlans = plans.map(plan => ({
-            ...plan,
-            features: typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features,
-            includedModules: typeof plan.includedModules === 'string' ? JSON.parse(plan.includedModules) : plan.includedModules,
-        }));
+        // Parse JSON fields safely
+        const parsedPlans = plans.map(plan => {
+            const safeParse = (str: any) => {
+                if (!str) return [];
+                if (typeof str !== 'string') return str;
+                try {
+                    return JSON.parse(str);
+                } catch (e) {
+                    return [];
+                }
+            };
+
+            return {
+                ...plan,
+                features: safeParse(plan.features),
+                includedModules: safeParse(plan.includedModules),
+                limits: {
+                    maxStudents: plan.maxStudents,
+                    maxStaff: plan.maxStaff,
+                    maxStorageGB: plan.maxStorageGB
+                }
+            };
+        });
 
         return {
             success: true,

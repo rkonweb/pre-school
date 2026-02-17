@@ -183,7 +183,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
     }
 
     return (
-        <div className="max-w-4xl space-y-12 animate-in fade-in duration-700">
+        <div className="w-full space-y-12 animate-in fade-in duration-700">
             <div className="bg-white p-10 rounded-[40px] shadow-sm border border-zinc-100 space-y-10">
                 <div className="flex flex-col md:flex-row gap-10 items-start border-b border-zinc-100 pb-10">
                     <div className="space-y-4">
@@ -304,7 +304,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                             <div className="flex items-center gap-4 p-3 bg-zinc-50 rounded-2xl border border-zinc-200">
                                 <input
                                     type="color"
-                                    value={formData.brandColor || "#2563eb"}
+                                    value={formData.brandColor || "#AE7B64"}
                                     onChange={e => setFormData({ ...formData, brandColor: e.target.value })}
                                     className="h-10 w-20 rounded-lg cursor-pointer border-0 bg-transparent"
                                 />

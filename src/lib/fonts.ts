@@ -57,6 +57,7 @@ export const GOOGLE_FONTS = [
 
 export function getGoogleFontUrl(fonts: string[]) {
     if (!fonts.length) return "";
-    const families = fonts.map(f => f.replace(/ /g, "+") + ":wght@300;400;700;900");
+    // Using a more resilient format that lets Google decide weights if specific ones aren't available
+    const families = fonts.map(f => f.replace(/ /g, "+") + ":ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700");
     return `https://fonts.googleapis.com/css2?family=${families.join("&family=")}&display=swap`;
 }

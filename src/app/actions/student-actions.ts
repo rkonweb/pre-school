@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { writeFile, mkdir } from "fs/promises";
 import { join, basename } from "path";
-import { validateUserSchoolAction } from "./session-actions";
+import { validateUserSchoolAction, hasPermissionAction } from "./session-actions";
 
 interface StudentQueryOptions {
     page?: number;
@@ -13,6 +13,7 @@ interface StudentQueryOptions {
     filters?: {
         status?: string;
         class?: string;
+        gender?: string;
         academicYearId?: string;
     };
     sort?: {
@@ -34,9 +35,14 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
         };
 
         // ---------------------------------------------------------
-        // ACCESS CONTROL ENFORCEMENT (Refined)
+        // ACCESS CONTROL ENFORCEMENT & MULTI-BRANCH
         // ---------------------------------------------------------
         const currentUser = auth.user;
+
+        const currentBranchId = (currentUser as any).currentBranchId;
+        if (currentBranchId) {
+            whereClause.branchId = currentBranchId;
+        }
 
         // If user is STAFF (and not generic ADMIN), enforce class scoping
         if (currentUser && currentUser.role === "STAFF") {
@@ -68,12 +74,18 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
             ];
         }
 
+        // ... (rest of filtering logic)
+
         if (filters.status && filters.status !== "all") {
             whereClause.status = filters.status;
         }
 
         if (filters.class && filters.class !== "all") {
             whereClause.classroom = { name: filters.class };
+        }
+
+        if (filters.gender && filters.gender !== "all") {
+            whereClause.gender = filters.gender;
         }
 
         // Academic Year Filter
@@ -116,6 +128,10 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
                 orderBy = { classroom: { name: sort.direction } };
             } else if (sort.field === 'parent') {
                 orderBy = { parentName: sort.direction };
+            } else if (sort.field === 'admissionNumber') {
+                orderBy = { admissionNumber: sort.direction };
+            } else if (sort.field === 'joiningDate') {
+                orderBy = { joiningDate: sort.direction };
             } else {
                 orderBy = { [sort.field]: sort.direction };
             }
@@ -139,9 +155,13 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
             students: students.map(s => ({
                 id: s.id,
                 name: `${s.firstName} ${s.lastName}`,
+                admissionNumber: s.admissionNumber || "",
                 class: s.classroom?.name || "Unassigned",
                 age: s.age || 0,
+                gender: s.gender || "Unknown",
                 parent: s.parentName || "Unknown",
+                parentMobile: s.parentMobile || "",
+                joiningDate: s.joiningDate,
                 status: s.status,
                 avatar: s.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.firstName}`,
                 createdAt: s.createdAt, // Needed for date sort
@@ -178,6 +198,10 @@ export async function getStudentAction(schoolSlug: string, id: string) {
     }
 }
 
+import { syncStudent, removeStudentFromIndex } from "@/lib/search-sync";
+
+// ... existing imports
+
 export async function createStudentAction(schoolSlug: string, data: {
     firstName: string;
     lastName: string;
@@ -188,9 +212,18 @@ export async function createStudentAction(schoolSlug: string, data: {
     parentMobile?: string;
     parentEmail?: string;
     avatar?: string;
+    branchId?: string; // Added branchId
 }) {
     const auth = await validateUserSchoolAction(schoolSlug);
-    if (!auth.success) throw new Error(auth.error);
+    if (!auth.success || !auth.user) throw new Error(auth.error);
+
+    if (!(await hasPermissionAction(auth.user, "students", "create"))) {
+        throw new Error("Unauthorized to create student");
+    }
+
+    const currentUser = auth.user as any;
+    // Determine Branch
+    const branchId = data.branchId || currentUser.currentBranchId;
 
     // Find school id
     const school = await prisma.school.findUnique({
@@ -198,6 +231,19 @@ export async function createStudentAction(schoolSlug: string, data: {
     });
 
     if (!school) throw new Error("School not found");
+
+    // If no branch, try to fall back to 'Main Branch' automatically or fail?
+    // Let's first try to find Main Branch
+    let finalBranchId = branchId;
+
+    if (!finalBranchId) {
+        // Fallback: Find Main Branch or First Branch
+        const branches = await prisma.branch.findMany({
+            where: { schoolId: school.id }
+        });
+        const main = branches.find(b => b.name === 'Main Branch') || branches[0];
+        if (main) finalBranchId = main.id;
+    }
 
     const student = await prisma.student.create({
         data: {
@@ -210,10 +256,12 @@ export async function createStudentAction(schoolSlug: string, data: {
             parentMobile: data.parentMobile,
             parentEmail: data.parentEmail,
             avatar: data.avatar,
-            schoolId: school.id
+            schoolId: school.id,
+            branchId: finalBranchId
         }
     });
 
+    await syncStudent(student.id);
     revalidatePath(`/s/${schoolSlug}/students`);
     return student;
 }
@@ -221,12 +269,18 @@ export async function createStudentAction(schoolSlug: string, data: {
 export async function updateStudentAction(schoolSlug: string, id: string, data: any) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (!(await hasPermissionAction(auth.user, "students", "edit"))) {
+            return { success: false, error: "Unauthorized to update student" };
+        }
 
         // Remove nested objects and auto-fields for update
         // Added 'school' and 'conversations' to exclude list to prevent Prisma relation errors
+        // Remove nested objects and auto-fields for update
         const {
             classroom,
+            promotedToClassroom, // Exclude this too
             school,
             conversations,
             fees,
@@ -238,27 +292,42 @@ export async function updateStudentAction(schoolSlug: string, id: string, data: 
             schoolId,
             dateOfBirth,
             joiningDate,
+            classroomId, // Extract to handle manually
+            promotedToClassroomId, // Extract to handle manually
             ...updateData
         } = data;
 
-        // Sanitize classroomId
-        if (updateData.classroomId === "" || updateData.classroomId === "unassigned") {
-            updateData.classroomId = null;
+        const prismaUpdateData: any = {
+            ...updateData,
+            dateOfBirth: (dateOfBirth && !isNaN(new Date(dateOfBirth).getTime()))
+                ? new Date(dateOfBirth)
+                : undefined,
+            joiningDate: (joiningDate && !isNaN(new Date(joiningDate).getTime()))
+                ? new Date(joiningDate)
+                : undefined,
+        };
+
+        // Handle Classroom Relation
+        if (classroomId && classroomId !== "unassigned") {
+            prismaUpdateData.classroom = { connect: { id: classroomId } };
+        } else if (classroomId === null || classroomId === "unassigned") {
+            // If we want to remove class, we disconnect
+            prismaUpdateData.classroom = { disconnect: true };
+        }
+
+        // Handle Promoted Classroom Relation
+        if (promotedToClassroomId) {
+            prismaUpdateData.promotedToClassroom = { connect: { id: promotedToClassroomId } };
+        } else if (promotedToClassroomId === null) {
+            prismaUpdateData.promotedToClassroom = { disconnect: true };
         }
 
         const student = await (prisma as any).student.update({
             where: { id },
-            data: {
-                ...updateData,
-                dateOfBirth: (dateOfBirth && !isNaN(new Date(dateOfBirth).getTime()))
-                    ? new Date(dateOfBirth)
-                    : undefined,
-                joiningDate: (joiningDate && !isNaN(new Date(joiningDate).getTime()))
-                    ? new Date(joiningDate)
-                    : undefined,
-            }
+            data: prismaUpdateData
         });
 
+        await syncStudent(id);
         revalidatePath(`/s/${schoolSlug}/students`);
         revalidatePath(`/s/${schoolSlug}/students/${id}`);
         return { success: true, student };
@@ -271,11 +340,17 @@ export async function updateStudentAction(schoolSlug: string, id: string, data: 
 export async function deleteStudentAction(schoolSlug: string, id: string) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        if (!(await hasPermissionAction(auth.user, "students", "delete"))) {
+            return { success: false, error: "Unauthorized to delete student" };
+        }
 
         await prisma.student.delete({
             where: { id }
         });
+
+        await removeStudentFromIndex(id);
         revalidatePath(`/s/${schoolSlug}/students`);
         return { success: true };
     } catch (error: any) {

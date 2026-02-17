@@ -11,7 +11,7 @@ interface StaffLibraryHistoryProps {
     currency?: string;
 }
 
-export function StaffLibraryHistory({ staffId, currency = "USD" }: StaffLibraryHistoryProps) {
+export function StaffLibraryHistory({ staffId, schoolSlug, currency = "USD" }: StaffLibraryHistoryProps) {
     const [transactions, setTransactions] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -21,7 +21,7 @@ export function StaffLibraryHistory({ staffId, currency = "USD" }: StaffLibraryH
 
     async function loadData() {
         setIsLoading(true);
-        const res = await getStaffLibraryHistoryAction(staffId);
+        const res = await getStaffLibraryHistoryAction(schoolSlug, staffId);
         if (res.success) {
             setTransactions(res.data || []);
         }

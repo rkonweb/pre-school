@@ -1,4 +1,5 @@
-import { MarketingFooter, MarketingHeader } from "@/components/marketing/MarketingShell";
+import { Header } from "@/components/figma/Header";
+import { Footer } from "@/components/figma/Footer";
 
 export default function MarketingLayout({
     children,
@@ -6,12 +7,12 @@ export default function MarketingLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex min-h-screen flex-col bg-white font-sans selection:bg-blue-100 selection:text-blue-900">
-            <MarketingHeader />
-            <main className="flex-1 flex flex-col">
+        <div className="flex min-h-screen flex-col bg-background font-sans">
+            <Header />
+            <div className="flex-1">
                 {children}
-            </main>
-            <MarketingFooter />
+            </div>
+            <Footer />
         </div>
     );
 }

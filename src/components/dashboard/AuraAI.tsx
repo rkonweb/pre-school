@@ -1,33 +1,39 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
+'use client';
+import { useState, useEffect } from "react";
 import {
     Sparkles,
+    X,
     ChevronRight,
-    AlertTriangle,
+    Zap,
     Bus,
     TrendingUp,
     Clock,
-    X,
-    Zap,
-    BrainCircuit
+    BrainCircuit,
+    Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { askAuraAction } from "@/app/actions/ai-dashboard-actions";
+import { toast } from "sonner";
 
 interface AIInsight {
     id: string;
-    type: "transport" | "staff" | "academic" | "attendance";
+    type: "transport" | "staff" | "academic" | "attendance" | "system";
     severity: "low" | "medium" | "high";
     message: string;
 }
 
-export function AuraAI({ insights }: { insights: AIInsight[] }) {
+export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slug: string, staffId?: string }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const currentInsight = insights[currentIndex] || { id: "empty", message: "Aura is initializing...", type: "system", severity: "low" };
+    // AI Interaction State
+    const [query, setQuery] = useState("");
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [aiResponse, setAiResponse] = useState<string | null>(null);
+
+    const currentInsight = insights[currentIndex] || { id: "empty", message: "Aura is online & ready.", type: "system", severity: "low" };
 
     useEffect(() => {
         if (!isExpanded && insights.length > 1) {
@@ -38,140 +44,224 @@ export function AuraAI({ insights }: { insights: AIInsight[] }) {
         }
     }, [isExpanded, insights.length]);
 
-    if (!isVisible || insights.length === 0) return null;
+    const handleAnalyze = async () => {
+        if (!query.trim()) return;
+        setIsAnalyzing(true);
+        setAiResponse(null);
 
-    const getIcon = (type: string) => {
-        switch (type) {
-            case "transport": return <Bus className="h-4 w-4" />;
-            case "academic": return <TrendingUp className="h-4 w-4" />;
-            case "staff": return <Clock className="h-4 w-4" />;
-            default: return <BrainCircuit className="h-4 w-4" />;
+        try {
+            const res = await askAuraAction(query, slug, staffId);
+            if (res.success) {
+                setAiResponse(res.data);
+            } else {
+                toast.error(res.error || "Failed to analyze");
+            }
+        } catch (e) {
+            toast.error("Something went wrong");
+        } finally {
+            setIsAnalyzing(false);
         }
     };
 
+    if (!isVisible) return null;
+
     const getSeverityColor = (severity: string) => {
         switch (severity) {
-            case "high": return "text-rose-600 bg-rose-50 border-rose-100";
-            case "medium": return "text-amber-600 bg-amber-50 border-amber-100";
-            default: return "text-brand bg-brand/5 border-brand/10";
+            case "high": return "from-rose-500 to-orange-500";
+            case "medium": return "from-amber-500 to-orange-400";
+            default: return "from-brand to-brand/80";
+        }
+    };
+
+    const getIcon = (type: string) => {
+        switch (type) {
+            case "transport": return <Bus className="h-5 w-4" />;
+            case "academic": return <TrendingUp className="h-5 w-4" />;
+            case "staff": return <Clock className="h-5 w-4" />;
+            case "system": return <Sparkles className="h-5 w-4" />;
+            default: return <BrainCircuit className="h-5 w-4" />;
         }
     };
 
     return (
-        <div className="relative z-40 px-4 sm:px-0">
-            <div
-                className={cn(
-                    "bg-white/80 backdrop-blur-xl border border-zinc-200 shadow-2xl shadow-brand/5 overflow-hidden transition-all duration-500",
-                    isExpanded ? "rounded-[32px] w-full" : "rounded-full w-full max-w-2xl mx-auto"
-                )}
-            >
-                <div className="flex items-center justify-between p-2 pl-6">
-                    <div className="flex items-center gap-4 flex-1">
-                        <div className="flex -space-x-2">
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-brand to-brand/80 flex items-center justify-center shadow-lg relative z-10 border-2 border-white">
-                                <Sparkles className="h-5 w-5 text-white animate-pulse" />
-                            </div>
-                        </div>
+        <div className="fixed bottom-8 right-8 z-[100] flex flex-col items-end gap-4 pointer-events-none">
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20, filter: "blur(10px)" }}
+                        animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20, filter: "blur(10px)" }}
+                        className="w-[400px] md:w-[450px] pointer-events-auto"
+                    >
+                        <div className="relative overflow-hidden rounded-[32px] bg-white/80 border border-white shadow-[0_32px_64px_-16px_rgba(37,99,235,0.12)] backdrop-blur-3xl">
+                            {/* Inner Background Glows */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-brand/10 blur-[80px] -z-10" />
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand/5 blur-[80px] -z-10" />
 
-                        {!isExpanded && (
-                            <AnimatePresence exitBeforeEnter>
-                                <motion.div
-                                    key={currentInsight.id}
-                                    initial={{ opacity: 0, x: 10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -10 }}
-                                    className="flex items-center gap-3"
+                            {/* Header */}
+                            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white/40">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-brand to-brand/80 flex items-center justify-center shadow-lg shadow-brand/20">
+                                        <Sparkles className="h-5 w-5 text-white animate-pulse" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                            Aura Assistant
+                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        </h3>
+                                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Active Node Cluster</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setIsExpanded(false)}
+                                    className="h-10 w-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all border border-slate-100"
                                 >
-                                    <span className={cn(
-                                        "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border",
-                                        getSeverityColor(currentInsight.severity)
-                                    )}>
-                                        {currentInsight.type}
-                                    </span>
-                                    <p className="text-sm font-bold text-zinc-600 line-clamp-1 italic">
-                                        "{currentInsight.message}"
-                                    </p>
-                                </motion.div>
-                            </AnimatePresence>
-                        )}
-
-                        {isExpanded && (
-                            <div className="flex flex-col">
-                                <h3 className="text-sm font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-                                    Aura Intelligence Hub
-                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                </h3>
-                                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Enterprise Insight Cluster</p>
+                                    <X className="h-5 w-5" />
+                                </button>
                             </div>
-                        )}
-                    </div>
 
-                    <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-full border border-zinc-200">
-                        <button
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="h-8 px-4 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 transition-colors"
-                        >
-                            {isExpanded ? "Close" : "Open Feed"}
-                        </button>
-                        <button
-                            onClick={() => setIsVisible(false)}
-                            className="h-8 w-8 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-900 transition-colors"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    </div>
-                </div>
-
-                <AnimatePresence>
-                    {isExpanded && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="border-t border-zinc-100"
-                        >
-                            <div className="p-8 grid md:grid-cols-2 gap-6 bg-zinc-50/30">
-                                {insights.map((insight) => (
-                                    <div
-                                        key={insight.id}
-                                        className="group p-6 rounded-2xl bg-white border border-zinc-200 hover:border-brand/30 hover:shadow-xl hover:shadow-brand/5 transition-all cursor-pointer relative"
-                                    >
-                                        <div className="flex items-start gap-4">
-                                            <div className={cn(
-                                                "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 shadow-sm border",
-                                                getSeverityColor(insight.severity)
-                                            )}>
-                                                {getIcon(insight.type)}
-                                            </div>
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2 text-zinc-400 uppercase tracking-widest text-[9px] font-black">
-                                                    {insight.type}
+                            {/* Scrollable Content Area */}
+                            <div className="p-6 max-h-[500px] overflow-y-auto custom-scrollbar space-y-6">
+                                {/* Current Live Insights */}
+                                {insights.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Critical Vectors</h4>
+                                        {insights.map((insight) => (
+                                            <motion.div
+                                                key={insight.id}
+                                                whileHover={{ x: 5 }}
+                                                className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-brand/40 transition-all group cursor-pointer"
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <div className={cn(
+                                                        "h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br shadow-lg flex-shrink-0",
+                                                        getSeverityColor(insight.severity)
+                                                    )}>
+                                                        <span className="text-white">{getIcon(insight.type)}</span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{insight.type}</span>
+                                                        <p className="text-sm font-bold text-slate-700 group-hover:text-slate-900 leading-relaxed italic">
+                                                            "{insight.message}"
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <p className="text-sm font-bold text-zinc-700 group-hover:text-zinc-900 transition-colors leading-relaxed italic">
-                                                    "{insight.message}"
-                                                </p>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Chat / Analysis Zone */}
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Intel Inquiry</h4>
+                                    <div className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-brand to-brand/50 rounded-2xl opacity-10 group-hover:opacity-20 transition-opacity blur-sm" />
+                                        <div className="relative p-1 rounded-2xl bg-white border border-slate-100">
+                                            {aiResponse && (
+                                                <div className="p-5 bg-slate-50 rounded-xl mb-1 border border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500 holographic-seal">
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <Zap className="h-3 w-3 text-brand" />
+                                                        <span className="text-[10px] font-black text-brand uppercase tracking-widest">Aura Synthesis</span>
+                                                    </div>
+                                                    <p className="text-sm font-semibold text-slate-700 leading-relaxed italic">
+                                                        {aiResponse}
+                                                    </p>
+                                                    <button
+                                                        onClick={() => setAiResponse(null)}
+                                                        className="mt-4 text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase underline decoration-slate-200 underline-offset-4"
+                                                    >
+                                                        Clear Buffer
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center gap-2 p-1">
+                                                <input
+                                                    type="text"
+                                                    value={query}
+                                                    onChange={(e) => setQuery(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                                                    placeholder="Query the node..."
+                                                    className="flex-1 bg-transparent border-none px-4 py-3 text-sm font-bold text-slate-900 placeholder-slate-300 focus:ring-0"
+                                                    disabled={isAnalyzing}
+                                                />
+                                                <button
+                                                    onClick={handleAnalyze}
+                                                    disabled={isAnalyzing || !query.trim()}
+                                                    className="h-12 w-12 flex items-center justify-center bg-brand text-white rounded-xl shadow-lg shadow-brand/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                                >
+                                                    {isAnalyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <ChevronRight className="h-5 w-5" />}
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                </div>
                             </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                            <div className="p-8 bg-white border-t border-zinc-100 flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 shadow-inner">
-                                    <Zap className="h-5 w-5" />
-                                </div>
-                                <div className="flex-1 bg-zinc-50 border border-zinc-200 rounded-2xl px-6 py-3 text-sm text-zinc-400 font-bold uppercase tracking-widest flex items-center justify-between">
-                                    <span>Ask anything to Aura Intelligence...</span>
-                                    <div className="h-2 w-2 rounded-full bg-brand animate-pulse" />
-                                </div>
-                                <button className="px-6 py-3 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95">
-                                    Analyze
-                                </button>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+            {/* The Floating Orb */}
+            <motion.button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="pointer-events-auto relative group active:scale-90 transition-transform"
+                whileHover={{ scale: 1.1 }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+            >
+                {/* Outer Glows */}
+                <div className={cn(
+                    "absolute -inset-4 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity animate-pulse",
+                    getSeverityColor(currentInsight.severity).replace('from-', 'bg-').split(' ')[0]
+                )} />
+                <div className="absolute -inset-8 rounded-full bg-brand/10 blur-3xl" />
+
+                {/* The Orb Interior */}
+                <div className={cn(
+                    "h-20 w-20 rounded-full bg-gradient-to-tr p-[2px] shadow-2xl relative z-10 overflow-hidden",
+                    getSeverityColor(currentInsight.severity)
+                )}>
+                    <div className="h-full w-full rounded-full bg-white flex flex-col items-center justify-center relative overflow-hidden group-hover:bg-slate-50 transition-colors">
+                        {/* Dynamic Reflection SVG */}
+                        <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 100 100">
+                            <motion.circle
+                                cx="50" cy="20" r="40"
+                                fill="white"
+                                animate={{ opacity: [0.1, 0.3, 0.1], y: [0, 5, 0] }}
+                                transition={{ duration: 3, repeat: Infinity }}
+                            />
+                        </svg>
+
+                        <Sparkles className="h-8 w-8 text-brand relative z-10 animate-pulse" />
+
+                        {/* Insight Badges */}
+                        {insights.length > 0 && !isExpanded && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute -top-1 -right-1 h-6 w-6 bg-brand rounded-full flex items-center justify-center text-[10px] font-black text-white border-2 border-white"
+                            >
+                                {insights.length}
+                            </motion.div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Pulsing Core */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-white opacity-20 blur-sm pointer-events-none" />
+
+                {/* Current Tooltip Label */}
+                {!isExpanded && (
+                    <div className="absolute right-24 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all group-hover:-translate-x-2 pointer-events-none">
+                        <div className="bg-white/90 backdrop-blur-xl border border-slate-100 px-4 py-2 rounded-2xl shadow-2xl">
+                            <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">
+                                {insights.length > 0 ? `${insights.length} Active Insights` : "Aura Offline Querying"}
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </motion.button>
         </div>
     );
 }
