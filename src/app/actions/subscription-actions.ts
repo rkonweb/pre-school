@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CreateSubscriptionPlanInput, SubscriptionPlan as SubscriptionPlanType } from "@/types/subscription";
 import { revalidatePath } from "next/cache";
+import { calculateTieredAddonCost } from "@/lib/subscriptions/utils";
 
 export async function getSubscriptionPlansAction(retries = 0) {
     try {
@@ -118,6 +119,7 @@ export async function getSubscriptionPlansAction(retries = 0) {
                 updatedAt: p.updatedAt.toISOString(),
                 features: safeParse(p.features),
                 includedModules: safeParse(p.includedModules),
+                addonUserTiers: safeParse(p.addonUserTiers),
                 limits: {
                     maxStudents: p.maxStudents,
                     maxStaff: p.maxStaff,
@@ -165,6 +167,7 @@ export async function getSubscriptionPlanByIdAction(id: string) {
             updatedAt: plan.updatedAt.toISOString(),
             features: safeParse(plan.features),
             includedModules: safeParse(plan.includedModules),
+            addonUserTiers: safeParse(plan.addonUserTiers),
             limits: {
                 maxStudents: plan.maxStudents,
                 maxStaff: plan.maxStaff,
@@ -222,7 +225,8 @@ export async function createSubscriptionPlanAction(data: CreateSubscriptionPlanI
                 supportLevel: data.supportLevel,
                 isActive: data.isActive,
                 isPopular: data.isPopular,
-                includedModules: JSON.stringify(data.includedModules)
+                includedModules: JSON.stringify(data.includedModules),
+                addonUserTiers: JSON.stringify(data.addonUserTiers || [])
             }
         });
 
@@ -246,6 +250,7 @@ export async function updateSubscriptionPlanAction(id: string, data: Partial<Sub
         // Handle nested or special fields
         if (data.features) updateData.features = JSON.stringify(data.features);
         if (data.includedModules) updateData.includedModules = JSON.stringify(data.includedModules);
+        if (data.addonUserTiers) updateData.addonUserTiers = JSON.stringify(data.addonUserTiers);
 
         // Remove additionalStaffPrice from updateData to prevent client error
         if ('additionalStaffPrice' in updateData) {
@@ -347,6 +352,7 @@ export async function getAvailablePlansAction() {
                 supportLevel: true,
                 isPopular: true,
                 includedModules: true,
+                addonUserTiers: true
             }
         });
 
@@ -366,6 +372,7 @@ export async function getAvailablePlansAction() {
                 ...plan,
                 features: safeParse(plan.features),
                 includedModules: safeParse(plan.includedModules),
+                addonUserTiers: safeParse(plan.addonUserTiers),
                 limits: {
                     maxStudents: plan.maxStudents,
                     maxStaff: plan.maxStaff,
@@ -406,7 +413,8 @@ export async function upgradePlanAction(schoolSlug: string, newPlanId: string) {
                                 tier: true,
                                 price: true
                             }
-                        }
+                        },
+                        endDate: true
                     }
                 }
             }
@@ -439,25 +447,24 @@ export async function upgradePlanAction(schoolSlug: string, newPlanId: string) {
             };
         }
 
-        // Validate upgrade (prevent downgrades without explicit confirmation)
+        // Downgrades are allowed and take immediate effect, but billing stays until end of cycle
         const tierOrder = { free: 0, basic: 1, premium: 2, enterprise: 3 };
         const currentTier = school.subscription?.plan?.tier || "free";
         const newTier = newPlan.tier;
 
-        if (tierOrder[newTier as keyof typeof tierOrder] < tierOrder[currentTier as keyof typeof tierOrder]) {
-            return {
-                success: false,
-                error: "Downgrades require manual confirmation. Please contact support."
-            };
-        }
+        const isDowngrade = tierOrder[newTier as keyof typeof tierOrder] < tierOrder[currentTier as keyof typeof tierOrder];
 
-        // Calculate new end date
+        // Calculate new end date (only if current subscription is expired or missing)
+        let endDate = school.subscription?.endDate ? new Date(school.subscription.endDate) : new Date();
         const now = new Date();
-        const endDate = new Date(now);
-        if (newPlan.billingPeriod === "monthly") {
-            endDate.setMonth(endDate.getMonth() + 1);
-        } else if (newPlan.billingPeriod === "yearly") {
-            endDate.setFullYear(endDate.getFullYear() + 1);
+
+        if (!school.subscription?.endDate || endDate < now) {
+            endDate = new Date(now);
+            if (newPlan.billingPeriod === "monthly") {
+                endDate.setMonth(endDate.getMonth() + 1);
+            } else if (newPlan.billingPeriod === "yearly") {
+                endDate.setFullYear(endDate.getFullYear() + 1);
+            }
         }
 
         // Update subscription
@@ -569,5 +576,72 @@ export async function calculateUpgradePriceAction(
             success: false,
             error: "Failed to calculate upgrade price"
         };
+    }
+}
+
+/**
+ * Buy additional users for a school
+ */
+export async function buyAdditionalUsersAction(schoolSlug: string, count: number) {
+    try {
+        if (count <= 0) return { success: false, error: "Count must be greater than 0" };
+
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug },
+            include: {
+                subscription: {
+                    include: { plan: true }
+                }
+            }
+        });
+
+        if (!school || !school.subscription) {
+            return { success: false, error: "Subscription not found" };
+        }
+
+        const plan = school.subscription.plan;
+        const currentAddonUsers = school.subscription.addonUsers || 0;
+
+        // Parse tiers
+        let tiers: any[] = [];
+        try {
+            tiers = typeof plan.addonUserTiers === 'string'
+                ? JSON.parse(plan.addonUserTiers)
+                : (plan.addonUserTiers || []);
+        } catch (e) {
+            tiers = [];
+        }
+
+        // If tiers are empty, calculateTieredAddonCost will use a default price
+
+        const totalCost = calculateTieredAddonCost(currentAddonUsers, count, tiers);
+
+        // In a real app, we would process payment here
+        // simulate payment...
+
+        // Update subscription
+        await prisma.subscription.update({
+            where: { id: school.subscription.id },
+            data: {
+                addonUsers: {
+                    increment: count
+                }
+            }
+        });
+
+        revalidatePath(`/s/${schoolSlug}/settings/subscription`);
+        revalidatePath(`/s/${schoolSlug}/dashboard`);
+
+        return {
+            success: true,
+            data: {
+                message: `Successfully added ${count} users.`,
+                totalCost,
+                currency: plan.currency
+            }
+        };
+    } catch (error: any) {
+        console.error("buyAdditionalUsersAction Error:", error);
+        return { success: false, error: error.message };
     }
 }

@@ -131,7 +131,7 @@ export default function InquiryDashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <Link
                             href={`/s/${slug}/admissions/new`}
-                            className="h-24 rounded-2xl bg-brand text-white flex flex-col items-center justify-center gap-2 shadow-lg shadow-brand/20 hover:scale-[1.02] transition-all"
+                            className="h-24 rounded-2xl bg-brand text-[var(--secondary-color)] flex flex-col items-center justify-center gap-2 shadow-lg shadow-brand/20 hover:scale-[1.02] transition-all"
                         >
                             <Plus className="h-6 w-6" />
                             <span className="text-xs font-black uppercase tracking-wider">New Enquiry</span>

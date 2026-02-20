@@ -366,7 +366,7 @@ export default function NewInquiryPage() {
             <div className="h-[80vh] flex items-center justify-center">
                 <div className="text-center space-y-6 animate-in fade-in zoom-in duration-500">
                     <div className="h-24 w-24 bg-brand rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-brand/20">
-                        <CheckCircle2 className="h-12 w-12 text-white" />
+                        <CheckCircle2 className="h-12 w-12 text-[var(--secondary-color)]" />
                     </div>
                     <div>
                         <h2 className="text-4xl font-black text-zinc-900">Inquiry Registered</h2>
@@ -423,7 +423,7 @@ export default function NewInquiryPage() {
                                             onClick={() => setFormData({ ...formData, studentGender: g })}
                                             className={cn(
                                                 "flex-1 py-3 text-[10px] font-black rounded-xl transition-all",
-                                                formData.studentGender === g ? "bg-white text-brand shadow-sm" : "text-zinc-400"
+                                                formData.studentGender === g ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "text-zinc-400"
                                             )}
                                         >
                                             {g}
@@ -612,7 +612,7 @@ export default function NewInquiryPage() {
                                 type="button"
                                 onClick={performSiblingCheck}
                                 disabled={isCheckingSibling}
-                                className="bg-brand text-white rounded-xl px-4 py-3 text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all disabled:opacity-50"
+                                className="bg-brand text-[var(--secondary-color)] rounded-xl px-4 py-3 text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all disabled:opacity-50"
                             >
                                 {isCheckingSibling ? "..." : "Check"}
                             </button>
@@ -652,7 +652,7 @@ export default function NewInquiryPage() {
                                 <button
                                     type="button"
                                     onClick={() => applySiblingData('father')}
-                                    className="col-span-2 w-full bg-brand text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                                    className="col-span-2 w-full bg-brand text-[var(--secondary-color)] py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2"
                                 >
                                     <Copy className="h-4 w-4" />
                                     Auto Fill Parent Details
@@ -671,7 +671,7 @@ export default function NewInquiryPage() {
                                     onClick={() => setFormData({ ...formData, priority: p })}
                                     className={cn(
                                         "py-3 text-[10px] font-black rounded-xl transition-all border-2",
-                                        formData.priority === p ? "bg-brand border-brand text-white shadow-lg shadow-brand/20" : "bg-zinc-50 border-zinc-50 text-zinc-400"
+                                        formData.priority === p ? "bg-brand border-brand text-[var(--secondary-color)] shadow-lg shadow-brand/20" : "bg-zinc-50 border-zinc-50 text-zinc-400"
                                     )}
                                 >
                                     {p}
@@ -711,7 +711,7 @@ export default function NewInquiryPage() {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="w-full mt-10 h-16 bg-brand text-white rounded-[24px] font-black flex items-center justify-center gap-3 shadow-2xl shadow-brand/30 active:scale-95 transition-all disabled:opacity-50"
+                            className="w-full mt-10 h-16 bg-brand text-[var(--secondary-color)] rounded-[24px] font-black flex items-center justify-center gap-3 shadow-2xl shadow-brand/30 active:scale-95 transition-all disabled:opacity-50"
                         >
                             {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
                             Register Inquiry

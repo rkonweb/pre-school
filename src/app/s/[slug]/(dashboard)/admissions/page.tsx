@@ -135,7 +135,7 @@ export default function AdmissionsPage() {
                 {canCreate && (
                     <Link
                         href={`/s/${slug}/admissions/new`}
-                        className="h-12 px-6 bg-brand text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all"
+                        className="h-12 px-6 bg-brand text-[var(--secondary-color)] rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all"
                     >
                         <UserPlus className="h-4 w-4" />
                         New Inquiry

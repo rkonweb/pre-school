@@ -82,7 +82,7 @@ export default function EditVehiclePage() {
             });
         } else {
             toast.error(res.error || "Vehicle not found");
-            router.push(`/s/${slug}/transport/vehicles`);
+            router.push(`/s/${slug}/transport/fleet/vehicles`);
         }
         setLoading(false);
     }
@@ -94,7 +94,7 @@ export default function EditVehiclePage() {
             const res = await updateVehicleAction(vehicleId, formData, slug);
             if (res.success) {
                 toast.success("Vehicle updated successfully");
-                router.push(`/s/${slug}/transport/vehicles`);
+                router.push(`/s/${slug}/transport/fleet/vehicles`);
             } else {
                 toast.error(res.error || "Update failed");
             }
@@ -120,7 +120,7 @@ export default function EditVehiclePage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div className="flex items-center gap-6">
                     <button
-                        onClick={() => router.push(`/s/${slug}/transport/vehicles`)}
+                        onClick={() => router.push(`/s/${slug}/transport/fleet/vehicles`)}
                         className="group flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white transition-all hover:border-zinc-900 active:scale-95 shadow-sm"
                     >
                         <ArrowLeft className="h-5 w-5 text-zinc-500 group-hover:text-zinc-900" />

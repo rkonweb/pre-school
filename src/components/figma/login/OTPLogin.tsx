@@ -111,7 +111,8 @@ export function OTPLogin({ type }: OTPLoginProps) {
         setIsLoading(true);
         setError(null);
         try {
-            const result = await sendOtpAction(phoneNumber, "login");
+            const loginType = type === "school" ? "school-login" : "parent-login";
+            const result = await sendOtpAction(phoneNumber, loginType);
             if (result.success) {
                 setResendTimer(30);
                 setOtp(["", "", "", "", "", ""]);

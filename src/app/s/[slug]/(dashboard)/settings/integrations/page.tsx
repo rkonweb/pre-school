@@ -18,11 +18,12 @@ import {
     MapPin,
     Video,
     Cloud,
-    HardDrive
+    HardDrive,
+    Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { getIntegrationSettingsAction, saveIntegrationSettingsAction } from "@/app/actions/settings-actions";
+import { getIntegrationSettingsAction, saveIntegrationSettingsAction, testAIIntegrationAction } from "@/app/actions/settings-actions";
 
 export default function IntegrationsPage() {
     const params = useParams();
@@ -84,6 +85,12 @@ export default function IntegrationsPage() {
             clientEmail: "",
             privateKey: "",
             folderId: ""
+        },
+        ai: {
+            enabled: false,
+            openaiKey: "",
+            geminiKey: "",
+            defaultModel: "gpt-3.5-turbo"
         }
     });
 
@@ -123,6 +130,7 @@ export default function IntegrationsPage() {
         { id: "zoom", label: "Zoom / Meet", icon: Video, color: "text-cyan-500", bg: "bg-cyan-50" },
         { id: "storage", label: "Cloud Drive", icon: Cloud, color: "text-sky-500", bg: "bg-sky-50" },
         { id: "googleDrive", label: "Google Drive", icon: HardDrive, color: "text-green-500", bg: "bg-green-50" },
+        { id: "ai", label: "AI & LLMs", icon: Sparkles, color: "text-indigo-500", bg: "bg-indigo-50" },
     ];
 
     if (loading) {
@@ -154,7 +162,7 @@ export default function IntegrationsPage() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="h-12 px-6 bg-brand text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 transition-all hover:brightness-110 hover:scale-105 active:scale-95 disabled:opacity-50"
+                    className="h-12 px-6 bg-brand text-[var(--secondary-color)] rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 transition-all hover:brightness-110 hover:scale-105 active:scale-95 disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     {saving ? "Syncing..." : "Save Config"}
@@ -758,6 +766,7 @@ export default function IntegrationsPage() {
                                         />
                                     </div>
                                 </div>
+
                                 {config.storage?.provider !== 'AWS' && (
                                     <div className="space-y-3 md:col-span-2">
                                         <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Custom Endpoint (Optional)</label>
@@ -865,6 +874,153 @@ export default function IntegrationsPage() {
                                 </ol>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {activeTab === "ai" && (
+                    <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                        {/* Global AI Settings */}
+                        <section className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Artificial Intelligence & LLMs</h3>
+                                    <p className="text-[10px] font-black text-zinc-400 tracking-widest uppercase italic">Global Intelligence Configuration</p>
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100">
+                                    <div className={cn("h-2 w-2 rounded-full", config.ai?.enabled ? "bg-indigo-500 animate-pulse" : "bg-zinc-300")} />
+                                    <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">
+                                        {config.ai?.enabled ? "System Online" : "System Offline"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Master Switch</label>
+                                    <button
+                                        onClick={() => setConfig({ ...config, ai: { ...config.ai, enabled: !config.ai?.enabled } })}
+                                        className={cn(
+                                            "w-full h-14 rounded-2xl border flex items-center justify-between px-6 transition-all",
+                                            config.ai?.enabled ? "bg-indigo-50 border-indigo-200 text-indigo-900" : "bg-zinc-50 border-zinc-100 text-zinc-400"
+                                        )}
+                                    >
+                                        <span className="text-xs font-black uppercase tracking-widest">Enable Intelligence</span>
+                                        <div className={cn(
+                                            "w-10 h-5 rounded-full relative transition-all",
+                                            config.ai?.enabled ? "bg-indigo-500" : "bg-zinc-200"
+                                        )}>
+                                            <div className={cn(
+                                                "absolute top-1 w-3 h-3 bg-white rounded-full transition-all",
+                                                config.ai?.enabled ? "right-1" : "left-1"
+                                            )} />
+                                        </div>
+                                    </button>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Thinking Model</label>
+                                    <select
+                                        value={config.ai?.defaultModel}
+                                        onChange={(e) => setConfig({ ...config, ai: { ...config.ai, defaultModel: e.target.value } })}
+                                        className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 px-6 text-xs font-black text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 transition-all uppercase"
+                                    >
+                                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast)</option>
+                                        <option value="gpt-4">GPT-4 (Smart)</option>
+                                        <option value="gemini-pro">Gemini Pro (Google)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="h-px bg-zinc-100 w-full" />
+
+                        {/* OpenAI Section */}
+                        <section className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight flex items-center gap-2">
+                                        OpenAI
+                                        <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[9px] font-bold tracking-wide">RECOMMENDED</span>
+                                    </h3>
+                                    <p className="text-[10px] font-black text-zinc-400 tracking-widest uppercase italic">Powering Jarvis Core & Reasoning</p>
+                                </div>
+                            </div>
+
+                            <div className="p-6 rounded-[24px] bg-zinc-50/50 border border-zinc-100 space-y-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Secret API Key (SK-...)</label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 group-focus-within:text-indigo-500 transition-colors" />
+                                        <input
+                                            type="password"
+                                            placeholder="sk-..."
+                                            value={config.ai?.openaiKey}
+                                            onChange={(e) => setConfig({ ...config, ai: { ...config.ai, openaiKey: e.target.value } })}
+                                            className="w-full h-14 rounded-2xl border border-zinc-200 bg-white pl-14 pr-32 text-xs font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono shadow-sm"
+                                        />
+                                        <button
+                                            onClick={async () => {
+                                                const toastId = toast.loading("Testing OpenAI connection...");
+                                                const res = await testAIIntegrationAction('openai', config.ai.openaiKey, slug);
+                                                if (res.success) {
+                                                    toast.success("OpenAI Connected Successfully!", { id: toastId });
+                                                } else {
+                                                    toast.error("Connection Failed: " + res.error, { id: toastId });
+                                                }
+                                            }}
+                                            disabled={!config.ai?.openaiKey}
+                                            className="absolute right-2 top-2 bottom-2 px-4 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                        >
+                                            Test Link
+                                        </button>
+                                    </div>
+                                    <p className="text-[10px] text-zinc-400 font-medium px-2">Used for: Chat, Morning Briefing, Homework Assistance.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="h-px bg-zinc-100 w-full" />
+
+                        {/* Google Gemini Section */}
+                        <section className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight">Google Gemini</h3>
+                                    <p className="text-[10px] font-black text-zinc-400 tracking-widest uppercase italic">Alternative High-Throughput Model</p>
+                                </div>
+                            </div>
+
+                            <div className="p-6 rounded-[24px] bg-zinc-50/50 border border-zinc-100 space-y-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Gemini API Key</label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 group-focus-within:text-blue-500 transition-colors" />
+                                        <input
+                                            type="password"
+                                            placeholder="AIzaSy..."
+                                            value={config.ai?.geminiKey}
+                                            onChange={(e) => setConfig({ ...config, ai: { ...config.ai, geminiKey: e.target.value } })}
+                                            className="w-full h-14 rounded-2xl border border-zinc-200 bg-white pl-14 pr-32 text-xs font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono shadow-sm"
+                                        />
+                                        <button
+                                            onClick={async () => {
+                                                const toastId = toast.loading("Testing Gemini connection...");
+                                                const res = await testAIIntegrationAction('google', config.ai.geminiKey, slug);
+                                                if (res.success) {
+                                                    toast.success("Gemini Connected Successfully!", { id: toastId });
+                                                } else {
+                                                    toast.error("Connection Failed: " + res.error, { id: toastId });
+                                                }
+                                            }}
+                                            disabled={!config.ai?.geminiKey}
+                                            className="absolute right-2 top-2 bottom-2 px-4 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                        >
+                                            Test Link
+                                        </button>
+                                    </div>
+                                    <p className="text-[10px] text-zinc-400 font-medium px-2">Used for: Document Analysis, Bulk Processing.</p>
+                                </div>
+                            </div>
+                        </section>
                     </div>
                 )}
             </div>

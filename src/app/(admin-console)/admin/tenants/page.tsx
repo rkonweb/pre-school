@@ -293,7 +293,7 @@ export default function TenantManagementPage() {
                                                 ₹{tenant.mrr.toLocaleString()}
                                             </div>
                                             <div className="text-[10px] text-zinc-400 font-medium">
-                                                {tenant.students} Students
+                                                {tenant.students + (tenant.staff || 0)} Users
                                             </div>
                                         </td>
                                         <td className="px-6 py-5 text-right">

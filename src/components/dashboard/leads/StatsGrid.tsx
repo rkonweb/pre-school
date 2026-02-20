@@ -101,16 +101,16 @@ export function StatsGrid({ stats }: StatsGridProps) {
             </div>
 
             {/* Today's Activity */}
-            <div className="rounded-[32px] bg-brand text-white p-6 flex flex-col justify-between shadow-xl shadow-brand/20 relative overflow-hidden md:col-span-2 lg:col-span-4 xl:col-span-1">
+            <div className="rounded-[32px] bg-brand text-[var(--secondary-color)] p-6 flex flex-col justify-between shadow-xl shadow-brand/20 relative overflow-hidden md:col-span-2 lg:col-span-4 xl:col-span-1">
                 <div className="flex justify-between items-start">
-                    <p className="text-xs font-black uppercase tracking-widest text-white/60">Today</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-[var(--secondary-color)] opacity-60">Today</p>
                     <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
                         <ArrowUpRight className="h-4 w-4" />
                     </div>
                 </div>
                 <div>
                     <h3 className="text-4xl font-black tracking-tighter">{today}</h3>
-                    <p className="text-xs font-bold text-white/80 mt-1">New Leads Today</p>
+                    <p className="text-xs font-bold text-[var(--secondary-color)] opacity-80 mt-1">New Leads Today</p>
                 </div>
             </div>
         </div>

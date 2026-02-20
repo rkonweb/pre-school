@@ -73,7 +73,7 @@ export default function DiaryPage() {
 
         if (!confirmed) return;
 
-        const res = await deleteDiaryEntryAction(id);
+        const res = await deleteDiaryEntryAction(slug, id);
         if (res.success) {
             toast.success("Entry deleted successfully");
             loadData(false); // Silent refresh
@@ -151,18 +151,22 @@ export default function DiaryPage() {
         }
     }
 
-    function getTypeColor(type: string) {
-        switch (type) {
-            case "HOMEWORK":
-                return "bg-brand/10 text-brand border-brand/20";
-            case "MESSAGE":
-                return "bg-green-100 text-green-700 border-green-200";
-            case "ANNOUNCEMENT":
-                return "bg-purple-100 text-purple-700 border-purple-200";
-            case "REMINDER":
-                return "bg-orange-100 text-orange-700 border-orange-200";
+    function getEntryStyle(entry: any) {
+        const priority = entry.priority || "NORMAL";
+
+        switch (priority) {
+            case "URGENT":
+                return "bg-red-50 text-red-700 border-red-200 hover:bg-red-100";
+            case "HIGH":
+                return "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100";
+            case "LOW":
+                return "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200";
+            case "NORMAL":
             default:
-                return "bg-zinc-100 text-zinc-700 border-zinc-200";
+                // Keep Type-based coloring for Normal priority to preserve some context? 
+                // Or use Blue as per modal? 
+                // User said "as per the setting in the edit page", where Normal is Blue.
+                return "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100";
         }
     }
 
@@ -304,9 +308,19 @@ export default function DiaryPage() {
                                                 {/* Add Entry Button */}
                                                 {!isPast && (
                                                     <button
-                                                        onClick={() => handleAddEntry(dateStr)}
-                                                        className="h-6 w-6 rounded-lg bg-brand text-white flex items-center justify-center hover:brightness-110 transition-colors shadow-sm hover:shadow-md"
-                                                        title="Add entry"
+                                                        onClick={() => {
+                                                            if (dayEntries.length >= 5) {
+                                                                toast.error("Maximum 5 entries allowed per day.");
+                                                                return;
+                                                            }
+                                                            handleAddEntry(dateStr);
+                                                        }}
+                                                        disabled={dayEntries.length >= 5}
+                                                        className={`h-6 w-6 rounded-lg flex items-center justify-center transition-colors shadow-sm ${dayEntries.length >= 5
+                                                            ? "bg-zinc-200 text-zinc-400 cursor-not-allowed"
+                                                            : "bg-brand text-[var(--secondary-color)] hover:brightness-110 hover:shadow-md"
+                                                            }`}
+                                                        title={dayEntries.length >= 5 ? "Limit reached (Max 5)" : "Add entry"}
                                                     >
                                                         <Plus className="h-4 w-4" />
                                                     </button>
@@ -315,10 +329,10 @@ export default function DiaryPage() {
 
                                             {/* Entries */}
                                             <div className="space-y-1 overflow-y-auto max-h-[calc(100%-2rem)]">
-                                                {dayEntries.slice(0, 3).map((entry) => (
+                                                {dayEntries.map((entry) => (
                                                     <div
                                                         key={entry.id}
-                                                        className={`text-[10px] font-bold px-2 py-1 rounded-lg border cursor-pointer group relative ${getTypeColor(entry.type)}`}
+                                                        className={`text-xs font-bold px-3 py-1.5 rounded-lg border cursor-pointer group relative ${getEntryStyle(entry)}`}
                                                         onClick={() => handleEdit(entry)}
                                                     >
                                                         <div className="flex items-center gap-1">
@@ -348,11 +362,6 @@ export default function DiaryPage() {
                                                         </div>
                                                     </div>
                                                 ))}
-                                                {dayEntries.length > 3 && (
-                                                    <div className="text-[10px] font-bold text-zinc-400 text-center">
-                                                        +{dayEntries.length - 3} more
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                     );

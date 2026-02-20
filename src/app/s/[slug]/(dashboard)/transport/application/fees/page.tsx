@@ -17,7 +17,7 @@ export default async function TransportFeesPage({ params }: { params: { slug: st
 
     // Fetch latest transport fees
     const feesRes = await getTransportFeesAction(slug);
-    const fees = feesRes.success ? feesRes.data : [];
+    const fees = feesRes.success && feesRes.data ? feesRes.data : [];
 
     // Calculate stats
     const totalRevenue = fees.reduce((acc: number, f: any) => acc + f.amount, 0);
@@ -33,7 +33,7 @@ export default async function TransportFeesPage({ params }: { params: { slug: st
                 </div>
                 <Link
                     href={`/s/${slug}/transport/fees/generate`}
-                    className="bg-brand text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:brightness-110 shadow-lg shadow-brand/20 transition-all font-medium"
+                    className="bg-brand text-[var(--secondary-color)] px-4 py-2 rounded-lg flex items-center gap-2 hover:brightness-110 shadow-lg shadow-brand/20 transition-all font-medium"
                 >
                     <FileText className="h-4 w-4" /> Generate Invoices
                 </Link>

@@ -109,7 +109,7 @@ export default function BulkReportPrinter({
                 </div>
                 <Button
                     onClick={() => handlePrint()}
-                    className="bg-brand hover:brightness-110 text-white rounded-xl font-bold px-6 shadow-lg shadow-brand/20"
+                    className="bg-brand hover:brightness-110 text-[var(--secondary-color)] rounded-xl font-bold px-6 shadow-lg shadow-brand/20"
                 >
                     <Printer className="mr-2 h-4 w-4" />
                     Send to Printer

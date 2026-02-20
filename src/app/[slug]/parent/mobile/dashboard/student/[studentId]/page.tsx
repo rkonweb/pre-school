@@ -77,20 +77,6 @@ export default async function StudentDetailsPage({
                 teacher={teacher}
             />
 
-            {/* Simplified Mobile Nav context */}
-            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-6 pointer-events-none z-50">
-                <div className="bg-summer-navy rounded-[32px] p-2 flex justify-between items-center shadow-2xl pointer-events-auto">
-                    <Link href={`/${slug}/parent/mobile/dashboard${preview === "true" ? "?preview=true" : ""}`} className="p-4 text-white/40">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    </Link>
-                    <Link href={`/${slug}/parent/mobile/activity?studentId=${studentId}${preview === "true" ? "&preview=true" : ""}`} className="p-4 text-white/40">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </Link>
-                    <div className="w-14 h-14 bg-vibrant-pink rounded-full flex items-center justify-center text-white shadow-xl">
-                        <User className="w-6 h-6" />
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }

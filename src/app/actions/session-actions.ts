@@ -144,7 +144,7 @@ export async function setUserSessionAction(userId: string, schoolSlug?: string) 
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 60 * 60 * 24, // 24 hours
+        // maxAge removed to ensure it's a SESSION COOKIE (clears on browser close)
     });
     return { success: true };
 }

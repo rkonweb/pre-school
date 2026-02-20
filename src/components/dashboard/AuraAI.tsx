@@ -188,7 +188,7 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                                                 <button
                                                     onClick={handleAnalyze}
                                                     disabled={isAnalyzing || !query.trim()}
-                                                    className="h-12 w-12 flex items-center justify-center bg-brand text-white rounded-xl shadow-lg shadow-brand/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                                    className="h-12 w-12 flex items-center justify-center bg-brand text-[var(--secondary-color)] rounded-xl shadow-lg shadow-brand/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                                                 >
                                                     {isAnalyzing ? <Loader2 className="h-5 w-5 animate-spin" /> : <ChevronRight className="h-5 w-5" />}
                                                 </button>

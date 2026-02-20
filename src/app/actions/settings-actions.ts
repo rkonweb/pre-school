@@ -176,10 +176,15 @@ export async function getInfrastructureStatsAction() {
     }
 }
 
-export async function testAIIntegrationAction(provider: 'google' | 'openai', apiKey: string) {
+export async function testAIIntegrationAction(provider: 'google' | 'openai', apiKey: string, slug?: string) {
     try {
-        const isAdmin = await isSuperAdminAuthenticated();
-        if (!isAdmin) return { success: false, error: "Unauthorized" };
+        if (slug) {
+            const auth = await validateUserSchoolAction(slug);
+            if (!auth.success) return { success: false, error: auth.error };
+        } else {
+            const isAdmin = await isSuperAdminAuthenticated();
+            if (!isAdmin) return { success: false, error: "Unauthorized" };
+        }
 
         if (!apiKey) return { success: false, error: "API Key is required" };
 
@@ -332,6 +337,9 @@ export async function updateSchoolProfileAction(slug: string, data: any) {
         revalidatePath(`/s/${slug}/settings/identity`);
         revalidatePath(`/s/${slug}/settings/location`);
         revalidatePath(`/s/${slug}/settings/config`);
+        // Revalidate layouts to update global theme
+        revalidatePath(`/s/${slug}`, 'layout');
+        revalidatePath(`/s/${slug}/parent`, 'layout');
 
         return { success: true, data: updated };
     } catch (error: any) {
@@ -347,17 +355,35 @@ export async function getIntegrationSettingsAction(slug: string) {
 
         const school = await (prisma as any).school.findUnique({
             where: { slug },
-            select: { id: true, integrationsConfig: true }
+            select: {
+                id: true,
+                integrationsConfig: true,
+                googleMapsApiKey: true,
+                googleDriveClientEmail: true,
+                googleDrivePrivateKey: true,
+                googleDriveFolderId: true
+            }
         });
 
         if (!school) return { success: false, error: "School not found" };
 
-        let config = {};
+        let config: any = {};
         try {
             config = school.integrationsConfig ? JSON.parse(school.integrationsConfig) : {};
         } catch (e) {
             config = {};
         }
+
+        // BACKWARD SYNC: Ensure UI shows legacy keys if JSON is empty
+        if (!config.maps) config.maps = { enabled: !!school.googleMapsApiKey, apiKey: school.googleMapsApiKey || "" };
+        else if (!config.maps.apiKey && school.googleMapsApiKey) config.maps.apiKey = school.googleMapsApiKey;
+
+        if (!config.googleDrive) config.googleDrive = {
+            enabled: !!school.googleDriveClientEmail,
+            clientEmail: school.googleDriveClientEmail || "",
+            privateKey: school.googleDrivePrivateKey || "",
+            folderId: school.googleDriveFolderId || ""
+        };
 
         return { success: true, data: config };
     } catch (error: any) {
@@ -378,11 +404,23 @@ export async function saveIntegrationSettingsAction(slug: string, data: any) {
 
         if (!school) return { success: false, error: "School not found" };
 
+        const updateData: any = {
+            integrationsConfig: JSON.stringify(data)
+        };
+
+        // SYNC PROTOCOL: Align top-level fields for cross-module accessibility
+        if (data.maps?.apiKey) {
+            updateData.googleMapsApiKey = data.maps.apiKey;
+        }
+
+        // Sync Google Drive keys if available
+        if (data.googleDrive?.clientEmail) updateData.googleDriveClientEmail = data.googleDrive.clientEmail;
+        if (data.googleDrive?.privateKey) updateData.googleDrivePrivateKey = data.googleDrive.privateKey;
+        if (data.googleDrive?.folderId) updateData.googleDriveFolderId = data.googleDrive.folderId;
+
         await (prisma as any).school.update({
             where: { id: school.id },
-            data: {
-                integrationsConfig: JSON.stringify(data)
-            }
+            data: updateData
         });
 
         revalidatePath(`/s/${slug}/settings/integrations`);

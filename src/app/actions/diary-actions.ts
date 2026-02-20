@@ -162,7 +162,26 @@ export async function getDiaryEntriesAction(schoolSlug: string, filters?: {
         } else {
             // No restriction, honor filters if present
             if (filters?.classroomId) {
-                where.classroomId = filters.classroomId;
+                // Include:
+                // 1. Direct posts to this class
+                // 2. Direct messages (classroomId=null) sent to students IN this class
+                where.AND = [
+                    {
+                        OR: [
+                            { classroomId: filters.classroomId },
+                            {
+                                classroomId: null,
+                                recipients: {
+                                    some: {
+                                        student: {
+                                            classroomId: filters.classroomId
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ];
             }
         }
 
@@ -268,9 +287,19 @@ export async function getDiaryEntriesForStudentAction(slug: string, studentId: s
 
         const query: any = {
             studentId,
-            entry: {
-                status: "PUBLISHED"
-            }
+            OR: [
+                {
+                    entry: {
+                        status: "PUBLISHED"
+                    }
+                },
+                {
+                    entry: {
+                        status: "SCHEDULED"
+                        // Removed lte filter to allow all future entries to be visible on the calendar
+                    }
+                }
+            ]
         };
 
         if (academicYearId) {
@@ -304,7 +333,24 @@ export async function getDiaryEntriesForStudentAction(slug: string, studentId: s
             }
         });
 
-        return { success: true, data: recipients };
+        // Deduplicate by Content Fingerprint (Title + Content + Type + Date)
+        const seenFingerprints = new Set<string>();
+        const uniqueRecipients: any[] = [];
+
+        for (const recipient of recipients) {
+            const entry = recipient.entry;
+            // Create a fingerprint based on content to detect logical duplicates
+            // We use Title + Type + Date(Day) + Content(trimmed)
+            const dateStr = new Date(entry.publishedAt || entry.createdAt).toDateString();
+            const fingerprint = `${entry.title}|${entry.type}|${dateStr}|${entry.content?.trim()}`;
+
+            if (!seenFingerprints.has(fingerprint)) {
+                seenFingerprints.add(fingerprint);
+                uniqueRecipients.push(recipient);
+            }
+        }
+
+        return { success: true, data: uniqueRecipients };
     } catch (error: any) {
         console.error("Get Student Diary Entries Error:", error);
         return { success: false, error: error.message };
@@ -439,6 +485,26 @@ export async function acknowledgeDiaryEntryAction(recipientId: string, acknowled
         return { success: true };
     } catch (error: any) {
         console.error("Acknowledge Diary Entry Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+// ============================================
+// TOGGLE COMPLETION (Parent View)
+// ============================================
+
+export async function toggleDiaryCompletionAction(recipientId: string, isCompleted: boolean) {
+    try {
+        const entry = await prisma.diaryRecipient.update({
+            where: { id: recipientId },
+            data: {
+                isCompleted,
+                completedAt: isCompleted ? new Date() : null
+            }
+        });
+
+        return { success: true, data: entry };
+    } catch (error: any) {
+        console.error("Toggle Diary Completion Error:", error);
         return { success: false, error: error.message };
     }
 }

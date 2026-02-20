@@ -188,8 +188,8 @@ function SchoolTemplateCard({ template, slug }: { template: any, slug: string })
 
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-brand/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center z-30 p-8 text-center translate-y-4 group-hover:translate-y-0">
-                    <Sparkles className="h-8 w-8 text-white/50 mb-4" />
-                    <p className="text-white font-black uppercase text-xs tracking-widest mb-6">Professional <br />Marketing Asset</p>
+                    <Sparkles className="h-8 w-8 text-[var(--secondary-color)]/50 mb-4" />
+                    <p className="text-[var(--secondary-color)] font-black uppercase text-xs tracking-widest mb-6">Professional <br />Marketing Asset</p>
                     <Link
                         href={`/s/${slug}/marketing/customize/${template.id}`}
                         className="px-8 py-3 bg-white text-brand rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-zinc-50 transition-all transform hover:scale-105 shadow-xl active:scale-95"

@@ -12,7 +12,9 @@ import {
     ShieldCheck,
     Zap,
     Ticket,
-    Loader2
+    Loader2,
+    Plus,
+    Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { updateSubscriptionPlanAction, getSubscriptionPlanByIdAction } from "@/app/actions/subscription-actions";
@@ -42,7 +44,8 @@ export default function EditSubscriptionPlanPage() {
         additionalStaffPrice: 0,
         supportLevel: "email" as "community" | "email" | "priority" | "dedicated",
         includedModules: [] as string[],
-        currency: "INR"
+        currency: "INR",
+        addonUserTiers: [] as { from: number; to: number | null; pricePerUser: number }[]
     });
 
     useEffect(() => {
@@ -64,7 +67,8 @@ export default function EditSubscriptionPlanPage() {
                         additionalStaffPrice: plan.additionalStaffPrice || 0,
                         supportLevel: plan.supportLevel,
                         includedModules: plan.includedModules || [],
-                        currency: plan.currency
+                        currency: plan.currency,
+                        addonUserTiers: plan.addonUserTiers || []
                     });
                 } else {
                     toast.error("Plan not found");
@@ -101,7 +105,8 @@ export default function EditSubscriptionPlanPage() {
                 additionalStaffPrice: Number(formData.additionalStaffPrice),
                 tier: formData.tier,
                 supportLevel: formData.supportLevel,
-                includedModules: formData.includedModules
+                includedModules: formData.includedModules,
+                addonUserTiers: formData.addonUserTiers
             };
 
             const res = await updateSubscriptionPlanAction(planId, payload);
@@ -328,6 +333,12 @@ export default function EditSubscriptionPlanPage() {
                                 />
                             </div>
                             <div className="text-center space-y-2">
+                                <label className="text-xs font-bold text-blue-600 uppercase">Total Users</label>
+                                <div className="w-full text-center rounded-xl border-blue-100 bg-blue-50/50 p-3 font-bold text-xl text-blue-700">
+                                    {(formData.maxStudents || 0) + (formData.maxStaff || 0)}
+                                </div>
+                            </div>
+                            <div className="text-center space-y-2">
                                 <label className="text-xs font-bold text-zinc-400 uppercase">Storage (GB)</label>
                                 <input
                                     type="number"
@@ -336,6 +347,90 @@ export default function EditSubscriptionPlanPage() {
                                     onChange={e => setFormData({ ...formData, maxStorageGB: Number(e.target.value) })}
                                     className="w-full text-center rounded-xl border-zinc-200 bg-zinc-50 p-3 font-bold text-xl text-zinc-900 focus:ring-2 focus:ring-blue-600 outline-none"
                                 />
+                            </div>
+                        </div>
+
+                        {/* Tiered User Pricing */}
+                        <div className="pt-8 border-t border-zinc-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <label className="text-xs font-bold text-zinc-500 uppercase">Tiered Additional User Pricing</label>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({
+                                        ...formData,
+                                        addonUserTiers: [...formData.addonUserTiers, { from: 0, to: 0, pricePerUser: 0 }]
+                                    })}
+                                    className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                                >
+                                    <Plus className="h-3.5 w-3.5" /> Add Range
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {formData.addonUserTiers.map((tier, idx) => (
+                                    <div key={idx} className="flex items-center gap-4 bg-zinc-50 p-4 rounded-2xl border border-zinc-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <div className="flex-1 grid grid-cols-3 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-zinc-400 uppercase">From</label>
+                                                <input
+                                                    type="number"
+                                                    value={tier.from}
+                                                    onChange={e => {
+                                                        const newTiers = [...formData.addonUserTiers];
+                                                        newTiers[idx].from = Number(e.target.value);
+                                                        setFormData({ ...formData, addonUserTiers: newTiers });
+                                                    }}
+                                                    className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-sm font-bold"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-zinc-400 uppercase">To (0 for ∞)</label>
+                                                <input
+                                                    type="number"
+                                                    value={tier.to || 0}
+                                                    onChange={e => {
+                                                        const newTiers = [...formData.addonUserTiers];
+                                                        newTiers[idx].to = Number(e.target.value) || null;
+                                                        setFormData({ ...formData, addonUserTiers: newTiers });
+                                                    }}
+                                                    className="w-full bg-white border border-zinc-200 rounded-lg px-3 py-1.5 text-sm font-bold"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-zinc-400 uppercase">Price/User</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400 text-xs font-bold">₹</span>
+                                                    <input
+                                                        type="number"
+                                                        value={tier.pricePerUser}
+                                                        onChange={e => {
+                                                            const newTiers = [...formData.addonUserTiers];
+                                                            newTiers[idx].pricePerUser = Number(e.target.value);
+                                                            setFormData({ ...formData, addonUserTiers: newTiers });
+                                                        }}
+                                                        className="w-full bg-white border border-zinc-200 rounded-lg pl-5 pr-3 py-1.5 text-sm font-bold"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const newTiers = formData.addonUserTiers.filter((_, i) => i !== idx);
+                                                setFormData({ ...formData, addonUserTiers: newTiers });
+                                            }}
+                                            className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                ))}
+
+                                {formData.addonUserTiers.length === 0 && (
+                                    <div className="text-center py-6 border-2 border-dashed border-zinc-100 rounded-2xl">
+                                        <p className="text-xs font-medium text-zinc-400">No tiered pricing defined. Additional users will use the flat rate above.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

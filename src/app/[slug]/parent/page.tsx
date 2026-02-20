@@ -10,7 +10,7 @@ export default async function ParentRootPage({ params }: { params: Promise<{ slu
         const phone = user.mobile;
 
         // Check for student count to decide redirection
-        const familyRes = await getFamilyStudentsAction(phone);
+        const familyRes = await getFamilyStudentsAction(slug, phone);
         if (familyRes.success && familyRes.students) {
             const students = familyRes.students;
             // Auto-redirect ONLY if there is exactly one record AND it is a confirmed student (not admission)

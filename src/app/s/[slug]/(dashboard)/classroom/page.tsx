@@ -28,7 +28,7 @@ export default function ClassroomPage() {
                         Real-time classroom activities and daily planning.
                     </p>
                 </div>
-                <button className="h-12 px-6 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all">
+                <button className="h-12 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all">
                     <Package className="h-4 w-4" />
                     Request Supplies
                 </button>

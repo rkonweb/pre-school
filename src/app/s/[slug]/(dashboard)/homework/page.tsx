@@ -70,7 +70,7 @@ export default function HomeworkPage() {
                     </div>
                     <button
                         onClick={() => setShowBuilder(true)}
-                        className="flex items-center gap-2 px-6 py-4 bg-brand text-white rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-2xl hover:scale-105"
+                        className="flex items-center gap-2 px-6 py-4 bg-brand text-[var(--secondary-color)] rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-2xl hover:scale-105"
                     >
                         <Plus className="h-5 w-5" />
                         Create Homework
@@ -144,7 +144,7 @@ function HomeworkCard({ homework, onClick }: any) {
             className="group relative bg-zinc-800/50 backdrop-blur-xl border border-zinc-700 rounded-3xl p-6 cursor-pointer hover:border-blue-500 transition-all"
         >
             <div className="absolute -top-3 -right-3 h-12 w-12 bg-brand rounded-2xl flex items-center justify-center shadow-xl">
-                <FileText className="h-6 w-6 text-white" />
+                <FileText className="h-6 w-6 text-[var(--secondary-color)]" />
             </div>
 
             <h3 className="text-xl font-black text-white mb-2 pr-8">{homework.title}</h3>
@@ -213,13 +213,23 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
         e.preventDefault();
         setIsSubmitting(true);
 
-        const result = await createHomeworkAction({
-            ...formData,
-            scheduledFor: formData.scheduledFor ? new Date(formData.scheduledFor) : undefined,
+        const result = await createHomeworkAction(slug, {
+            title: formData.title,
+            description: formData.description,
+            instructions: formData.instructions,
+            assignedTo: formData.assignedTo,
+            targetIds: formData.targetIds, // Using formData.targetIds as 'targets' is not defined
             dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined,
-            schoolId: schoolData.id,
-            createdById: "current-user-id", // TODO: Get from auth
-            academicYearId: getCookie(`academic_year_${schoolData.slug}`) || undefined,
+            schoolId: schoolData.id, // Keeping original schoolId logic
+            createdById: "current-user-id", // Keeping original createdById logic
+            // classroomId: formData.classroomId, // classroomId is not in original formData, omitting
+            attachments: JSON.stringify({ // Creating attachments object from existing media URLs
+                videoUrl: formData.videoUrl,
+                voiceNoteUrl: formData.voiceNoteUrl,
+                worksheetUrl: formData.worksheetUrl
+            }),
+            scheduledFor: formData.scheduledFor ? new Date(formData.scheduledFor) : undefined, // Keeping original scheduledFor logic
+            academicYearId: getCookie(`academic_year_${schoolData.slug}`) || undefined, // Keeping original academicYearId logic
         });
 
         if (result.success) {
@@ -364,7 +374,7 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                                             type="button"
                                             onClick={() => setFormData({ ...formData, assignedTo: type })}
                                             className={`px-4 py-3 rounded-xl font-bold text-sm transition-all ${formData.assignedTo === type
-                                                ? "bg-brand text-white"
+                                                ? "bg-brand text-[var(--secondary-color)]"
                                                 : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
                                                 }`}
                                         >
@@ -409,7 +419,7 @@ function HomeworkBuilder({ isOpen, onClose, schoolData, templates, onSuccess }: 
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-4 bg-brand text-white rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-brand text-[var(--secondary-color)] rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? (
                                     <Loader2 className="h-5 w-5 animate-spin" />

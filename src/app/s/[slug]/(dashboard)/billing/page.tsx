@@ -127,7 +127,7 @@ export default function BillingDashboard() {
                     </button>
                     <Link
                         href={`/s/${slug}/billing/bulk`}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white transition-colors hover:brightness-110 shadow-sm shadow-brand/20"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-[var(--secondary-color)] transition-colors hover:brightness-110 shadow-sm shadow-brand/20"
                     >
                         <Plus className="h-4 w-4" />
                         Bulk Generate Invoices

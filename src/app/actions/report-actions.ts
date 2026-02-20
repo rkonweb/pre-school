@@ -299,9 +299,12 @@ export async function generateDailyReportAction(schoolSlug: string) {
 /**
  * Fetches all report cards for a specific student (Staff version)
  */
-export async function getStudentReportsAction(studentId: string, academicYearId?: string) {
+/**
+ * Fetches all report cards for a specific student (Staff version)
+ */
+export async function getStudentReportsAction(schoolSlug: string, studentId: string, academicYearId?: string) {
     try {
-        const auth = await validateUserSchoolAction(""); // Slug-based check skipped or handled inside
+        const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
         const reports = await prisma.reportCard.findMany({
@@ -323,6 +326,7 @@ export async function getStudentReportsAction(studentId: string, academicYearId?
  * Creates a new report card for a student
  */
 export async function createReportCardAction(
+    schoolSlug: string,
     studentId: string,
     term: string,
     marks: any,
@@ -330,7 +334,7 @@ export async function createReportCardAction(
     academicYearId?: string
 ) {
     try {
-        const auth = await validateUserSchoolAction("");
+        const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
         const student = await prisma.student.findUnique({
@@ -347,13 +351,12 @@ export async function createReportCardAction(
                 marks: JSON.stringify(marks),
                 comments,
                 academicYearId,
-                schoolId: student.schoolId,
+                academicYearId,
                 published: true, // Auto-publish for now
-                createdBy: auth.user.id
             }
         });
 
-        revalidatePath(`/students/${studentId}`);
+        revalidatePath(`/s/${schoolSlug}/students/${studentId}`);
         return { success: true, report };
     } catch (error: any) {
         console.error("createReportCardAction Error:", error);

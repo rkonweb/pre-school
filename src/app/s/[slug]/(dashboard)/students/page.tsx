@@ -30,6 +30,7 @@ export default function StudentsPage() {
     const [statusFilter, setStatusFilter] = useState("all");
     const [classFilter, setClassFilter] = useState("all");
     const [genderFilter, setGenderFilter] = useState("all");
+    const [activeTab, setActiveTab] = useState("active");
 
     // Sort Config
     const [sortConfig, setSortConfig] = useState<{ field: string, direction: "asc" | "desc" }>({
@@ -58,7 +59,7 @@ export default function StudentsPage() {
             loadData();
         }, 500);
         return () => clearTimeout(timer);
-    }, [slug, page, searchTerm, statusFilter, classFilter, genderFilter, sortConfig]);
+    }, [slug, page, searchTerm, statusFilter, classFilter, genderFilter, sortConfig, activeTab]);
 
     const loadClassrooms = async () => {
         const res = await getClassroomsAction(slug);
@@ -72,7 +73,19 @@ export default function StudentsPage() {
 
         try {
             const filters: any = {};
-            if (statusFilter !== "all") filters.status = statusFilter;
+
+            // Status Logic based on Tab
+            if (activeTab === "alumni") {
+                filters.status = "ALUMNI";
+            } else {
+                // Active Tab
+                if (statusFilter !== "all") {
+                    filters.status = statusFilter;
+                } else {
+                    filters.excludeStatus = "ALUMNI";
+                }
+            }
+
             if (classFilter !== "all") filters.class = classFilter;
             if (genderFilter !== "all") filters.gender = genderFilter;
 
@@ -112,7 +125,7 @@ export default function StudentsPage() {
             }
 
             if (!res.success) {
-                toast.error("Failed to load students");
+                toast.error(res.error || "Failed to load students");
             }
 
         } catch (error) {
@@ -215,6 +228,34 @@ export default function StudentsPage() {
                 />
             </SlideOver>
 
+            {/* Tabs */}
+            <div className="border-b border-zinc-200 dark:border-zinc-800">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button
+                        onClick={() => { setActiveTab("active"); setPage(1); setStatusFilter("all"); }}
+                        className={cn(
+                            "whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors",
+                            activeTab === "active"
+                                ? "border-brand text-brand"
+                                : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-300"
+                        )}
+                    >
+                        Active Students
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab("alumni"); setPage(1); setStatusFilter("all"); }}
+                        className={cn(
+                            "whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors",
+                            activeTab === "alumni"
+                                ? "border-brand text-brand"
+                                : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-300"
+                        )}
+                    >
+                        Alumni
+                    </button>
+                </nav>
+            </div>
+
             {/* Filters & Actions */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
                 <div className="relative flex-1">
@@ -223,27 +264,29 @@ export default function StudentsPage() {
                             setSearchTerm(term);
                             setPage(1);
                         }}
-                        placeholder="Search students (Elasticsearch)..."
+                        placeholder={activeTab === "alumni" ? "Search alumni..." : "Search students..."}
                         className="w-full"
                     />
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <Filter className="h-4 w-4 text-zinc-400" />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => {
-                                setStatusFilter(e.target.value);
-                                setPage(1);
-                            }}
-                            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
-                        >
-                            <option value="all">All Status</option>
-                            <option value="ACTIVE">Active</option>
-                            <option value="INACTIVE">Inactive</option>
-                            <option value="ABSENT">Absent</option>
-                        </select>
-                    </div>
+                    {activeTab === "active" && (
+                        <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4 text-zinc-400" />
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => {
+                                    setStatusFilter(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="INACTIVE">Inactive</option>
+                                <option value="ABSENT">Absent</option>
+                            </select>
+                        </div>
+                    )}
 
                     <select
                         value={classFilter}

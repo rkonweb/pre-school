@@ -42,7 +42,8 @@ import {
     Zap,
     CalendarDays,
     Wallet,
-    Building
+    Building,
+    Brain
 } from "lucide-react";
 import { useState } from "react";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
@@ -128,6 +129,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                 { name: "Attendance", href: `/s/${slug}/students/attendance`, icon: Clock },
                 { name: "Health Records", href: `/s/${slug}/students/health`, icon: Activity },
                 { name: "Progress Reports", href: `/s/${slug}/students/reports`, icon: FileSpreadsheet },
+                { name: "Development", href: `/s/${slug}/students/development`, icon: Brain },
                 { name: "ID Cards", href: `/s/${slug}/students/id-cards`, icon: CreditCard },
             ]
         },
@@ -181,6 +183,9 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                 { name: "Connectors & APIs", href: `/s/${slug}/settings/integrations`, icon: Zap },
                 { name: "Subscription & Plan", href: `/s/${slug}/settings/subscription`, icon: CreditCard },
                 { name: "ID Card Templates", href: `/s/${slug}/settings/id-cards`, icon: CreditCard },
+
+                { name: "Development Settings", href: `/s/${slug}/settings/development`, icon: Brain },
+                { name: "UI Kit / Design System", href: `/s/${slug}/settings/ui-kit`, icon: Sparkles },
             ]
         },
     ];
@@ -243,6 +248,9 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         "Fee Configuration": "settings.fees",
         "Branch Management": "settings.branches",
         "Subscription & Plan": "settings.subscription",
+        "Development": "students.development",
+        "Development Settings": "settings.development",
+        "UI Kit / Design System": "settings",
         "Settings": "settings"
     };
 
@@ -368,11 +376,11 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                                 className={cn(
                                                     "h-[18px] w-[18px] flex-shrink-0 transition-colors",
                                                     isActive
-                                                        ? "text-white"
+                                                        ? "text-[var(--secondary-color)]"
                                                         : "text-zinc-400 group-hover:text-zinc-600"
                                                 )}
                                             />
-                                            {!isCollapsed && <span>{item.name}</span>}
+                                            {!isCollapsed && <span className={cn(isActive && "text-[var(--secondary-color)]")}>{item.name}</span>}
                                         </Link>
                                     );
                                 }
@@ -386,7 +394,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                             className={cn(
                                                 "group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200",
                                                 isActive && !isExpanded
-                                                    ? "bg-brand text-white shadow-md shadow-brand/20"
+                                                    ? "bg-brand text-[var(--secondary-color)] shadow-md shadow-brand/20"
                                                     : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900",
                                                 isCollapsed && "justify-center px-0"
                                             )}
@@ -396,7 +404,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                                     className={cn(
                                                         "h-[18px] w-[18px] flex-shrink-0 transition-colors",
                                                         (isActive && !isExpanded)
-                                                            ? "text-white"
+                                                            ? "text-[var(--secondary-color)]"
                                                             : "text-zinc-400 group-hover:text-zinc-600"
                                                     )}
                                                 />
@@ -406,7 +414,8 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                                 <ChevronDown
                                                     className={cn(
                                                         "h-4 w-4 text-zinc-400 transition-transform duration-200",
-                                                        isExpanded ? "rotate-0" : "-rotate-90"
+                                                        isExpanded ? "rotate-0" : "-rotate-90",
+                                                        (isActive && !isExpanded) && "text-[var(--secondary-color)]"
                                                     )}
                                                 />
                                             )}

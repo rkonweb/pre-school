@@ -392,7 +392,7 @@ export default function RolesClient({
                                 setNewRoleDesc("");
                                 setNewRolePermissions([]);
                             }}
-                            className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:brightness-110 font-medium text-sm transition-colors shadow-sm shadow-brand/20"
+                            className="flex items-center gap-2 px-4 py-2 bg-brand text-[var(--secondary-color)] rounded-lg hover:brightness-110 font-medium text-sm transition-colors shadow-sm shadow-brand/20"
                         >
                             <Plus className="h-4 w-4" /> Create Custom Role
                         </button>
@@ -540,7 +540,7 @@ export default function RolesClient({
                                     Cancel
                                 </button>
                                 <button
-                                    className="px-4 py-2 bg-brand text-white font-medium rounded-lg hover:brightness-110 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
+                                    className="px-4 py-2 bg-brand text-[var(--secondary-color)] font-medium rounded-lg hover:brightness-110 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
                                 >
                                     {isSubmittingRole ? (
                                         <><span>Saving...</span></>
@@ -668,7 +668,7 @@ export default function RolesClient({
                                             <button
                                                 onClick={saveAccessChanges}
                                                 disabled={isSavingAccess}
-                                                className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:brightness-110 shadow-sm disabled:opacity-50"
+                                                className="flex items-center gap-2 px-4 py-2 bg-brand text-[var(--secondary-color)] rounded-lg hover:brightness-110 shadow-sm disabled:opacity-50"
                                             >
                                                 {isSavingAccess ? "Saving..." : <><Save className="h-4 w-4" /> Save Changes</>}
                                             </button>
@@ -775,7 +775,7 @@ export default function RolesClient({
                                                     <button
                                                         onClick={saveStaffAccessChanges}
                                                         disabled={isSavingStaffAccess}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white rounded-lg text-xs font-semibold hover:brightness-110 disabled:opacity-50 transition-all"
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-brand text-[var(--secondary-color)] rounded-lg text-xs font-semibold hover:brightness-110 disabled:opacity-50 transition-all"
                                                     >
                                                         {isSavingStaffAccess ? "Saving..." : <><Save className="h-3.5 w-3.5" /> Save Staff Mapping</>}
                                                     </button>

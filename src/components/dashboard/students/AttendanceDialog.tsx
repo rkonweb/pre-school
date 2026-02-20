@@ -17,9 +17,10 @@ interface AttendanceDialogProps {
         notes?: string;
     };
     timezone?: string;
+    slug: string;
 }
 
-export function AttendanceDialog({ onClose, studentId, academicYearId, onSuccess, initialData, timezone = "Asia/Kolkata" }: AttendanceDialogProps) {
+export function AttendanceDialog({ onClose, studentId, academicYearId, onSuccess, initialData, timezone = "Asia/Kolkata", slug }: AttendanceDialogProps) {
     const { role } = useRolePermissions();
     const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
 
@@ -47,7 +48,7 @@ export function AttendanceDialog({ onClose, studentId, academicYearId, onSuccess
 
         setIsSubmitting(true);
         try {
-            const res = await markAttendanceAction(studentId, date, status, notes, academicYearId);
+            const res = await markAttendanceAction(slug, studentId, date, status, notes, academicYearId);
             if (res.success) {
                 toast.success("Attendance marked");
                 onSuccess();

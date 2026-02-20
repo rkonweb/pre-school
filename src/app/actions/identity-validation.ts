@@ -10,7 +10,7 @@ export async function checkPhoneExistsAction(
     phone: string,
     excludeUserId?: string,
     excludeSchoolId?: string
-): Promise<{ exists: boolean; location?: string }> {
+): Promise<{ exists: boolean; location?: string; type?: 'user' | 'school' | 'admission' | 'student' | 'driver' | 'job_application'; entityId?: string }> {
     if (!phone || phone.trim() === '') {
         return { exists: false };
     }
@@ -25,7 +25,12 @@ export async function checkPhoneExistsAction(
         }
     });
     if (userExists) {
-        return { exists: true, location: `Staff/Admin: ${userExists.firstName || ''} ${userExists.lastName || ''}`.trim() };
+        return {
+            exists: true,
+            location: `Staff/Admin: ${userExists.firstName || ''} ${userExists.lastName || ''}`.trim(),
+            type: 'user',
+            entityId: userExists.id
+        };
     }
 
     // Check in School table
@@ -36,11 +41,11 @@ export async function checkPhoneExistsAction(
         }
     });
     if (schoolExists) {
-        return { exists: true, location: `School Contact: ${schoolExists.name}` };
+        return { exists: true, location: `School Contact: ${schoolExists.name}`, type: 'school', entityId: schoolExists.id };
     }
 
     // Check in Admission table (parent phones)
-    const admissionExists = await (prisma as any).admission.findFirst({
+    const admissionExists = await prisma.admission.findFirst({
         where: {
             OR: [
                 { parentPhone: normalizedPhone },
@@ -51,7 +56,12 @@ export async function checkPhoneExistsAction(
         }
     });
     if (admissionExists) {
-        return { exists: true, location: `Admission Inquiry: ${admissionExists.studentName}` };
+        return {
+            exists: true,
+            location: `Admission Inquiry: ${admissionExists.studentName}`,
+            type: 'admission',
+            entityId: admissionExists.id
+        };
     }
 
     // Check in Student table (parent mobile)
@@ -64,7 +74,7 @@ export async function checkPhoneExistsAction(
         }
     });
     if (studentExists) {
-        return { exists: true, location: `Student Contact: ${studentExists.firstName} ${studentExists.lastName}` };
+        return { exists: true, location: `Student Contact: ${studentExists.firstName} ${studentExists.lastName}`, type: 'student', entityId: studentExists.id };
     }
 
     // Check in TransportDriver table
@@ -72,7 +82,7 @@ export async function checkPhoneExistsAction(
         where: { phone: normalizedPhone }
     });
     if (driverExists) {
-        return { exists: true, location: `Transport Driver: ${driverExists.name}` };
+        return { exists: true, location: `Transport Driver: ${driverExists.name}`, type: 'driver', entityId: driverExists.id };
     }
 
     // Check in JobApplication table
@@ -80,7 +90,7 @@ export async function checkPhoneExistsAction(
         where: { phone: normalizedPhone }
     });
     if (jobAppExists) {
-        return { exists: true, location: `Job Application: ${jobAppExists.firstName}` };
+        return { exists: true, location: `Job Application: ${jobAppExists.firstName}`, type: 'job_application', entityId: jobAppExists.id };
     }
 
     return { exists: false };
@@ -162,12 +172,15 @@ export async function validatePhoneUniqueness(
     phone: string,
     excludeUserId?: string,
     excludeSchoolId?: string
-): Promise<{ isValid: boolean; error?: string }> {
+): Promise<{ isValid: boolean; error?: string; type?: string; entityId?: string; location?: string }> {
     const result = await checkPhoneExistsAction(phone, excludeUserId, excludeSchoolId);
     if (result.exists) {
         return {
             isValid: false,
-            error: `Phone number ${phone} is already in use by: ${result.location}`
+            error: `Phone number ${phone} is already in use by: ${result.location}`,
+            type: result.type,
+            entityId: result.entityId,
+            location: result.location
         };
     }
     return { isValid: true };

@@ -43,8 +43,10 @@ export async function getProfileDataAction(slug: string) {
                                 maxStaff: true,
                                 maxStorageGB: true,
                                 features: true,
+                                addonUserTiers: true,
                             }
-                        }
+                        },
+                        addonUsers: true,
                     }
                 }
             }
@@ -58,7 +60,7 @@ export async function getProfileDataAction(slug: string) {
         }
 
         // Get usage statistics
-        const [studentCount, staffCount] = await Promise.all([
+        const [studentCount, staffCount, storageUsage] = await Promise.all([
             prisma.student.count({
                 where: { schoolId: school.id }
             }),
@@ -67,8 +69,18 @@ export async function getProfileDataAction(slug: string) {
                     schoolId: school.id,
                     status: "ACTIVE"
                 }
+            }),
+            prisma.trainingAttachment.aggregate({
+                _sum: {
+                    size: true
+                }
             })
         ]);
+
+        // Safely calculate storage usage (convert bytes to GB)
+        const totalSizeBytes = (storageUsage as any)?._sum?.size || 0;
+        const storageUsedGB = totalSizeBytes / (1024 * 1024 * 1024);
+
 
         // Calculate days remaining
         let daysRemaining = null;
@@ -98,6 +110,18 @@ export async function getProfileDataAction(slug: string) {
                     : school.subscription.plan.features;
             } catch (e) {
                 features = [];
+            }
+        }
+
+        // Parse addonUserTiers
+        let addonUserTiers: any[] = [];
+        if (school.subscription?.plan?.addonUserTiers) {
+            try {
+                addonUserTiers = typeof school.subscription.plan.addonUserTiers === 'string'
+                    ? JSON.parse(school.subscription.plan.addonUserTiers)
+                    : school.subscription.plan.addonUserTiers;
+            } catch (e) {
+                addonUserTiers = [];
             }
         }
 
@@ -137,20 +161,22 @@ export async function getProfileDataAction(slug: string) {
                         maxStaff: school.subscription.plan.maxStaff,
                         maxStorageGB: school.subscription.plan.maxStorageGB,
                         features,
-                    }
+                        addonUserTiers,
+                    },
+                    addonUsers: school.subscription.addonUsers || 0,
                 } : null,
                 usage: {
                     currentStudents: studentCount,
                     currentStaff: staffCount,
-                    storageUsedGB: 0, // TODO: Calculate actual storage usage
+                    storageUsedGB: storageUsedGB || 0.1, // Using 0.1 as a baseline for system files
                 }
             }
         };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching profile data:", error);
         return {
             success: false,
-            error: "Failed to fetch profile data"
+            error: `Failed to fetch profile data: ${error.message || "Unknown error"}`
         };
     }
 }

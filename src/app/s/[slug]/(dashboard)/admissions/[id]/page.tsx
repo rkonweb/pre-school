@@ -296,7 +296,8 @@ export default function AdmissionDetailPage() {
                     loadData();
                 } else {
                     console.error("Approval Response Error:", res.error);
-                    toast.error(`Approval Failed: ${'error' in res ? res.error : 'Unknown error'}`);
+                    const errorMessage = 'error' in res ? (res as any).error : 'Unknown error';
+                    toast.error(`Approval Failed: ${errorMessage}`);
                 }
             } catch (err: any) {
                 console.error("Unexpected Approval Error:", err);
@@ -327,7 +328,8 @@ export default function AdmissionDetailPage() {
                                 if (res.success) setAllClassrooms(res.data);
                             });
                         } else {
-                            toast.error(`Failed to create classroom: ${createRes.error}`);
+                            const errorMsg = 'error' in createRes ? (createRes as any).error : 'Unknown Error';
+                            toast.error(`Failed to create classroom: ${errorMsg}`);
                             setIsSaving(false);
                         }
                     } catch (error: any) {
@@ -469,7 +471,7 @@ export default function AdmissionDetailPage() {
                     {mode === "view" ? (
                         <button
                             onClick={() => setMode("edit")}
-                            className="bg-brand text-white hover:brightness-110 h-12 px-6 rounded-2xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-xl shadow-brand/20"
+                            className="bg-brand text-[var(--secondary-color)] hover:brightness-110 h-12 px-6 rounded-2xl font-black text-sm flex items-center gap-2 active:scale-95 transition-all shadow-xl shadow-brand/20"
                         >
                             <Edit3 className="h-4 w-4" />
                             Edit Profile
@@ -503,7 +505,7 @@ export default function AdmissionDetailPage() {
                                             onClick={() => setFormData({ ...formData, studentGender: g })}
                                             className={cn(
                                                 "flex-1 py-3 text-[10px] font-black rounded-xl transition-all",
-                                                formData.studentGender === g ? "bg-white text-brand shadow-sm" : "text-zinc-400"
+                                                formData.studentGender === g ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "text-zinc-400"
                                             )}
                                         >
                                             {g}
@@ -715,7 +717,7 @@ export default function AdmissionDetailPage() {
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleUploadDoc(doc.key)}
-                                                                    className="h-10 px-6 bg-brand text-white hover:brightness-110 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                                                    className="h-10 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
                                                                 >
                                                                     Upload
                                                                 </button>
@@ -785,7 +787,7 @@ export default function AdmissionDetailPage() {
                                     onClick={() => setFormData({ ...formData, priority: p })}
                                     className={cn(
                                         "py-3 text-[10px] font-black rounded-xl transition-all border-2",
-                                        formData.priority === p ? "bg-brand border-brand text-white shadow-lg shadow-brand/20" : "bg-zinc-50 border-zinc-50 text-zinc-400"
+                                        formData.priority === p ? "bg-brand border-brand text-[var(--secondary-color)] shadow-lg shadow-brand/20" : "bg-zinc-50 border-zinc-50 text-zinc-400"
                                     )}
                                 >
                                     {p}
@@ -825,7 +827,7 @@ export default function AdmissionDetailPage() {
                                         className={cn(
                                             "py-3 px-2 text-[9px] font-black rounded-xl transition-all border-2 text-center",
                                             formData.officialStatus === s.id
-                                                ? "bg-brand border-brand text-white shadow-lg shadow-brand/20"
+                                                ? "bg-brand border-brand text-[var(--secondary-color)] shadow-lg shadow-brand/20"
                                                 : "bg-zinc-50 border-zinc-50 text-zinc-400"
                                         )}
                                     >
@@ -850,7 +852,7 @@ export default function AdmissionDetailPage() {
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="w-full mt-10 h-16 bg-brand text-white rounded-[24px] font-black flex items-center justify-center gap-3 shadow-2xl shadow-brand/30 active:scale-95 transition-all disabled:opacity-50"
+                                className="w-full mt-10 h-16 bg-brand text-[var(--secondary-color)] rounded-[24px] font-black flex items-center justify-center gap-3 shadow-2xl shadow-brand/30 active:scale-95 transition-all disabled:opacity-50"
                             >
                                 {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
                                 Save Changes
@@ -859,7 +861,7 @@ export default function AdmissionDetailPage() {
 
                         {/* Conversion Section */}
                         {isReadOnly && formData.stage === "INQUIRY" && (
-                            <div className="mt-10 p-8 rounded-[32px] bg-brand text-white shadow-2xl shadow-brand/20">
+                            <div className="mt-10 p-8 rounded-[32px] bg-brand text-[var(--secondary-color)] shadow-2xl shadow-brand/20">
                                 <h4 className="text-sm font-black uppercase tracking-widest mb-4">Admission Workflow</h4>
                                 <p className="text-[11px] font-bold leading-relaxed mb-6">
                                     Convert this inquiry into a formal admission process. This will notify the parent to fill the comprehensive enrollment form.
@@ -910,7 +912,7 @@ export default function AdmissionDetailPage() {
                         )}
 
                         {formData.stage === "INTERVIEW" && (
-                            <div className="mt-10 p-8 rounded-[32px] bg-brand text-white shadow-2xl shadow-brand/20">
+                            <div className="mt-10 p-8 rounded-[32px] bg-brand text-[var(--secondary-color)] shadow-2xl shadow-brand/20">
                                 <h4 className="text-sm font-black uppercase tracking-widest mb-4">Submission Review</h4>
                                 <p className="text-[11px] font-bold leading-relaxed mb-6">
                                     The parent has completed the comprehensive form. Review all profile sections and documents before final approval.
@@ -990,7 +992,7 @@ export default function AdmissionDetailPage() {
                         )}
 
                         {formData.stage === "ENROLLED" && (
-                            <div className="mt-10 p-8 rounded-[32px] bg-brand text-white hover:brightness-110 shadow-2xl shadow-brand/20 transition-all cursor-pointer">
+                            <div className="mt-10 p-8 rounded-[32px] bg-brand text-[var(--secondary-color)] hover:brightness-110 shadow-2xl shadow-brand/20 transition-all cursor-pointer">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="h-8 w-8 bg-emerald-500 rounded-full flex items-center justify-center">
                                         <CheckCircle2 className="h-4 w-4 text-white" />
@@ -1002,7 +1004,7 @@ export default function AdmissionDetailPage() {
                                 </p>
                                 <button
                                     onClick={() => router.push(`/s/${slug}/students`)}
-                                    className="w-full h-12 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black text-xs uppercase tracking-widest border border-white/20 transition-all"
+                                    className="w-full h-12 bg-white/10 hover:bg-white/20 text-[var(--secondary-color)] rounded-2xl font-black text-xs uppercase tracking-widest border border-white/20 transition-all"
                                 >
                                     View Student Directory
                                 </button>

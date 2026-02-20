@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 import {
     Loader2, LogOut
 } from "lucide-react";
@@ -9,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useParentData } from "@/context/parent-context";
+import VibrantHeader from "@/components/mobile/VibrantHeader";
 
 export default function FamilyHubPage() {
     const params = useParams();
@@ -28,24 +30,37 @@ export default function FamilyHubPage() {
 
 
 
+    // Auto-redirect if exactly one student
+    useEffect(() => {
+        if (!isLoading && students.length === 1) {
+            const studentId = students[0].id;
+            router.replace(`/${slug}/parent/${parentId}/${studentId}${phone ? `?phone=${phone}` : ''}`);
+        }
+    }, [isLoading, students, slug, parentId, phone, router]);
+
+    // 4. Handle states
     if (isLoading) return <LoadingScreen />;
+
+    // If exactly one student, we are redirecting - show nothing to avoid flash
+    if (students.length === 1) return null;
+
     if (!phone) return <AuthErrorScreen slug={slug} />;
-    // if (students.length === 0) return <NoStudentsScreen />; // Optional: only if truly empty after load
+    if (students.length === 0) return <NoStudentsScreen />;
 
     // Cast stats to any to avoid TS errors
     const brandColor = school?.brandColor || "#4f46e5";
     const firstName = parentProfile?.firstName || parentProfile?.name?.split(" ")[0] || "Parent";
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pb-24 font-sans selection:bg-indigo-500/20">
-            <main className="max-w-5xl mx-auto px-4 pt-8 space-y-8">
-                {/* Greeting Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Good Morning,</p>
-                        <h1 className="text-3xl font-black text-slate-900 leading-tight">{firstName}</h1>
-                    </div>
-                </div>
+        <div className="min-h-screen bg-[#F1F5F9] pb-24 font-sans selection:bg-indigo-500/20">
+            {/* Vibrant Header */}
+            <VibrantHeader
+                mode="dashboard"
+                greetingName={parentProfile?.name?.split(' ')[0] || "Parent"}
+                brandColor={brandColor}
+            />
+
+            <main className="max-w-5xl mx-auto px-4 pt-4 space-y-8">
 
                 {/* 2. Students "Cover Flow" */}
                 <section>

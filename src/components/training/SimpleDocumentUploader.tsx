@@ -184,7 +184,7 @@ export default function SimpleDocumentUploader({ pageId }: SimpleDocumentUploade
                         )}
 
                         <label className={cn(
-                            "mt-4 px-6 py-2.5 rounded-lg bg-brand text-white font-medium hover:bg-brand/90 transition-colors shadow-lg shadow-brand/20 cursor-pointer active:scale-95",
+                            "mt-4 px-6 py-2.5 rounded-lg bg-brand text-[var(--secondary-color)] font-medium hover:bg-brand/90 transition-colors shadow-lg shadow-brand/20 cursor-pointer active:scale-95",
                             uploading && "opacity-50 pointer-events-none"
                         )}>
                             {uploading ? "Uploading..." : "Select PDF File"}

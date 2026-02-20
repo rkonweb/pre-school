@@ -16,7 +16,7 @@ export function LeadActionBar({ mobile, onSchedule }: LeadActionBarProps) {
             <a
                 href={`tel:${cleanMobile}`}
                 title="Call Parent"
-                className="h-10 w-10 bg-brand text-white rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg shadow-brand/20"
+                className="h-10 w-10 bg-brand text-[var(--secondary-color)] rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg shadow-brand/20"
             >
                 <Phone className="h-5 w-5" />
             </a>

@@ -86,7 +86,7 @@ export default function PipelinePage() {
                     <div className="flex items-center gap-2">
                         <Link
                             href={`/s/${slug}/admissions/new`}
-                            className="h-10 px-4 bg-brand text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-brand/20 transition-all hover:scale-[1.02]"
+                            className="h-10 px-4 bg-brand text-[var(--secondary-color)] rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-brand/20 transition-all hover:scale-[1.02]"
                         >
                             <Plus className="h-4 w-4" />
                             New Enquiry

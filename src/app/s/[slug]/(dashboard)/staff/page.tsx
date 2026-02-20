@@ -159,7 +159,7 @@ export default function StaffPage() {
                 </div>
                 <Link
                     href={`/s/${slug}/staff/add`}
-                    className="h-12 px-6 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="h-12 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     Add Staff Member

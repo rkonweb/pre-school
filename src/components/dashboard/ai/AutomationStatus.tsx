@@ -38,7 +38,7 @@ export function AutomationStatus({ lead }: { lead: any }) {
                     <div className="flex items-center gap-3">
                         <div className={cn(
                             "h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg",
-                            status === "active" ? "bg-brand text-white" : "bg-zinc-800 text-zinc-400"
+                            status === "active" ? "bg-brand text-[var(--secondary-color)]" : "bg-zinc-800 text-zinc-400"
                         )}>
                             <Zap className="h-5 w-5 fill-current" />
                         </div>
@@ -79,7 +79,7 @@ export function AutomationStatus({ lead }: { lead: any }) {
                             "h-8 flex-1 text-[10px] font-black uppercase tracking-widest gap-2",
                             status === "active"
                                 ? "border-white/10 bg-white/5 hover:bg-white/10 text-white"
-                                : "bg-brand hover:bg-brand/90 text-white"
+                                : "bg-brand hover:bg-brand/90 text-[var(--secondary-color)]"
                         )}
                     >
                         {isUpdating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : (

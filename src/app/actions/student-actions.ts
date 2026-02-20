@@ -15,6 +15,7 @@ interface StudentQueryOptions {
         class?: string;
         gender?: string;
         academicYearId?: string;
+        excludeStatus?: string; // New filter
     };
     sort?: {
         field: string;
@@ -34,12 +35,15 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
             school: { slug: schoolSlug }
         };
 
+        // ... (existing branch/permission logic is fine) ...
+
         // ---------------------------------------------------------
         // ACCESS CONTROL ENFORCEMENT & MULTI-BRANCH
         // ---------------------------------------------------------
         const currentUser = auth.user;
 
         const currentBranchId = (currentUser as any).currentBranchId;
+
         if (currentBranchId) {
             whereClause.branchId = currentBranchId;
         }
@@ -74,10 +78,12 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
             ];
         }
 
-        // ... (rest of filtering logic)
-
+        // Status Filtering Logic
         if (filters.status && filters.status !== "all") {
             whereClause.status = filters.status;
+        } else if (filters.excludeStatus) {
+            // Only exclude if no specific status is requested
+            whereClause.status = { not: filters.excludeStatus };
         }
 
         if (filters.class && filters.class !== "all") {

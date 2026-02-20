@@ -11,8 +11,8 @@ export default async function RoutesPage({ params }: { params: Promise<{ slug: s
                 include: {
                     stops: { orderBy: { sequenceOrder: 'asc' } },
                     driver: true,
-                    TransportVehicle_TransportRoute_pickupVehicleIdToTransportVehicle: true,
-                    TransportVehicle_TransportRoute_dropVehicleIdToTransportVehicle: true,
+                    pickupVehicle: true,
+                    dropVehicle: true,
                     _count: {
                         select: {
                             students: true,
@@ -26,12 +26,8 @@ export default async function RoutesPage({ params }: { params: Promise<{ slug: s
 
     if (!school) return <div>School not found</div>;
 
-    // Map the relation names back to what RouteManager expects
-    const routes = school.transportRoutes.map((r: any) => ({
-        ...r,
-        pickupVehicle: r.TransportVehicle_TransportRoute_pickupVehicleIdToTransportVehicle,
-        dropVehicle: r.TransportVehicle_TransportRoute_dropVehicleIdToTransportVehicle
-    }));
+    // Map the relation names back to what RouteManager expects (no mapping needed now)
+    const routes = school.transportRoutes;
 
     return <RouteManager schoolSlug={slug} initialRoutes={routes} vehicles={school.transportVehicles} />;
 }

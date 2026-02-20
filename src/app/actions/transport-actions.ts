@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { deleteFileAction } from "@/app/actions/upload-actions";
 import { validateUserSchoolAction } from "./session-actions";
+import { checkPhoneExistsAction } from "./identity-validation";
 
 // --- ROUTES & STOPS ---
 
@@ -20,7 +21,7 @@ export async function createRouteAction(schoolSlug: string, data: any) {
                 description: data.description,
                 pickupVehicleId: data.pickupVehicleId || null,
                 dropVehicleId: data.dropVehicleId || null,
-                driverId: data.driverId,
+                driverId: data.driverId || null,
                 schoolId: schoolId,
                 stops: {
                     create: data.stops.map((s: any, idx: number) => ({
@@ -47,7 +48,7 @@ export async function updateRouteAction(slug: string, routeId: string, data: any
     try {
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success) return { success: false, error: auth.error };
-        // Simple update for route details
+        // Update route details
         await prisma.transportRoute.update({
             where: { id: routeId },
             data: {
@@ -55,13 +56,52 @@ export async function updateRouteAction(slug: string, routeId: string, data: any
                 description: data.description,
                 pickupVehicleId: data.pickupVehicleId || null,
                 dropVehicleId: data.dropVehicleId || null,
-                driverId: data.driverId,
+                driverId: data.driverId || null,
             }
         });
 
-        // Handle stops separately or rebuild them (simplified here)
-        // In a real app, we'd diff the stops. For now, we assume route details update.
+        // Handle stops: Update existing ones, create new ones, and remove deleted ones
+        if (data.stops) {
+            const incomingStopIds = data.stops.map((s: any) => s.id).filter((id: string) => id && !id.startsWith('new-'));
 
+            // 1. Delete stops that are no longer present
+            await prisma.transportStop.deleteMany({
+                where: {
+                    routeId,
+                    id: { notIn: incomingStopIds }
+                }
+            });
+
+            // 2. Upsert incoming stops
+            for (let idx = 0; idx < data.stops.length; idx++) {
+                const s = data.stops[idx];
+                const stopData = {
+                    name: s.name,
+                    pickupTime: s.pickupTime,
+                    dropTime: s.dropTime,
+                    monthlyFee: parseFloat(s.monthlyFee || 0),
+                    latitude: parseFloat(s.lat || s.latitude || 0),
+                    longitude: parseFloat(s.lng || s.longitude || 0),
+                    sequenceOrder: idx + 1,
+                    routeId: routeId
+                };
+
+                if (s.id && !s.id.startsWith('new-')) {
+                    // Update existing
+                    await prisma.transportStop.update({
+                        where: { id: s.id },
+                        data: stopData
+                    });
+                } else {
+                    // Create new
+                    await prisma.transportStop.create({
+                        data: stopData
+                    });
+                }
+            }
+        }
+
+        revalidatePath(`/s/${slug}/transport/route/routes`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -74,6 +114,39 @@ export async function deleteRouteAction(slug: string, routeId: string) {
         if (!auth.success) return { success: false, error: auth.error };
         await prisma.transportRoute.delete({ where: { id: routeId } });
         return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getRoutesAction(slug: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const routes = await prisma.transportRoute.findMany({
+            where: { schoolId: auth.user.schoolId! },
+            orderBy: { name: 'asc' }
+        });
+
+        return { success: true, data: routes };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getRouteDetailsAction(routeId: string) {
+    try {
+        const route = await prisma.transportRoute.findUnique({
+            where: { id: routeId },
+            include: {
+                stops: {
+                    orderBy: { sequenceOrder: 'asc' }
+                }
+            }
+        });
+
+        return { success: true, data: route };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -104,7 +177,107 @@ export async function addStopAction(slug: string, routeId: string, data: any) {
 }
 
 
-// --- APPLICATION FLOW ---
+// --- APPLICATION FLOW & ASSIGNMENTS ---
+
+export async function searchStudentsForTransportAction(query: string, slug: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const students = await prisma.student.findMany({
+            where: {
+                schoolId: auth.user.schoolId!,
+                OR: [
+                    { firstName: { contains: query } },
+                    { lastName: { contains: query } }
+                ]
+            },
+            take: 10,
+            include: {
+                transportProfile: true
+            }
+        });
+
+        return { success: true, data: students };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function assignStudentToRouteAction(studentId: string, routeId: string, pickupStopId: string, dropStopId: string, slug: string, transportFee: number) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        // Upsert Transport Profile
+        const existing = await prisma.studentTransportProfile.findUnique({ where: { studentId } });
+        if (existing) {
+            await prisma.studentTransportProfile.update({
+                where: { studentId },
+                data: {
+                    routeId,
+                    pickupStopId,
+                    dropStopId,
+                    transportFee,
+                    status: 'APPROVED', // Direct assignment implies approval
+                    startDate: new Date()
+                }
+            });
+        } else {
+            await prisma.studentTransportProfile.create({
+                data: {
+                    studentId,
+                    routeId,
+                    pickupStopId,
+                    dropStopId,
+                    transportFee,
+                    status: 'APPROVED',
+                    startDate: new Date()
+                }
+            });
+        }
+
+        // Create Fee Record
+        if (transportFee > 0) {
+            await prisma.fee.create({
+                data: {
+                    title: "Transport Fee (Manual Assignment)",
+                    amount: transportFee,
+                    dueDate: new Date(),
+                    studentId,
+                    category: "TRANSPORT",
+                    description: "Fee for transport assignment",
+                    status: "PENDING"
+                }
+            });
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function removeStudentFromTransportAction(studentId: string, slug: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        await prisma.studentTransportProfile.update({
+            where: { studentId },
+            data: {
+                routeId: null,
+                pickupStopId: null,
+                dropStopId: null,
+                status: 'INACTIVE'
+            }
+        });
+
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
 
 export async function applyForTransportAction(slug: string, studentId: string, data: any) {
     try {
@@ -215,8 +388,15 @@ export async function getVehiclesAction(schoolSlug: string) {
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success) return { success: false, error: auth.error };
 
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug },
+            select: { id: true }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
         const vehicles = await prisma.transportVehicle.findMany({
-            where: { school: { slug: schoolSlug } },
+            where: { schoolId: school.id },
             orderBy: { createdAt: 'desc' }
         });
         return { success: true, data: vehicles };
@@ -371,8 +551,52 @@ export async function getDriversAction(schoolSlug: string) {
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success) return { success: false, error: auth.error };
 
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug },
+            select: { id: true }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
+        // SYNC PROTOCOL: Detect staff with 'DRIVER' role or Access Profile (Custom Role) as 'Driver'
+        const staffDrivers = await prisma.user.findMany({
+            where: {
+                schoolId: school.id,
+                OR: [
+                    { role: { in: ['DRIVER', 'Driver', 'driver'] } },
+                    { customRole: { name: { contains: 'Driver' } } },
+                    { customRole: { name: { contains: 'driver' } } },
+                    { customRole: { name: { contains: 'DRIVER' } } }
+                ]
+            },
+            include: {
+                transportDriver: true,
+                customRole: true
+            }
+        });
+
+        // Initialize missing transport mappings
+        for (const staff of staffDrivers) {
+            if (!staff.transportDriver) {
+                try {
+                    await prisma.transportDriver.create({
+                        data: {
+                            name: `${staff.firstName || ''} ${staff.lastName || ''}`.trim() || "Fleet Pilot",
+                            phone: staff.mobile || "N/A",
+                            licenseNumber: "PENDING", // Required field in schema
+                            schoolId: school.id,
+                            userId: staff.id,
+                            status: 'ACTIVE'
+                        }
+                    });
+                } catch (e) {
+                    console.error(`Failed to sync staff driver ${staff.id}:`, e);
+                }
+            }
+        }
+
         const drivers = await prisma.transportDriver.findMany({
-            where: { school: { slug: schoolSlug } },
+            where: { schoolId: school.id },
             orderBy: { name: 'asc' }
         });
         return { success: true, data: drivers };
@@ -389,13 +613,39 @@ export async function createDriverAction(data: any, schoolSlug: string) {
         const schoolId = auth.user.schoolId;
         if (!schoolId) return { success: false, error: "School not found" };
 
+        // Check for phone overlap
+        const phoneCheck = await checkPhoneExistsAction(data.phone);
+
+        let linkedUserId = null;
+
+        if (phoneCheck.exists) {
+            if (phoneCheck.type === 'user') {
+                // If it's a user, check if they are in the same school
+                const existingUser = await prisma.user.findUnique({
+                    where: { id: phoneCheck.entityId },
+                    select: { schoolId: true }
+                });
+
+                if (existingUser?.schoolId === schoolId) {
+                    // Allow overlap and link the userId
+                    linkedUserId = phoneCheck.entityId;
+                } else {
+                    return { success: false, error: `Phone number is already in use by a staff member in another school.` };
+                }
+            } else {
+                // For any other entity type (School, Student, etc.), still block it
+                return { success: false, error: `Phone number is already in use by: ${phoneCheck.location}` };
+            }
+        }
+
         await prisma.transportDriver.create({
             data: {
                 name: data.name,
                 licenseNumber: data.licenseNumber,
                 phone: data.phone,
                 status: data.status || "ACTIVE",
-                schoolId: schoolId
+                schoolId: schoolId,
+                userId: linkedUserId
             }
         });
 

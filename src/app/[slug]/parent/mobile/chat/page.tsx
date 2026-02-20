@@ -2,7 +2,6 @@
 
 import React from "react";
 import { ChatList } from "@/components/mobile/ChatList";
-import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
 import { getParentConversationsAction } from "@/app/actions/parent-actions";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
 import { redirect } from "next/navigation";
@@ -71,8 +70,6 @@ export default async function ParentChatPage({
                 <ChatList conversations={conversations as any} slug={slug} />
             </div>
 
-            {/* Unified Bottom Nav */}
-            <MobileBottomNav slug={slug} activeTab="CHAT" preview={preview === "true"} />
         </div>
     );
 }

@@ -289,7 +289,7 @@ export function FeeStructureManager({ slug, initialData, classrooms, academicYea
                     </div>
                     <div className="flex gap-3">
                         <button onClick={() => setIsEditing(false)} className="px-6 py-3 rounded-xl border border-zinc-200 text-zinc-600 font-bold text-xs uppercase tracking-widest hover:bg-zinc-50 transition-colors">Cancel</button>
-                        <button onClick={handleSave} disabled={isSaving} className="px-8 py-3 rounded-xl bg-brand text-white font-bold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-brand/20">
+                        <button onClick={handleSave} disabled={isSaving} className="px-8 py-3 rounded-xl bg-brand text-[var(--secondary-color)] font-bold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-brand/20">
                             {isSaving ? "Saving..." : <><Save className="h-4 w-4" /> Save Fees</>}
                         </button>
                     </div>

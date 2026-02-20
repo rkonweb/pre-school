@@ -11,6 +11,7 @@ interface ParentContextType {
     studentStats: Record<string, any>;
     conversations: any[];
     unreadMessages: number;
+    brandColor: string;
     isLoading: boolean;
     refreshData: () => Promise<void>;
 }
@@ -35,7 +36,7 @@ export function ParentProvider({
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchData = useCallback(async () => {
-        if (!phone || !slug) {
+        if (!slug) {
             setIsLoading(false);
             return;
         }
@@ -74,6 +75,7 @@ export function ParentProvider({
     return (
         <ParentContext.Provider value={{
             school,
+            brandColor: school?.brandColor || "#6366f1",
             parentProfile,
             students,
             studentStats,

@@ -8,46 +8,22 @@ import { cn } from "@/lib/utils";
 interface FleetMapPreviewProps {
     schoolSlug: string;
     initialVehicles: any[];
+    apiKey: string;
 }
 
-const libraries: ("places")[] = ["places"];
+import { GOOGLE_MAPS_LIBRARIES, DEFAULT_MAP_STYLES } from "@/lib/maps-config";
 
-const mapStyles = [
-    {
-        "featureType": "all",
-        "elementType": "labels.text.fill",
-        "stylers": [{ "saturation": 36 }, { "color": "#333333" }, { "lightness": 40 }]
-    },
-    {
-        "featureType": "all",
-        "elementType": "labels.text.stroke",
-        "stylers": [{ "visibility": "on" }, { "color": "#ffffff" }, { "lightness": 16 }]
-    },
-    {
-        "featureType": "landscape",
-        "elementType": "geometry",
-        "stylers": [{ "color": "#f5f5f5" }, { "lightness": 20 }]
-    },
-    {
-        "featureType": "road.highway",
-        "elementType": "geometry.fill",
-        "stylers": [{ "color": "#ffffff" }, { "lightness": 17 }]
-    },
-    {
-        "featureType": "water",
-        "elementType": "geometry",
-        "stylers": [{ "color": "#e2f1f8" }, { "lightness": 17 }]
-    }
-];
 
-export default function FleetMapPreview({ schoolSlug, initialVehicles }: FleetMapPreviewProps) {
+
+
+export default function FleetMapPreview({ schoolSlug, initialVehicles, apiKey }: FleetMapPreviewProps) {
     const [vehicles, setVehicles] = useState(initialVehicles);
     const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
     const mapRef = useRef<google.maps.Map | null>(null);
 
     const { isLoaded, loadError } = useLoadScript({
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-        libraries,
+        googleMapsApiKey: apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+        libraries: GOOGLE_MAPS_LIBRARIES,
     });
 
     useEffect(() => {
@@ -75,8 +51,43 @@ export default function FleetMapPreview({ schoolSlug, initialVehicles }: FleetMa
         ? { lat: activeVehicles[0].telemetry.latitude, lng: activeVehicles[0].telemetry.longitude }
         : { lat: 28.6139, lng: 77.2090 }; // Delhi default
 
-    if (loadError) return <div className="h-full w-full flex items-center justify-center bg-zinc-50 text-red-500 font-medium">Map failed to load</div>;
-    if (!isLoaded) return <div className="h-full w-full flex items-center justify-center bg-zinc-50"><Loader2 className="h-8 w-8 animate-spin text-brand" /></div>;
+    if (loadError) return (
+        <div className="h-full w-full flex flex-col items-center justify-center bg-zinc-50 border border-rose-100 rounded-xl p-6 text-center space-y-3">
+            <Activity className="h-10 w-10 text-rose-500" />
+            <div>
+                <p className="text-sm font-black text-rose-600 uppercase tracking-tighter">Maps Protocol Offline</p>
+                <div className="mt-2 space-y-1">
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
+                        <span className="text-rose-600 underline">ApiProjectMapError</span>
+                    </p>
+                    <p className="text-[10px] text-zinc-400 font-medium max-w-[220px] mx-auto">
+                        The API key is active, but the service "Maps JavaScript API" is disabled in your Google Cloud Project.
+                    </p>
+                </div>
+
+                <div className="mt-4 p-4 bg-white rounded-2xl border border-zinc-100 text-[9px] text-zinc-400 font-black text-left space-y-1.5 shadow-sm">
+                    <p className="text-zinc-900 border-b border-zinc-50 pb-1 mb-1">RECOVERY PROTOCOL:</p>
+                    <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-zinc-100 flex items-center justify-center text-[7px] text-zinc-400">1</div>
+                        <p>Go to <span className="text-zinc-600 underline">console.cloud.google.com</span></p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-zinc-100 flex items-center justify-center text-[7px] text-zinc-400">2</div>
+                        <p>Enable <span className="text-brand">"Maps JavaScript API"</span></p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-zinc-100 flex items-center justify-center text-[7px] text-zinc-400">3</div>
+                        <p>Enable <span className="text-brand">"Directions API"</span></p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-zinc-100 flex items-center justify-center text-[7px] text-zinc-400">4</div>
+                        <p>Ensure Billing is attached to the project</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+    if (!isLoaded) return <div className="h-full w-full flex items-center justify-center bg-zinc-50 rounded-xl"><Loader2 className="h-8 w-8 animate-spin text-brand" /></div>;
 
     return (
         <div className="h-full w-full relative group rounded-xl overflow-hidden border border-zinc-200">
@@ -87,7 +98,7 @@ export default function FleetMapPreview({ schoolSlug, initialVehicles }: FleetMa
                 onLoad={map => { mapRef.current = map; }}
                 options={{
                     disableDefaultUI: true,
-                    styles: mapStyles,
+                    styles: DEFAULT_MAP_STYLES,
                     zoomControl: true,
                     mapTypeControl: false,
                     streetViewControl: false,

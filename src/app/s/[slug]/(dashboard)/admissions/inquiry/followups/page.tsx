@@ -171,7 +171,7 @@ export default function FollowUpsPage() {
                         onClick={() => setActiveTab(tab.id)}
                         className={cn(
                             "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-                            activeTab === tab.id ? "bg-white text-brand shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                            activeTab === tab.id ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "text-zinc-400 hover:text-zinc-600"
                         )}
                     >
                         {tab.label}
@@ -230,7 +230,7 @@ export default function FollowUpsPage() {
                                     {item.status === 'PENDING' && (
                                         <button
                                             onClick={() => setCompletionModal({ open: true, item })}
-                                            className="h-10 px-6 bg-brand text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                                            className="h-10 px-6 bg-brand text-[var(--secondary-color)] rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                                         >
                                             {isPerformingAction ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                                             Mark Done

@@ -109,7 +109,7 @@ export default function InquiryReportsPage() {
                         onClick={() => setActiveTab(tab.id)}
                         className={cn(
                             "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                            activeTab === tab.id ? "bg-white text-brand shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                            activeTab === tab.id ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "text-zinc-400 hover:text-zinc-600"
                         )}
                     >
                         <tab.icon className="h-3.5 w-3.5" />
@@ -299,7 +299,7 @@ export default function InquiryReportsPage() {
                                     `"${reportData?.sources[0]?.source} is performing exceptionally well with a ${reportData?.sources[0]?.rate.toFixed(1)}% conversion rate. Increase engagement frequency for this channel."`
                                 )}
                             </p>
-                            <button className="w-full mt-6 py-3 bg-brand text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 hover:scale-[1.02] transition-all">
+                            <button className="w-full mt-6 py-3 bg-brand text-[var(--secondary-color)] rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 hover:scale-[1.02] transition-all">
                                 Tune AI weights
                             </button>
                         </div>

@@ -252,7 +252,7 @@ export default function IndividualStaffAttendanceReport() {
 
                     <button
                         onClick={() => window.print()}
-                        className="px-4 py-3 bg-brand text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 hover:brightness-110 transition-all"
+                        className="px-4 py-3 bg-brand text-[var(--secondary-color)] rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 hover:brightness-110 transition-all"
                     >
                         Print PDF
                     </button>
@@ -399,7 +399,7 @@ export default function IndividualStaffAttendanceReport() {
 
                 {/* Sidebar: Analytics & Leave Trends (Hidden in Print) */}
                 <div className="space-y-10 print:hidden">
-                    <div className="bg-brand p-10 rounded-[2.5rem] text-white space-y-8 shadow-2xl relative overflow-hidden group">
+                    <div className="bg-brand p-10 rounded-[2.5rem] text-[var(--secondary-color)] space-y-8 shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-150 transition-transform duration-1000">
                             <Activity className="h-32 w-32" />
                         </div>
@@ -568,8 +568,8 @@ function BigMetric({ label, value, max, color }: any) {
     return (
         <div className="space-y-2 group">
             <div className="flex justify-between items-end">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 group-hover:text-white transition-colors">{label}</span>
-                <span className="text-sm font-black text-white italic">{value}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--secondary-color)] opacity-60 group-hover:opacity-100 transition-all">{label}</span>
+                <span className="text-sm font-black text-[var(--secondary-color)] italic">{value}</span>
             </div>
             <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden p-0.5">
                 <div

@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
+import MobileShell from "@/components/mobile/MobileShell";
 
 async function getSchoolBySlug(slug: string) {
     try {
@@ -12,7 +13,8 @@ async function getSchoolBySlug(slug: string) {
                 slug: true,
                 logo: true,
                 brandColor: true,
-                primaryColor: true
+                primaryColor: true,
+                secondaryColor: true
             }
         });
         return school;
@@ -36,7 +38,7 @@ export default async function ParentPortalLayout({
     params: Promise<{ slug: string }>;
 }) {
     const { slug } = await params;
-    const school = await getSchoolBySlug(slug);
+    const school = await getSchoolBySlug(slug) as any;
 
     if (!school) {
         notFound();
@@ -57,9 +59,12 @@ export default async function ParentPortalLayout({
             style={{
                 "--brand-color": brandColor,
                 "--brand-color-rgb": brandColorRgb,
+                "--secondary-color": school.secondaryColor || "#ffffff"
             } as any}
         >
-            {children}
+            <MobileShell slug={school.slug} hideFooter={false}>
+                {children}
+            </MobileShell>
         </div>
     );
 }

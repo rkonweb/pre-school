@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
 import { getParentDashboardDataAction } from "@/app/actions/parent-actions";
 import { AcademicDashboardClient } from "@/components/mobile/academic/AcademicDashboardClient";
-import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
 
 export default async function AcademicPage({
     params,
@@ -42,7 +41,6 @@ export default async function AcademicPage({
                 studentId={activeStudent.id}
                 studentName={activeStudent.firstName}
             />
-            <MobileBottomNav slug={slug} activeTab="HOME" />
         </div>
     );
 }

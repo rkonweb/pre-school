@@ -115,7 +115,7 @@ export default function VehiclesPage() {
                 <Link
                     href={`/s/${slug}/transport/vehicles/new`}
                     style={{ backgroundColor: brandColor }}
-                    className="h-12 px-8 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="h-12 px-8 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     Add Vehicle
@@ -178,7 +178,7 @@ export default function VehiclesPage() {
                                                 <td className="px-8 py-6">
                                                     <div className="flex items-center gap-4">
                                                         <div
-                                                            className="h-12 w-12 rounded-2xl bg-brand flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"
+                                                            className="h-12 w-12 rounded-2xl bg-brand flex items-center justify-center text-[var(--secondary-color)] shadow-lg group-hover:scale-110 transition-transform"
                                                         >
                                                             <Bus className="h-5 w-5" />
                                                         </div>
@@ -239,7 +239,7 @@ export default function VehiclesPage() {
                                                 <td className="px-8 py-6 text-right">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <Link
-                                                            href={`/s/${slug}/transport/vehicles/${vehicle.id}`}
+                                                            href={`/s/${slug}/transport/fleet/vehicles/${vehicle.id}`}
                                                             className="h-9 w-9 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand hover:shadow-lg transition-all shadow-sm dark:bg-zinc-900 dark:border-zinc-800"
                                                         >
                                                             <ArrowRight className="h-4 w-4" />

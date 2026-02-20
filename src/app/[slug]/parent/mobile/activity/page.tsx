@@ -2,7 +2,6 @@
 
 import React from "react";
 import { ActivityTimeline } from "@/components/mobile/ActivityTimeline";
-import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
 import { getStudentActivityFeedAction, getFamilyStudentsAction } from "@/app/actions/parent-actions";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
 import { redirect } from "next/navigation";
@@ -30,7 +29,7 @@ export default async function ParentActivityPage({
     }
 
     // 2. Fetch Students to get the default or selected one
-    const familyRes = await getFamilyStudentsAction(phone);
+    const familyRes = await getFamilyStudentsAction(slug, phone);
     if (!familyRes.success || !familyRes.students?.length) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center p-10 text-center">
@@ -107,8 +106,6 @@ export default async function ParentActivityPage({
                 <ActivityTimeline activities={activities} slug={slug} />
             </div>
 
-            {/* Unified Bottom Nav */}
-            <MobileBottomNav slug={slug} activeTab="ACTIVITY" preview={preview === "true"} />
         </div>
     );
 }

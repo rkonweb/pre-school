@@ -93,7 +93,7 @@ export default function ClassesPage() {
                 </div>
                 <button
                     onClick={() => router.push(`/s/${slug}/academics/classes/create`)}
-                    className="h-12 px-6 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="h-12 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     New Class
@@ -277,7 +277,7 @@ export default function ClassesPage() {
                     </p>
                     <button
                         onClick={() => router.push(`/s/${slug}/academics/classes/create`)}
-                        className="mt-8 h-12 px-8 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand/20"
+                        className="mt-8 h-12 px-8 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand/20"
                     >
                         Create First Class
                     </button>

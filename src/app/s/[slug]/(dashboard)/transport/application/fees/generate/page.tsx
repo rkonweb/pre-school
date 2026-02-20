@@ -228,8 +228,8 @@ export default function GenerateInvoicesPage() {
                                         key={type.id}
                                         onClick={() => setPeriodType(type.id as any)}
                                         className={`py-3 px-2 rounded-2xl border-2 font-bold text-xs transition-all ${periodType === type.id
-                                                ? 'border-brand bg-brand/5 text-brand'
-                                                : 'border-zinc-100 bg-zinc-50 text-zinc-500 hover:border-zinc-200'
+                                            ? 'border-brand bg-brand/5 text-brand'
+                                            : 'border-zinc-100 bg-zinc-50 text-zinc-500 hover:border-zinc-200'
                                             }`}
                                     >
                                         {type.label}
@@ -330,7 +330,7 @@ export default function GenerateInvoicesPage() {
                         <button
                             onClick={handleGenerate}
                             disabled={isLoading || (periodType === 'TERM' && !selectedTermName)}
-                            className="w-full mt-8 py-5 bg-brand text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:brightness-110 shadow-xl shadow-brand/40 transition-all flex justify-center items-center gap-3 disabled:opacity-70 disabled:grayscale"
+                            className="w-full mt-8 py-5 bg-brand text-[var(--secondary-color)] rounded-2xl font-black uppercase tracking-widest text-xs hover:brightness-110 shadow-xl shadow-brand/40 transition-all flex justify-center items-center gap-3 disabled:opacity-70 disabled:grayscale"
                         >
                             {isLoading ? (
                                 <>

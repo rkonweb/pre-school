@@ -161,10 +161,11 @@ export async function recordPaymentAction(slug: string, feeId: string, amount: n
 }
 
 export async function syncStudentFeesAction(studentId: string, schoolSlug: string, forceReset = false) {
+    const startTime = Date.now();
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success) return { success: false, error: auth.error };
-        const currentUser = auth.user; // Assuming validateUserSchoolAction returns user
+        const currentUser = auth.user;
 
         const student = await prisma.student.findUnique({
             where: { id: studentId },
@@ -173,12 +174,11 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
 
         if (!student) return { success: false, error: "Student not found" };
 
-        // Branch Check
         if (currentUser && !(await validateBranchAccess(currentUser, student.branchId))) {
             return { success: false, error: "Access denied to this branch." };
         }
 
-        // FALLBACK: If prisma client is out of sync and doesn't fetch new fields, use raw query
+        // Handle out-of-sync prisma client
         if (student.promotedToClassroomId === undefined) {
             const raw: any[] = await prisma.$queryRawUnsafe(
                 `SELECT promotedToClassroomId, promotedToGrade FROM Student WHERE id = ?`,
@@ -191,8 +191,6 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
         }
 
         if (forceReset) {
-            // PURGE: Remove all PENDING fees that have NO payments
-            // This cleans up manual mistakes, old duplicates, and specifically "TEST" fees
             await prisma.fee.deleteMany({
                 where: {
                     studentId,
@@ -204,20 +202,18 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
 
         if (!student.classroomId) return { success: true, message: "No class assigned, skipping fee sync." };
 
-        // 1. Get Academic Years (Current and next if exists)
         const academicYears = await prisma.academicYear.findMany({
             where: { schoolId: student.schoolId },
             orderBy: { startDate: 'desc' }
         });
 
         const currentYear = academicYears.find(y => y.isCurrent);
-        // Find next year: One with later start date than current
         const nextYear = currentYear
             ? academicYears.find(y => new Date(y.startDate) > new Date(currentYear.startDate))
             : null;
 
         const syncYears = [currentYear, nextYear].filter(Boolean);
-
+        const feesToCreate: any[] = [];
         const summaries = [];
 
         for (const year of syncYears) {
@@ -230,7 +226,6 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
 
             if (!targetClassroomId) continue;
 
-            // 2. Find ALL structures for this year
             const structures = await prisma.feeStructure.findMany({
                 where: {
                     schoolId: student.schoolId,
@@ -239,7 +234,6 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
                 include: { components: true }
             });
 
-            // Find ALL matching structures for this student's class
             const matchingStructures = structures.filter(s => {
                 try {
                     const classIds = JSON.parse(s.classIds || "[]");
@@ -249,16 +243,12 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
 
             if (matchingStructures.length === 0) continue;
 
-            // 3. FETCH ALL EXISTING FEES FOR THIS YEAR
             const existingFees = await prisma.fee.findMany({
-                where: {
-                    studentId,
-                    academicYearId: year.id
-                }
+                where: { studentId, academicYearId: year.id },
+                select: { title: true }
             });
             const existingTitles = new Set(existingFees.map(f => f.title.trim().toLowerCase()));
 
-            // 4. Generate Fees from ALL matching structures
             for (const structure of matchingStructures) {
                 for (const component of structure.components) {
                     if (component.frequency === 'TERM') {
@@ -268,27 +258,22 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
                         for (const term of terms) {
                             const termName = term.name || `Term ${terms.indexOf(term) + 1}`;
                             const title = `${component.name} - ${termName}`;
-                            const amount = parseFloat(term.amount);
-                            const dueDate = term.dueDate ? new Date(term.dueDate) : new Date();
 
                             if (!existingTitles.has(title.trim().toLowerCase())) {
-                                await prisma.fee.create({
-                                    data: {
-                                        studentId,
-                                        academicYearId: year.id,
-                                        title,
-                                        amount,
-                                        dueDate,
-                                        status: "PENDING",
-                                        description: `Auto-generated from ${structure.name}`,
-                                        branchId: student.branchId
-                                    }
+                                feesToCreate.push({
+                                    studentId,
+                                    academicYearId: year.id,
+                                    title,
+                                    amount: parseFloat(term.amount),
+                                    dueDate: term.dueDate ? new Date(term.dueDate) : new Date(),
+                                    status: "PENDING",
+                                    description: `Auto-generated from ${structure.name}`,
+                                    branchId: student.branchId
                                 });
                                 existingTitles.add(title.trim().toLowerCase());
                             }
                         }
                     } else if (component.frequency === 'MONTHLY') {
-                        // Generate fees for each month in the academic year
                         const months = eachMonthOfInterval({
                             start: new Date(year.startDate),
                             end: new Date(year.endDate)
@@ -297,45 +282,35 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
                         for (const monthDate of months) {
                             const monthName = format(monthDate, "MMMM yyyy");
                             const title = `${component.name} - ${monthName}`;
-                            const amount = component.amount; // Monthly amount
-
-                            // Default due date: 10th of each month
                             const dueDate = new Date(monthDate);
                             dueDate.setDate(10);
 
                             if (!existingTitles.has(title.trim().toLowerCase())) {
-                                await prisma.fee.create({
-                                    data: {
-                                        studentId,
-                                        academicYearId: year.id,
-                                        title,
-                                        amount,
-                                        dueDate,
-                                        status: "PENDING",
-                                        description: `Monthly fee from ${structure.name}`,
-                                        branchId: student.branchId
-                                    }
+                                feesToCreate.push({
+                                    studentId,
+                                    academicYearId: year.id,
+                                    title,
+                                    amount: component.amount,
+                                    dueDate,
+                                    status: "PENDING",
+                                    description: `Monthly fee from ${structure.name}`,
+                                    branchId: student.branchId
                                 });
                                 existingTitles.add(title.trim().toLowerCase());
                             }
                         }
                     } else {
                         const title = component.name;
-                        const amount = component.amount;
-                        const dueDate = component.dueDate ? new Date(component.dueDate) : new Date();
-
                         if (!existingTitles.has(title.trim().toLowerCase())) {
-                            await prisma.fee.create({
-                                data: {
-                                    studentId,
-                                    academicYearId: year.id,
-                                    title,
-                                    amount,
-                                    dueDate,
-                                    status: "PENDING",
-                                    description: `Auto-generated from ${structure.name}`,
-                                    branchId: student.branchId
-                                }
+                            feesToCreate.push({
+                                studentId,
+                                academicYearId: year.id,
+                                title,
+                                amount: component.amount,
+                                dueDate: component.dueDate ? new Date(component.dueDate) : new Date(),
+                                status: "PENDING",
+                                description: `Auto-generated from ${structure.name}`,
+                                branchId: student.branchId
                             });
                             existingTitles.add(title.trim().toLowerCase());
                         }
@@ -345,8 +320,18 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
             summaries.push(year.name);
         }
 
+        if (feesToCreate.length > 0) {
+            // Batch creation using transaction for performance
+            await prisma.$transaction(
+                feesToCreate.map(data => prisma.fee.create({ data }))
+            );
+        }
+
+        const duration = Date.now() - startTime;
+        console.log(`[FeeSync] Completed in ${duration}ms for student ${studentId}. Created ${feesToCreate.length} fees.`);
+
         revalidatePath(`/s/${schoolSlug}/students/${studentId}`);
-        return { success: true, message: `Synced fees for: ${summaries.join(", ")}` };
+        return { success: true, message: `Synced ${feesToCreate.length} fees for: ${summaries.join(", ")}` };
 
     } catch (error: any) {
         console.error("Sync Fee Error:", error);

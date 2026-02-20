@@ -111,13 +111,9 @@ function SortableRow({ plan, currency, onDelete }: { plan: SubscriptionPlan, cur
             </td>
             <td className="px-4 py-3">
                 <div className="flex items-center gap-4 text-xs font-medium text-zinc-600">
-                    <div className="flex items-center gap-1.5" title="Max Students">
+                    <div className="flex items-center gap-1.5" title="Total Users (Students + Staff)">
                         <Users className="h-3.5 w-3.5 text-zinc-300" />
-                        {plan.limits.maxStudents}
-                    </div>
-                    <div className="flex items-center gap-1.5" title="Max Staff">
-                        <ShieldCheck className="h-3.5 w-3.5 text-zinc-300" />
-                        {plan.limits.maxStaff}
+                        {(plan.limits.maxStudents || 0) + (plan.limits.maxStaff || 0)}
                     </div>
                     <div className="flex items-center gap-1.5" title="Storage">
                         <HardDrive className="h-3.5 w-3.5 text-zinc-300" />

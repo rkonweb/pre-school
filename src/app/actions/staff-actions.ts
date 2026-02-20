@@ -7,6 +7,7 @@ import { basename } from "path";
 import { syncStaff, removeStaffFromIndex } from "@/lib/search-sync";
 
 import { validateBranchAccess } from "@/lib/branch-utils";
+import { validatePhoneUniqueness, validateEmailUniqueness } from "./identity-validation";
 
 function maskStaffPII(staff: any, isAuthorized: boolean) {
     if (!staff) return staff;
@@ -158,10 +159,20 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
 
         // Global Phone Uniqueness Check
         if (mobile) {
-            const { validatePhoneUniqueness, validateEmailUniqueness } = await import("./identity-validation");
             const phoneCheck = await validatePhoneUniqueness(mobile);
             if (!phoneCheck.isValid) {
-                return { success: false, error: phoneCheck.error };
+                // Allow overlap if it's a driver in the same school
+                if (phoneCheck.type === 'driver') {
+                    const existingDriver = await prisma.transportDriver.findUnique({
+                        where: { id: phoneCheck.entityId! },
+                        select: { schoolId: true }
+                    });
+                    if (existingDriver?.schoolId !== school.id) {
+                        return { success: false, error: phoneCheck.error };
+                    }
+                } else {
+                    return { success: false, error: phoneCheck.error };
+                }
             }
 
             // Global Email Uniqueness Check
@@ -301,6 +312,22 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
             } as any
         });
         console.log("Staff member created successfully:", staff.id);
+
+        // Link any existing driver with same phone in the same school
+        if (mobile) {
+            await prisma.transportDriver.updateMany({
+                where: {
+                    phone: mobile,
+                    schoolId: school.id,
+                    OR: [
+                        { userId: null },
+                        { userId: "" }
+                    ]
+                },
+                data: { userId: staff.id }
+            });
+        }
+
         return { success: true, id: staff.id };
     } catch (error: any) {
         console.error("CREATE STAFF ERROR:", error);
@@ -373,10 +400,21 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
 
         // Global Phone Uniqueness Check (exclude current user)
         if (mobile) {
-            const { validatePhoneUniqueness, validateEmailUniqueness } = await import("./identity-validation");
             const phoneCheck = await validatePhoneUniqueness(mobile, id);
             if (!phoneCheck.isValid) {
-                return { success: false, error: phoneCheck.error };
+                // Allow overlap if it's a driver in the same school
+                if (phoneCheck.type === 'driver') {
+                    const existingDriver = await prisma.transportDriver.findUnique({
+                        where: { id: phoneCheck.entityId! },
+                        select: { schoolId: true }
+                    });
+                    const staff = await prisma.user.findUnique({ where: { id }, select: { schoolId: true } });
+                    if (existingDriver?.schoolId !== staff?.schoolId) {
+                        return { success: false, error: phoneCheck.error };
+                    }
+                } else {
+                    return { success: false, error: phoneCheck.error };
+                }
             }
 
             // Global Email Uniqueness Check
@@ -477,6 +515,22 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
             }
         });
         console.log("Staff member updated successfully:", staff.id);
+
+        // Sync driver linkage if mobile changed or was set
+        if (mobile && staff.schoolId) {
+            await prisma.transportDriver.updateMany({
+                where: {
+                    phone: mobile,
+                    schoolId: staff.schoolId,
+                    OR: [
+                        { userId: null },
+                        { userId: "" },
+                        { NOT: { userId: staff.id } } // Ensure it's linked to THIS user if phone matches
+                    ]
+                },
+                data: { userId: staff.id }
+            });
+        }
 
         // Revalidate both the staff list and the edit page
         if (staff.school?.slug) {

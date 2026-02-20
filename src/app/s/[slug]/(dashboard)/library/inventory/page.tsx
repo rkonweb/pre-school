@@ -273,7 +273,7 @@ export default function LibraryInventoryPage() {
                     </button>
                     <button
                         onClick={() => handleOpenModal()}
-                        className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl"
+                        className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl"
                     >
                         <Plus className="h-4 w-4" />
                         Add New Book
@@ -576,7 +576,7 @@ export default function LibraryInventoryPage() {
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="flex items-center gap-2 rounded-xl bg-brand px-6 py-2 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl disabled:opacity-50"
+                                    className="flex items-center gap-2 rounded-xl bg-brand px-6 py-2 text-sm font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl disabled:opacity-50"
                                 >
                                     {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                                     {editingBook ? "Update Book" : "Add Book"}
@@ -635,7 +635,7 @@ export default function LibraryInventoryPage() {
                             <button
                                 onClick={handleBulkSubmit}
                                 disabled={!bulkFile || isBulkUploading}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 disabled:opacity-50"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3 text-sm font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 disabled:opacity-50"
                             >
                                 {isBulkUploading && <Loader2 className="h-4 w-4 animate-spin" />}
                                 Upload & Process

@@ -185,7 +185,7 @@ export default function CommunicationPage() {
                         {activeTab === "announcements" && !isComposing && (
                             <button
                                 onClick={() => setIsComposing(true)}
-                                className="p-2 rounded-lg bg-brand text-white hover:brightness-110 transition-colors"
+                                className="p-2 rounded-lg bg-brand text-[var(--secondary-color)] hover:brightness-110 transition-colors"
                                 title="New Broadcast"
                             >
                                 <Plus className="h-4 w-4" />
@@ -199,7 +199,7 @@ export default function CommunicationPage() {
                             onClick={() => setActiveTab("messages")}
                             className={cn(
                                 "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all",
-                                activeTab === "messages" ? "bg-white text-brand shadow-sm dark:bg-zinc-800" : "text-zinc-500"
+                                activeTab === "messages" ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "text-zinc-500"
                             )}
                         >
                             <MessageSquare className="h-3.5 w-3.5" />
@@ -209,7 +209,7 @@ export default function CommunicationPage() {
                             onClick={() => setActiveTab("announcements")}
                             className={cn(
                                 "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all",
-                                activeTab === "announcements" ? "bg-white text-brand shadow-sm dark:bg-zinc-800" : "text-zinc-500"
+                                activeTab === "announcements" ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "text-zinc-500"
                             )}
                         >
                             <Megaphone className="h-3.5 w-3.5" />
@@ -255,7 +255,7 @@ export default function CommunicationPage() {
                                         <p className="text-xs text-zinc-500 truncate">{chat.lastMsg}</p>
                                     </div>
                                     {chat.unread > 0 && (
-                                        <div className="mt-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] text-white">
+                                        <div className="mt-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] text-[var(--secondary-color)]">
                                             {chat.unread}
                                         </div>
                                     )}
@@ -326,7 +326,7 @@ export default function CommunicationPage() {
                                 )}>
                                     <div className={cn(
                                         "rounded-2xl px-4 py-2 text-sm shadow-sm",
-                                        msg.sender === "admin" ? "bg-brand text-white rounded-tr-none" : "bg-white dark:bg-zinc-800 rounded-tl-none border border-zinc-100 dark:border-zinc-700"
+                                        msg.sender === "admin" ? "bg-brand text-[var(--secondary-color)] rounded-tr-none" : "bg-white dark:bg-zinc-800 rounded-tl-none border border-zinc-100 dark:border-zinc-700"
                                     )}>
                                         {msg.text}
                                     </div>
@@ -349,7 +349,7 @@ export default function CommunicationPage() {
                                     placeholder="Type your message..."
                                     className="flex-1 bg-transparent border-0 text-sm focus:ring-0 placeholder:text-zinc-500"
                                 />
-                                <button className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-white"><Send className="h-4 w-4" /></button>
+                                <button className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-[var(--secondary-color)]"><Send className="h-4 w-4" /></button>
                             </div>
                         </div>
                     </>
@@ -379,7 +379,7 @@ export default function CommunicationPage() {
                                         setSelectedClasses([]);
                                         setSelectedStudents([]);
                                     }}
-                                    className="mt-8 px-6 py-3 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:brightness-110 transition-all flex items-center gap-2"
+                                    className="mt-8 px-6 py-3 bg-brand text-[var(--secondary-color)] rounded-xl font-bold shadow-lg shadow-brand/20 hover:brightness-110 transition-all flex items-center gap-2"
                                 >
                                     <Plus className="h-4 w-4" /> Compose New Broadcast
                                 </button>
@@ -434,7 +434,7 @@ export default function CommunicationPage() {
                                                         className={cn(
                                                             "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all text-left",
                                                             selectedClasses.includes(cls.id)
-                                                                ? "bg-brand text-white shadow-sm"
+                                                                ? "bg-brand text-[var(--secondary-color)] shadow-sm"
                                                                 : "bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700"
                                                         )}
                                                     >
@@ -495,7 +495,7 @@ export default function CommunicationPage() {
                                                             >
                                                                 <div className={cn(
                                                                     "h-4 w-4 shrink-0 rounded border flex items-center justify-center",
-                                                                    selectedStudents.includes(s.id) ? "border-brand bg-brand text-white" : "border-zinc-300"
+                                                                    selectedStudents.includes(s.id) ? "border-brand bg-brand text-[var(--secondary-color)]" : "border-zinc-300"
                                                                 )}>
                                                                     {selectedStudents.includes(s.id) && <CheckCircle2 className="h-3 w-3" />}
                                                                 </div>
@@ -548,7 +548,7 @@ export default function CommunicationPage() {
                                     <button
                                         onClick={handleSendBroadcast}
                                         disabled={isSending}
-                                        className="px-8 py-2.5 rounded-xl bg-brand font-bold text-white shadow-lg shadow-brand/20 hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        className="px-8 py-2.5 rounded-xl bg-brand font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                     >
                                         {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                         {isSending ? "Sending..." : "Send Broadcast"}

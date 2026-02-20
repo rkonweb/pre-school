@@ -100,21 +100,21 @@ export default function BiometricSettingsPage() {
             </div>
 
             {/* Quick Connect Guide (Hero) */}
-            <div className="relative overflow-hidden rounded-2xl bg-brand p-8 text-white shadow-lg shadow-brand/20">
+            <div className="relative overflow-hidden rounded-2xl bg-brand p-8 text-[var(--secondary-color)] shadow-lg shadow-brand/20">
                 <div className="relative z-10 grid gap-8 md:grid-cols-2">
                     <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[var(--secondary-color)] opacity-90 backdrop-blur-sm">
                             <Router className="h-3 w-3" /> Hardware Setup
                         </div>
                         <h2 className="text-3xl font-bold leading-tight">Connect your Machine in seconds</h2>
-                        <p className="max-w-md text-white/80">
+                        <p className="max-w-md text-[var(--secondary-color)] opacity-80">
                             Simply copy the Server URL below and paste it into your biometric device's "Cloud Server" or "ADMS" settings.
                         </p>
 
                         <div className="mt-4 space-y-2">
-                            <label className="text-xs font-medium uppercase tracking-wider text-white/60">Server URL Endpoint</label>
+                            <label className="text-xs font-medium uppercase tracking-wider text-[var(--secondary-color)] opacity-60">Server URL Endpoint</label>
                             <div className="flex items-center gap-2 rounded-xl bg-white/10 p-2 pr-4 backdrop-blur-md ring-1 ring-white/20 transition-all hover:bg-white/20">
-                                <code className="flex-1 px-3 font-mono text-sm tracking-wide text-white">
+                                <code className="flex-1 px-3 font-mono text-sm tracking-wide text-[var(--secondary-color)]">
                                     https://app.schoolerp.com/api/biometric/push
                                 </code>
                                 <button
@@ -140,7 +140,7 @@ export default function BiometricSettingsPage() {
                                     <div className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-white/20 font-bold shadow-sm ring-4 ring-white/10">
                                         {item.step}
                                     </div>
-                                    <span className="font-medium text-white/90">{item.text}</span>
+                                    <span className="font-medium text-[var(--secondary-color)] opacity-90">{item.text}</span>
                                 </div>
                             ))}
                         </div>

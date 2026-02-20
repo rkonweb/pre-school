@@ -94,7 +94,7 @@ export default function ExpenseForm({ slug, vehicles, initialData, trigger, onSu
             <div onClick={() => setIsOpen(true)} className="cursor-pointer">
                 {trigger || (
                     <button
-                        className="flex items-center gap-2 px-6 py-2.5 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all active:scale-95 group"
+                        className="flex items-center gap-2 px-6 py-2.5 bg-brand text-[var(--secondary-color)] rounded-xl font-bold shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all active:scale-95 group"
                     >
                         <Plus className="h-5 w-5" />
                         ADD EXPENSE

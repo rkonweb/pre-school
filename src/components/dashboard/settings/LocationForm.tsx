@@ -25,13 +25,14 @@ import usePlacesAutocomplete, {
     getLatLng,
 } from "use-places-autocomplete";
 import { cn } from "@/lib/utils";
+import { GOOGLE_MAPS_LIBRARIES, DEFAULT_MAP_STYLES } from "@/lib/maps-config";
 
 interface LocationFormProps {
     slug: string;
     initialData: any;
 }
 
-const libraries: ("places")[] = ["places"];
+
 
 export function LocationForm({ slug, initialData }: LocationFormProps) {
     const router = useRouter();
@@ -44,7 +45,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
 
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: activeKey,
-        libraries,
+        libraries: GOOGLE_MAPS_LIBRARIES,
     });
 
     const handleSave = async () => {
@@ -84,13 +85,30 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
     }, [formData?.latitude, formData?.longitude]);
 
     if (loadError && activeKey) return (
-        <div className="max-w-4xl p-12 bg-white rounded-[40px] border border-rose-100 text-center space-y-4">
+        <div className="max-w-4xl p-12 bg-white rounded-[40px] border border-rose-100 text-center space-y-6">
             <AlertTriangle className="h-12 w-12 text-rose-500 mx-auto" />
-            <h3 className="text-xl font-black text-zinc-900">Maps Configuration Error</h3>
-            <p className="text-sm text-zinc-500 max-w-md mx-auto">
-                The provided Google Maps API key appears to be invalid or restricted. Please check your credentials.
-            </p>
-            <button onClick={() => router.refresh()} className="px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase hover:bg-blue-700 transition-colors">Retry Connection</button>
+            <div className="space-y-2">
+                <h3 className="text-xl font-black text-zinc-900">Maps Configuration Error</h3>
+                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest underline">ApiProjectMapError</p>
+                <p className="text-sm text-zinc-500 max-w-md mx-auto">
+                    The API Key is physically valid, but the <span className="text-brand font-bold">"Maps JavaScript API"</span> service is disabled for your project in Google Cloud Console.
+                </p>
+            </div>
+
+            <div className="bg-zinc-50 rounded-3xl p-8 max-w-md mx-auto text-left space-y-4 border border-zinc-100 shadow-inner">
+                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest border-b border-zinc-200 pb-2">Activation Steps</p>
+                <div className="space-y-3 text-xs font-medium text-zinc-600">
+                    <p>1. Go to <span className="font-bold">console.cloud.google.com</span></p>
+                    <p>2. Select your project: <span className="text-brand font-bold">"school-automation"</span></p>
+                    <p>3. Go to <span className="font-bold">APIs & Services {'>'} Library</span></p>
+                    <p>4. Enable <span className="text-brand font-bold">"Maps JavaScript API"</span></p>
+                    <p>5. Enable <span className="text-brand font-bold">"Places API"</span> (required for search)</p>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-4">
+                <button onClick={() => router.refresh()} className="w-full h-14 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all">Retry Synchronization</button>
+            </div>
         </div>
     );
 
@@ -285,18 +303,7 @@ export function LocationForm({ slug, initialData }: LocationFormProps) {
                                     mapContainerClassName="h-full w-full"
                                     options={{
                                         disableDefaultUI: true,
-                                        styles: [
-                                            {
-                                                "featureType": "all",
-                                                "elementType": "labels.text.fill",
-                                                "stylers": [{ "saturation": 36 }, { "color": "#333333" }, { "lightness": 40 }]
-                                            },
-                                            {
-                                                "featureType": "all",
-                                                "elementType": "labels.text.stroke",
-                                                "stylers": [{ "visibility": "on" }, { "color": "#ffffff" }, { "lightness": 16 }]
-                                            }
-                                        ]
+                                        styles: DEFAULT_MAP_STYLES
                                     }}
                                 >
                                     <MarkerF position={mapCenter} />

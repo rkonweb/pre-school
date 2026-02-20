@@ -118,7 +118,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 return "bg-green-600 hover:bg-green-700 text-white";
             case "info":
             default:
-                return "bg-brand hover:brightness-110 text-white";
+                return "bg-brand hover:brightness-110 text-[var(--secondary-color)]";
         }
     };
 

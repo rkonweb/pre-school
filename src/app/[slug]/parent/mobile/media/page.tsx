@@ -25,7 +25,7 @@ export default async function ParentMediaPage({
     }
 
     // Get students context
-    const familyRes = await getFamilyStudentsAction(phone);
+    const familyRes = await getFamilyStudentsAction(slug, phone);
     if (!familyRes.success || !familyRes.students?.length) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center p-10 text-center">
@@ -38,7 +38,7 @@ export default async function ParentMediaPage({
     }
 
     const studentId = queryStudentId || familyRes.students[0].id;
-    const mediaRes = await getStudentMediaAction(studentId);
+    const mediaRes = await getStudentMediaAction(slug, studentId);
     const mediaItems = (mediaRes.success ? mediaRes.media : []) || [];
 
     return (
@@ -85,20 +85,6 @@ export default async function ParentMediaPage({
                 <MediaVault items={mediaItems} />
             </div>
 
-            {/* Floating Bottom Navigation (Mocked for context) */}
-            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-6 pointer-events-none z-50">
-                <div className="bg-summer-navy rounded-[32px] p-2 flex justify-between items-center shadow-2xl pointer-events-auto">
-                    <Link href={`/${slug}/parent/mobile/activity?studentId=${studentId}${preview === "true" ? "&preview=true" : ""}`} className="p-4 text-white/40 hover:text-white transition-colors">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </Link>
-                    <div className="w-14 h-14 bg-summer-teal rounded-full flex items-center justify-center text-white shadow-xl">
-                        <ImageIcon className="w-6 h-6" />
-                    </div>
-                    <Link href={`/${slug}/parent/mobile/transport?studentId=${studentId}${preview === "true" ? "&preview=true" : ""}`} className="p-4 text-white/40 hover:text-white transition-colors">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A2 2 0 013 15.485V5.414a2 2 0 012-2l7.586 7.586a2 2 0 010 2.828l-5.586 5.586a2 2 0 01-1.414.586z"></path></svg>
-                    </Link>
-                </div>
-            </div>
         </div>
     );
 }

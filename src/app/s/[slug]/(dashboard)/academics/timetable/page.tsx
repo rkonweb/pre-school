@@ -265,7 +265,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                                 className={cn(
                                     "h-10 px-5 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2",
                                     isSelected
-                                        ? "bg-brand border-brand text-white shadow-lg shadow-brand/20"
+                                        ? "bg-brand border-brand text-[var(--secondary-color)] shadow-lg shadow-brand/20"
                                         : "bg-white border-zinc-100 text-zinc-400 hover:border-zinc-300"
                                 )}
                             >
@@ -360,7 +360,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="h-12 px-8 bg-brand text-white hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                        className="h-12 px-8 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                     >
                         <Save className="h-4 w-4" />
                         {isSaving ? "Saving..." : "Save Structure"}
@@ -771,7 +771,7 @@ function CellEditor({ day, periodId, initialData, staff, subjects, slug, current
                     <button
                         onClick={handleSave}
                         disabled={!!conflict || checking}
-                        className="flex-[2] h-12 rounded-2xl bg-brand text-white hover:brightness-110 font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand/20"
+                        className="flex-[2] h-12 rounded-2xl bg-brand text-[var(--secondary-color)] hover:brightness-110 font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand/20"
                     >
                         Save
                     </button>

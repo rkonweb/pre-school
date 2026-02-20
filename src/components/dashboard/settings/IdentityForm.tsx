@@ -299,16 +299,36 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 focus:ring-2 focus:ring-brand transition-all font-bold"
                             />
                         </div>
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] uppercase tracking-widest text-zinc-400">Theme Color</label>
-                            <div className="flex items-center gap-4 p-3 bg-zinc-50 rounded-2xl border border-zinc-200">
-                                <input
-                                    type="color"
-                                    value={formData.brandColor || "#AE7B64"}
-                                    onChange={e => setFormData({ ...formData, brandColor: e.target.value })}
-                                    className="h-10 w-20 rounded-lg cursor-pointer border-0 bg-transparent"
-                                />
-                                <span className="text-[10px] font-black text-zinc-500 uppercase">Primary Portal Color</span>
+                        <div className="space-y-1.5 col-span-2 md:col-span-1">
+                            <label className="text-[10px] uppercase tracking-widest text-zinc-400">Theme Colors</label>
+                            <div className="flex flex-col gap-3">
+                                {/* Primary Color */}
+                                <div className="flex items-center gap-4 p-3 bg-zinc-50 rounded-2xl border border-zinc-200">
+                                    <input
+                                        type="color"
+                                        value={formData.brandColor || "#AE7B64"}
+                                        onChange={e => setFormData({ ...formData, brandColor: e.target.value })}
+                                        className="h-10 w-20 rounded-lg cursor-pointer border-0 bg-transparent"
+                                    />
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-black text-zinc-900 uppercase">Primary</span>
+                                        <span className="text-[10px] font-medium text-zinc-500">Backgrounds & Brands</span>
+                                    </div>
+                                </div>
+
+                                {/* Secondary Color */}
+                                <div className="flex items-center gap-4 p-3 bg-zinc-50 rounded-2xl border border-zinc-200">
+                                    <input
+                                        type="color"
+                                        value={formData.secondaryColor || "#ffffff"}
+                                        onChange={e => setFormData({ ...formData, secondaryColor: e.target.value })}
+                                        className="h-10 w-20 rounded-lg cursor-pointer border-0 bg-transparent"
+                                    />
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-black text-zinc-900 uppercase">Secondary</span>
+                                        <span className="text-[10px] font-medium text-zinc-500">Text on Brand BG</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -338,7 +358,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 <button
                                     onClick={startPhoneChange}
                                     disabled={isPhoneLoading}
-                                    className="px-6 py-3 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand/90 transition-all disabled:opacity-50"
+                                    className="px-6 py-3 bg-brand text-[var(--secondary-color)] rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand/90 transition-all disabled:opacity-50"
                                 >
                                     {currentPhone ? "Change Number" : "Add Number"}
                                 </button>
@@ -403,7 +423,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 <button
                                     onClick={sendNewPhoneOtp}
                                     disabled={isPhoneLoading || newPhone.length !== 10}
-                                    className="px-6 py-3 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand/90 transition-all disabled:opacity-50 flex items-center gap-2"
+                                    className="px-6 py-3 bg-brand text-[var(--secondary-color)] rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand/90 transition-all disabled:opacity-50 flex items-center gap-2"
                                 >
                                     {isPhoneLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                                     Send OTP
@@ -459,8 +479,8 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="text-white px-10 py-5 rounded-[24px] text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:brightness-110 transition-all shadow-2xl disabled:opacity-50"
-                        style={{ backgroundColor: 'var(--brand-color)', boxShadow: '0 25px 50px -12px rgba(var(--brand-color-rgb, 0, 0, 0), 0.25)' }}
+                        className="px-10 py-5 rounded-[24px] text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:brightness-110 transition-all shadow-2xl disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--brand-color)', color: 'var(--secondary-color)', boxShadow: '0 25px 50px -12px rgba(var(--brand-color-rgb, 0, 0, 0), 0.25)' }}
                     >
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         Update Identity
@@ -491,7 +511,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                             <button onClick={() => setAspect(1)} className="px-4 py-2 bg-zinc-100 rounded-xl text-[10px] font-bold uppercase">Square</button>
                             <button onClick={() => setAspect(imgNaturalAspect)} className="px-4 py-2 bg-zinc-100 rounded-xl text-[10px] font-bold uppercase">Original</button>
                             <div className="flex-1" />
-                            <button onClick={finalizeLogo} className="px-10 py-4 bg-brand text-white rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all">Apply Logo</button>
+                            <button onClick={finalizeLogo} className="px-10 py-4 bg-brand text-[var(--secondary-color)] rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all">Apply Logo</button>
                         </div>
                     </div>
                 </div>

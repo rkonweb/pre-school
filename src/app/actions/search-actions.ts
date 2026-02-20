@@ -67,6 +67,8 @@ export async function searchStudentsElasticAction(schoolSlug: string, query: str
             { term: { schoolSlug: schoolSlug } }
         ];
 
+        const must_not: any[] = [];
+
         if (query) {
             must.push({
                 multi_match: {
@@ -79,7 +81,10 @@ export async function searchStudentsElasticAction(schoolSlug: string, query: str
 
         if (filters.status && filters.status !== 'all') {
             must.push({ match: { status: filters.status } });
+        } else if (filters.excludeStatus) {
+            must_not.push({ match: { status: filters.excludeStatus } });
         }
+
         if (filters.class && filters.class !== 'all') {
             must.push({ match: { 'className.keyword': filters.class } }); // keyword for exact match
         }
@@ -91,7 +96,7 @@ export async function searchStudentsElasticAction(schoolSlug: string, query: str
             index: 'students',
             body: {
                 query: {
-                    bool: { must }
+                    bool: { must, must_not }
                 },
                 size: 50
             } as any

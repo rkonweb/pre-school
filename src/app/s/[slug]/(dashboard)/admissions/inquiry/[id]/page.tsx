@@ -125,7 +125,7 @@ export default function LeadDetailPage() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => setIsCopilotOpen(!isCopilotOpen)}
-                                    className={cn("gap-2 border-brand/20 text-brand bg-brand/5 hover:bg-brand/10", isCopilotOpen && "bg-brand text-white hover:bg-brand/90")}
+                                    className={cn("gap-2 border-brand/20 text-brand bg-brand/5 hover:bg-brand/10", isCopilotOpen && "bg-brand text-[var(--secondary-color)] hover:bg-brand/90")}
                                 >
                                     <Sparkles className="h-4 w-4" />
                                     {isCopilotOpen ? "Close Copilot" : "Open Copilot"}
@@ -219,7 +219,7 @@ export default function LeadDetailPage() {
                                             onClick={() => setActiveTab(tab.id)}
                                             className={cn(
                                                 "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                                                activeTab === tab.id ? "bg-white text-brand shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                                                activeTab === tab.id ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "text-zinc-400 hover:text-zinc-600"
                                             )}
                                         >
                                             <tab.icon className="h-3.5 w-3.5" />

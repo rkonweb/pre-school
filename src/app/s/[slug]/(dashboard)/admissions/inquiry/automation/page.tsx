@@ -439,7 +439,7 @@ export default function AutomationControlPage() {
                                         </button>
                                         <button
                                             onClick={() => handleExecuteQueue(item.id)}
-                                            className="h-8 w-8 rounded-full bg-zinc-900 hover:bg-brand flex items-center justify-center text-white shadow-sm transition-colors"
+                                            className="h-8 w-8 rounded-full bg-zinc-900 hover:bg-brand flex items-center justify-center text-white hover:text-[var(--secondary-color)] shadow-sm transition-colors"
                                         >
                                             <Check className="h-3.5 w-3.5" />
                                         </button>

@@ -197,14 +197,14 @@ export default function TransportAssignmentsPage() {
                                         className={cn(
                                             "group text-left p-5 rounded-[24px] border transition-all hover:scale-[1.02] active:scale-[0.98]",
                                             selectedStudent?.id === student.id
-                                                ? "bg-blue-600 border-zinc-900 text-white shadow-xl shadow-zinc-400/20"
+                                                ? "bg-brand border-zinc-900 text-[var(--secondary-color)] shadow-xl shadow-zinc-400/20"
                                                 : "bg-white border-zinc-100 hover:border-zinc-200 shadow-sm dark:bg-zinc-950 dark:border-zinc-800"
                                         )}
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className={cn(
                                                 "h-12 w-12 shrink-0 rounded-xl flex items-center justify-center font-black text-xs shadow-inner transition-colors",
-                                                selectedStudent?.id === student.id ? "bg-white/10 text-white" : "bg-zinc-50 text-zinc-400 dark:bg-zinc-900"
+                                                selectedStudent?.id === student.id ? "bg-white/10 text-[var(--secondary-color)]" : "bg-zinc-50 text-zinc-400 dark:bg-zinc-900"
                                             )}>
                                                 {student.firstName[0]}{student.lastName[0]}
                                             </div>
@@ -222,7 +222,7 @@ export default function TransportAssignmentsPage() {
                                             {student.transportProfile && (
                                                 <div className={cn(
                                                     "h-8 w-8 rounded-xl flex items-center justify-center shadow-inner transition-all group-hover:rotate-12",
-                                                    selectedStudent?.id === student.id ? "bg-brand text-white shadow-lg shadow-brand/20" : "bg-brand/5 text-brand"
+                                                    selectedStudent?.id === student.id ? "bg-brand text-[var(--secondary-color)] shadow-lg shadow-brand/20" : "bg-brand/5 text-brand"
                                                 )}>
                                                     <Bus className="h-4 w-4" />
                                                 </div>
@@ -295,7 +295,7 @@ export default function TransportAssignmentsPage() {
                                                 className={cn(
                                                     "relative text-left p-6 rounded-[28px] border-2 transition-all hover:scale-[1.02] active:scale-[0.98]",
                                                     selectedRouteId === route.id
-                                                        ? "bg-blue-600 border-zinc-900 text-white shadow-xl"
+                                                        ? "bg-brand border-zinc-900 text-[var(--secondary-color)] shadow-xl"
                                                         : "bg-white border-zinc-100 hover:border-zinc-200 dark:bg-zinc-900/50 dark:border-zinc-800"
                                                 )}
                                             >
@@ -306,7 +306,7 @@ export default function TransportAssignmentsPage() {
                                                 )}>{route.description || "Route active"}</div>
 
                                                 {selectedRouteId === route.id && (
-                                                    <div className="absolute top-4 right-4 h-6 w-6 rounded-full bg-brand flex items-center justify-center text-white shadow-lg">
+                                                    <div className="absolute top-4 right-4 h-6 w-6 rounded-full bg-brand flex items-center justify-center text-[var(--secondary-color)] shadow-lg">
                                                         <Check className="h-3 w-3" />
                                                     </div>
                                                 )}
@@ -390,7 +390,7 @@ export default function TransportAssignmentsPage() {
                                     <button
                                         onClick={handleAssign}
                                         disabled={submitting || !selectedRouteId}
-                                        className="h-16 rounded-2xl bg-blue-600 px-12 text-[10px] font-black uppercase tracking-[2px] text-white shadow-xl shadow-zinc-200 hover:bg-black hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                        className="h-16 rounded-2xl bg-brand px-12 text-[10px] font-black uppercase tracking-[2px] text-[var(--secondary-color)] shadow-xl shadow-zinc-200 hover:bg-black hover:text-white hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
                                         {submitting ? (
                                             <>

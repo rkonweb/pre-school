@@ -52,7 +52,7 @@ export default function LibraryDashboardPage() {
                 <div className="flex gap-2">
                     <Link
                         href={`/s/${slug}/library/issue`}
-                        className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl"
+                        className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl"
                     >
                         <ArrowUpRight className="h-4 w-4" />
                         Issue Book

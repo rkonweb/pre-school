@@ -159,7 +159,7 @@ export default function TourCalendarPage() {
                         </button>
                         {isRefreshing && <Loader2 className="h-3 w-3 animate-spin text-zinc-300" />}
                     </div>
-                    <button className="h-11 px-6 bg-brand text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] transition-all">
+                    <button className="h-11 px-6 bg-brand text-[var(--secondary-color)] rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] transition-all">
                         <CalendarIcon className="h-4 w-4" />
                         Book Tour
                     </button>
@@ -174,7 +174,7 @@ export default function TourCalendarPage() {
                         onClick={() => setActiveTab(tab.id)}
                         className={cn(
                             "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-                            activeTab === tab.id ? "bg-white text-brand shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                            activeTab === tab.id ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "text-zinc-400 hover:text-zinc-600"
                         )}
                     >
                         {tab.label}

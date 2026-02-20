@@ -126,7 +126,7 @@ export default function AISettingsPage() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto pb-20 px-4">
+        <div className="w-full pb-20 px-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
@@ -342,7 +342,7 @@ export default function AISettingsPage() {
 
                     <div className="bg-white rounded-[40px] border border-zinc-200 p-10 shadow-xl shadow-zinc-200/40">
                         <div className="flex items-center gap-4 mb-8">
-                            <div className="h-12 w-12 rounded-[18px] bg-brand text-white flex items-center justify-center">
+                            <div className="h-12 w-12 rounded-[18px] bg-brand text-[var(--secondary-color)] flex items-center justify-center">
                                 <Zap className="h-6 w-6" />
                             </div>
                             <div>

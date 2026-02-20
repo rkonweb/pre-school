@@ -79,7 +79,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 async function getAIInsights(vehicles: any[]) {
     return vehicles.map(vehicle => {
         const telemetry = vehicle.VehicleTelemetry?.[0];
-        const route = vehicle.TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle?.[0];
+        const route = vehicle.pickupRoutes?.[0] || vehicle.dropRoutes?.[0];
         const insights: string[] = [];
 
         if (telemetry) {
@@ -90,6 +90,7 @@ async function getAIInsights(vehicles: any[]) {
             }
 
             // 2. Detect Route Deviation
+            const route = vehicle.pickupRoutes?.[0] || vehicle.dropRoutes?.[0];
             if (route?.stops?.length > 0) {
                 // Find nearest stop
                 let minDistance = Infinity;
@@ -139,7 +140,14 @@ export async function getFleetStatusAction(schoolSlug: string) {
         const vehicles = await prisma.transportVehicle.findMany({
             where: { schoolId: school.id },
             include: {
-                TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle: {
+                pickupRoutes: {
+                    take: 1,
+                    include: {
+                        driver: { select: { name: true } },
+                        stops: { select: { latitude: true, longitude: true } }
+                    }
+                },
+                dropRoutes: {
                     take: 1,
                     include: {
                         driver: { select: { name: true } },
@@ -157,7 +165,7 @@ export async function getFleetStatusAction(schoolSlug: string) {
 
         const fleetStatus = vehicles.map((vehicle: any) => {
             const latestTelemetry = vehicle.VehicleTelemetry?.[0];
-            const route = vehicle.TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle?.[0];
+            const route = vehicle.pickupRoutes?.[0] || vehicle.dropRoutes?.[0];
             const vehicleInsights = insights.find(i => i.vehicleId === vehicle.id)?.insights || [];
 
             return {
@@ -211,7 +219,20 @@ export async function getVehicleTelemetryAction(vehicleId: string) {
         const vehicle = await prisma.transportVehicle.findUnique({
             where: { id: vehicleId },
             include: {
-                TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle: {
+                pickupRoutes: {
+                    include: {
+                        stops: {
+                            orderBy: { sequenceOrder: 'asc' }
+                        },
+                        driver: {
+                            select: {
+                                name: true,
+                                phone: true
+                            }
+                        }
+                    }
+                },
+                dropRoutes: {
                     include: {
                         stops: {
                             orderBy: { sequenceOrder: 'asc' }
@@ -235,7 +256,7 @@ export async function getVehicleTelemetryAction(vehicleId: string) {
             return { success: false, error: "Vehicle not found" };
         }
 
-        const route = (vehicle as any).TransportRoute_TransportRoute_pickupVehicleIdToTransportVehicle?.[0];
+        const route = (vehicle as any).pickupRoutes?.[0] || (vehicle as any).dropRoutes?.[0];
 
         return {
             success: true,

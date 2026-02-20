@@ -38,7 +38,9 @@ export function PhoneLogin({ type }: PhoneLoginProps) {
 
         try {
             const fullNumber = countryCode + currentDigits;
-            const result = await sendOtpAction(fullNumber, "login");
+            // Map the internal type ("school" | "parent") to the API type ("school-login" | "parent-login")
+            const loginType = type === "school" ? "school-login" : "parent-login";
+            const result = await sendOtpAction(fullNumber, loginType);
 
             if (result && result.success) {
                 if (typeof window !== "undefined" && window.sessionStorage) {

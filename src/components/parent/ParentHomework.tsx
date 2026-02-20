@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Calendar, Clock, Video, Mic, FileText, Camera, Upload, Send,
     Sparkles, Star, Award, Heart, CheckCircle, AlertCircle, Smile,
-    ThumbsUp, ThumbsDown, Meh, Loader2, X, Play, BookOpen
+    ThumbsUp, ThumbsDown, Meh, Loader2, X, Play, BookOpen, ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
 import { submitHomeworkAction, recordReadReceiptAction, getStudentHomeworkAction } from "@/app/actions/homework-actions";
@@ -14,9 +14,11 @@ import MediaUploader from "@/components/upload/MediaUploader";
 interface ParentHomeworkProps {
     studentId: string;
     parentId: string;
+    slug: string;
+    brandColor?: string;
 }
 
-export default function ParentHomeworkPage({ studentId, parentId }: ParentHomeworkProps) {
+export default function ParentHomeworkPage({ studentId, parentId, slug, brandColor = "#6366f1" }: ParentHomeworkProps) {
     const [homework, setHomework] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedTask, setSelectedTask] = useState<any>(null);
@@ -28,7 +30,7 @@ export default function ParentHomeworkPage({ studentId, parentId }: ParentHomewo
 
     const loadHomework = async () => {
         setIsLoading(true);
-        const res = await getStudentHomeworkAction(studentId);
+        const res = await getStudentHomeworkAction(slug, studentId);
         if (res.success) setHomework(res.data || []);
         setIsLoading(false);
     };
@@ -66,13 +68,18 @@ export default function ParentHomeworkPage({ studentId, parentId }: ParentHomewo
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8"
+                className="mb-8 p-6 bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-50 flex items-center justify-between"
             >
-                <div className="flex items-center gap-2 mb-2">
-                    <BookOpen className="h-5 w-5 text-blue-600" />
-                    <h2 className="text-2xl font-black tracking-tight">Homework & Activities</h2>
+                <div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: brandColor }} />
+                        <h2 className="text-2xl font-black tracking-tight text-slate-900 leading-none">Homework</h2>
+                    </div>
+                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest leading-none">Emma's Active Learning Journey</p>
                 </div>
-                <p className="text-zinc-500 font-medium">Capture and share Emma's fun learning moments!</p>
+                <div className="h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100" style={{ backgroundColor: `${brandColor}10`, color: brandColor }}>
+                    <BookOpen className="h-6 w-6" />
+                </div>
             </motion.div>
 
             {/* Homework Cards */}
@@ -83,6 +90,7 @@ export default function ParentHomeworkPage({ studentId, parentId }: ParentHomewo
                         task={task}
                         index={index}
                         onClick={() => handleTaskClick(task)}
+                        brandColor={brandColor}
                     />
                 ))}
             </div>
@@ -106,6 +114,7 @@ export default function ParentHomeworkPage({ studentId, parentId }: ParentHomewo
                 <TaskDetailModal
                     task={selectedTask}
                     studentId={studentId}
+                    slug={slug}
                     onClose={() => setSelectedTask(null)}
                     onSuccess={handleSubmissionSuccess}
                 />
@@ -117,7 +126,7 @@ export default function ParentHomeworkPage({ studentId, parentId }: ParentHomewo
     );
 }
 
-function TaskCard({ task, index, onClick }: any) {
+function TaskCard({ task, index, onClick, brandColor }: any) {
     const isSubmitted = task.submission?.isSubmitted;
     const isReviewed = task.submission?.isReviewed;
     const stickerType = task.submission?.stickerType;
@@ -127,110 +136,130 @@ function TaskCard({ task, index, onClick }: any) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.02, y: -4 }}
+            whileHover={{ scale: 1.01, y: -4 }}
             onClick={onClick}
-            className="relative bg-white rounded-[2.5rem] p-6 shadow-xl border-4 border-transparent hover:border-blue-200 transition-all cursor-pointer overflow-hidden"
+            className="relative bg-white rounded-[3rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border-4 border-transparent hover:border-indigo-100/50 transition-all cursor-pointer overflow-hidden group"
         >
-            {/* Decorative Background */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full blur-3xl opacity-50 -z-10" />
+            {/* Status Bar */}
+            <div
+                className="absolute left-0 top-0 bottom-0 w-2.5 transition-all group-hover:w-3.5"
+                style={{ backgroundColor: isReviewed ? '#10b981' : isSubmitted ? brandColor : '#f1f5f9' }}
+            />
 
             {/* Status Badge */}
-            <div className="absolute top-6 right-6">
+            <div className="absolute top-8 right-8">
                 {isReviewed ? (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-full shadow-lg">
-                        <CheckCircle className="h-5 w-5" />
-                        <span className="font-black text-sm">Reviewed!</span>
+                    <div className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-full shadow-xl shadow-emerald-200/40">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="font-black text-[10px] uppercase tracking-widest text-white">Reviewed</span>
                     </div>
                 ) : isSubmitted ? (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full shadow-lg">
-                        <Clock className="h-5 w-5" />
-                        <span className="font-black text-sm">Submitted</span>
+                    <div className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-full shadow-xl shadow-indigo-200/40">
+                        <Clock className="h-4 w-4" />
+                        <span className="font-black text-[10px] uppercase tracking-widest text-white">Submitted</span>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full shadow-lg animate-pulse">
-                        <AlertCircle className="h-5 w-5" />
-                        <span className="font-black text-sm">New!</span>
+                    <div className="flex items-center gap-2 px-5 py-2.5 bg-amber-50 text-amber-600 rounded-full border border-amber-100 animate-pulse">
+                        <Star className="h-4 w-4" />
+                        <span className="font-black text-[10px] uppercase tracking-widest leading-none">New Task</span>
                     </div>
                 )}
             </div>
 
-            {/* Content */}
-            <div className="pr-32">
-                <h3 className="text-2xl md:text-3xl font-black text-zinc-900 mb-3 leading-tight">
+            <div className="pr-20">
+                <div className="flex items-center gap-3 mb-4">
+                    <span className="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest border border-slate-100">
+                        {task.subject || "General"}
+                    </span>
+                </div>
+
+                <h3 className="text-3xl font-black text-slate-800 tracking-tight leading-[0.9] mb-4 group-hover:text-slate-900 transition-colors">
                     {task.title}
                 </h3>
-                <p className="text-zinc-600 font-medium mb-4 line-clamp-2">
-                    {task.description}
+
+                <p className="text-[11px] text-slate-400 font-medium italic mb-8 line-clamp-2 leading-relaxed">
+                    "{task.description}"
                 </p>
 
                 {/* Media Badges */}
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-8">
                     {task.videoUrl && (
-                        <span className="flex items-center gap-2 px-3 py-2 bg-red-100 text-red-600 rounded-xl text-sm font-bold">
-                            <Video className="h-4 w-4" />
-                            Video Guide
+                        <span className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-rose-100">
+                            <Video className="h-3.5 w-3.5" />
+                            Video
                         </span>
                     )}
                     {task.voiceNoteUrl && (
-                        <span className="flex items-center gap-2 px-3 py-2 bg-purple-100 text-purple-600 rounded-xl text-sm font-bold">
-                            <Mic className="h-4 w-4" />
-                            Voice Note
+                        <span className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-purple-100">
+                            <Mic className="h-3.5 w-3.5" />
+                            Voice
                         </span>
                     )}
                     {task.worksheetUrl && (
-                        <span className="flex items-center gap-2 px-3 py-2 bg-emerald-100 text-emerald-600 rounded-xl text-sm font-bold">
-                            <FileText className="h-4 w-4" />
+                        <span className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                            <FileText className="h-3.5 w-3.5" />
                             Worksheet
                         </span>
                     )}
                 </div>
 
-                {/* Due Date */}
-                {task.dueDate && (
-                    <div className="flex items-center gap-2 text-zinc-500 text-sm font-bold">
-                        <Calendar className="h-4 w-4" />
-                        Due: {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                <div className="flex items-center justify-between mt-auto">
+                    <div className="flex items-center gap-6">
+                        {task.dueDate && (
+                            <div className="flex items-center gap-2.5">
+                                <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+                                    <Calendar className="h-4 w-4" />
+                                </div>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </span>
+                            </div>
+                        )}
+                        <div className="flex items-center gap-2.5">
+                            <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+                                <Clock className="h-4 w-4" />
+                            </div>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{task.estimatedTime || "15m"}</span>
+                        </div>
                     </div>
-                )}
+
+                    {!isSubmitted && (
+                        <div className="flex items-center gap-2 text-indigo-600 group-hover:translate-x-1 transition-transform">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Start</span>
+                            <ChevronRight className="h-4 w-4" />
+                        </div>
+                    )}
+                </div>
 
                 {/* Teacher Feedback */}
                 {isReviewed && stickerType && (
                     <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="mt-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-2xl border-2 border-yellow-200"
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="mt-8 p-5 rounded-[2rem] border-2 border-amber-100 shadow-lg shadow-amber-500/5 relative overflow-hidden"
+                        style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)' }}
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                                {stickerType === "EXCELLENT" && <Star className="h-6 w-6 text-white" />}
-                                {stickerType === "CREATIVE" && <Sparkles className="h-6 w-6 text-white" />}
-                                {stickerType === "STAR" && <Star className="h-6 w-6 text-white" />}
-                                {stickerType === "MEDAL" && <Award className="h-6 w-6 text-white" />}
+                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-200/20 rounded-full blur-2xl" />
+                        <div className="flex items-center gap-5 relative z-10">
+                            <div className="h-14 w-14 bg-white rounded-full flex items-center justify-center shadow-md">
+                                {stickerType === "EXCELLENT" && <Star className="h-7 w-7 text-amber-400 fill-amber-400" />}
+                                {stickerType === "CREATIVE" && <Sparkles className="h-7 w-7 text-amber-400" />}
+                                {stickerType === "STAR" && <Star className="h-7 w-7 text-amber-400 fill-amber-400" />}
+                                {stickerType === "MEDAL" && <Award className="h-7 w-7 text-amber-400" />}
                             </div>
                             <div>
-                                <p className="font-black text-zinc-900">Teacher's Feedback</p>
-                                <p className="text-sm text-zinc-600 font-bold">{stickerType.replace('_', ' ')}</p>
+                                <p className="text-[10px] font-black text-amber-700 uppercase tracking-[0.2em] mb-0.5">Sticker Awarded!</p>
+                                <p className="text-xl font-black text-amber-900 leading-none">{stickerType.replace('_', ' ')}</p>
                             </div>
                         </div>
                     </motion.div>
                 )}
             </div>
-
-            {/* Action Button */}
-            {!isSubmitted && (
-                <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="mt-6 w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-black text-center shadow-xl"
-                >
-                    Start Activity →
-                </motion.div>
-            )}
         </motion.div>
     );
 }
 
-function TaskDetailModal({ task, studentId, onClose, onSuccess }: any) {
+function TaskDetailModal({ task, studentId, slug, onClose, onSuccess }: any) {
     const [uploadType, setUploadType] = useState<"PHOTO" | "VIDEO" | null>(null);
     const [mediaUrl, setMediaUrl] = useState("");
     const [parentNotes, setParentNotes] = useState("");
@@ -246,7 +275,7 @@ function TaskDetailModal({ task, studentId, onClose, onSuccess }: any) {
 
         setIsSubmitting(true);
 
-        const result = await submitHomeworkAction({
+        const result = await submitHomeworkAction(slug, {
             homeworkId: task.id,
             studentId,
             mediaType: uploadType || "NONE",

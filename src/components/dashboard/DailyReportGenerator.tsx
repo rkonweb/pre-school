@@ -147,7 +147,7 @@ export function DailyReportGenerator({ slug }: DailyReportGeneratorProps) {
                                     </button>
                                     <button
                                         onClick={handlePrint}
-                                        className="px-4 py-2 bg-brand text-white rounded-xl font-medium shadow-lg shadow-brand/20 hover:bg-brand/90 flex items-center gap-2"
+                                        className="px-4 py-2 bg-brand text-[var(--secondary-color)] rounded-xl font-medium shadow-lg shadow-brand/20 hover:bg-brand/90 flex items-center gap-2"
                                     >
                                         <Printer className="h-4 w-4" />
                                         Print Report

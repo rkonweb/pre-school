@@ -8,6 +8,7 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { ConfirmProvider } from "@/contexts/ConfirmContext";
 import { DashboardLayoutWrapper } from "@/components/dashboard/DashboardLayoutWrapper";
 import { GlobalAuraWrapper } from "@/components/dashboard/GlobalAuraWrapper";
+import { SessionTimeoutListener } from "@/components/dashboard/session/SessionTimeoutListener";
 
 function hexToRgb(hex: string): string {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -55,6 +56,7 @@ export default async function DashboardLayout({
             name: true,
             logo: true,
             brandColor: true,
+            secondaryColor: true,
             modulesConfig: true,
             timezone: true,
             dateFormat: true
@@ -69,18 +71,23 @@ export default async function DashboardLayout({
     // SUBSCRIPTION CHECK - Block access if expired/suspended
     // ============================================
     if (user.role !== "SUPER_ADMIN") {
-        const subscription = await prisma.subscription.findFirst({
-            where: { schoolId: school.id },
-            include: { plan: true }
-        });
+        try {
+            const subscription = await prisma.subscription.findFirst({
+                where: { schoolId: school.id },
+                select: { status: true, endDate: true }
+            });
 
-        // Check if subscription is expired or inactive
-        const now = new Date();
-        const isExpired = subscription?.endDate && new Date(subscription.endDate) < now;
-        const isInactive = subscription?.status === 'SUSPENDED' || subscription?.status === 'CANCELLED';
+            // Check if subscription is expired or inactive
+            const now = new Date();
+            const isExpired = subscription?.endDate && new Date(subscription.endDate) < now;
+            const isInactive = subscription?.status === 'SUSPENDED' || subscription?.status === 'CANCELLED';
 
-        if (isExpired || isInactive || !subscription) {
-            redirect(`/s/${slug}/upgrade`);
+            if (isExpired || isInactive || !subscription) {
+                redirect(`/s/${slug}/upgrade`);
+            }
+        } catch (subError) {
+            console.error("Subscription check error:", subError);
+            // On error, allow access rather than blocking the user
         }
     }
 
@@ -101,7 +108,8 @@ export default async function DashboardLayout({
                     className="flex min-h-screen flex-row bg-zinc-50 dark:bg-zinc-900"
                     style={{
                         "--brand-color": brandColor,
-                        "--brand-color-rgb": brandColorRgb
+                        "--brand-color-rgb": brandColorRgb,
+                        "--secondary-color": school.secondaryColor || "#ffffff"
                     } as any}
                 >
                     <SchoolTheme brandColor={brandColor} />
@@ -131,6 +139,9 @@ export default async function DashboardLayout({
                         </main>
                         {/* Global AI Assistant */}
                         <GlobalAuraWrapper slug={slug} staffId={user.id} />
+
+                        {/* STRICT SESSION TIMEOUT: 15 Minutes Idle */}
+                        <SessionTimeoutListener timeoutMinutes={15} />
                     </DashboardLayoutWrapper>
                 </div>
             </ConfirmProvider>

@@ -14,6 +14,11 @@ export interface SubscriptionPlan {
         maxStorageGB: number;
     };
     includedModules: string[]; // Functional permissions
+    addonUserTiers: {
+        from: number;
+        to: number | null;
+        pricePerUser: number;
+    }[];
     supportLevel: "community" | "email" | "priority" | "dedicated";
     isActive: boolean;
     isPopular?: boolean;

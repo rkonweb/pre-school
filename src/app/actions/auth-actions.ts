@@ -3,13 +3,15 @@
 import { prisma } from "@/lib/prisma";
 import { randomInt } from "crypto";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { getFamilyStudentsAction } from "./parent-actions";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendOtpSchema, verifyOtpSchema, registerSchoolSchema, loginSchema } from "@/lib/schemas/auth-schemas";
 import { logAuditEvent, AuditEventType } from "@/lib/audit-logger";
 
 // --- 1. Send OTP ---
-export async function sendOtpAction(mobile: string, type: "signup" | "login" = "signup") {
+export async function sendOtpAction(mobile: string, type: "signup" | "login" | "school-login" | "parent-login" = "signup") {
     // 1. Zod Validation
     const parsed = sendOtpSchema.safeParse({ mobile, type });
     if (!parsed.success) {
@@ -26,11 +28,26 @@ export async function sendOtpAction(mobile: string, type: "signup" | "login" = "
     const { mobile: validatedMobile } = parsed.data;
 
     try {
-        // CHECK USER EXISTENCE
-        const existingUser = await prisma.user.findUnique({
-            where: { mobile: validatedMobile }
+        // Robust Phone Number Normalization
+        const cleanMobile = validatedMobile.replace(/\D/g, ""); // 9876543210
+        const mobilePossibilities = [
+            validatedMobile,                    // +919876543210
+            cleanMobile,                        // 9876543210
+            `+91${cleanMobile.slice(-10)}`,     // +919876543210 (ensure +91)
+            cleanMobile.slice(-10)              // 9876543210 (ensure 10 digits)
+        ];
+
+        // Remove duplicates
+        const uniqueMobiles = Array.from(new Set(mobilePossibilities));
+
+        // CHECK USER EXISTENCE (Robust)
+        const existingUser = await prisma.user.findFirst({
+            where: { mobile: { in: uniqueMobiles } }
         });
 
+        // ---------------------------------------------------------
+        // A. SIGNUP FLOW
+        // ---------------------------------------------------------
         if (type === "signup" && existingUser) {
             // Allow re-signup if user is still in SIGNUP_PENDING status
             if ((existingUser as any).status !== "SIGNUP_PENDING") {
@@ -42,6 +59,75 @@ export async function sendOtpAction(mobile: string, type: "signup" | "login" = "
             // SIGNUP_PENDING user — allow them to continue signup
         }
 
+        // ---------------------------------------------------------
+        // B. SCHOOL LOGIN (STRICT: ADMIN/STAFF ONLY)
+        // ---------------------------------------------------------
+        if (type === "school-login") {
+            if (!existingUser) {
+                return {
+                    success: false,
+                    error: "Access Denied. No staff account found for this number."
+                };
+            }
+
+            // Allow only ADMIN or STAFF
+            if (existingUser.role !== "ADMIN" && existingUser.role !== "STAFF") {
+                return {
+                    success: false,
+                    error: "Unauthorized. This portal is for School Staff only."
+                };
+            }
+        }
+
+        // ---------------------------------------------------------
+        // C. PARENT LOGIN
+        // ---------------------------------------------------------
+        if (type === "parent-login") {
+            // Case 1: User Exists
+            if (existingUser) {
+                // STRICT: Allow ONLY PARENT role. Block ADMIN and STAFF.
+                if (existingUser.role !== "PARENT") {
+                    return {
+                        success: false,
+                        error: "Unauthorized. This portal is for Parents only."
+                    };
+                }
+            }
+            // Case 2: User Doesn't Exist -> Check Records (Auto-Onboarding)
+            else {
+                const cleanMobile = validatedMobile.replace(/\D/g, "");
+
+                const parentRecord = await prisma.student.findFirst({
+                    where: {
+                        OR: [
+                            { parentMobile: { contains: cleanMobile.slice(-10) } },
+                            { emergencyContactPhone: { contains: cleanMobile.slice(-10) } }
+                        ]
+                    }
+                });
+
+                const admissionRecord = await prisma.admission.findFirst({
+                    where: {
+                        OR: [
+                            { fatherPhone: { contains: cleanMobile.slice(-10) } },
+                            { motherPhone: { contains: cleanMobile.slice(-10) } },
+                            { parentPhone: { contains: cleanMobile.slice(-10) } }
+                        ]
+                    }
+                });
+
+                if (!parentRecord && !admissionRecord) {
+                    return {
+                        success: false,
+                        error: "Parent account not found. Please contact the school."
+                    };
+                }
+            }
+        }
+
+        // ---------------------------------------------------------
+        // D. GENERIC LOGIN (Fallback / Legacy)
+        // ---------------------------------------------------------
         if (type === "login" && !existingUser) {
             // Check if they are a parent in student/admission records
             const cleanMobile = validatedMobile.replace(/\D/g, "");
@@ -519,4 +605,11 @@ export async function loginParentGlobalAction(mobile: string) {
     }
 
     return { success: true, redirectUrl: `/${user.school.slug}/parent` };
+}
+
+// --- 6. Sign Out ---
+export async function signOutAction() {
+    const cookieStore = await cookies();
+    cookieStore.delete("session");
+    redirect("/parent-login");
 }

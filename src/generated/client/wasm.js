@@ -241,7 +241,6 @@ exports.Prisma.UserScalarFieldEnum = {
   department: 'department',
   joiningDate: 'joiningDate',
   status: 'status',
-  signupStep: 'signupStep',
   avatar: 'avatar',
   address: 'address',
   role: 'role',
@@ -270,10 +269,11 @@ exports.Prisma.UserScalarFieldEnum = {
   linkedin: 'linkedin',
   twitter: 'twitter',
   instagram: 'instagram',
-  avatarAdjustment: 'avatarAdjustment',
   customRoleId: 'customRoleId',
   biometricId: 'biometricId',
-  branchId: 'branchId'
+  branchId: 'branchId',
+  signupStep: 'signupStep',
+  avatarAdjustment: 'avatarAdjustment'
 };
 
 exports.Prisma.LeavePolicyScalarFieldEnum = {
@@ -472,6 +472,7 @@ exports.Prisma.SubscriptionPlanScalarFieldEnum = {
   isActive: 'isActive',
   isPopular: 'isPopular',
   includedModules: 'includedModules',
+  addonUserTiers: 'addonUserTiers',
   sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -482,6 +483,7 @@ exports.Prisma.SubscriptionScalarFieldEnum = {
   status: 'status',
   startDate: 'startDate',
   endDate: 'endDate',
+  addonUsers: 'addonUsers',
   planId: 'planId',
   schoolId: 'schoolId'
 };
@@ -523,6 +525,17 @@ exports.Prisma.LeaveRequestScalarFieldEnum = {
   reason: 'reason',
   status: 'status',
   userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StudentLeaveRequestScalarFieldEnum = {
+  id: 'id',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  reason: 'reason',
+  status: 'status',
+  studentId: 'studentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1346,11 +1359,11 @@ exports.Prisma.BranchScalarFieldEnum = {
   name: 'name',
   schoolId: 'schoolId',
   status: 'status',
-  address: 'address',
-  phone: 'phone',
-  email: 'email',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  address: 'address',
+  email: 'email',
+  phone: 'phone'
 };
 
 exports.Prisma.LeadScalarFieldEnum = {
@@ -1527,6 +1540,97 @@ exports.Prisma.IDCardSettingsScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DevelopmentDomainScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  color: 'color',
+  icon: 'icon',
+  order: 'order',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DevelopmentMilestoneScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  ageGroup: 'ageGroup',
+  order: 'order',
+  domainId: 'domainId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MilestoneRecordScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  milestoneId: 'milestoneId',
+  status: 'status',
+  achievedDate: 'achievedDate',
+  notes: 'notes',
+  recordedById: 'recordedById',
+  academicYearId: 'academicYearId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SkillItemScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  order: 'order',
+  domainId: 'domainId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SkillAssessmentScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  skillId: 'skillId',
+  rating: 'rating',
+  term: 'term',
+  notes: 'notes',
+  recordedById: 'recordedById',
+  academicYearId: 'academicYearId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PortfolioEntryScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  title: 'title',
+  description: 'description',
+  type: 'type',
+  mediaUrl: 'mediaUrl',
+  thumbnailUrl: 'thumbnailUrl',
+  tags: 'tags',
+  domainId: 'domainId',
+  recordedById: 'recordedById',
+  academicYearId: 'academicYearId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DevelopmentReportScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  term: 'term',
+  teacherNarrative: 'teacherNarrative',
+  strengthsNotes: 'strengthsNotes',
+  areasToGrow: 'areasToGrow',
+  parentMessage: 'parentMessage',
+  published: 'published',
+  publishedAt: 'publishedAt',
+  recordedById: 'recordedById',
+  academicYearId: 'academicYearId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1560,6 +1664,7 @@ exports.Prisma.ModelName = {
   StaffAttendance: 'StaffAttendance',
   StaffPunch: 'StaffPunch',
   LeaveRequest: 'LeaveRequest',
+  StudentLeaveRequest: 'StudentLeaveRequest',
   FeeStructure: 'FeeStructure',
   FeeComponent: 'FeeComponent',
   Curriculum: 'Curriculum',
@@ -1629,7 +1734,14 @@ exports.Prisma.ModelName = {
   TransportStopLog: 'TransportStopLog',
   TransportExpense: 'TransportExpense',
   IDCardTemplate: 'IDCardTemplate',
-  IDCardSettings: 'IDCardSettings'
+  IDCardSettings: 'IDCardSettings',
+  DevelopmentDomain: 'DevelopmentDomain',
+  DevelopmentMilestone: 'DevelopmentMilestone',
+  MilestoneRecord: 'MilestoneRecord',
+  SkillItem: 'SkillItem',
+  SkillAssessment: 'SkillAssessment',
+  PortfolioEntry: 'PortfolioEntry',
+  DevelopmentReport: 'DevelopmentReport'
 };
 
 /**

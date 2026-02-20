@@ -477,7 +477,7 @@ export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyM
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="px-10 py-4 bg-brand text-white rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-brand/30 transition-all hover:brightness-110 active:scale-95"
+                            className="px-10 py-4 bg-brand text-[var(--secondary-color)] rounded-[20px] text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-brand/30 transition-all hover:brightness-110 active:scale-95"
                         >
                             {isLoading ? "Synchronizing..." : editingId ? "Save Changes" : "Create Policy"}
                         </button>

@@ -22,7 +22,7 @@ export function AdminList({ users }: AdminListProps) {
                     <h3 className="text-xl font-black text-zinc-900 tracking-tight">System Access Control</h3>
                     <p className="text-sm text-zinc-500 mt-1 font-medium italic">Manage who has administrative authority over the school dashboard.</p>
                 </div>
-                <button className="flex items-center gap-2 px-6 py-3 bg-brand text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20">
+                <button className="flex items-center gap-2 px-6 py-3 bg-brand text-[var(--secondary-color)] rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20">
                     <Plus className="h-4 w-4" /> Add Admin
                 </button>
             </div>
@@ -41,7 +41,7 @@ export function AdminList({ users }: AdminListProps) {
                 {users?.map((user) => (
                     <div key={user.id} className="group bg-white rounded-[32px] border border-zinc-100 p-6 flex items-center justify-between transition-all hover:border-brand/30 hover:shadow-xl hover:shadow-brand/10">
                         <div className="flex items-center gap-6">
-                            <div className="h-16 w-16 bg-zinc-50 border-2 border-zinc-100 rounded-[22px] flex items-center justify-center text-xl font-black text-zinc-400 group-hover:bg-brand group-hover:text-white group-hover:border-brand transition-all duration-300 shadow-sm">
+                            <div className="h-16 w-16 bg-zinc-50 border-2 border-zinc-100 rounded-[22px] flex items-center justify-center text-xl font-black text-zinc-400 group-hover:bg-brand group-hover:text-[var(--secondary-color)] group-hover:border-brand transition-all duration-300 shadow-sm">
                                 {user.firstName?.[0]}{user.lastName?.[0]}
                             </div>
                             <div className="space-y-1">

@@ -12,13 +12,15 @@ interface TransportClientProps {
     parentId: string;
     initialData: any;
     studentId: string;
+    apiKey: string;
 }
 
 export const TransportClient: React.FC<TransportClientProps> = ({
     slug,
     parentId,
     initialData,
-    studentId
+    studentId,
+    apiKey
 }) => {
     const [data, setData] = useState(initialData);
     const [loading, setLoading] = useState(false);
@@ -49,32 +51,17 @@ export const TransportClient: React.FC<TransportClientProps> = ({
     const defaultCenter = { lat: 28.6139, lng: 77.2090 };
 
     return (
-        <div className="h-screen w-full relative overflow-hidden bg-slate-100 max-w-md mx-auto shadow-2xl">
+        <div className="h-full w-full relative overflow-hidden bg-slate-100">
             {/* Absolute Map Layer */}
             <div className="absolute inset-0 z-0">
                 <LiveTransportMap
                     center={defaultCenter}
                     stops={data.stops || []}
                     liveLocation={data.live}
+                    apiKey={apiKey}
                 />
             </div>
 
-            {/* Floating Header - Elegant Style */}
-            <div className="absolute top-12 left-6 right-6 z-50 flex justify-between items-center">
-                <Link
-                    href={`/${slug}/parent/mobile/dashboard?preview=true`}
-                    className="w-12 h-12 rounded-full bg-white shadow-lg shadow-slate-200/50 flex items-center justify-center active:scale-95 transition-transform"
-                >
-                    <ChevronLeft className="w-6 h-6 text-slate-800" />
-                </Link>
-                <button
-                    onClick={fetchUpdate}
-                    className="px-6 py-3 rounded-full bg-white shadow-lg shadow-slate-200/50 text-slate-800 flex items-center gap-2 active:scale-95 transition-transform border border-slate-50"
-                >
-                    <RefreshCw className={loading ? "w-4 h-4 animate-spin text-[var(--brand-color)]" : "w-4 h-4 text-[var(--brand-color)]"} />
-                    <span className="text-[11px] font-bold uppercase tracking-widest">Update</span>
-                </button>
-            </div>
 
             {/* Details Overlay */}
             <AnimatePresence>

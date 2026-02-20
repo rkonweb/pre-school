@@ -49,7 +49,7 @@ export const StandardActionButton = React.forwardRef<HTMLButtonElement, Standard
 
             switch (variant) {
                 case 'primary':
-                    return "h-11 px-6 bg-brand text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-brand/20 hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all border-none flex items-center justify-center";
+                    return "h-11 px-6 bg-brand text-[var(--secondary-color)] rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-brand/20 hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all border-none flex items-center justify-center";
                 case 'view':
                     return cn(
                         isIconButton ? baseCircle : baseLabel,

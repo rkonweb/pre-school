@@ -24,7 +24,7 @@ export function ReportCardDialog({ slug, studentId, academicYearId, isOpen, onCl
         setIsSubmitting(true);
         try {
             // Use empty marks object for now if the UI doesn't allow marking yet
-            const res = await createReportCardAction(studentId, term, {}, comments, academicYearId);
+            const res = await createReportCardAction(slug, studentId, term, {}, comments, academicYearId);
 
             if (res.success) {
                 toast.success("Report card created");

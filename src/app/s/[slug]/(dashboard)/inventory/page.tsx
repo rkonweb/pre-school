@@ -69,7 +69,7 @@ export default function InventoryPage() {
                         <History className="h-4 w-4" />
                         Usage History
                     </button>
-                    <button className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white hover:brightness-110">
+                    <button className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-[var(--secondary-color)] hover:brightness-110">
                         <Plus className="h-4 w-4" />
                         Add Item
                     </button>
@@ -119,7 +119,7 @@ export default function InventoryPage() {
                                     className={cn(
                                         "whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                                         filter === cat
-                                            ? "bg-brand text-white hover:brightness-110 dark:bg-zinc-50 dark:text-zinc-900"
+                                            ? "bg-brand text-[var(--secondary-color)] hover:brightness-110 dark:bg-zinc-50 dark:text-zinc-900"
                                             : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
                                     )}
                                 >

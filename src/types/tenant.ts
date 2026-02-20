@@ -8,6 +8,7 @@ export interface Tenant {
     plan: string;
     status: "ACTIVE" | "TRIAL" | "PAST_DUE" | "SUSPENDED";
     students: number;
+    staff: number;
     mrr: number;
     joinedDate: string;
     region: string;

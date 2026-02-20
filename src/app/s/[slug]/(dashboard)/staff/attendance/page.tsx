@@ -442,7 +442,7 @@ export default function StaffAttendancePage() {
                             </div>
                             <button
                                 onClick={() => setIsFormOpen(true)}
-                                className="flex items-center gap-2.5 bg-brand dark:bg-zinc-50 text-white dark:text-zinc-900 px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-brand/10 transition-all hover:brightness-110 hover:-translate-y-0.5"
+                                className="flex items-center gap-2.5 bg-brand dark:bg-zinc-50 text-[var(--secondary-color)] dark:text-zinc-900 px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-brand/10 transition-all hover:brightness-110 hover:-translate-y-0.5"
                             >
                                 <PlusCircle className="h-4 w-4" />
                                 New Application
@@ -598,7 +598,7 @@ export default function StaffAttendancePage() {
 
                     <button
                         type="submit"
-                        className="w-full py-5 rounded-2xl bg-brand text-white text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-brand/30 transition-all hover:brightness-110 hover:-translate-y-1 active:scale-95"
+                        className="w-full py-5 rounded-2xl bg-brand text-[var(--secondary-color)] text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-brand/30 transition-all hover:brightness-110 hover:-translate-y-1 active:scale-95"
                     >
                         Submit Request
                     </button>

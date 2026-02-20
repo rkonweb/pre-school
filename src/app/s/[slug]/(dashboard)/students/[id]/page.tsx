@@ -79,7 +79,9 @@ import { CreateFeeDialog } from "@/components/dashboard/students/CreateFeeDialog
 import { ConnectSiblingDialog } from "@/components/dashboard/students/ConnectSiblingDialog";
 import { PayFeeDialog } from "@/components/dashboard/students/PayFeeDialog";
 import { StudentProgressTab } from "@/components/dashboard/students/StudentProgressTab";
+import { StudentDevelopmentTab } from "@/components/dashboard/students/StudentDevelopmentTab";
 import HealthRecordManager from "@/components/dashboard/student/HealthRecordManager";
+import { IssueTCDialog } from "@/components/dashboard/students/IssueTCDialog";
 import { Badge } from "@/components/ui/badge";
 import PrintableReport from "@/components/reports/PrintableReport";
 import { StandardActionButton } from "@/components/ui/StandardActionButton";
@@ -87,10 +89,10 @@ import { StandardActionButton } from "@/components/ui/StandardActionButton";
 // Helper components remain the same
 const SectionTitle = ({ icon: Icon, title, light = false }: any) => (
     <div className="flex items-center gap-3 mb-6">
-        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center", light ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900")}>
+        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center", light ? "bg-white/10 text-[var(--secondary-color)]" : "bg-zinc-100 text-zinc-900")}>
             <Icon className="h-5 w-5" />
         </div>
-        <h3 className={cn("text-lg font-black", light ? "text-white" : "text-zinc-900")}>{title}</h3>
+        <h3 className={cn("text-lg font-black", light ? "text-[var(--secondary-color)]" : "text-zinc-900")}>{title}</h3>
     </div>
 );
 
@@ -127,7 +129,7 @@ export default function StudentDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [mode, setMode] = useState<"view" | "edit">("view");
-    const [activeTab, setActiveTab] = useState<"profile" | "attendance" | "reports" | "fees" | "library" | "progress" | "health">("profile");
+    const [activeTab, setActiveTab] = useState<"profile" | "attendance" | "reports" | "fees" | "library" | "progress" | "health" | "development">("profile");
 
     const [student, setStudent] = useState<any>(null);
     const [siblings, setSiblings] = useState<any[]>([]);
@@ -164,6 +166,7 @@ export default function StudentDetailPage() {
     const [attendanceModalInitialData, setAttendanceModalInitialData] = useState<{ date: string, status: string, notes: string } | undefined>(undefined);
     const [isPayFeeOpen, setIsPayFeeOpen] = useState(false);
     const [selectedFee, setSelectedFee] = useState<any>(null);
+    const [isIssueTCOpen, setIsIssueTCOpen] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -193,7 +196,7 @@ export default function StudentDetailPage() {
                 withTimeout(getMasterDataAction("GRADE", null), "Grades"),
                 withTimeout(getClassroomsAction(slug), "Classrooms"),
                 withTimeout(getStudentAttendanceAction(slug, id, academicYearId), "Attendance"),
-                withTimeout(getStudentReportsAction(id, academicYearId), "Reports"),
+                withTimeout(getStudentReportsAction(slug, id, academicYearId), "Reports"),
                 withTimeout(getStudentFeesAction(slug, id), "Fees"),
                 withTimeout(getMasterDataAction("SECTION", null), "Sections"),
                 withTimeout(getStudentSmartAnalyticsAction(slug, id, academicYearId), "Analytics"),
@@ -204,7 +207,7 @@ export default function StudentDetailPage() {
             if (studentRes.success && studentRes.student) {
                 setStudent(studentRes.student);
                 if (studentRes.student.parentMobile) {
-                    getFamilyStudentsAction(studentRes.student.parentMobile).then(res => {
+                    getFamilyStudentsAction(slug, studentRes.student.parentMobile).then(res => {
                         if (res.success) setSiblings(res.students);
                     });
                 }
@@ -300,7 +303,7 @@ export default function StudentDetailPage() {
                 <p className="text-zinc-500 font-medium">Student not found or failed to load.</p>
                 <button
                     onClick={() => router.push(`/s/${slug}/students`)}
-                    className="px-4 py-2 bg-brand text-white hover:brightness-110 rounded-lg text-sm font-medium"
+                    className="px-4 py-2 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-lg text-sm font-medium"
                 >
                     Back to Students
                 </button>
@@ -319,7 +322,7 @@ export default function StudentDetailPage() {
     const canFees = can('fees', 'create');
 
     return (
-        <div className="max-w-6xl mx-auto space-y-12 pb-20">
+        <div className="w-full max-w-full mx-auto space-y-12 pb-20 px-4 md:px-8">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
@@ -397,14 +400,25 @@ export default function StudentDetailPage() {
                         permission={{ module: 'students.profiles', action: 'edit' }}
                     />
                     {mode === "view" && (
-                        <StandardActionButton
-                            onClick={handleDelete}
-                            variant="delete"
-                            icon={Trash2}
-                            iconOnly
-                            tooltip="Delete Student"
-                            permission={{ module: 'students.profiles', action: 'delete' }}
-                        />
+                        <>
+                            {student.status !== "ALUMNI" && (
+                                <StandardActionButton
+                                    onClick={() => setIsIssueTCOpen(true)}
+                                    variant="secondary"
+                                    icon={FileUp}
+                                    label="Issue TC"
+                                    permission={{ module: 'students.profiles', action: 'edit' }}
+                                />
+                            )}
+                            <StandardActionButton
+                                onClick={handleDelete}
+                                variant="delete"
+                                icon={Trash2}
+                                iconOnly
+                                tooltip="Delete Student"
+                                permission={{ module: 'students.profiles', action: 'delete' }}
+                            />
+                        </>
                     )}
                 </div>
             </div>
@@ -418,7 +432,8 @@ export default function StudentDetailPage() {
                     { id: "reports", label: "Reports", icon: ClipboardList },
                     { id: "progress", label: "Progress", icon: TrendingUp },
                     { id: "health", label: "Health", icon: Heart },
-                    { id: "library", label: "Library", icon: BookOpen }
+                    { id: "library", label: "Library", icon: BookOpen },
+                    { id: "development", label: "Development", icon: Target },
                 ].map((tab: any) => (
                     <button
                         key={tab.id}
@@ -427,7 +442,7 @@ export default function StudentDetailPage() {
                         }}
                         className={cn(
                             "flex-1 min-w-[100px] py-3.5 rounded-[22px] flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                            activeTab === tab.id ? "bg-white text-brand shadow-sm" : "text-zinc-500 hover:text-zinc-900"
+                            activeTab === tab.id ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "text-zinc-500 hover:text-zinc-900"
                         )}
                     >
                         <tab.icon className="h-4 w-4" />
@@ -526,6 +541,54 @@ export default function StudentDetailPage() {
                                 <div className="grid md:grid-cols-2 gap-8 mt-10">
                                     <InputField label="Name" value={student.emergencyContactName} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, emergencyContactName: v })} />
                                     <InputField label="Phone" value={student.emergencyContactPhone} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, emergencyContactPhone: v })} />
+                                </div>
+                            </div>
+
+                            {/* Parent Details */}
+                            <div className="bg-white rounded-[40px] p-10 border border-zinc-100 shadow-xl shadow-zinc-200/20">
+                                <SectionTitle icon={Users} title="Parent Details" />
+                                <div className="space-y-12 mt-10">
+                                    {/* Father */}
+                                    <div className="space-y-8 p-8 bg-zinc-50 rounded-[32px] border border-zinc-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-zinc-500">Father's Information</h4>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-8">
+                                            <InputField label="Father's Name" value={student.fatherName} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, fatherName: v })} />
+                                            <InputField label="Occupation" value={student.fatherOccupation} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, fatherOccupation: v })} />
+                                            <InputField label="Phone" value={student.fatherPhone} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, fatherPhone: v })} />
+                                            <InputField label="Email" value={student.fatherEmail} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, fatherEmail: v })} />
+                                        </div>
+                                    </div>
+
+                                    {/* Mother */}
+                                    <div className="space-y-8 p-8 bg-zinc-50 rounded-[32px] border border-zinc-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-2 w-2 rounded-full bg-pink-500" />
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-zinc-500">Mother's Information</h4>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-8">
+                                            <InputField label="Mother's Name" value={student.motherName} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, motherName: v })} />
+                                            <InputField label="Occupation" value={student.motherOccupation} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, motherOccupation: v })} />
+                                            <InputField label="Phone" value={student.motherPhone} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, motherPhone: v })} />
+                                            <InputField label="Email" value={student.motherEmail} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, motherEmail: v })} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Address Section */}
+                            <div className="bg-white rounded-[40px] p-10 border border-zinc-100 shadow-xl shadow-zinc-200/20">
+                                <SectionTitle icon={MapPin} title="Residential Address" />
+                                <div className="grid md:grid-cols-1 gap-8 mt-10">
+                                    <InputField label="Full Address" value={student.address} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, address: v })} />
+                                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                        <InputField label="City" value={student.city} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, city: v })} />
+                                        <InputField label="State" value={student.state} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, state: v })} />
+                                        <InputField label="Country" value={student.country} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, country: v })} />
+                                        <InputField label="ZIP Code" value={student.zip} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, zip: v })} />
+                                    </div>
                                 </div>
                             </div>
 
@@ -675,24 +738,43 @@ export default function StudentDetailPage() {
                             )}
 
                             {/* Parent Connectivity */}
-                            <div className="bg-brand rounded-[40px] p-8 text-white shadow-2xl shadow-brand/20">
-                                <SectionTitle icon={Users} title="Guardian connectivity" light />
+                            <div className="bg-white rounded-[40px] p-8 border border-zinc-100 shadow-xl shadow-zinc-200/20">
+                                <SectionTitle icon={Users} title="Guardian connectivity" />
                                 <div className="mt-8 space-y-6">
                                     <div>
-                                        <p className="text-[10px] font-black text-white/50 uppercase tracking-widest">Primary Guardian</p>
-                                        <p className="text-sm font-bold mt-1">{student.parentName}</p>
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Primary Guardian Name</p>
+                                        <InputField label="" value={student.parentName} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, parentName: v })} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Relationship</p>
+                                        <InputField label="" value={student.relationship} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, relationship: v })} />
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
-                                            <Phone className="h-4 w-4 text-emerald-400" />
+                                        <div className="h-10 w-10 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                                            <Phone className="h-4 w-4 text-emerald-600" />
                                         </div>
-                                        <p className="text-xs font-bold">{student.parentMobile}</p>
+                                        <div className="flex-1">
+                                            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest px-1">Primary Mobile</p>
+                                            <InputField label="" value={student.parentMobile} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, parentMobile: v })} />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
-                                            <Mail className="h-4 w-4 text-white" />
+                                        <div className="h-10 w-10 rounded-2xl bg-blue-50 flex items-center justify-center">
+                                            <PhoneCall className="h-4 w-4 text-blue-600" />
                                         </div>
-                                        <p className="text-xs font-bold">{student.parentEmail || "No email linked"}</p>
+                                        <div className="flex-1">
+                                            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest px-1">Secondary Phone</p>
+                                            <InputField label="" value={student.secondaryPhone} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, secondaryPhone: v })} />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-2xl bg-brand/10 flex items-center justify-center">
+                                            <Mail className="h-4 w-4 text-brand" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest px-1">Email Address</p>
+                                            <InputField label="" value={student.parentEmail} readOnly={isReadOnly} onChange={(v: any) => setStudent({ ...student, parentEmail: v })} />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -930,7 +1012,7 @@ export default function StudentDetailPage() {
                                             >
                                                 <span className={cn(
                                                     "text-sm font-bold",
-                                                    isSameDay(day, new Date()) ? "bg-brand text-white h-7 w-7 flex items-center justify-center rounded-full shadow-lg shadow-brand/20" : ""
+                                                    isSameDay(day, new Date()) ? "bg-brand text-[var(--secondary-color)] h-7 w-7 flex items-center justify-center rounded-full shadow-lg shadow-brand/20" : ""
                                                 )}>
                                                     {format(day, 'd')}
                                                 </span>
@@ -1039,7 +1121,7 @@ export default function StudentDetailPage() {
                                                 className={cn(
                                                     "p-6 rounded-3xl border transition-all cursor-pointer group relative overflow-hidden",
                                                     expandedExamId === exam.id
-                                                        ? "bg-brand text-white border-brand shadow-xl shadow-brand/20 scale-[1.02]"
+                                                        ? "bg-brand text-[var(--secondary-color)] border-brand shadow-xl shadow-brand/20 scale-[1.02]"
                                                         : "bg-zinc-50 border-zinc-100 hover:border-brand/30 hover:shadow-lg hover:shadow-zinc-200/20"
                                                 )}
                                             >
@@ -1460,6 +1542,16 @@ export default function StudentDetailPage() {
                     <StudentProgressTab schoolSlug={slug} studentId={id} />
                 )}
 
+                {activeTab === "development" && student && (
+                    <StudentDevelopmentTab
+                        schoolSlug={slug}
+                        schoolId={student.schoolId}
+                        studentId={id}
+                        studentName={`${student.firstName} ${student.lastName}`}
+                        studentGrade={student.grade || student.classroom?.name}
+                    />
+                )}
+
                 {activeTab === "health" && (
                     <HealthRecordManager studentId={id} slug={slug} />
                 )}
@@ -1479,6 +1571,7 @@ export default function StudentDetailPage() {
                         }}
                         initialData={attendanceModalInitialData}
                         timezone={student?.school?.timezone}
+                        slug={slug}
                     />
                 )}
                 {isAddReportOpen && (
@@ -1558,6 +1651,17 @@ export default function StudentDetailPage() {
                         />
                     )}
                 </div>
+
+                {isIssueTCOpen && (
+                    <IssueTCDialog
+                        open={isIssueTCOpen}
+                        onOpenChange={setIsIssueTCOpen}
+                        studentId={id}
+                        studentName={`${student.firstName} ${student.lastName}`}
+                        schoolSlug={slug}
+                        onSuccess={() => loadData(true)}
+                    />
+                )}
             </div>
         </div >
     );

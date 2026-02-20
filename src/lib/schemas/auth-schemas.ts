@@ -4,7 +4,7 @@ export const mobileSchema = z.string().regex(/^(\+[0-9]{1,4})?[0-9]{10}$/, "Inva
 
 export const sendOtpSchema = z.object({
     mobile: mobileSchema,
-    type: z.enum(["signup", "login"]).optional().default("signup")
+    type: z.enum(["signup", "login", "school-login", "parent-login"]).optional().default("signup")
 });
 
 export const verifyOtpSchema = z.object({

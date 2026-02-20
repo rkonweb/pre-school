@@ -120,7 +120,7 @@ export default function IssueBookPage() {
                     <div key={s} className="flex items-center gap-2">
                         <div className={cn(
                             "flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold",
-                            step >= s ? "bg-brand text-white" : "bg-zinc-100 text-zinc-400"
+                            step >= s ? "bg-brand text-[var(--secondary-color)]" : "bg-zinc-100 text-zinc-400"
                         )}>
                             {s}
                         </div>
@@ -303,7 +303,7 @@ export default function IssueBookPage() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting}
-                                className="flex-[2] flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 font-bold text-white shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:scale-[1.02] disabled:opacity-50"
+                                className="flex-[2] flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:scale-[1.02] disabled:opacity-50"
                             >
                                 {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
                                 Confirm Issue

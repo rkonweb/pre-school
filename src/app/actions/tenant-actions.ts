@@ -17,7 +17,10 @@ export async function getTenantsAction(): Promise<Tenant[]> {
                 include: { plan: true }
             },
             _count: {
-                select: { students: true }
+                select: {
+                    students: true,
+                    users: { where: { role: "STAFF" } }
+                }
             }
         },
         orderBy: { createdAt: 'desc' }
@@ -56,6 +59,7 @@ export async function getTenantsAction(): Promise<Tenant[]> {
             status: (sub?.status as any) || "TRIAL",
             subscriptionEndDate: sub?.endDate ? sub.endDate.toISOString() : undefined,
             students: school._count.students,
+            staff: school._count.users,
             mrr: planPrice + addonsCost,
             joinedDate: school.createdAt.toISOString(),
             region: "India",
@@ -402,7 +406,10 @@ export async function getTenantByIdAction(id: string): Promise<Tenant | undefine
                     include: { plan: true }
                 },
                 _count: {
-                    select: { students: true }
+                    select: {
+                        students: true,
+                        users: { where: { role: "STAFF" } }
+                    }
                 },
                 branches: {
                     select: {
@@ -435,6 +442,7 @@ export async function getTenantByIdAction(id: string): Promise<Tenant | undefine
             plan: planName,
             status: (sub?.status as any) || "TRIAL",
             students: school._count.students,
+            staff: school._count.users,
             mrr: planPrice,
             joinedDate: school.createdAt.toISOString(),
             region: "India",

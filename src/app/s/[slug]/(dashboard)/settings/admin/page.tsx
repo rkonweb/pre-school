@@ -33,6 +33,7 @@ export default function AdminSettingsPage() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedAdmin, setSelectedAdmin] = useState<any>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const loadData = async () => {
         if (!schoolData?.id) return;
@@ -57,7 +58,7 @@ export default function AdminSettingsPage() {
     }, [slug]);
 
     const handleToggleStatus = async (userId: string) => {
-        const result = await toggleAdminStatusAction(userId);
+        const result = await toggleAdminStatusAction(slug, userId);
         if (result.success) {
             toast.success("Admin status updated");
             loadData();
@@ -77,13 +78,26 @@ export default function AdminSettingsPage() {
 
         if (!confirmed) return;
 
-        const result = await deleteAdminAction(userId);
+        const result = await deleteAdminAction(slug, userId);
         if (result.success) {
             toast.success("Administrator removed");
             loadData();
         } else {
             toast.error(result.error || "Failed to remove administrator");
         }
+    };
+
+    // ... inside EditAdminModal ...
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        // params.slug is not directly available here, need to pass it or use useParams again
+        // However, EditAdminModal is a child component. Let's see if we can get slug.
+        // The parent passed 'schoolId' to AddAdminModal, but not slug to EditAdminModal.
+        // We can use useParams in the modal or pass slug as prop.
+        // I'll check if useParams works here (it should as it's a client component)
     };
 
     if (isLoading) return (
@@ -101,7 +115,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <button
                     onClick={() => setShowAddModal(true)}
-                    className="flex items-center gap-2 px-6 py-3 bg-brand text-white hover:brightness-110 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20"
+                    className="flex items-center gap-2 px-6 py-3 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20"
                 >
                     <Plus className="h-4 w-4" /> Add Admin
                 </button>
@@ -127,7 +141,7 @@ export default function AdminSettingsPage() {
                     >
                         <div className="flex items-center gap-6">
                             <div className={`h-16 w-16 border-2 rounded-[22px] flex items-center justify-center text-xl font-black transition-all duration-300 shadow-sm ${admin.status === "ACTIVE"
-                                ? "bg-zinc-50 border-zinc-100 text-zinc-400 group-hover:bg-brand group-hover:text-white group-hover:border-brand"
+                                ? "bg-zinc-50 border-zinc-100 text-zinc-400 group-hover:bg-brand group-hover:text-[var(--secondary-color)] group-hover:border-brand"
                                 : "bg-red-50 border-red-200 text-red-400"
                                 }`}>
                                 {admin.firstName?.[0]}{admin.lastName?.[0]}
@@ -331,7 +345,7 @@ function AddAdminModal({ isOpen, onClose, schoolId, onSuccess }: any) {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-4 bg-brand text-white hover:brightness-110 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full py-4 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Add Administrator"}
                             </button>
@@ -365,11 +379,14 @@ function EditAdminModal({ isOpen, onClose, admin, onSuccess }: any) {
         }
     }, [admin]);
 
+    const params = useParams();
+    const slug = params.slug as string;
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        const result = await updateAdminAction(admin.id, formData);
+        const result = await updateAdminAction(slug, admin.id, formData);
         if (result.success) {
             toast.success("Administrator updated successfully");
             onClose();
@@ -460,7 +477,7 @@ function EditAdminModal({ isOpen, onClose, admin, onSuccess }: any) {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full py-4 bg-brand text-white hover:brightness-110 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full py-4 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Update Administrator"}
                             </button>

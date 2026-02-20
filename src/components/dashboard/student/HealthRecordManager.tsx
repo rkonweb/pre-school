@@ -291,7 +291,7 @@ export default function HealthRecordManager({ studentId, slug }: Props) {
                     <p className="text-muted-foreground text-sm">Track physical measurements, medical history, and health checks</p>
                 </div>
                 {!showForm && (
-                    <Button onClick={() => setShowForm(true)} className="bg-brand hover:brightness-110 text-white gap-2">
+                    <Button onClick={() => setShowForm(true)} className="bg-brand hover:brightness-110 text-[var(--secondary-color)] gap-2">
                         <Plus className="h-4 w-4" />
                         Add Health Record
                     </Button>
@@ -591,7 +591,7 @@ export default function HealthRecordManager({ studentId, slug }: Props) {
 
                             {/* Form Actions */}
                             <div className="flex items-center gap-3 pt-4">
-                                <Button type="submit" disabled={isSaving} className="bg-brand hover:brightness-110 text-white">
+                                <Button type="submit" disabled={isSaving} className="bg-brand hover:brightness-110 text-[var(--secondary-color)]">
                                     {isSaving ? (
                                         <>
                                             <Loader2 className="h-4 w-4 animate-spin mr-2" />

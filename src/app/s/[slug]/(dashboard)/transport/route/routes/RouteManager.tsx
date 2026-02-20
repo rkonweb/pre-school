@@ -2,14 +2,14 @@
 
 import { useState, useMemo } from "react";
 import {
-    Plus, Trash2, Save, MapPin, Bus, Search,
+    Plus, Trash2, MapPin, Bus, Search,
     Edit2, Filter, ChevronDown, ChevronUp,
-    MoreHorizontal, User, Phone, CheckCircle, XCircle
+    User, Phone, XCircle
 } from "lucide-react";
 import { toast } from "sonner";
-import { createRouteAction, deleteRouteAction } from "@/app/actions/transport-actions";
+import { deleteRouteAction } from "@/app/actions/transport-actions";
 import { useConfirm } from "@/contexts/ConfirmContext";
-import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 
 type Route = any; // Using any for simplicity as per existing pattern
 
@@ -30,20 +30,6 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
     // Filters
     const [filterDriver, setFilterDriver] = useState<'all' | 'assigned' | 'unassigned'>('all');
     const [filterVehicle, setFilterVehicle] = useState<'all' | 'assigned' | 'unassigned'>('all');
-
-    // Drawer / Modal State
-    const [isdrawerOpen, setIsDrawerOpen] = useState(false);
-    const [editingRoute, setEditingRoute] = useState<Route | null>(null);
-
-    // Form State
-    const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        pickupVehicleId: "",
-        dropVehicleId: "",
-        driverId: "",
-        stops: [] as any[]
-    });
 
     // --- Helpers ---
 
@@ -116,34 +102,6 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
 
     // --- Actions ---
 
-    const handleSubmit = async () => {
-        if (!formData.name) return toast.error("Route name is required");
-
-        const data = { ...formData };
-
-        // If editing
-        if (editingRoute) {
-            // For simplicity, we are deleting the old route and creating a new one in this mock implementation
-            // In a real app, we would have an updateRouteAction
-            await deleteRouteAction(schoolSlug, editingRoute.id);
-        }
-
-        const res = await createRouteAction(schoolSlug, data);
-
-        if (res.success) {
-            toast.success(editingRoute ? "Route updated successfully" : "Route created successfully");
-            setIsDrawerOpen(false);
-            setEditingRoute(null);
-            setFormData({ name: "", description: "", pickupVehicleId: "", dropVehicleId: "", driverId: "", stops: [] });
-
-            // Optimistic update (or refetch)
-            // Just for demonstration, we reload the page to get fresh data from server
-            window.location.reload();
-        } else {
-            toast.error(res.error || "Failed to save route");
-        }
-    };
-
     const handleDelete = async (id: string) => {
         const confirmed = await confirmDialog({
             title: "Delete Route",
@@ -163,50 +121,6 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
         }
     };
 
-    const openDrawer = (route?: Route) => {
-        if (route) {
-            setEditingRoute(route);
-            setFormData({
-                name: route.name,
-                description: route.description || "",
-                pickupVehicleId: route.pickupVehicleId || "",
-                dropVehicleId: route.dropVehicleId || "",
-                driverId: route.driverId || "",
-                stops: route.stops ? route.stops.map((s: any) => ({
-                    ...s,
-                    // Ensure numeric values are safe
-                    latitude: s.latitude || "",
-                    longitude: s.longitude || "",
-                    monthlyFee: s.monthlyFee || 0
-                })) : []
-            });
-        } else {
-            setEditingRoute(null);
-            setFormData({ name: "", description: "", pickupVehicleId: "", dropVehicleId: "", driverId: "", stops: [] });
-        }
-        setIsDrawerOpen(true);
-    };
-
-    const addStop = () => {
-        setFormData(prev => ({
-            ...prev,
-            stops: [...prev.stops, { name: "", pickupTime: "", dropTime: "", monthlyFee: 0, latitude: "", longitude: "" }]
-        }));
-    };
-
-    const removeStop = (idx: number) => {
-        setFormData(prev => ({
-            ...prev,
-            stops: prev.stops.filter((_, i) => i !== idx)
-        }));
-    };
-
-    const updateStop = (idx: number, field: string, value: any) => {
-        const newStops = [...formData.stops];
-        newStops[idx][field] = value;
-        setFormData({ ...formData, stops: newStops });
-    };
-
     // --- Render ---
 
     return (
@@ -217,13 +131,13 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
                     <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Route Management</h1>
                     <p className="text-zinc-500 text-sm mt-1">Manage transport routes, stops, and vehicle assignments.</p>
                 </div>
-                <button
-                    onClick={() => openDrawer()}
-                    className="flex items-center gap-2 bg-brand text-white px-5 py-2.5 rounded-xl shadow-lg shadow-brand/20 hover:brightness-110 active:scale-95 transition-all font-medium"
+                <Link
+                    href={`/s/${schoolSlug}/transport/route/routes/new`}
+                    className="flex items-center gap-2 bg-brand text-[var(--secondary-color)] px-5 py-2.5 rounded-xl shadow-lg shadow-brand/20 hover:brightness-110 active:scale-95 transition-all font-medium"
                 >
                     <Plus className="h-4 w-4" />
                     Create New Route
-                </button>
+                </Link>
             </div>
 
             {/* Controls Bar */}
@@ -360,13 +274,13 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
                                         {/* Actions */}
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={() => openDrawer(route)}
+                                                <Link
+                                                    href={`/s/${schoolSlug}/transport/route/routes/${route.id}/edit`}
                                                     className="p-2 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
                                                     title="Edit Route"
                                                 >
                                                     <Edit2 className="h-4 w-4" />
-                                                </button>
+                                                </Link>
                                                 <button
                                                     onClick={() => handleDelete(route.id)}
                                                     className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
@@ -404,191 +318,6 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
                 <div>Last updated: {new Date().toLocaleTimeString()}</div>
             </div>
 
-            {/* Create/Edit Sheet (Modal) */}
-            <AnimatePresence>
-                {isdrawerOpen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
-                            onClick={() => setIsDrawerOpen(false)}
-                        />
-                        <motion.div
-                            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="fixed right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col"
-                        >
-                            {/* Drawer Header */}
-                            <div className="p-6 border-b border-zinc-100 bg-zinc-50/50 flex justify-between items-center">
-                                <div>
-                                    <h2 className="text-xl font-bold text-zinc-900">{editingRoute ? 'Edit Route' : 'Create New Route'}</h2>
-                                    <p className="text-xs text-zinc-500 mt-1">Configure route details and stops.</p>
-                                </div>
-                                <button onClick={() => setIsDrawerOpen(false)} className="text-zinc-400 hover:text-zinc-800">
-                                    <XCircle className="h-6 w-6" />
-                                </button>
-                            </div>
-
-                            {/* Drawer Content */}
-                            <div className="flex-1 overflow-y-auto p-6 space-y-8">
-
-                                {/* Basic Info Section */}
-                                <section className="space-y-4">
-                                    <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
-                                        <span className="w-1 h-4 bg-indigo-500 rounded-full"></span>
-                                        Basic Information
-                                    </h3>
-                                    <div className="grid gap-4">
-                                        <div>
-                                            <label className="text-xs font-semibold text-zinc-500 mb-1.5 block">Route Name</label>
-                                            <input
-                                                className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
-                                                placeholder="e.g. Route 1 - North City"
-                                                value={formData.name}
-                                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-semibold text-zinc-500 mb-1.5 block">Description</label>
-                                            <textarea
-                                                className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none resize-none h-20"
-                                                placeholder="Optional route description..."
-                                                value={formData.description}
-                                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                </section>
-
-                                {/* Vehicle Assignment Section */}
-                                <section className="space-y-4">
-                                    <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
-                                        <span className="w-1 h-4 bg-emerald-500 rounded-full"></span>
-                                        Vehicle & Driver
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-xs font-semibold text-zinc-500 mb-1.5 block">Pickup Vehicle</label>
-                                            <select
-                                                className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none bg-white"
-                                                value={formData.pickupVehicleId}
-                                                onChange={e => setFormData({ ...formData, pickupVehicleId: e.target.value })}
-                                            >
-                                                <option value="">Select Vehicle</option>
-                                                {vehicles.map(v => (
-                                                    <option key={v.id} value={v.id}>{v.registrationNumber} ({v.model})</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-semibold text-zinc-500 mb-1.5 block">Drop Vehicle</label>
-                                            <select
-                                                className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none bg-white"
-                                                value={formData.dropVehicleId}
-                                                onChange={e => setFormData({ ...formData, dropVehicleId: e.target.value })}
-                                            >
-                                                <option value="">Select Vehicle</option>
-                                                {vehicles.map(v => (
-                                                    <option key={v.id} value={v.id}>{v.registrationNumber} ({v.model})</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </section>
-
-                                {/* Stops Section */}
-                                <section className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-2">
-                                            <span className="w-1 h-4 bg-amber-500 rounded-full"></span>
-                                            Stops Configuration
-                                        </h3>
-                                        <button onClick={addStop} className="text-xs font-medium text-brand hover:underline flex items-center gap-1">
-                                            <Plus className="h-3 w-3" /> Add Stop
-                                        </button>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        {formData.stops.map((stop, idx) => (
-                                            <div key={idx} className="bg-zinc-50 border border-zinc-200 rounded-xl p-4 relative group">
-                                                <div className="absolute -left-3 top-4 bg-zinc-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-sm z-10">
-                                                    {idx + 1}
-                                                </div>
-                                                <button
-                                                    onClick={() => removeStop(idx)}
-                                                    className="absolute right-2 top-2 text-zinc-300 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                >
-                                                    <XCircle className="h-4 w-4" />
-                                                </button>
-
-                                                <div className="grid gap-3">
-                                                    <div>
-                                                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 block">Stop Name</label>
-                                                        <input
-                                                            className="w-full border border-zinc-200 rounded px-2 py-1.5 text-sm outline-none focus:border-brand"
-                                                            placeholder="e.g. Main Gate"
-                                                            value={stop.name}
-                                                            onChange={e => updateStop(idx, 'name', e.target.value)}
-                                                        />
-                                                    </div>
-                                                    <div className="grid grid-cols-3 gap-3">
-                                                        <div>
-                                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 block">Pickup Time</label>
-                                                            <input
-                                                                type="time"
-                                                                className="w-full border border-zinc-200 rounded px-2 py-1.5 text-sm outline-none focus:border-brand"
-                                                                value={stop.pickupTime}
-                                                                onChange={e => updateStop(idx, 'pickupTime', e.target.value)}
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 block">Drop Time</label>
-                                                            <input
-                                                                type="time"
-                                                                className="w-full border border-zinc-200 rounded px-2 py-1.5 text-sm outline-none focus:border-brand"
-                                                                value={stop.dropTime}
-                                                                onChange={e => updateStop(idx, 'dropTime', e.target.value)}
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 block">Fee (Monthly)</label>
-                                                            <div className="relative">
-                                                                <span className="absolute left-2 top-1.5 text-zinc-400 text-xs">₹</span>
-                                                                <input
-                                                                    type="number"
-                                                                    className="w-full border border-zinc-200 rounded pl-5 pr-2 py-1.5 text-sm outline-none focus:border-brand"
-                                                                    value={stop.monthlyFee}
-                                                                    onChange={e => updateStop(idx, 'monthlyFee', e.target.value)}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {formData.stops.length === 0 && (
-                                            <div className="text-center py-8 text-zinc-400 text-sm border-2 border-dashed border-zinc-100 rounded-xl">
-                                                No stops added yet. Click "Add Stop" to begin.
-                                            </div>
-                                        )}
-                                    </div>
-                                </section>
-                            </div>
-
-                            {/* Drawer Footer */}
-                            <div className="p-4 border-t border-zinc-100 bg-zinc-50 flex justify-end gap-3">
-                                <button onClick={() => setIsDrawerOpen(false)} className="px-5 py-2.5 rounded-xl border border-zinc-200 text-zinc-600 font-medium hover:bg-zinc-100 transition-colors">
-                                    Cancel
-                                </button>
-                                <button onClick={handleSubmit} className="px-5 py-2.5 rounded-xl bg-brand text-white font-medium hover:brightness-110 shadow-lg shadow-brand/20 transition-all flex items-center gap-2">
-                                    <Save className="h-4 w-4" />
-                                    {editingRoute ? 'Update Route' : 'Save Route'}
-                                </button>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
         </div>
     );
 }

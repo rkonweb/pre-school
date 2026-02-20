@@ -137,7 +137,7 @@ export default function EditVehiclePage() {
             const res = await updateVehicleAction(vehicleId, formData, slug);
             if (res.success) {
                 toast.success("Vehicle updated successfully");
-                router.push(`/s/${slug}/transport/vehicles`);
+                router.push(`/s/${slug}/transport/fleet/vehicles`);
             } else {
                 toast.error(res.error || "Update failed");
             }

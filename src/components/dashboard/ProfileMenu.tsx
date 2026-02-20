@@ -53,10 +53,10 @@ export function ProfileMenu({
             setIsLoading(false);
         }
 
-        if (isOpen && !profileData) {
+        if (isOpen) {
             loadProfile();
         }
-    }, [isOpen, slug, profileData]);
+    }, [isOpen, slug]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -261,41 +261,26 @@ export function ProfileMenu({
                                                 Usage
                                             </div>
 
-                                            {/* Students */}
-                                            <div className="space-y-1.5">
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <div className="flex items-center gap-1.5 text-zinc-600">
-                                                        <GraduationCap className="h-3.5 w-3.5" />
-                                                        <span>Students</span>
-                                                    </div>
-                                                    <span className="font-bold text-zinc-900 dark:text-zinc-50">
-                                                        {usage.currentStudents}/{subscription.plan.maxStudents}
-                                                    </span>
-                                                </div>
-                                                <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                                    <div
-                                                        className={cn("h-full rounded-full transition-all", getUsageColor(getUsagePercentage(usage.currentStudents, subscription.plan.maxStudents)))}
-                                                        style={{ width: `${getUsagePercentage(usage.currentStudents, subscription.plan.maxStudents)}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Staff */}
+                                            {/* Users (Students & Staff) */}
                                             <div className="space-y-1.5">
                                                 <div className="flex items-center justify-between text-sm">
                                                     <div className="flex items-center gap-1.5 text-zinc-600">
                                                         <Users className="h-3.5 w-3.5" />
-                                                        <span>Staff</span>
+                                                        <span>Total Users</span>
                                                     </div>
                                                     <span className="font-bold text-zinc-900 dark:text-zinc-50">
-                                                        {usage.currentStaff}/{subscription.plan.maxStaff}
+                                                        {profileData.usage.currentUsers}/{profileData.plan.maxUsers}
                                                     </span>
                                                 </div>
                                                 <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                                                     <div
-                                                        className={cn("h-full rounded-full transition-all", getUsageColor(getUsagePercentage(usage.currentStaff, subscription.plan.maxStaff)))}
-                                                        style={{ width: `${getUsagePercentage(usage.currentStaff, subscription.plan.maxStaff)}%` }}
+                                                        className={cn("h-full rounded-full transition-all", getUsageColor(getUsagePercentage(profileData.usage.currentUsers, profileData.plan.maxUsers)))}
+                                                        style={{ width: `${getUsagePercentage(profileData.usage.currentUsers, profileData.plan.maxUsers)}%` }}
                                                     />
+                                                </div>
+                                                <div className="flex justify-between text-[10px] text-zinc-400 font-medium">
+                                                    <span>Students + Staff</span>
+                                                    <span>{Math.round(getUsagePercentage(profileData.usage.currentUsers, profileData.plan.maxUsers))}%</span>
                                                 </div>
                                             </div>
 

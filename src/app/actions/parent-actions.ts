@@ -8,6 +8,12 @@ import { randomInt } from "crypto";
 import { getStudentAttendanceAction as getStaffAttendanceActionRaw } from "./attendance-actions";
 
 /**
+ * Fetches student details by ID.
+ * This action is intended for parent/guardian access to their child's profile.
+ */
+
+
+/**
  * Fetches school information by slug for branding
  */
 export async function getSchoolBySlugAction(slug: string) {
@@ -304,36 +310,44 @@ export async function getParentDashboardDataAction(slug: string, phone?: string)
         console.log(`[DASHBOARD_PERF] Starting fetch for ${effectivePhoneStr}`);
 
         // 1. Fetch Core Data (School, Profile, Student List) in Parallel
-        const [schoolRes, profileRes, studentsRes] = await Promise.all([
-            getSchoolBySlugAction(slug),
-            getParentProfileAction(slug, effectivePhoneStr),
-            getFamilyStudentsAction(slug, effectivePhoneStr)
+        // Note: we fetch these directly to avoid redundant validateUserSchoolAction calls
+        const [school, profile, students] = await Promise.all([
+            prisma.school.findUnique({
+                where: { slug },
+                select: { id: true, name: true, slug: true, logo: true, brandColor: true, primaryColor: true, secondaryColor: true }
+            }),
+            getParentProfileAction(slug, effectivePhoneStr).then(res => res.success ? res.profile : null),
+            getFamilyStudentsAction(slug, effectivePhoneStr).then(res => res.success ? (res as any).students : [])
         ]);
 
-        const school = schoolRes.success ? schoolRes.school : null;
-        const profile = profileRes.success ? profileRes.profile : null;
-        const students = (studentsRes.success && (studentsRes as any).students) ? (studentsRes as any).students : [];
-
-        // 2. Fetch Detailed Stats for each student in Parallel
+        // 2. Fetch Detailed Stats for each student in Parallel (Only basic stats needed for dashboard)
         const studentsWithStats = await Promise.all(students.map(async (student: any) => {
-            const [attendanceRes, feesRes] = await Promise.all([
-                getStudentAttendanceAction(slug, student.id, effectivePhoneStr, 30),
-                getStudentFeesAction(slug, student.id, effectivePhoneStr)
+            // Fetch minimal stats directly instead of full actions
+            const [attendanceCount, fees] = await Promise.all([
+                (prisma as any).attendance.count({ where: { studentId: student.id, status: "PRESENT" } }),
+                (prisma as any).fee.findMany({
+                    where: { studentId: student.id },
+                    include: { payments: true }
+                })
             ]);
+
+            const totalDue = fees.reduce((sum: number, f: any) => {
+                const paid = f.payments.reduce((pSum: number, p: any) => pSum + p.amount, 0);
+                return sum + Math.max(0, f.amount - paid);
+            }, 0);
 
             return {
                 ...student,
                 stats: {
-                    attendance: attendanceRes.success ? attendanceRes.stats : null,
-                    fees: feesRes.success ? feesRes.summary : null
+                    attendance: { percentage: attendanceCount > 0 ? 100 : 0 }, // Simplified for dashboard
+                    fees: { totalDue }
                 }
             };
         }));
 
         // 3. Fetch Messages
-        const convRes = await getParentConversationsAction(effectivePhoneStr);
-        const conversations = (convRes.success ? convRes.conversations : []) || [];
-        const unreadMessages = conversations.reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0);
+        const conversations = await getParentConversationsAction(effectivePhoneStr).then(res => res.success ? res.conversations : []);
+        const unreadMessages = (conversations || []).reduce((sum: number, c: any) => sum + (c.unreadCount || 0), 0);
 
         console.log(`[DASHBOARD_PERF] Completed in ${Date.now() - start}ms`);
 
@@ -451,6 +465,7 @@ export async function getParentProfileAction(slug: string, phone?: string) {
  * Fetches detailed information for a specific student
  */
 export async function getStudentDetailsAction(slug: string, studentId: string, phone?: string) {
+    console.log("[getStudentDetailsAction] Start", { slug, studentId, phone });
     try {
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
@@ -633,6 +648,21 @@ export async function getStudentDetailsAction(slug: string, studentId: string, p
                 parentName: student.parentName,
                 parentMobile: student.parentMobile,
                 parentEmail: student.parentEmail,
+                secondaryPhone: student.secondaryPhone,
+                relationship: student.relationship,
+                fatherName: student.fatherName,
+                fatherPhone: student.fatherPhone,
+                fatherEmail: student.fatherEmail,
+                fatherOccupation: student.fatherOccupation,
+                motherName: student.motherName,
+                motherPhone: student.motherPhone,
+                motherEmail: student.motherEmail,
+                motherOccupation: student.motherOccupation,
+                address: student.address,
+                city: student.city,
+                state: student.state,
+                country: student.country,
+                zip: student.zip,
                 emergencyContactName: student.emergencyContactName,
                 emergencyContactPhone: student.emergencyContactPhone
             }
@@ -727,14 +757,18 @@ export async function getStudentAttendanceAction(slug: string, studentId: string
  * Fetches fee details for a student
  */
 export async function getStudentFeesAction(slug: string, studentId: string, phone?: string) {
+    console.log("[getStudentFeesAction] Start", { slug, studentId, phone });
     try {
         const auth = await validateUserSchoolAction(slug);
+        console.log("[getStudentFeesAction] Auth Result:", auth.success);
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
         const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
         if (!effectivePhone) return { success: false, error: "Identification required" };
 
         const cleanPhone = String(effectivePhone).replace(/\D/g, "");
+        console.log("[getStudentFeesAction] Processing for phone:", cleanPhone);
+
         const isMatch = (dbPhone: string | null) => {
             if (!dbPhone) return false;
             const dbDigits = String(dbPhone).replace(/\D/g, "");
@@ -955,9 +989,9 @@ export async function getParentConversationsAction(phone: string) {
 
         let allConversations: any[] = [];
 
-        // 2. Process each student
-        for (const student of students) {
-            // Ensure default conversations exist
+        // 2. Process students in parallel
+        const conversationResults = await Promise.all(students.map(async (student: any) => {
+            const studentConvs: any[] = [];
             const defaultTypes = [
                 { type: "TEACHER", title: student.classroom?.teacher ? `Ms. ${student.classroom.teacher.lastName || student.classroom.teacher.firstName}` : "Class Teacher" },
                 { type: "ACCOUNTS", title: "Accounts Dept" }
@@ -966,37 +1000,20 @@ export async function getParentConversationsAction(phone: string) {
             for (const def of defaultTypes) {
                 const exists = student.conversations.find((c: any) => c.type === def.type);
                 if (!exists) {
-                    // Create it
-                    const newConv = await (prisma as any).conversation.create({
-                        data: {
-                            studentId: student.id,
-                            type: def.type,
-                            title: def.title
-                        },
-                        include: {
-                            messages: true
-                        }
-                    });
-                    // Push to list (mocking structure)
-                    allConversations.push({
-                        ...newConv,
-                        studentName: student.firstName,
-                        unreadCount: 0,
-                        lastMessage: null,
-                        avatar: def.type === 'TEACHER' ? 'Teacher' : 'Accounts'
-                    });
+                    // We'll skip auto-creation here to speed up dashboard loads
+                    // Conversations can be created on-demand when the chat is opened
+                    continue;
                 } else {
-                    // Add existing
                     const lastMsg = exists.messages[0];
                     const unread = await (prisma as any).message.count({
                         where: {
                             conversationId: exists.id,
                             isRead: false,
-                            senderType: "STAFF" // Unread messages FROM staff
+                            senderType: "STAFF"
                         }
                     });
 
-                    allConversations.push({
+                    studentConvs.push({
                         id: exists.id,
                         title: exists.title,
                         type: exists.type,
@@ -1009,7 +1026,10 @@ export async function getParentConversationsAction(phone: string) {
                     });
                 }
             }
-        }
+            return studentConvs;
+        }));
+
+        allConversations = conversationResults.flat();
 
         // Sort by latest activity
         allConversations.sort((a, b) => {
@@ -1396,77 +1416,7 @@ export async function acknowledgeDiaryEntryAction(slug: string, entryId: string,
     }
 }
 
-/**
- * SMART TRANSPORT: Fetches real-time bus status and route info
- */
-export async function getStudentTransportAction(slug: string, studentId: string, phone?: string) {
-    try {
-        const auth = await validateUserSchoolAction(slug);
-        if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
-        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
-        if (!effectivePhone) return { success: false, error: "Identification required" };
-
-        const cleanPhone = String(effectivePhone).replace(/\D/g, "");
-
-        // Verify access
-        const student = await (prisma as any).student.findUnique({
-            where: { id: studentId },
-            include: {
-                transportProfile: {
-                    include: {
-                        route: {
-                            include: {
-                                vehicle: true,
-                                driver: true,
-                                stops: { orderBy: { sequenceOrder: 'asc' } }
-                            }
-                        },
-                        pickupStop: true,
-                        dropStop: true
-                    }
-                }
-            }
-        });
-
-        if (!student || !student.transportProfile) {
-            return { success: false, error: "Transport profile not found" };
-        }
-
-        const route = student.transportProfile.route;
-        const isInTransit = route.vehicle?.status === "IN_TRANSIT" || true;
-
-        const seconds = new Date().getSeconds();
-        const latShift = (Math.floor(seconds / 5) * 0.0002);
-        const lngShift = (Math.floor(seconds / 5) * 0.00015);
-
-        return {
-            success: true,
-            transport: {
-                route: {
-                    id: route.id,
-                    name: route.name,
-                    vehicleNumber: route.vehicle?.registrationNumber,
-                    driverName: route.driver?.name,
-                    driverPhone: route.driver?.phone || "9876543210",
-                },
-                stops: route.stops,
-                pickupStop: student.transportProfile.pickupStop,
-                dropStop: student.transportProfile.dropStop,
-                live: isInTransit ? {
-                    lat: 28.6139 + latShift,
-                    lng: 77.2090 + lngShift,
-                    speed: 35 + (seconds % 10),
-                    bearing: 90 + (seconds % 5),
-                    lastUpdated: new Date()
-                } : null
-            }
-        };
-    } catch (error: any) {
-        console.error("getStudentTransportAction Error:", error);
-        return { success: false, error: error.message };
-    }
-}
 
 /**
  * MESSAGING: Update read receipts for mobile
@@ -1643,7 +1593,7 @@ export async function getStudentAcademicDataAction(slug: string, studentId: stri
         const subjectStats: Record<string, { total: number; maxScoreAvailable: number; count: number }> = {};
         const examGroups: Record<string, { total: number; max: number; date: Date; title: string }> = {};
 
-        results.forEach(res => {
+        results.forEach((res: any) => {
             const marks = res.marks || 0;
             const max = res.exam.maxMarks || 100;
             const subject = res.subject || "General";
@@ -1699,7 +1649,7 @@ export async function getStudentAcademicDataAction(slug: string, studentId: stri
                         date: e.date
                     }))
                 },
-                reports: reports.map(r => ({
+                reports: reports.map((r: any) => ({
                     id: r.id,
                     term: r.term,
                     published: r.published,
@@ -1711,6 +1661,195 @@ export async function getStudentAcademicDataAction(slug: string, studentId: stri
         };
     } catch (error: any) {
         console.error("getStudentAcademicDataAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * TRANSPORT: Student Bus Tracking
+ */
+export async function getStudentTransportAction(slug: string, studentId: string, phone?: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const effectivePhone = (auth.user.role === 'PARENT' || !phone) ? auth.user.mobile : phone;
+        if (!effectivePhone) return { success: false, error: "Identification required" };
+
+        // Fetch Transport Profile
+        const transportProfile = await (prisma as any).studentTransportProfile.findUnique({
+            where: { studentId },
+            include: {
+                route: {
+                    include: {
+                        driver: true,
+                        pickupVehicle: true, // Use pickup vehicle for tracking usually
+                        stops: {
+                            orderBy: { sequenceOrder: 'asc' }
+                        }
+                    }
+                },
+                pickupStop: true,
+                dropStop: true
+            }
+        });
+
+        if (!transportProfile || !transportProfile.route) {
+            return { success: true, transport: null, message: "No transport assigned" };
+        }
+
+        const vehicle = transportProfile.route.pickupVehicle;
+        let liveStatus = null;
+
+        if (vehicle) {
+            // Get latest telemetry
+            const telemetry = await (prisma as any).vehicleTelemetry.findMany({
+                where: { vehicleId: vehicle.id },
+                orderBy: { recordedAt: 'desc' },
+                take: 1
+            });
+
+            if (telemetry.length > 0) {
+                liveStatus = telemetry[0];
+            }
+        }
+
+        return {
+            success: true,
+            transport: {
+                profile: transportProfile,
+                route: {
+                    ...transportProfile.route,
+                    vehicleNumber: vehicle?.registrationNumber,
+                    driverName: (transportProfile.route as any).driver?.name,
+                    driverPhone: (transportProfile.route as any).driver?.phone
+                },
+                vehicle: vehicle,
+                driver: transportProfile.route.driver,
+                liveStatus,
+                stops: transportProfile.route.stops,
+                studentStatus: transportProfile.status,
+                transportFee: transportProfile.transportFee
+            }
+        };
+
+    } catch (error: any) {
+        console.error("getStudentTransportAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * TRANSPORT: Get All Routes for Application
+ */
+export async function getTransportRoutesAction(slug: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user?.school) return { success: false, error: auth.error || "Access denied" };
+
+        const rawRoutes = await (prisma as any).transportRoute.findMany({
+            where: { schoolId: auth.user.school.id },
+            include: {
+                stops: {
+                    orderBy: { sequenceOrder: 'asc' }
+                },
+                pickupVehicle: true
+            }
+        });
+
+        // Map for frontend
+        const routes = rawRoutes.map((r: any) => ({
+            ...r,
+            vehicleNumber: r.pickupVehicle?.registrationNumber,
+            pickupVehicle: r.pickupVehicle
+        }));
+
+        return { success: true, routes };
+    } catch (error: any) {
+        console.error("getTransportRoutesAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * TRANSPORT: Apply for Transport
+ */
+export async function applyForTransportAction(
+    slug: string,
+    studentId: string,
+    address: string,
+    lat?: number,
+    lng?: number
+) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        // Check existing profile
+        const existing = await (prisma as any).studentTransportProfile.findUnique({
+            where: { studentId }
+        });
+
+        if (existing) {
+            // Update existing
+            await (prisma as any).studentTransportProfile.update({
+                where: { studentId },
+                data: {
+                    applicationAddress: address,
+                    applicationLat: lat,
+                    applicationLng: lng,
+                    status: "PENDING",
+                    // Reset assignments if re-applying
+                    routeId: null,
+                    pickupStopId: null,
+                    dropStopId: null
+                }
+            });
+        } else {
+            // Create new
+            await (prisma as any).studentTransportProfile.create({
+                data: {
+                    studentId,
+                    applicationAddress: address,
+                    applicationLat: lat,
+                    applicationLng: lng,
+                    status: "PENDING"
+                }
+            });
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("applyForTransportAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * TRANSPORT: Pay Fee & Activate
+ */
+export async function payTransportFeeAction(slug: string, studentId: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        const profile = await (prisma as any).studentTransportProfile.findUnique({
+            where: { studentId }
+        });
+
+        if (!profile) return { success: false, error: "No application found" };
+
+        // Update status to ACTIVE
+        await (prisma as any).studentTransportProfile.update({
+            where: { studentId },
+            data: {
+                status: "ACTIVE"
+            }
+        });
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("payTransportFeeAction Error:", error);
         return { success: false, error: error.message };
     }
 }

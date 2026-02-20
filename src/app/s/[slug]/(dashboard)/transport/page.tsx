@@ -37,12 +37,12 @@ export default async function TransportDashboard({ params }: { params: { slug: s
     }
 
     const { finances, fleet, drivers } = statsRes.data;
-    const initialFleet = fleetRes.success ? fleetRes.data : [];
+    const initialFleet = fleetRes.success && fleetRes.data ? fleetRes.data : [];
 
     // Additional data for basic stats
     const school = await prisma.school.findUnique({
         where: { slug },
-        select: { id: true }
+        select: { id: true, googleMapsApiKey: true }
     });
 
     const pendingRequests = await prisma.studentTransportProfile.count({
@@ -109,25 +109,25 @@ export default async function TransportDashboard({ params }: { params: { slug: s
                             </CardContent>
                         </Card>
 
-                        <Card className="border-none shadow-xl shadow-zinc-200/50 bg-brand text-white overflow-hidden relative group">
+                        <Card className="border-none shadow-xl shadow-zinc-200/50 bg-brand text-[var(--secondary-color)] overflow-hidden relative group">
                             <div className="absolute top-0 right-0 p-4 opacity-20">
-                                <DollarSign className="h-20 w-20 text-white" />
+                                <DollarSign className="h-20 w-20 text-[var(--secondary-color)]" />
                             </div>
                             <CardContent className="p-6 relative z-10">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="p-2 rounded-lg bg-white/20">
                                         <DollarSign className="h-5 w-5 text-white" />
                                     </div>
-                                    <span className="text-sm font-bold text-white/70 uppercase tracking-wider">Revenue Tracking</span>
+                                    <span className="text-sm font-bold text-[var(--secondary-color)] opacity-70 uppercase tracking-wider">Revenue Tracking</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <h3 className="text-3xl font-black text-white">
+                                    <h3 className="text-3xl font-black text-[var(--secondary-color)]">
                                         {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(finances.totalCollected)}
                                     </h3>
                                     <div className="mt-4 w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
                                         <div className="h-full bg-white transition-all duration-500" style={{ width: `${finances.collectionRate}%` }}></div>
                                     </div>
-                                    <p className="text-[10px] font-bold mt-2 uppercase text-white/80">{finances.collectionRate.toFixed(1)}% Collected</p>
+                                    <p className="text-[10px] font-bold mt-2 uppercase text-[var(--secondary-color)] opacity-80">{finances.collectionRate.toFixed(1)}% Collected</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -148,7 +148,7 @@ export default async function TransportDashboard({ params }: { params: { slug: s
                             </div>
                         </CardHeader>
                         <CardContent className="p-0 h-[calc(450px-73px)]">
-                            <FleetMapPreview schoolSlug={slug} initialVehicles={initialFleet} />
+                            <FleetMapPreview schoolSlug={slug} initialVehicles={initialFleet} apiKey={school?.googleMapsApiKey || ""} />
                         </CardContent>
                     </Card>
                 </div>
@@ -208,7 +208,7 @@ export default async function TransportDashboard({ params }: { params: { slug: s
                                     href={action.href}
                                     className="flex items-center gap-4 p-3 rounded-xl hover:bg-zinc-50 border border-transparent hover:border-zinc-100 transition-all group"
                                 >
-                                    <div className="p-2.5 rounded-lg bg-zinc-100 group-hover:bg-brand group-hover:text-white transition-colors">
+                                    <div className="p-2.5 rounded-lg bg-zinc-100 group-hover:bg-brand group-hover:text-[var(--secondary-color)] transition-colors">
                                         <action.icon className="h-5 w-5" />
                                     </div>
                                     <div>

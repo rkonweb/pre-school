@@ -112,7 +112,7 @@ export default function NewVehiclePage() {
             const res = await createVehicleAction(formData, slug);
             if (res.success) {
                 toast.success("Vehicle added successfully");
-                router.push(`/s/${slug}/transport/vehicles`);
+                router.push(`/s/${slug}/transport/fleet/vehicles`);
             } else {
                 toast.error(res.error || "Operation failed");
             }
@@ -419,7 +419,7 @@ export default function NewVehiclePage() {
                             <button
                                 type="submit"
                                 disabled={submitting || isAnyFileUploading}
-                                className="h-10 px-6 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                className="h-10 px-6 rounded-xl bg-brand text-[var(--secondary-color)] text-sm font-semibold hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                                 style={{ backgroundColor: brandColor }}
                             >
                                 {(submitting || isAnyFileUploading) ? (

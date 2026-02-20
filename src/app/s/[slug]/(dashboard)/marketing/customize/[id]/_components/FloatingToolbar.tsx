@@ -103,7 +103,7 @@ function ToolbarButton({ children, active, onClick }: { children: React.ReactNod
             onClick={onClick}
             className={cn(
                 "h-8 w-8 flex items-center justify-center rounded-xl transition-all",
-                active ? "bg-brand text-white" : "text-zinc-400 hover:text-white hover:bg-white/10"
+                active ? "bg-brand text-[var(--secondary-color)]" : "text-zinc-400 hover:text-white hover:bg-white/10"
             )}
         >
             {children}

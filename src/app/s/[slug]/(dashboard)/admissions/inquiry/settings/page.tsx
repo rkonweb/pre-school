@@ -158,7 +158,7 @@ export default function InquirySettingsPage() {
                             className={cn(
                                 "flex items-center gap-4 p-4 rounded-2xl transition-all text-left group",
                                 activeSection === section.id
-                                    ? "bg-brand text-white shadow-xl shadow-brand/20 scale-[1.02]"
+                                    ? "bg-brand text-[var(--secondary-color)] shadow-xl shadow-brand/20 scale-[1.02]"
                                     : "bg-white border border-zinc-100 text-zinc-500 hover:bg-zinc-50"
                             )}
                         >
@@ -190,7 +190,7 @@ export default function InquirySettingsPage() {
                                         setIsEditing("new");
                                         setFormData({ name: "" });
                                     }}
-                                    className="h-10 px-4 bg-brand text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2"
+                                    className="h-10 px-4 bg-brand text-[var(--secondary-color)] rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2"
                                 >
                                     <Plus className="h-4 w-4" /> Add Branch
                                 </button>
@@ -211,7 +211,7 @@ export default function InquirySettingsPage() {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={handleSaveBranch}
-                                                className="h-10 w-10 rounded-xl bg-brand text-white flex items-center justify-center"
+                                                className="h-10 w-10 rounded-xl bg-brand text-[var(--secondary-color)] flex items-center justify-center"
                                             >
                                                 <Check className="h-5 w-5" />
                                             </button>
@@ -248,7 +248,7 @@ export default function InquirySettingsPage() {
                                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             {isEditing === branch.id ? (
                                                 <>
-                                                    <button onClick={handleSaveBranch} className="h-10 w-10 rounded-xl bg-brand text-white flex items-center justify-center">
+                                                    <button onClick={handleSaveBranch} className="h-10 w-10 rounded-xl bg-brand text-[var(--secondary-color)] flex items-center justify-center">
                                                         <Check className="h-5 w-5" />
                                                     </button>
                                                     <button onClick={() => setIsEditing(null)} className="h-10 w-10 rounded-xl bg-zinc-100 text-zinc-500 flex items-center justify-center">
@@ -290,7 +290,7 @@ export default function InquirySettingsPage() {
                                         setIsEditing("new_program");
                                         setFormData({ name: "", code: "" });
                                     }}
-                                    className="h-10 px-4 bg-brand text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2"
+                                    className="h-10 px-4 bg-brand text-[var(--secondary-color)] rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2"
                                 >
                                     <Plus className="h-4 w-4" /> Add Program
                                 </button>
@@ -315,7 +315,7 @@ export default function InquirySettingsPage() {
                                                 onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                                             />
                                             <div className="flex items-center gap-2">
-                                                <button onClick={handleSaveProgram} className="h-8 w-8 rounded-lg bg-brand text-white flex items-center justify-center">
+                                                <button onClick={handleSaveProgram} className="h-8 w-8 rounded-lg bg-brand text-[var(--secondary-color)] flex items-center justify-center">
                                                     <Check className="h-4 w-4" />
                                                 </button>
                                                 <button onClick={() => setIsEditing(null)} className="h-8 w-8 rounded-lg bg-white border border-zinc-200 text-zinc-500 flex items-center justify-center">
@@ -350,7 +350,7 @@ export default function InquirySettingsPage() {
 
                                         <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             {isEditing === program.id ? (
-                                                <button onClick={handleSaveProgram} className="h-7 w-7 rounded-lg bg-brand text-white flex items-center justify-center">
+                                                <button onClick={handleSaveProgram} className="h-7 w-7 rounded-lg bg-brand text-[var(--secondary-color)] flex items-center justify-center">
                                                     <Check className="h-4 w-4" />
                                                 </button>
                                             ) : (
