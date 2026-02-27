@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, Briefcase, Mail, Phone, Calendar, FileText, X, User, MapPin, CreditCard, Heart, Linkedin, Twitter, Facebook, Instagram, ArrowUpDown, Check, Shield } from "lucide-react";
+import { Upload, Briefcase, Mail, Phone, Calendar, FileText, X, User, MapPin, CreditCard, Heart, Linkedin, Twitter, Facebook, Instagram, ArrowUpDown, Check, Shield, DollarSign, Users, IndianRupee, CheckCircle2, ChevronRight, ArrowLeft, ShieldCheck, Camera, Search, Plus, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createStaffAction, updateStaffAction } from "@/app/actions/staff-actions";
+import { createStaffAction, updateStaffAction, addSalaryRevisionAction } from "@/app/actions/staff-actions";
 import { toast } from "sonner";
 import Image from "next/image";
 import Cropper from "react-easy-crop";
 import { AvatarWithAdjustment } from "./AvatarWithAdjustment";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { validateEmail, validatePhone, isEmpty } from "@/lib/validators";
 
 
 
@@ -44,13 +46,46 @@ export function AddStaffForm({
 }: AddStaffFormProps) {
     const [isLoading, setIsLoading] = useState(false);
 
+    // Salary state
+    const [salaryBasic, setSalaryBasic] = useState("");
+    const [salaryHra, setSalaryHra] = useState("");
+    const [salaryAllowance, setSalaryAllowance] = useState("");
+    const [salaryPf, setSalaryPf] = useState("");
+    const [salaryTax, setSalaryTax] = useState("");
+    const [salaryInsurance, setSalaryInsurance] = useState("");
+    const [salaryEffectiveDate, setSalaryEffectiveDate] = useState(new Date().toISOString().split("T")[0]);
+    const [salaryRevisionType, setSalaryRevisionType] = useState("INITIAL");
+    const [salaryReason, setSalaryReason] = useState("");
+    const [customSalaryAdditions, setCustomSalaryAdditions] = useState<{ id: string; label: string; amount: number }[]>([]);
+    const [customSalaryDeductions, setCustomSalaryDeductions] = useState<{ id: string; label: string; amount: number }[]>([]);
+
+    const totalCustomAdd = customSalaryAdditions.reduce((acc, i) => acc + i.amount, 0);
+    const totalCustomDed = customSalaryDeductions.reduce((acc, i) => acc + i.amount, 0);
+    const salaryGross = (parseFloat(salaryBasic || "0") + parseFloat(salaryHra || "0") + parseFloat(salaryAllowance || "0") + totalCustomAdd);
+    const salaryNet = salaryGross - (parseFloat(salaryPf || "0") + parseFloat(salaryTax || "0") + parseFloat(salaryInsurance || "0") + totalCustomDed);
+
+    const addSalaryItem = (type: 'add' | 'ded') => {
+        const item = { id: Math.random().toString(36).substr(2, 9), label: '', amount: 0 };
+        if (type === 'add') setCustomSalaryAdditions(prev => [...prev, item]);
+        else setCustomSalaryDeductions(prev => [...prev, item]);
+    };
+    const updateSalaryItem = (type: 'add' | 'ded', id: string, field: 'label' | 'amount', val: string) => {
+        const setter = type === 'add' ? setCustomSalaryAdditions : setCustomSalaryDeductions;
+        setter(prev => prev.map(i => i.id === id ? { ...i, [field]: field === 'amount' ? Number(val) : val } : i));
+    };
+    const removeSalaryItem = (type: 'add' | 'ded', id: string) => {
+        const setter = type === 'add' ? setCustomSalaryAdditions : setCustomSalaryDeductions;
+        setter(prev => prev.filter(i => i.id !== id));
+    };
+
+
     // State for Avatar and Cropping
     const [avatarPreview, setAvatarPreview] = useState<string | null>(initialData?.avatar || null);
     const [avatarAdjustment, setAvatarAdjustment] = useState(initialData?.avatarAdjustment || '{"x":0,"y":0,"zoom":1}');
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [isCropModalOpen, setIsCropModalOpen] = useState(false);
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
     const avatarInputRef = useRef<HTMLInputElement>(null);
 
     // Form State
@@ -68,6 +103,10 @@ export function AddStaffForm({
     );
     const [isSubjectsOpen, setIsSubjectsOpen] = useState(false);
     const [wasSubmitted, setWasSubmitted] = useState(false);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+    // Controlled phone values for PhoneInput (not native inputs)
+    const [mobileValue, setMobileValue] = useState(initialData?.mobile || "");
+    const [emergencyPhone, setEmergencyPhone] = useState(initialData?.emergencyContactPhone || "");
 
     // Filtered Designations based on Department
     const filteredDesignations = designations.filter(d =>
@@ -122,18 +161,64 @@ export function AddStaffForm({
         }
     };
 
+    const validateForm = (formData: FormData): boolean => {
+        const errors: Record<string, string> = {};
+        const req = (name: string) => {
+            const v = formData.get(name);
+            return !v || String(v).trim() === "";
+        };
+
+        // Required fields
+        if (req("firstName")) errors.firstName = "Required";
+        if (req("lastName")) errors.lastName = "Required";
+        if (req("email")) errors.email = "Required";
+        if (req("joiningDate")) errors.joiningDate = "Required";
+        if (!selectedDesignation) errors.designation = "Required";
+
+        // Mobile (from controlled state)
+        if (isEmpty(mobileValue)) errors.mobile = "Required";
+        else if (validatePhone(mobileValue)) errors.mobile = validatePhone(mobileValue)!;
+
+        // Email format
+        if (!errors.email) {
+            const emailErr = validateEmail(String(formData.get("email") || ""));
+            if (emailErr) errors.email = emailErr;
+        }
+
+        // Emergency phone (optional but must be valid if provided)
+        if (!isEmpty(emergencyPhone)) {
+            const epErr = validatePhone(emergencyPhone);
+            if (epErr) errors.emergencyContactPhone = epErr;
+        }
+
+        setFormErrors(errors);
+
+        if (Object.keys(errors).length > 0) {
+            const missing = Object.keys(errors).filter(k => errors[k] === "Required")
+                .map(k => k.replace(/([A-Z])/g, " $1").trim())
+                .map(k => k.charAt(0).toUpperCase() + k.slice(1));
+            const invalid = Object.keys(errors).filter(k => errors[k] !== "Required")
+                .map(k => `${k.replace(/([A-Z])/g, " $1").trim()}: ${errors[k]}`);
+            const msgs = [missing.length ? `Missing: ${missing.join(", ")}` : "", ...invalid].filter(Boolean);
+            toast.error(msgs.join(" · "), { duration: 6000 });
+            return false;
+        }
+        return true;
+    };
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setWasSubmitted(true);
 
         const form = e.currentTarget;
-        if (!form.checkValidity()) {
-            toast.error("Please fill in all required fields correctly.");
-            return;
-        }
+        const formData = new FormData(form);
+        // Inject controlled phone values into FormData
+        formData.set("mobile", mobileValue);
+        formData.set("emergencyContactPhone", emergencyPhone);
+
+        if (!validateForm(formData)) return;
 
         setIsLoading(true);
-        const formData = new FormData(form);
 
         try {
             let res;
@@ -144,7 +229,26 @@ export function AddStaffForm({
             }
 
             if (res.success) {
+                const newStaffId = (res as any).id;
+                if (!staffId && newStaffId && salaryGross > 0) {
+                    await addSalaryRevisionAction(schoolSlug!, newStaffId, {
+                        amount: salaryGross,
+                        effectiveDate: salaryEffectiveDate || new Date().toISOString().split("T")[0],
+                        reason: salaryReason || "Initial Salary",
+                        type: salaryRevisionType,
+                        basic: parseFloat(salaryBasic || "0"),
+                        hra: parseFloat(salaryHra || "0"),
+                        allowance: parseFloat(salaryAllowance || "0"),
+                        pf: parseFloat(salaryPf || "0"),
+                        tax: parseFloat(salaryTax || "0"),
+                        insurance: parseFloat(salaryInsurance || "0"),
+                        customAdditions: JSON.stringify(customSalaryAdditions),
+                        customDeductions: JSON.stringify(customSalaryDeductions),
+                        netSalary: salaryNet,
+                    });
+                }
                 toast.success(staffId ? "Staff updated successfully" : "Staff added successfully");
+                setFormErrors({});
                 onSuccess();
             } else {
                 toast.error(res.error || "Failed to save staff");
@@ -157,7 +261,7 @@ export function AddStaffForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} noValidate className="flex h-full flex-col gap-8">
+        <form onSubmit={handleSubmit} noValidate className="flex h-full flex-col gap-8 pb-28">
             {/* ... Personal Info ... */}
 
             {/* 1. Personal Information */}
@@ -217,7 +321,7 @@ export function AddStaffForm({
                     {/* Fields */}
                     <div className="grid flex-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-1.5" suppressHydrationWarning>
-                            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">First Name <span className="text-red-500">*</span></label>
+                            <label className={cn("text-sm font-medium", formErrors.firstName ? "text-red-500" : "text-zinc-700 dark:text-zinc-300")}>First Name <span className="text-red-500">*</span></label>
                             <input
                                 name="firstName"
                                 defaultValue={initialData?.firstName}
@@ -227,12 +331,14 @@ export function AddStaffForm({
                                 className={cn(
                                     "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
                                     "focus:border-brand focus:ring-brand dark:bg-zinc-800",
-                                    wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
+                                    formErrors.firstName ? "border-red-400 ring-1 ring-red-200" : "border-zinc-300 dark:border-zinc-700"
                                 )}
+                                onChange={() => setFormErrors(e => ({ ...e, firstName: "" }))}
                             />
+                            {formErrors.firstName && <p className="text-xs text-red-500 font-medium">{formErrors.firstName}</p>}
                         </div>
                         <div className="space-y-1.5" suppressHydrationWarning>
-                            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Last Name <span className="text-red-500">*</span></label>
+                            <label className={cn("text-sm font-medium", formErrors.lastName ? "text-red-500" : "text-zinc-700 dark:text-zinc-300")}>Last Name <span className="text-red-500">*</span></label>
                             <input
                                 name="lastName"
                                 defaultValue={initialData?.lastName}
@@ -242,13 +348,15 @@ export function AddStaffForm({
                                 className={cn(
                                     "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
                                     "focus:border-brand focus:ring-brand dark:bg-zinc-800",
-                                    wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
+                                    formErrors.lastName ? "border-red-400 ring-1 ring-red-200" : "border-zinc-300 dark:border-zinc-700"
                                 )}
+                                onChange={() => setFormErrors(e => ({ ...e, lastName: "" }))}
                             />
+                            {formErrors.lastName && <p className="text-xs text-red-500 font-medium">{formErrors.lastName}</p>}
                         </div>
 
                         <div className="space-y-1.5" suppressHydrationWarning>
-                            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Email Address <span className="text-red-500">*</span></label>
+                            <label className={cn("text-sm font-medium", formErrors.email ? "text-red-500" : "text-zinc-700 dark:text-zinc-300")}>Email Address <span className="text-red-500">*</span></label>
                             <input
                                 name="email"
                                 type="email"
@@ -259,29 +367,18 @@ export function AddStaffForm({
                                 className={cn(
                                     "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
                                     "focus:border-brand focus:ring-brand dark:bg-zinc-800",
-                                    wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
+                                    formErrors.email ? "border-red-400 ring-1 ring-red-200" : "border-zinc-300 dark:border-zinc-700"
                                 )}
+                                onChange={() => setFormErrors(e => ({ ...e, email: "" }))}
                             />
+                            {formErrors.email && <p className="text-xs text-red-500 font-medium">{formErrors.email}</p>}
                         </div>
                         <div className="space-y-1.5" suppressHydrationWarning>
-                            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Phone Number <span className="text-red-500">*</span></label>
-                            <input
-                                name="mobile"
-                                type="tel"
-                                defaultValue={initialData?.mobile}
-                                required
-                                data-lpignore="true"
-                                autoComplete="off"
-                                maxLength={10}
-                                onInput={(e) => {
-                                    const target = e.target as HTMLInputElement;
-                                    target.value = target.value.replace(/\D/g, "").slice(0, 10);
-                                }}
-                                className={cn(
-                                    "w-full rounded-lg border px-3 py-2 text-sm transition-all focus:outline-none focus:ring-1",
-                                    "focus:border-brand focus:ring-brand dark:bg-zinc-800",
-                                    wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
-                                )}
+                            <PhoneInput
+                                label="Phone Number *"
+                                value={mobileValue}
+                                onChange={(v) => { setMobileValue(v); setFormErrors(e => ({ ...e, mobile: "" })); }}
+                                error={formErrors.mobile}
                             />
                         </div>
 
@@ -590,7 +687,7 @@ export function AddStaffForm({
 
 
                     <div className="space-y-1.5" suppressHydrationWarning>
-                        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date of Joining <span className="text-red-500">*</span></label>
+                        <label className={cn("text-sm font-medium", formErrors.joiningDate ? "text-red-500" : "text-zinc-700 dark:text-zinc-300")}>Date of Joining <span className="text-red-500">*</span></label>
                         <input
                             name="joiningDate"
                             type="date"
@@ -599,9 +696,11 @@ export function AddStaffForm({
                             className={cn(
                                 "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1",
                                 "focus:border-brand focus:ring-brand dark:bg-zinc-800",
-                                wasSubmitted ? "invalid:border-red-500 invalid:ring-1 invalid:ring-red-500" : "border-zinc-300 dark:border-zinc-700"
+                                formErrors.joiningDate ? "border-red-400 ring-1 ring-red-200" : "border-zinc-300 dark:border-zinc-700"
                             )}
+                            onChange={() => setFormErrors(e => ({ ...e, joiningDate: "" }))}
                         />
+                        {formErrors.joiningDate && <p className="text-xs text-red-500 font-medium">{formErrors.joiningDate}</p>}
                     </div>
                     <div className="space-y-1.5 sm:col-span-2" suppressHydrationWarning>
                         <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Qualifications</label>
@@ -683,16 +782,11 @@ export function AddStaffForm({
                         </div>
                         <div className="space-y-1.5" suppressHydrationWarning>
                             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Emergency Phone</label>
-                            <input
-                                name="emergencyContactPhone"
-                                defaultValue={initialData?.emergencyContactPhone}
-                                type="tel"
-                                maxLength={10}
-                                onInput={(e) => {
-                                    const target = e.target as HTMLInputElement;
-                                    target.value = target.value.replace(/\D/g, "").slice(0, 10);
-                                }}
-                                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-800"
+                            <PhoneInput
+                                label=""
+                                value={emergencyPhone}
+                                onChange={(v) => { setEmergencyPhone(v); setFormErrors(e => ({ ...e, emergencyContactPhone: "" })); }}
+                                error={formErrors.emergencyContactPhone}
                             />
                         </div>
                     </div>
@@ -726,6 +820,174 @@ export function AddStaffForm({
                 </div>
             </div>
 
+            {/* 4b. Salary Package */}
+            {!staffId && (
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/50 space-y-6">
+                    {/* Header */}
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100/50 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                            <DollarSign className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Initial Salary Package</h3>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400">Set starting compensation — earnings, deductions, custom items, and revision details. (Optional)</p>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-8 lg:grid-cols-2">
+                        {/* ─── EARNINGS ─── */}
+                        <div className="space-y-5">
+                            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-1.5">
+                                <Plus className="h-3.5 w-3.5" /> Earnings
+                            </h4>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {[
+                                    { label: 'Basic Pay', val: salaryBasic, set: setSalaryBasic },
+                                    { label: 'HRA', val: salaryHra, set: setSalaryHra },
+                                    { label: 'Other Allowances', val: salaryAllowance, set: setSalaryAllowance },
+                                ].map(f => (
+                                    <div key={f.label} className="space-y-1">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{f.label}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">₹</span>
+                                            <input type="number" min="0" placeholder="0" value={f.val}
+                                                onChange={e => f.set(e.target.value)}
+                                                className="w-full rounded-xl border border-zinc-200 bg-white pl-7 pr-3 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Custom Additions */}
+                            <div className="space-y-2 pt-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Custom Additions (Bonus, Incentives…)</span>
+                                    <button type="button" onClick={() => addSalaryItem('add')}
+                                        className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors">
+                                        <Plus className="h-3 w-3" />
+                                    </button>
+                                </div>
+                                {customSalaryAdditions.map(item => (
+                                    <div key={item.id} className="flex gap-2">
+                                        <input placeholder="Label (e.g. Sales Bonus)" value={item.label}
+                                            onChange={e => updateSalaryItem('add', item.id, 'label', e.target.value)}
+                                            className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                        <input type="number" placeholder="₹0" value={item.amount || ''}
+                                            onChange={e => updateSalaryItem('add', item.id, 'amount', e.target.value)}
+                                            className="w-24 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-950" />
+                                        <button type="button" onClick={() => removeSalaryItem('add', item.id)}
+                                            className="p-2 text-zinc-400 hover:text-rose-500 transition-colors">
+                                            <X className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* ─── DEDUCTIONS ─── */}
+                        <div className="space-y-5">
+                            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-rose-600 flex items-center gap-1.5">
+                                <Minus className="h-3.5 w-3.5" /> Deductions
+                            </h4>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {[
+                                    { label: 'Professional Tax', val: salaryTax, set: setSalaryTax },
+                                    { label: 'Provident Fund (PF)', val: salaryPf, set: setSalaryPf },
+                                    { label: 'Insurance', val: salaryInsurance, set: setSalaryInsurance },
+                                ].map(f => (
+                                    <div key={f.label} className="space-y-1">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{f.label}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">₹</span>
+                                            <input type="number" min="0" placeholder="0" value={f.val}
+                                                onChange={e => f.set(e.target.value)}
+                                                className="w-full rounded-xl border border-zinc-200 bg-white pl-7 pr-3 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Custom Deductions */}
+                            <div className="space-y-2 pt-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Custom Deductions (LOP, Penalty…)</span>
+                                    <button type="button" onClick={() => addSalaryItem('ded')}
+                                        className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors">
+                                        <Plus className="h-3 w-3" />
+                                    </button>
+                                </div>
+                                {customSalaryDeductions.map(item => (
+                                    <div key={item.id} className="flex gap-2">
+                                        <input placeholder="Label (e.g. LOP Deduction)" value={item.label}
+                                            onChange={e => updateSalaryItem('ded', item.id, 'label', e.target.value)}
+                                            className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                                        <input type="number" placeholder="₹0" value={item.amount || ''}
+                                            onChange={e => updateSalaryItem('ded', item.id, 'amount', e.target.value)}
+                                            className="w-24 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs focus:outline-none dark:border-zinc-800 dark:bg-zinc-950" />
+                                        <button type="button" onClick={() => removeSalaryItem('ded', item.id)}
+                                            className="p-2 text-zinc-400 hover:text-rose-500 transition-colors">
+                                            <X className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ─── REVISION META + CALCULATOR ─── */}
+                    <div className="mt-4 pt-6 border-t border-zinc-200 dark:border-zinc-800 grid gap-6 lg:grid-cols-3 items-start">
+                        <div className="col-span-2 grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Effective From</label>
+                                <input type="date" value={salaryEffectiveDate}
+                                    onChange={e => setSalaryEffectiveDate(e.target.value)}
+                                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Revision Type</label>
+                                <select value={salaryRevisionType} onChange={e => setSalaryRevisionType(e.target.value)}
+                                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950">
+                                    <option value="INITIAL">Initial Hire</option>
+                                    <option value="INCREMENT">Increment</option>
+                                    <option value="PROMOTION">Promotion</option>
+                                </select>
+                            </div>
+                            <div className="col-span-2 space-y-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Reason / Notes</label>
+                                <input placeholder="e.g. Joining package per offer letter" value={salaryReason}
+                                    onChange={e => setSalaryReason(e.target.value)}
+                                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950" />
+                            </div>
+                        </div>
+
+                        {/* Live Calculator Card */}
+                        <div className="bg-zinc-900 text-white rounded-[2rem] p-6 shadow-2xl flex flex-col gap-4 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-5 font-black text-5xl italic pointer-events-none">NET</div>
+                            <div>
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Net Take Home / Month</p>
+                                <p className="text-3xl font-black mt-1 italic tracking-tighter text-emerald-400">
+                                    ₹{salaryNet.toLocaleString('en-IN')}
+                                </p>
+                            </div>
+                            <div className="border-t border-zinc-800 pt-3 space-y-1.5 text-[10px] font-bold text-zinc-500">
+                                <div className="flex justify-between">
+                                    <span>Gross CTC</span>
+                                    <span className="text-zinc-300">₹{salaryGross.toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Total Deductions</span>
+                                    <span className="text-rose-400">-₹{(parseFloat(salaryPf || '0') + parseFloat(salaryTax || '0') + parseFloat(salaryInsurance || '0') + totalCustomDed).toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Custom Add-ons</span>
+                                    <span className="text-emerald-400">+₹{totalCustomAdd.toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* 5. Documents */}
             <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <div className="mb-6 flex items-center gap-3">
@@ -756,8 +1018,8 @@ export function AddStaffForm({
 
 
 
-            {/* Sticky Footer */}
-            <div className="sticky bottom-0 z-20 -mx-6 -mb-6 mt-auto border-t border-zinc-200 bg-white/80 p-6 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
+            {/* Sticky Footer — fixed to viewport bottom */}
+            <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200 bg-white/90 px-6 py-4 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90 shadow-2xl">
                 <div className="flex items-center justify-end gap-3">
                     <button
                         type="button"

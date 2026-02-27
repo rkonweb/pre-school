@@ -2,9 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { IDCardGeneratorClient } from "./IDCardGeneratorClient";
 import { redirect } from "next/navigation";
 
-export default async function IDCardGenerationPage({ params }: { params: { slug: string } }) {
+export default async function IDCardGenerationPage(props: { params: Promise<{ slug: string }> }) {
+    const params = await props.params;
+    const { slug } = params;
     const school = await prisma.school.findUnique({
-        where: { slug: params.slug },
+        where: { slug: slug },
         include: {
             idCardTemplates: true,
         }
@@ -28,7 +30,7 @@ export default async function IDCardGenerationPage({ params }: { params: { slug:
     });
 
     const students = await prisma.student.findMany({
-        where: { school: { slug: params.slug }, status: 'ACTIVE' },
+        where: { school: { slug: slug }, status: 'ACTIVE' },
         include: {
             classroom: true
         }
@@ -42,7 +44,7 @@ export default async function IDCardGenerationPage({ params }: { params: { slug:
     return (
         <div className="p-8">
             <IDCardGeneratorClient
-                slug={params.slug}
+                slug={slug}
                 templates={templates}
                 students={students}
                 school={schoolData}

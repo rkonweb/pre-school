@@ -2,6 +2,7 @@
 
 import { Check, X, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StudentAvatar, cleanName } from "@/components/dashboard/students/StudentAvatar";
 
 export type AttendanceStatus = "present" | "absent" | "late" | "unmarked";
 
@@ -43,18 +44,16 @@ export function AttendanceCard({ student, status: rawStatus, onStatusChange, rea
 
             <div className="flex flex-col items-center gap-2 w-full">
                 {/* Avatar */}
-                <div className="relative h-14 w-14 transition-transform group-hover:scale-105">
-                    <img
-                        src={student.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.name}`}
-                        alt={student.name}
-                        className="h-full w-full rounded-2xl object-cover shadow-sm ring-2 ring-white dark:ring-zinc-950"
-                    />
-                </div>
+                <StudentAvatar
+                    src={student.avatar}
+                    name={student.name}
+                    className="h-14 w-14 rounded-2xl group-hover:scale-105 transition-transform ring-2 ring-white dark:ring-zinc-950"
+                />
 
                 {/* Info */}
                 <div className="text-center w-full min-w-0 px-1">
                     <h3 className="truncate text-sm font-bold text-zinc-900 dark:text-zinc-50 leading-tight">
-                        {student.name}
+                        {cleanName(student.name)}
                     </h3>
                     <p className="truncate text-[10px] font-medium text-zinc-400 uppercase tracking-wider mt-0.5">
                         {student.rollNo}

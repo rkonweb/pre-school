@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { CreditCard, Printer, Users, Check, ChevronRight, Layout, Search, Filter, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CreditCard, Printer, Users, Check, ChevronRight, Layout, Search, Filter, Eye, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { IDCardRenderer } from "@/components/id-cards/IDCardRenderer";
@@ -26,6 +27,7 @@ const MOCK_STUDENT = {
 };
 
 export function IDCardGeneratorClient({ slug, templates, students, school }: IDCardGeneratorClientProps) {
+    const router = useRouter();
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(templates[0]?.id || null);
     const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -134,6 +136,19 @@ export function IDCardGeneratorClient({ slug, templates, students, school }: IDC
                         Select Template
                     </h3>
                     <div className="grid grid-cols-1 gap-4">
+                        <button
+                            onClick={() => router.push(`/s/${slug}/settings/id-cards/designer/new`)}
+                            className="p-6 rounded-[2rem] border-2 border-dashed border-zinc-200 bg-zinc-50/50 hover:bg-zinc-50 hover:border-indigo-300 transition-all text-left flex flex-col items-center justify-center gap-3 group h-[200px]"
+                        >
+                            <div className="h-12 w-12 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 group-hover:text-indigo-600 group-hover:border-indigo-100 transition-all shadow-sm">
+                                <Plus className="h-6 w-6" />
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm font-black text-zinc-900 uppercase tracking-tight">Create New Template</p>
+                                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Open Designer</p>
+                            </div>
+                        </button>
+
                         {filteredTemplates.map(t => (
                             <button
                                 key={t.id}
@@ -198,6 +213,7 @@ export function IDCardGeneratorClient({ slug, templates, students, school }: IDC
                                 value={selectedClassroom}
                                 onChange={e => setSelectedClassroom(e.target.value)}
                                 className="px-4 py-3 rounded-2xl border border-zinc-200 bg-white text-sm font-bold uppercase tracking-wide"
+                                title="Filter by classroom"
                             >
                                 <option value="all">All Classes</option>
                                 {classrooms.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -225,7 +241,7 @@ export function IDCardGeneratorClient({ slug, templates, students, school }: IDC
                                             {selectedStudentIds.includes(student.id) && <Check className="h-4 w-4" />}
                                         </div>
                                         <div className="h-10 w-10 rounded-xl bg-zinc-100 overflow-hidden shrink-0 border border-zinc-200">
-                                            {student.avatar && <img src={student.avatar} className="object-cover" />}
+                                            {student.avatar && <img src={student.avatar} className="object-cover" alt={`${student.firstName} ${student.lastName}`} />}
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-zinc-900">{student.firstName} {student.lastName}</p>

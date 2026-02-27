@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getCookie } from "@/lib/cookies";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { StudentAvatar, cleanName } from "@/components/dashboard/students/StudentAvatar";
 
 interface AttendanceClientProps {
     slug: string;
@@ -135,6 +136,8 @@ export default function AttendanceClient({ slug, classrooms, academicYears = [],
                                 return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                             })()} // Disable future
                             className="bg-transparent px-2 text-sm font-medium text-zinc-900 focus:outline-none dark:text-zinc-50"
+                            aria-label="Select Attendance Date"
+                            title="Select Attendance Date"
                         />
                     </div>
 
@@ -143,6 +146,8 @@ export default function AttendanceClient({ slug, classrooms, academicYears = [],
                         value={selectedClassId}
                         onChange={(e) => setSelectedClassId(e.target.value)}
                         className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
+                        aria-label="Select Classroom"
+                        title="Select Classroom"
                     >
                         {classrooms.length > 0 ? (
                             classrooms.map(c => (
@@ -180,14 +185,12 @@ export default function AttendanceClient({ slug, classrooms, academicYears = [],
                         </div>
 
                         <div className="mb-8 flex flex-col items-center">
-                            <div className="relative mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-zinc-100 dark:border-zinc-800">
-                                <img
-                                    src={students[focusIndex].avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${students[focusIndex].name}`}
-                                    alt={students[focusIndex].name}
-                                    className="h-full w-full object-cover"
-                                />
-                            </div>
-                            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{students[focusIndex].name}</h2>
+                            <StudentAvatar
+                                src={students[focusIndex].avatar}
+                                name={students[focusIndex].name}
+                                className="h-32 w-32 mb-4 ring-4 ring-zinc-100 dark:ring-zinc-800"
+                            />
+                            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{cleanName(students[focusIndex].name)}</h2>
                             <p className="text-zinc-500">Roll No: {students[focusIndex].rollNo}</p>
 
                             {/* Current Status Indicator */}

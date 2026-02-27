@@ -21,11 +21,34 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import ReportTabs from "@/components/transport/ReportTabs";
 
-export default async function MonthlyAnalyticsPage({ params, searchParams }: {
-    params: { slug: string },
-    searchParams: { month?: string, year?: string }
+export default async function MonthlyAnalyticsPage(props: {
+    params: Promise<{ slug: string }>,
+    searchParams: Promise<{ month?: string, year?: string }>
 }) {
+    const params = await props.params;
+    const searchParams = await props.searchParams;
     const { slug } = params;
+
+    const school = await prisma.school.findUnique({
+        where: { slug },
+        select: { currency: true }
+    });
+    const currency = school?.currency || 'INR';
+    const symbolMap: Record<string, string> = {
+        'INR': '₹',
+        'USD': '$',
+        'GBP': '£',
+        'EUR': '€',
+        'KES': 'KSh',
+        'UGX': 'USh',
+        'TZS': 'TSh',
+        'RWF': 'RF',
+        'ETB': 'Br',
+        'NGN': '₦',
+        'GHS': 'GH₵',
+    };
+    const currencyStr = symbolMap[currency] || currency;
+
     const now = new Date();
     const month = parseInt(searchParams.month || (now.getMonth() + 1).toString());
     const year = parseInt(searchParams.year || now.getFullYear().toString());
@@ -34,9 +57,9 @@ export default async function MonthlyAnalyticsPage({ params, searchParams }: {
     const data = reportRes.success ? reportRes.data : [];
 
     // Financial Overview Aggregation
-    const totalFuel = data.reduce((sum, v) => sum + v.totalFuelCost, 0);
-    const totalMaintenance = data.reduce((sum, v) => sum + v.totalMaintenanceCost, 0);
-    const totalDistance = data.reduce((sum, v) => sum + v.totalDistance, 0);
+    const totalFuel = (data || []).reduce((sum: number, v: any) => sum + (v.totalFuelCost || 0), 0);
+    const totalMaintenance = (data || []).reduce((sum: number, v: any) => sum + (v.totalMaintenanceCost || 0), 0);
+    const totalDistance = (data || []).reduce((sum: number, v: any) => sum + (v.totalDistance || 0), 0);
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -55,18 +78,28 @@ export default async function MonthlyAnalyticsPage({ params, searchParams }: {
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-zinc-100 shadow-sm">
                         <Calendar className="h-4 w-4 text-zinc-400" />
-                        <select className="bg-transparent border-none text-sm font-bold text-zinc-900 outline-none focus:ring-0">
+                        <select
+                            aria-label="Select Month"
+                            className="bg-transparent border-none text-sm font-bold text-zinc-900 outline-none focus:ring-0"
+                        >
                             {monthNames.map((m, i) => (
                                 <option key={m} value={i + 1} selected={i + 1 === month}>{m}</option>
                             ))}
                         </select>
-                        <select className="bg-transparent border-none text-sm font-bold text-zinc-900 outline-none focus:ring-0">
+                        <select
+                            aria-label="Select Year"
+                            className="bg-transparent border-none text-sm font-bold text-zinc-900 outline-none focus:ring-0"
+                        >
                             {[2023, 2024, 2025, 2026].map(y => (
                                 <option key={y} value={y} selected={y === year}>{y}</option>
                             ))}
                         </select>
                     </div>
-                    <button className="p-2.5 bg-zinc-100 text-zinc-600 rounded-xl hover:bg-zinc-200 transition-colors">
+                    <button
+                        className="p-2.5 bg-zinc-100 text-zinc-600 rounded-xl hover:bg-zinc-200 transition-colors"
+                        title="Download Report"
+                        aria-label="Download Report"
+                    >
                         <Download className="h-5 w-5" />
                     </button>
                 </div>
@@ -83,7 +116,7 @@ export default async function MonthlyAnalyticsPage({ params, searchParams }: {
                     <CardContent className="p-8">
                         <p className="text-xs font-black uppercase text-white/70 tracking-widest">Total Ops Expenditure</p>
                         <h3 className="text-4xl font-black mt-2">
-                            {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(totalFuel + totalMaintenance)}
+                            {new Intl.NumberFormat('en-IN', { style: 'currency', currency: currency, maximumFractionDigits: 0 }).format(totalFuel + totalMaintenance)}
                         </h3>
                         <div className="mt-6 flex items-center gap-4">
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase">
@@ -101,7 +134,7 @@ export default async function MonthlyAnalyticsPage({ params, searchParams }: {
                                 <p className="text-xs font-black uppercase text-zinc-400 tracking-widest">Fuel Economy Average</p>
                                 <h3 className="text-3xl font-black text-zinc-900 mt-2">
                                     {totalDistance > 0 ? (totalFuel / totalDistance).toFixed(2) : "0.00"}
-                                    <span className="text-sm font-bold text-zinc-400 ml-1">₹/km</span>
+                                    <span className="text-sm font-bold text-zinc-400 ml-1">{currencyStr}/km</span>
                                 </h3>
                             </div>
                             <div className="p-3 bg-zinc-50 rounded-xl text-blue-500">
@@ -112,7 +145,7 @@ export default async function MonthlyAnalyticsPage({ params, searchParams }: {
                             <div className="flex h-1.5 flex-1 bg-zinc-100 rounded-full overflow-hidden">
                                 <div className="h-full bg-blue-500" style={{ width: '65%' }} />
                             </div>
-                            <span className="text-[10px] font-black text-zinc-400 uppercase">Target: ₹18/km</span>
+                            <span className="text-[10px] font-black text-zinc-400 uppercase">Target: {currencyStr}18/km</span>
                         </div>
                     </CardContent>
                 </Card>
@@ -161,7 +194,7 @@ export default async function MonthlyAnalyticsPage({ params, searchParams }: {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-50">
-                                {data.map((item: any) => (
+                                {(data || []).map((item: any) => (
                                     <tr key={item.vehicle.id} className="hover:bg-zinc-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
@@ -183,13 +216,13 @@ export default async function MonthlyAnalyticsPage({ params, searchParams }: {
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center gap-1.5 text-zinc-900">
                                                 <Fuel className="h-3 w-3 text-blue-500" />
-                                                <span className="text-sm font-black text-zinc-900">₹{item.totalFuelCost.toLocaleString()}</span>
+                                                <span className="text-sm font-black text-zinc-900">{currencyStr}{item.totalFuelCost.toLocaleString()}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center gap-1.5 text-zinc-900">
                                                 <Wrench className="h-3 w-3 text-orange-500" />
-                                                <span className="text-sm font-black text-zinc-900">₹{item.totalMaintenanceCost.toLocaleString()}</span>
+                                                <span className="text-sm font-black text-zinc-900">{currencyStr}{item.totalMaintenanceCost.toLocaleString()}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -206,7 +239,7 @@ export default async function MonthlyAnalyticsPage({ params, searchParams }: {
                                         </td>
                                     </tr>
                                 ))}
-                                {data.length === 0 && (
+                                {(data || []).length === 0 && (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-12 text-center">
                                             <div className="flex flex-col items-center gap-2 opacity-50">

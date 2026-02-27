@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { useSidebar } from "@/context/SidebarContext";
 
 type InventoryCategory = "SUPPLIES" | "CONSUMABLES" | "ASSETS";
 
@@ -55,6 +56,8 @@ export default function InventoryPage() {
         return matchesFilter && matchesSearch;
     });
 
+    const { currency } = useSidebar();
+
     return (
         <div className="flex-1 space-y-8 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
@@ -81,7 +84,7 @@ export default function InventoryPage() {
                 <StatCard title="Total Items" value="124" icon={Package} trend={{ value: 12, isPositive: true }} />
                 <StatCard title="Low Stock Alerts" value="8" icon={AlertTriangle} color="red" />
                 <StatCard title="Pending Requests" value="3" icon={Truck} color="orange" />
-                <StatCard title="Asset Value" value="$15,800" icon={ArrowUpRight} color="green" />
+                <StatCard title="Asset Value" value={`${currency}15,800`} icon={ArrowUpRight} color="green" />
             </div>
 
             {/* Tabs */}
@@ -185,7 +188,10 @@ export default function InventoryPage() {
                                                 {item.lastUpdated}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <button className="rounded-lg p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                                <button
+                                                    className="rounded-lg p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                    title="More options"
+                                                >
                                                     <MoreVertical className="h-4 w-4 text-zinc-400" />
                                                 </button>
                                             </td>
@@ -233,10 +239,16 @@ export default function InventoryPage() {
                                         <td className="px-6 py-4 text-right">
                                             {req.status === "PENDING" ? (
                                                 <div className="flex justify-end gap-2">
-                                                    <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-950 dark:text-green-400">
+                                                    <button
+                                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-950 dark:text-green-400"
+                                                        title="Approve request"
+                                                    >
                                                         <CheckCircle2 className="h-4 w-4" />
                                                     </button>
-                                                    <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950 dark:text-red-400">
+                                                    <button
+                                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950 dark:text-red-400"
+                                                        title="Reject request"
+                                                    >
                                                         <XCircle className="h-4 w-4" />
                                                     </button>
                                                 </div>

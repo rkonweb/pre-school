@@ -43,9 +43,11 @@ import {
     CalendarDays,
     Wallet,
     Building,
-    Brain
+    Brain,
+    Utensils,
+    ShoppingBag
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
 import { useSidebar } from "@/context/SidebarContext";
 
@@ -58,8 +60,9 @@ type NavItem = {
 };
 
 export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoolName?: string; logo?: string | null; user?: any; enabledModules?: string[] }) {
-    const { isOpen, isCollapsed, toggleCollapse, setIsOpen } = useSidebar();
-    const pathname = usePathname();
+    const { isOpen, isCollapsed, toggleCollapse, setIsOpen, isAppFullscreen } = useSidebar();
+    const rawPathname = usePathname();
+    const pathname = rawPathname || "";
     const params = useParams();
     const router = useRouter();
     const slug = params?.slug as string || "demo";
@@ -150,6 +153,53 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         { name: "Billing", href: `/s/${slug}/billing`, icon: CreditCard },
         { name: "Inventory", href: `/s/${slug}/inventory`, icon: Package },
         {
+            name: "Hostel Management",
+            href: `/s/${slug}/hostel/allocation`,
+            icon: Building2,
+            children: [
+                { name: "Room Allocation", href: `/s/${slug}/hostel/allocation`, icon: Users },
+                { name: "Hostel Billing", href: `/s/${slug}/hostel/billing`, icon: Banknote },
+                { name: "Hostel Settings", href: `/s/${slug}/hostel/settings`, icon: Settings },
+            ]
+        },
+        {
+            name: "Store & Inventory",
+            href: `/s/${slug}/store`,
+            icon: Package,
+            children: [
+                { name: "Store Dashboard", href: `/s/${slug}/store`, icon: LayoutDashboard },
+                { name: "Academic Packages", href: `/s/${slug}/store/packages`, icon: Layers },
+                { name: "Catalog", href: `/s/${slug}/store/catalog`, icon: BookOpen },
+                { name: "Inventory", href: `/s/${slug}/store/inventory`, icon: Activity },
+                { name: "Orders", href: `/s/${slug}/store/orders`, icon: ShoppingBag },
+            ]
+        },
+        {
+            name: "Canteen",
+            href: `/s/${slug}/canteen`,
+            icon: Utensils,
+            children: [
+                { name: "Dashboard & AI", href: `/s/${slug}/canteen`, icon: LayoutDashboard },
+                { name: "Point of Sale", href: `/s/${slug}/canteen/pos`, icon: CreditCard },
+                { name: "Accounts Ledger", href: `/s/${slug}/canteen/accounts`, icon: Wallet },
+                { name: "Menu & Timetable", href: `/s/${slug}/canteen/menu`, icon: CalendarDays },
+                { name: "Meal Packages", href: `/s/${slug}/canteen/packages`, icon: Package },
+                { name: "Subscriptions", href: `/s/${slug}/canteen/billing`, icon: Banknote },
+            ]
+        },
+        {
+            name: "Accounts",
+            href: `/s/${slug}/accounts`,
+            icon: Wallet,
+            children: [
+                { name: "Financial Dashboard", href: `/s/${slug}/accounts`, icon: LayoutDashboard },
+                { name: "Transactions", href: `/s/${slug}/accounts/transactions`, icon: FileSpreadsheet },
+                { name: "Vendors & Payees", href: `/s/${slug}/accounts/vendors`, icon: Users },
+                { name: "AI Insights", href: `/s/${slug}/accounts/insights`, icon: Sparkles },
+                { name: "Account Settings", href: `/s/${slug}/accounts/settings`, icon: Settings },
+            ]
+        },
+        {
             name: "Transport",
             href: `/s/${slug}/transport`,
             icon: Bus,
@@ -221,6 +271,22 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         "Payroll": "staff.payroll",
         "Billing": "billing",
         "Inventory": "inventory",
+        "Hostel Management": "hostel",
+        "Room Allocation": "hostel.allocation",
+        "Hostel Billing": "hostel.billing",
+        "Hostel Settings": "hostel.settings",
+        "Canteen": "canteen",
+        "Dashboard & AI": "canteen.dashboard",
+        "Accounts Ledger": "canteen.accounts",
+        "Menu & Timetable": "canteen.menu",
+        "Point of Sale": "canteen.pos",
+        "Subscriptions": "canteen.subscriptions",
+        "Accounts": "accounts",
+        "Financial Dashboard": "accounts.dashboard",
+        "Transactions": "accounts.transactions",
+        "Vendors & Payees": "accounts.vendors",
+        "AI Insights": "accounts.insights",
+        "Account Settings": "accounts.settings",
         "Transport": "transport",
         "Transport Dashboard": "transport",
         "Route": "transport.routes",
@@ -288,21 +354,55 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         return acc;
     }, []);
 
+    useEffect(() => {
+        setExpandedGroups(prev => {
+            const next = { ...prev };
+            let changed = false;
+            rawNavigation.forEach(item => {
+                if (item.children && pathname.startsWith(item.href)) {
+                    if (!next[item.name]) {
+                        next[item.name] = true;
+                        changed = true;
+                    }
+                }
+            });
+            return changed ? next : prev;
+        });
+    }, [pathname]);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            const activeEl = document.getElementById("active-sidebar-item");
+            if (activeEl) {
+                activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 300);
+        return () => clearTimeout(timeout);
+    }, [pathname]); // Only scroll when navigating to a new module or sub-module
+
     return (
         <>
             {/* Mobile Overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-[140] bg-black/30 backdrop-blur-sm lg:hidden"
+                    className={cn(
+                        "fixed inset-0 bg-black/30 backdrop-blur-sm",
+                        isAppFullscreen ? "z-[10001]" : "z-[140] lg:hidden"
+                    )}
                     onClick={() => setIsOpen(false)}
                 />
             )}
 
             <div className={cn(
-                "fixed inset-y-0 left-0 z-[150] flex flex-col bg-white transition-all duration-300 ease-in-out after:absolute after:right-0 after:top-[94px] after:bottom-0 after:w-px after:bg-zinc-200/80",
-                isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-                isCollapsed ? "lg:w-[100px]" : "lg:w-[272px]",
-                "w-[272px]" // Mobile width
+                "fixed inset-y-0 left-0 flex flex-col bg-white transition-all duration-300 ease-in-out after:absolute after:right-0 after:top-[94px] after:bottom-0 after:w-px after:bg-zinc-200/80",
+                isAppFullscreen ? "z-[10002]" : "z-[150]",
+                isAppFullscreen
+                    ? (isOpen ? "translate-x-0" : "-translate-x-full")
+                    : (isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"),
+                isAppFullscreen
+                    ? "w-[272px]"
+                    : (isCollapsed ? "lg:w-[100px]" : "lg:w-[272px]"),
+                "w-[272px]" // Mobile width always
             )}>
                 <div className="flex h-full flex-col">
 
@@ -310,8 +410,8 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                     <button
                         onClick={toggleCollapse}
                         className={cn(
-                            "absolute -right-3 top-[calc(50%-200px)] z-[160] hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-brand bg-brand text-white shadow-md transition-all hover:bg-brand/90 lg:flex",
-                            isCollapsed ? "" : ""
+                            "absolute -right-3 top-[calc(50%-200px)] z-[160] h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-brand bg-brand text-white shadow-md transition-all hover:bg-brand/90",
+                            isAppFullscreen ? "hidden" : "hidden lg:flex"
                         )}
                         title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                     >
@@ -323,7 +423,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                         "flex items-center justify-center border-b border-brand/10 bg-brand transition-all",
                         isCollapsed ? "h-[94px] px-2" : "h-[94px] px-4"
                     )}>
-                        <Link href={`/s/${slug}/dashboard`} className="flex h-full w-full items-center justify-center group">
+                        <div className="flex h-full w-full items-center justify-center group">
                             {logo ? (
                                 <img
                                     src={logo}
@@ -339,7 +439,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                     </span>
                                 </div>
                             )}
-                        </Link>
+                        </div>
 
                         {/* Mobile Close */}
                         <button onClick={() => setIsOpen(false)} className="lg:hidden absolute top-4 right-4 p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">
@@ -361,6 +461,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                 if (!isGroup) {
                                     return (
                                         <Link
+                                            id={isActive ? "active-sidebar-item" : undefined}
                                             key={item.name}
                                             href={item.href}
                                             title={isCollapsed ? item.name : ""}
@@ -386,9 +487,11 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                 }
 
                                 // ── Group Item ──
+                                const hasActiveChild = item.children?.some(c => pathname === c.href);
                                 return (
                                     <div key={item.name}>
                                         <button
+                                            id={(isActive && !hasActiveChild) ? "active-sidebar-item" : undefined}
                                             onClick={() => toggleGroup(item.name)}
                                             title={isCollapsed ? item.name : ""}
                                             className={cn(
@@ -428,6 +531,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                                                     const isChildActive = pathname === child.href;
                                                     return (
                                                         <Link
+                                                            id={isChildActive ? "active-sidebar-item" : undefined}
                                                             key={child.name}
                                                             href={child.href}
                                                             className={cn(

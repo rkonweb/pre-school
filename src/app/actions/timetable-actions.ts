@@ -3,6 +3,25 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+export async function getClassTimetableStructureAction(classroomId: string) {
+    try {
+        const cls = await prisma.classroom.findUnique({
+            where: { id: classroomId },
+            include: {
+                timetableStructure: true
+            }
+        });
+
+        if (!cls?.timetableStructure) {
+            return { success: true, config: null };
+        }
+
+        return { success: true, config: JSON.parse(cls.timetableStructure.config) };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function getTimetableConfigAction(schoolSlug: string) {
     try {
         const school = await prisma.school.findUnique({

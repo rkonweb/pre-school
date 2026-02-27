@@ -192,23 +192,23 @@ function CalendarView({ currentMonth, setCurrentMonth, data, isLoading }: any) {
             </div>
 
             {/* Calendar Widget */}
-            <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
-                <div className="p-6 flex items-center justify-between border-b border-slate-50">
-                    <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-slate-50 rounded-full">
-                        <ChevronLeft className="h-5 w-5 text-slate-400" />
+            <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden border border-white/60">
+                <div className="p-6 flex items-center justify-between border-b border-white/50 bg-gradient-to-r from-slate-50/50 to-white/50">
+                    <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 bg-white/50 hover:bg-white shadow-sm rounded-xl transition-all border border-white">
+                        <ChevronLeft className="h-5 w-5 text-slate-600" />
                     </button>
-                    <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
                         {format(currentMonth, "MMMM yyyy")}
                     </h3>
-                    <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-slate-50 rounded-full">
-                        <ChevronRight className="h-5 w-5 text-slate-400" />
+                    <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 bg-white/50 hover:bg-white shadow-sm rounded-xl transition-all border border-white">
+                        <ChevronRight className="h-5 w-5 text-slate-600" />
                     </button>
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 bg-white/40">
                     <div className="grid grid-cols-7 mb-4 text-center">
                         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                            <div key={i} className="text-[10px] font-black text-slate-300 uppercase">{d}</div>
+                            <div key={i} className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{d}</div>
                         ))}
                     </div>
                     <div className="grid grid-cols-7 gap-y-4 gap-x-2">
@@ -224,17 +224,17 @@ function CalendarView({ currentMonth, setCurrentMonth, data, isLoading }: any) {
                             return (
                                 <div key={i} className="flex flex-col items-center gap-1">
                                     <div className={cn(
-                                        "h-10 w-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all relative",
-                                        today ? "bg-slate-900 text-white shadow-lg scale-110 z-10" : "text-slate-600 hover:bg-slate-50",
-                                        status === "PRESENT" && !today && "bg-emerald-50 text-emerald-600",
-                                        status === "ABSENT" && !today && "bg-rose-50 text-rose-600",
-                                        status === "LATE" && !today && "bg-amber-50 text-amber-600",
-                                        status === "HOLIDAY" && !today && "bg-purple-50 text-purple-600 grayscale"
+                                        "h-10 w-10 sm:h-12 sm:w-12 rounded-[14px] flex items-center justify-center text-sm font-bold transition-all relative border border-transparent shadow-sm",
+                                        today ? "bg-slate-900 text-white shadow-lg scale-110 z-10 border-slate-700" : "bg-white/60 text-slate-600 hover:bg-white border-white/40 shadow-slate-200/50",
+                                        status === "PRESENT" && !today && "bg-emerald-50 text-emerald-700 border-emerald-100/50 shadow-emerald-100/20",
+                                        status === "ABSENT" && !today && "bg-rose-50 text-rose-700 border-rose-100/50 shadow-rose-100/20",
+                                        status === "LATE" && !today && "bg-amber-50 text-amber-700 border-amber-100/50 shadow-amber-100/20",
+                                        status === "HOLIDAY" && !today && "bg-purple-50 text-purple-700 border-purple-100/50 shadow-purple-100/20"
                                     )}>
                                         {format(day, "d")}
                                         {status && (
                                             <div className={cn(
-                                                "absolute -bottom-1 h-1.5 w-1.5 rounded-full border border-white",
+                                                "absolute -bottom-1.5 h-1.5 w-1.5 rounded-full border border-white ring-1 ring-black/5 shadow-sm",
                                                 status === "PRESENT" && "bg-emerald-500",
                                                 status === "ABSENT" && "bg-rose-500",
                                                 status === "LATE" && "bg-amber-500",
@@ -254,16 +254,18 @@ function CalendarView({ currentMonth, setCurrentMonth, data, isLoading }: any) {
 
 function StatCard({ label, value, color, icon: Icon }: any) {
     const colors: any = {
-        emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
-        rose: "bg-rose-50 text-rose-600 border-rose-100",
-        amber: "bg-amber-50 text-amber-600 border-amber-100",
+        emerald: "bg-emerald-500 shadow-emerald-200 border-emerald-400",
+        rose: "bg-rose-500 shadow-rose-200 border-rose-400",
+        amber: "bg-amber-500 shadow-amber-200 border-amber-400",
     };
 
     return (
-        <div className={cn("rounded-3xl p-4 border flex flex-col items-center text-center", colors[color])}>
-            <Icon className="h-5 w-5 mb-2 opacity-80" />
-            <span className="text-2xl font-black tracking-tighter leading-none mb-1">{value}</span>
-            <span className="text-[9px] uppercase font-bold opacity-60 tracking-widest">{label}</span>
+        <div className={cn("rounded-[2rem] p-5 flex flex-col items-center text-center shadow-lg text-white border transition-transform hover:scale-105", colors[color])}>
+            <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-3">
+                <Icon className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-3xl font-black tracking-tighter leading-none mb-1 text-white">{value}</span>
+            <span className="text-[9px] uppercase font-black opacity-90 tracking-widest text-white/90">{label}</span>
         </div>
     );
 }

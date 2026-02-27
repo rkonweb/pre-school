@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     updateVehicleAction,
-    getVehicleAction
+    getVehicleByIdAction
 } from "@/app/actions/transport-actions";
 import {
     Bus,
@@ -22,10 +22,12 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "@/context/SidebarContext";
 
 export default function EditVehiclePage() {
     const params = useParams();
     const router = useRouter();
+    const { currency } = useSidebar();
     const slug = params.slug as string;
     const vehicleId = params.id as string;
 
@@ -58,7 +60,7 @@ export default function EditVehiclePage() {
 
     async function fetchVehicle() {
         setLoading(true);
-        const res = await getVehicleAction(vehicleId, slug);
+        const res = await getVehicleByIdAction(vehicleId, slug);
         if (res.success && res.data) {
             const v = res.data as any;
             setVehicle(v);
@@ -122,6 +124,7 @@ export default function EditVehiclePage() {
                     <button
                         onClick={() => router.push(`/s/${slug}/transport/fleet/vehicles`)}
                         className="group flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white transition-all hover:border-zinc-900 active:scale-95 shadow-sm"
+                        title="Back to Vehicles List"
                     >
                         <ArrowLeft className="h-5 w-5 text-zinc-500 group-hover:text-zinc-900" />
                     </button>
@@ -205,6 +208,8 @@ export default function EditVehiclePage() {
                                                 className="w-full h-14 rounded-xl border border-zinc-200 bg-white px-5 text-sm font-bold focus:ring-2 focus:ring-brand outline-none transition-all shadow-sm"
                                                 value={formData.registrationNumber}
                                                 onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value.toUpperCase() })}
+                                                title="Registration Identifier"
+                                                placeholder="e.g. MH 12 AB 1234"
                                             />
                                         </div>
 
@@ -215,6 +220,8 @@ export default function EditVehiclePage() {
                                                     className="w-full h-14 rounded-xl border border-zinc-200 bg-white px-5 text-sm font-bold focus:ring-2 focus:ring-brand outline-none transition-all shadow-sm"
                                                     value={formData.model}
                                                     onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                                                    title="Make / Model"
+                                                    placeholder="e.g. Tata Marcopolo"
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -225,6 +232,8 @@ export default function EditVehiclePage() {
                                                     className="w-full h-14 rounded-xl border border-zinc-200 bg-white px-5 text-sm font-bold focus:ring-2 focus:ring-brand outline-none transition-all shadow-sm"
                                                     value={formData.capacity}
                                                     onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                                                    title="Payload Capacity"
+                                                    placeholder="30"
                                                 />
                                             </div>
                                         </div>
@@ -336,7 +345,7 @@ export default function EditVehiclePage() {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between gap-4">
                                                         <h5 className="font-black text-zinc-900 text-base uppercase tracking-tight truncate">{log.type}</h5>
-                                                        <span className="shrink-0 text-lg font-black text-zinc-900 tracking-tighter">₹{log.cost.toLocaleString()}</span>
+                                                        <span className="shrink-0 text-lg font-black text-zinc-900 tracking-tighter">{currency}{log.cost.toLocaleString()}</span>
                                                     </div>
                                                     <div className="flex items-center gap-4 mt-1">
                                                         <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{format(new Date(log.date), 'dd MMM yyyy')}</p>

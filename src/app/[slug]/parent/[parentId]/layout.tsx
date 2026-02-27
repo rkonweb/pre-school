@@ -13,9 +13,10 @@ import {
     X,
     ChevronLeft,
     Calendar,
-    BookOpen,
     FileText,
-    CalendarDays
+    CalendarDays,
+    Package,
+    BookOpen
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -153,6 +154,13 @@ function ParentLayoutContent({ children }: { children: React.ReactNode }) {
                 : baseRoute
         },
         {
+            icon: Package,
+            label: "Store",
+            href: activeStudentId
+                ? `${baseRoute}/${activeStudentId}/store`
+                : baseRoute
+        },
+        {
             icon: User,
             label: "Profile",
             href: activeStudentId
@@ -261,7 +269,7 @@ function ParentLayoutContent({ children }: { children: React.ReactNode }) {
                                     <NotificationCenter userId={parentId || "current-parent"} />
 
                                     {/* Profile Pic */}
-                                    <Link href={`${baseRoute}/profile?phone=${phone}`} className="hidden sm:block h-10 w-10 rounded-full bg-zinc-100 border border-zinc-200 overflow-hidden shadow-sm relative group transition-transform hover:scale-105">
+                                    <Link href={`${baseRoute}/profile?phone=${phone}`} className="h-10 w-10 rounded-full bg-zinc-100 border border-zinc-200 overflow-hidden shadow-sm relative group transition-transform hover:scale-105">
                                         {profile?.imageUrl ? (
                                             <img src={profile.imageUrl} alt={profile.name} className="w-full h-full object-cover" />
                                         ) : (
@@ -276,150 +284,48 @@ function ParentLayoutContent({ children }: { children: React.ReactNode }) {
                     </header>
                 )}
 
-                {/* Mobile Sidebar Menu (Drawer) & Persistent Handle */}
-                <div className="sm:hidden pointer-events-none fixed inset-0 z-[60]">
-                    {/* Persistent Arrow Handle (Always Visible when closed) */}
-                    <AnimatePresence>
-                        {!isMenuOpen && (
-                            <motion.button
-                                initial={{ x: -20, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
-                                exit={{ x: -20, opacity: 0 }}
-                                whileHover={{ scale: 1.05, x: 2 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setIsMenuOpen(true)}
-                                className="pointer-events-auto fixed top-[108px] left-[-5px] h-14 w-8 bg-white rounded-r-full shadow-[2px_4px_16px_rgba(0,0,0,0.15)] border border-l-0 border-zinc-100 flex items-center justify-center group z-[50] overflow-hidden"
-                                style={{ borderLeft: `3px solid ${brandColor}` }}
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-zinc-50 to-white opacity-50" />
-                                <ChevronLeft className="h-5 w-5 text-zinc-400 rotate-180 relative z-10 transition-transform group-hover:translate-x-0.5" />
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Overlay */}
-                    <AnimatePresence>
-                        {isMenuOpen && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => setIsMenuOpen(false)}
-                                className="pointer-events-auto fixed inset-0 bg-zinc-900/20 backdrop-blur-sm z-[60]"
-                            />
-                        )}
-                    </AnimatePresence>
-
-                    {/* Sidebar Content */}
-                    <AnimatePresence>
-                        {isMenuOpen && (
-                            <motion.div
-                                initial={{ x: "-100%" }}
-                                animate={{ x: 0 }}
-                                exit={{ x: "-100%" }}
-                                transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                                className="pointer-events-auto fixed top-0 left-0 bottom-0 w-[85%] max-w-[320px] shadow-2xl z-[70] flex flex-col overflow-hidden rounded-r-[25px] backdrop-blur-xl border-r border-white/20"
-                                style={{ backgroundColor: `${brandColor}99` }}
-                            >
-                                {/* Header: Profile Info */}
-                                <div className="pt-12 pb-8 px-8 relative">
-                                    {/* Abstract Background Design */}
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-
-                                    <div className="relative z-10 flex items-start justify-between">
-                                        <div className="flex flex-col gap-4">
-                                            <div className="h-16 w-16 rounded-full border-4 border-white/20 shadow-xl overflow-hidden bg-white/10">
-                                                {profile?.imageUrl ? (
-                                                    <img src={profile.imageUrl} alt={profile.name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-2xl font-black text-white">
-                                                        {(profile?.name || "P")[0]}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <h3 className="text-xl font-black leading-tight tracking-tight text-[var(--secondary-color)]">
-                                                    {profile?.name || "Guest Parent"}
-                                                </h3>
-                                                <p className="text-xs font-medium mt-1 truncate max-w-[200px] text-[var(--secondary-color)] opacity-70">
-                                                    {phone || "No phone linked"}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* Close / Collapse Arrow */}
-                                        <button
-                                            onClick={() => setIsMenuOpen(false)}
-                                            className="h-10 w-10 rounded-full bg-white/20 hover:bg-white/30 transition-colors flex items-center justify-center text-[var(--secondary-color)] backdrop-blur-sm"
-                                        >
-                                            <ChevronLeft className="h-6 w-6" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Navigation Links */}
-                                <div className="flex-1 overflow-y-auto py-4 px-4 space-y-2 relative z-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                                    {navItemsWithPhone.map((item) => {
-                                        const hrefPath = item.href.split('?')[0];
-                                        const isActive = (item.label === "Home" || hrefPath === baseRoute)
-                                            ? pathname === hrefPath
-                                            : pathname.startsWith(hrefPath);
-
-                                        return (
-                                            <Link
-                                                key={item.href}
-                                                href={item.href}
-                                                onClick={() => setIsMenuOpen(false)}
-                                                className={`
-                                                    group flex items-center gap-4 px-6 py-4 rounded-2xl transition-all relative overflow-hidden
-                                                    ${isActive ? 'bg-white text-slate-900 shadow-xl' : 'text-[var(--secondary-color)] opacity-80 hover:bg-white/10 hover:opacity-100'}
-                                                `}
-                                            >
-                                                <item.icon className={`h-6 w-6 ${isActive ? 'text-indigo-600' : 'text-[var(--secondary-color)]'}`}
-                                                    style={isActive ? { color: brandColor } : {}}
-                                                />
-                                                <span className="text-lg font-bold tracking-tight">{item.label}</span>
-
-                                                {/* Active Indicator & Curve Effect Simulation */}
-                                                {isActive && (
-                                                    <div className="absolute right-4 h-2 w-2 rounded-full bg-indigo-600" style={{ backgroundColor: brandColor }} />
-                                                )}
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-
-                                {/* Footer: Logout */}
-                                <div className="p-8 pb-12 relative z-10">
-                                    <button
-                                        onClick={() => {
-                                            router.replace("/parent-login");
-                                        }}
-                                        className="flex items-center gap-4 text-[var(--secondary-color)] opacity-60 hover:opacity-100 transition-colors w-full px-4 py-2"
-                                    >
-                                        <LogOut className="h-5 w-5" />
-                                        <span className="font-bold tracking-widest text-sm uppercase">Log Out</span>
-                                    </button>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-
                 {/* Content Area */}
-                <main className="min-h-screen">
+                <main className="min-h-screen pt-4 sm:pt-8 pb-24 sm:pb-8">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={pathname}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.3 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="w-full max-w-lg sm:max-w-6xl mx-auto px-4"
                         >
                             {children}
                         </motion.div>
                     </AnimatePresence>
                 </main>
+
+                {/* Mobile Bottom Navigation Bar (Visible only on small screens) */}
+                <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-2 bg-gradient-to-t from-zinc-50 via-zinc-50/90 to-transparent pointer-events-none">
+                    <div className="pointer-events-auto bg-white/80 backdrop-blur-xl border border-white/40 shadow-2xl shadow-zinc-200/50 rounded-3xl flex items-center justify-around py-2 px-2">
+                        {navItemsWithPhone.filter((item, i) => [0, 1, 2, 4, 7].includes(i)).map((item) => {
+                            const hrefPath = item.href.split('?')[0];
+                            const isActive = (item.label === "Home" || hrefPath === baseRoute)
+                                ? pathname === hrefPath
+                                : pathname.startsWith(hrefPath);
+
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className="relative p-3 flex flex-col items-center justify-center gap-1 min-w-[64px]"
+                                >
+                                    <div className={`relative z-10 p-2.5 rounded-2xl transition-all duration-300 ${isActive ? 'bg-zinc-900 text-white shadow-md shadow-zinc-900/20 transform -translate-y-1' : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100'}`}>
+                                        <item.icon className="h-5 w-5" />
+                                    </div>
+                                    <span className={`text-[10px] font-bold transition-all duration-300 ${isActive ? 'text-zinc-900 opacity-100' : 'text-zinc-400 opacity-0 transform translate-y-2'}`}>
+                                        {item.label}
+                                    </span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
 
                 {/* PWA Install Guidance */}
                 <PWAInstallPrompt />

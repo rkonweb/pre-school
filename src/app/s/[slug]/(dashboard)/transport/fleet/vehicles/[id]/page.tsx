@@ -56,7 +56,7 @@ export default function EditVehiclePage() {
 
     useEffect(() => {
         const fetchVehicle = async () => {
-            const res = await getVehicleByIdAction(vehicleId);
+            const res = await getVehicleByIdAction(vehicleId, slug);
             if (res.success && res.data) {
                 const v = res.data as any;
                 setFormData({

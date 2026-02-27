@@ -106,7 +106,7 @@ export default function DriversPage() {
                                         Clearance Active
                                     </span>
                                     <div className="flex items-center gap-1 font-black text-zinc-950 text-[10px] tracking-widest dark:text-zinc-300">
-                                        4.9 <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                                        {driver.averageScore ? (driver.averageScore / 20).toFixed(1) : "5.0"} <span className="text-zinc-400 font-medium">({driver.averageScore || 100})</span> <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
                                     </div>
                                 </div>
                             </div>

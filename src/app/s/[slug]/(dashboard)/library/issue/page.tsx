@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     searchStudentsAction
@@ -41,23 +41,52 @@ export default function IssueBookPage() {
     // Search States
     const [userQuery, setUserQuery] = useState("");
     const [bookQuery, setBookQuery] = useState("");
+    const [debouncedUserQuery, setDebouncedUserQuery] = useState("");
+    const [debouncedBookQuery, setDebouncedBookQuery] = useState("");
     const [userResults, setUserResults] = useState<any[]>([]);
     const [bookResults, setBookResults] = useState<any[]>([]);
     const [searching, setSearching] = useState(false);
 
-    // Handlers
-    async function handleUserSearch(q: string) {
-        setUserQuery(q);
-        if (q.length < 2) return;
+    // Debounce Effects
+    useEffect(() => {
+        if (!userQuery) {
+            setDebouncedUserQuery("");
+            setUserResults([]);
+            return;
+        }
+        const timer = setTimeout(() => setDebouncedUserQuery(userQuery), 500);
+        return () => clearTimeout(timer);
+    }, [userQuery]);
 
+    useEffect(() => {
+        if (!bookQuery) {
+            setDebouncedBookQuery("");
+            setBookResults([]);
+            return;
+        }
+        const timer = setTimeout(() => setDebouncedBookQuery(bookQuery), 500);
+        return () => clearTimeout(timer);
+    }, [bookQuery]);
+
+    // Search Trigger Effects
+    useEffect(() => {
+        if (debouncedUserQuery.length >= 2) {
+            executeUserSearch(debouncedUserQuery);
+        }
+    }, [debouncedUserQuery, userType]);
+
+    useEffect(() => {
+        if (debouncedBookQuery.length >= 2) {
+            executeBookSearch(debouncedBookQuery);
+        }
+    }, [debouncedBookQuery]);
+
+    async function executeUserSearch(q: string) {
         setSearching(true);
         if (userType === "student") {
             const res = await searchStudentsAction(slug, q);
             if (res.success) setUserResults(res.students || []);
         } else {
-            // For staff, we filter client side from a full fetch if not optimized, 
-            // but let's assume we fetch all for now or optimize later.
-            // Actually getStaffAction returns all.
             const res = await getStaffAction(slug);
             if (res.success && res.data) {
                 const filtered = res.data.filter((s: any) =>
@@ -70,16 +99,22 @@ export default function IssueBookPage() {
         setSearching(false);
     }
 
-    async function handleBookSearch(q: string) {
-        setBookQuery(q);
-        if (q.length < 2) return;
-
+    async function executeBookSearch(q: string) {
         setSearching(true);
         const res = await getBooksAction(slug, q);
         if (res.success) {
             setBookResults(res.data || []);
         }
         setSearching(false);
+    }
+
+    // Handlers
+    function handleUserSearch(q: string) {
+        setUserQuery(q);
+    }
+
+    function handleBookSearch(q: string) {
+        setBookQuery(q);
     }
 
     async function handleSubmit() {
@@ -286,6 +321,7 @@ export default function IssueBookPage() {
                                 <Calendar className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
                                 <input
                                     type="date"
+                                    placeholder="Select due date"
                                     className="w-full rounded-2xl border-0 bg-zinc-50 py-4 pl-12 pr-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:bg-white focus:ring-2 focus:ring-brand transition-all font-medium"
                                     value={dueDate}
                                     onChange={(e) => setDueDate(e.target.value)}

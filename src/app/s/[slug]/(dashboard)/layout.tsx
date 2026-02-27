@@ -59,7 +59,8 @@ export default async function DashboardLayout({
             secondaryColor: true,
             modulesConfig: true,
             timezone: true,
-            dateFormat: true
+            dateFormat: true,
+            currency: true
         } as any
     })) as any;
 
@@ -83,7 +84,11 @@ export default async function DashboardLayout({
             const isInactive = subscription?.status === 'SUSPENDED' || subscription?.status === 'CANCELLED';
 
             if (isExpired || isInactive || !subscription) {
-                redirect(`/s/${slug}/upgrade`);
+                if (process.env.NODE_ENV !== "development") {
+                    redirect(`/s/${slug}/upgrade`);
+                } else {
+                    console.log("Development Mode: Skipped subscription redirect.");
+                }
             }
         } catch (subError) {
             console.error("Subscription check error:", subError);
@@ -102,10 +107,10 @@ export default async function DashboardLayout({
     const currentBranchId = user.currentBranchId || (branches.length > 0 ? branches[0].id : "");
 
     return (
-        <SidebarProvider>
+        <SidebarProvider currency={school.currency || "INR"}>
             <ConfirmProvider>
                 <div
-                    className="flex min-h-screen flex-row bg-zinc-50 dark:bg-zinc-900"
+                    className="flex h-screen overflow-hidden flex-row bg-zinc-50 dark:bg-zinc-900"
                     style={{
                         "--brand-color": brandColor,
                         "--brand-color-rgb": brandColorRgb,
@@ -134,7 +139,7 @@ export default async function DashboardLayout({
                             branches={branches}
                             currentBranchId={currentBranchId}
                         />
-                        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                        <main className="flex-1 min-h-0 min-w-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
                             {children}
                         </main>
                         {/* Global AI Assistant */}

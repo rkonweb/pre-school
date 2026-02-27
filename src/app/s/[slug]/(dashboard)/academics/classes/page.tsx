@@ -13,11 +13,19 @@ import {
     School,
     Calendar,
     MapPin,
-    LayoutGrid
+    LayoutGrid,
+    MoreHorizontal
 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { getClassroomsAction, deleteClassroomAction } from "@/app/actions/classroom-actions";
 import { useConfirm } from "@/contexts/ConfirmContext";
+import { DashboardLoader } from "@/components/ui/DashboardLoader";
 
 export default function ClassesPage() {
     const params = useParams();
@@ -91,13 +99,36 @@ export default function ClassesPage() {
                         Manage academic hierarchy, class teachers, and time tables.
                     </p>
                 </div>
-                <button
-                    onClick={() => router.push(`/s/${slug}/academics/classes/create`)}
-                    className="h-12 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
-                >
-                    <Plus className="h-4 w-4" />
-                    New Class
-                </button>
+                <div className="flex flex-wrap gap-3">
+                    <button
+                        onClick={() => router.push(`/s/${slug}/academics/classes/create`)}
+                        className="h-12 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
+                    >
+                        <Plus className="h-4 w-4" />
+                        New Class
+                    </button>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className="h-12 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm transition-all"
+                                title="More options"
+                            >
+                                <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-48">
+                            <DropdownMenuItem onClick={() => router.push(`/s/${slug}/staff`)} className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Manage Staff
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/s/${slug}/academics/timetable`)} className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                Timetables
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
 
             {/* Stats Overview */}
@@ -167,15 +198,11 @@ export default function ClassesPage() {
                         </thead>
                         <tbody className="divide-y divide-zinc-100">
                             {isLoading ? (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td className="py-4 px-6"><div className="h-4 w-32 bg-zinc-100 rounded" /></td>
-                                        <td className="py-4 px-6"><div className="h-4 w-48 bg-zinc-100 rounded" /></td>
-                                        <td className="py-4 px-6"><div className="h-4 w-16 bg-zinc-100 rounded" /></td>
-                                        <td className="py-4 px-6"><div className="h-4 w-16 bg-zinc-100 rounded" /></td>
-                                        <td className="py-4 px-6"></td>
-                                    </tr>
-                                ))
+                                <tr>
+                                    <td colSpan={5} className="p-0">
+                                        <DashboardLoader message="Loading academic classes..." />
+                                    </td>
+                                </tr>
                             ) : filteredClasses.length > 0 ? (
                                 filteredClasses.map((item) => (
                                     <tr key={item.id} className="group hover:bg-zinc-50/50 transition-colors">
@@ -275,12 +302,20 @@ export default function ClassesPage() {
                     <p className="text-zinc-400 font-medium mt-2 max-w-xs mx-auto">
                         Get started by creating your first academic class section.
                     </p>
-                    <button
-                        onClick={() => router.push(`/s/${slug}/academics/classes/create`)}
-                        className="mt-8 h-12 px-8 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand/20"
-                    >
-                        Create First Class
-                    </button>
+                    <div className="flex items-center justify-center gap-4 mt-8">
+                        <button
+                            onClick={() => router.push(`/s/${slug}/staff`)}
+                            className="h-12 px-8 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-2xl font-black text-xs uppercase tracking-widest shadow-sm"
+                        >
+                            Assigned Staff First
+                        </button>
+                        <button
+                            onClick={() => router.push(`/s/${slug}/academics/classes/create`)}
+                            className="h-12 px-8 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand/20"
+                        >
+                            Create First Class
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

@@ -17,7 +17,7 @@ export async function createFeeAction(slug: string, studentId: string, title: st
         const currentUser = auth.user;
 
         const student = await prisma.student.findUnique({
-            where: { id: studentId },
+            where: { id: studentId, school: { slug } },
             select: { classroomId: true, branchId: true }
         });
 
@@ -60,7 +60,7 @@ export async function getStudentFeesAction(slug: string, studentId: string, acad
         if (auth.success && auth.user) {
             const currentUser = auth.user;
             const student = await prisma.student.findUnique({
-                where: { id: studentId },
+                where: { id: studentId, school: { slug } },
                 select: { classroomId: true, branchId: true } // Fetch branchId too
             });
 
@@ -105,7 +105,7 @@ export async function recordPaymentAction(slug: string, feeId: string, amount: n
 
         // Trace fee -> student -> classroom
         const feeRecord = await prisma.fee.findUnique({
-            where: { id: feeId },
+            where: { id: feeId, student: { school: { slug } } },
             include: { student: { select: { classroomId: true, branchId: true } } }
         });
 
@@ -168,7 +168,7 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
         const currentUser = auth.user;
 
         const student = await prisma.student.findUnique({
-            where: { id: studentId },
+            where: { id: studentId, school: { slug: schoolSlug } },
             include: { school: true, classroom: true }
         }) as any;
 
@@ -362,7 +362,7 @@ export async function updateFeeAction(slug: string, id: string, data: any) {
 
         // Fetch fee to check branch
         const feeRecord = await prisma.fee.findUnique({
-            where: { id },
+            where: { id, student: { school: { slug } } },
             select: { branchId: true }
         });
 
@@ -394,7 +394,7 @@ export async function deleteFeeAction(slug: string, id: string) {
 
         // Fetch fee to check branch
         const feeRecord = await prisma.fee.findUnique({
-            where: { id },
+            where: { id, student: { school: { slug } } },
             select: { branchId: true }
         });
 

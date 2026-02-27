@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ArrowLeft, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 import { verifyOtpAction, sendOtpAction, loginWithMobileAction, loginParentGlobalAction } from "@/app/actions/auth-actions";
@@ -12,6 +12,7 @@ interface OTPLoginProps {
 
 export function OTPLogin({ type }: OTPLoginProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [resendTimer, setResendTimer] = useState(30);
     const [isVerified, setIsVerified] = useState(false);
@@ -90,7 +91,13 @@ export function OTPLogin({ type }: OTPLoginProps) {
                         sessionStorage.setItem("phoneNumber", phoneNumber);
                     }
                     setTimeout(() => {
-                        router.push(loginRes.redirectUrl);
+                        const callbackUrl = searchParams.get("callbackUrl");
+                        // Only use callbackUrl if we are fully logged in and NOT pending signup
+                        if (callbackUrl && !(loginRes as any).signupPending) {
+                            router.push(callbackUrl);
+                        } else {
+                            router.push(loginRes.redirectUrl);
+                        }
                     }, 800);
                 } else {
                     setError(loginRes.error || "Session creation failed.");
@@ -166,6 +173,8 @@ export function OTPLogin({ type }: OTPLoginProps) {
                         {otp.map((digit, index) => (
                             <input
                                 key={index}
+                                aria-label={`OTP Digit ${index + 1}`}
+                                title={`OTP Digit ${index + 1}`}
                                 ref={(el) => { inputRefs.current[index] = el; }}
                                 type="text"
                                 inputMode="numeric"

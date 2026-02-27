@@ -7,6 +7,103 @@ export interface BulkSmartAnalytics {
     [studentId: string]: any; // Same structure as SmartAnalytics
 }
 
+export interface StudentAnalytics {
+    student: {
+        id: string;
+        name: string;
+        grade: string;
+        admissionNumber: string | null;
+        avatar: string | null;
+    };
+    academic: {
+        subjects: any[];
+        overallPercentage: number;
+        overallGrade: string;
+        trend: "IMPROVING" | "DECLINING" | "STABLE" | "INSUFFICIENT_DATA";
+        consistencyScore: number;
+    };
+    attendance: any;
+    health: any;
+    activities: any[];
+    insights: any[];
+}
+
+export async function getStudentAnalyticsAction(studentId: string, academicYearId?: string): Promise<{ success: boolean; data?: StudentAnalytics; error?: string }> {
+    try {
+        const userRes = await getCurrentUserAction();
+        if (!userRes.success) return { success: false, error: "Unauthorized" };
+
+        const student = await prisma.student.findUnique({
+            where: { id: studentId }
+        });
+
+        if (!student) return { success: false, error: "Student not found" };
+
+        const user = await prisma.user.findFirst({
+            where: { student: { id: student.id } }
+        });
+
+        const classroomName = student.classroomId ?
+            (await prisma.classroom.findUnique({ where: { id: student.classroomId } }))?.name || "N/A" : "N/A";
+
+        const query: any = { studentId };
+        if (academicYearId) query.academicYearId = academicYearId;
+
+        const [examResults, attendance, healthRecords, activities] = await Promise.all([
+            prisma.examResult.findMany({
+                where: {
+                    studentId,
+                    exam: academicYearId ? { academicYearId } : {}
+                },
+                include: { exam: true },
+                orderBy: { exam: { date: 'asc' } }
+            }),
+            prisma.attendance.findMany({
+                where: query,
+                orderBy: { date: 'desc' }
+            }),
+            prisma.studentHealthRecord.findMany({
+                where: query,
+                orderBy: { recordedAt: 'desc' }
+            }),
+            prisma.studentActivityRecord.findMany({
+                where: query,
+                orderBy: { date: 'desc' }
+            })
+        ]);
+
+        const processed = processStudentData(examResults, attendance, healthRecords[0] || null, activities);
+
+        const data: StudentAnalytics = {
+            student: {
+                id: student.id,
+                name: `${student.firstName} ${student.lastName}`,
+                grade: classroomName,
+                admissionNumber: student.admissionNumber || null,
+                avatar: user?.avatar || null,
+            },
+            academic: {
+                subjects: processed.academics.subjectPerformance,
+                overallPercentage: processed.academics.overallPercentage,
+                overallGrade: calculateGrade(processed.academics.overallPercentage),
+                trend: processed.academics.trend,
+                consistencyScore: processed.academics.subjectPerformance.length > 0
+                    ? processed.academics.subjectPerformance.reduce((acc, sub) => acc + sub.average, 0) / processed.academics.subjectPerformance.length
+                    : 0
+            },
+            attendance: processed.attendance,
+            health: processed.health,
+            activities: processed.activities,
+            insights: processed.insights,
+        };
+
+        return { success: true, data };
+
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
 export async function getBulkStudentAnalyticsAction(schoolSlug: string, studentIds: string[], academicYearId?: string): Promise<{ success: boolean; data?: BulkSmartAnalytics; error?: string }> {
     try {
         const userRes = await getCurrentUserAction();

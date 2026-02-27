@@ -95,42 +95,52 @@ export default function FamilyHubPage() {
 function StudentIdentityCard({ student, stats, idx, slug, parentId, phone }: any) {
     const isAdmission = student.type === "ADMISSION";
     const gradients = [
-        "from-violet-600 to-indigo-600",
-        "from-emerald-500 to-teal-600",
-        "from-rose-500 to-pink-600",
-        "from-blue-600 to-cyan-600"
+        "from-indigo-500/90 to-blue-600/90",
+        "from-emerald-500/90 to-teal-600/90",
+        "from-rose-500/90 to-pink-600/90",
+        "from-amber-500/90 to-orange-600/90"
     ];
     const gradient = gradients[idx % gradients.length];
 
     return (
-        <Link href={`/${slug}/parent/${parentId}/${student.id}?phone=${phone}`} className="block group">
+        <Link href={`/${slug}/parent/${parentId}/${student.id}?phone=${phone}`} className="block group w-full">
             <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1, duration: 0.4 }}
                 className={cn(
-                    "relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-xl shadow-slate-200/50 bg-gradient-to-br transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl",
+                    "relative overflow-hidden rounded-[2rem] p-6 text-white shadow-lg shadow-slate-200/50 bg-gradient-to-br backdrop-blur-xl border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-[1.02] sm:hover:shadow-2xl",
                     gradient
                 )}
             >
-                {/* Decorative */}
-                <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-[50px] -translate-y-1/2 translate-x-1/2"></div>
+                {/* Decorative Blur Orbs */}
+                <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/20 rounded-full blur-[40px] pointer-events-none" />
+                <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-white/10 rounded-full blur-[50px] pointer-events-none" />
 
-                <div className="relative z-10 flex flex-col h-full">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-8">
-                        <div>
-                            <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest text-white/90 mb-3">
-                                {student.status || "APPLICANT"}
-                            </span>
-                            <h3 className="text-3xl font-black leading-none mb-1">{student.firstName}</h3>
-                            <p className="text-white/70 font-bold">{student.lastName}</p>
+                <div className="relative z-10 flex flex-col h-full min-h-[160px]">
+                    {/* Header: Status & Avatar */}
+                    <div className="flex items-start justify-between mb-6">
+                        <div className="flex flex-col gap-2">
+                            <div className="inline-flex w-fit items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/20 shadow-sm">
+                                <span className="w-1.5 h-1.5 rounded-full bg-white mr-2 animate-pulse" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-white/95">
+                                    {student.status || "APPLICANT"}
+                                </span>
+                            </div>
+
+                            <div>
+                                <h3 className="text-2xl sm:text-3xl font-black leading-none mb-1 tracking-tight">{student.firstName}</h3>
+                                <p className="text-white/80 font-bold text-sm sm:text-base">{student.lastName}</p>
+                            </div>
                         </div>
-                        <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-2xl p-1 shadow-inner border border-white/20">
+
+                        <div className="h-14 w-14 sm:h-16 sm:w-16 bg-white/30 backdrop-blur-xl rounded-2xl p-1 shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-white/30 ring-4 ring-white/10 shrink-0">
                             {student.avatar ? (
-                                <img src={student.avatar} className="w-full h-full object-cover rounded-xl" />
+                                <img src={student.avatar} className="w-full h-full object-cover rounded-[10px]" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xl font-black">{student.firstName[0]}</div>
+                                <div className="w-full h-full flex items-center justify-center text-xl font-black bg-white/20 rounded-[10px] shadow-inner text-white">
+                                    {student.firstName[0]}
+                                </div>
                             )}
                         </div>
                     </div>
@@ -138,18 +148,28 @@ function StudentIdentityCard({ student, stats, idx, slug, parentId, phone }: any
                     {/* Footer Stats - Glassmorphism */}
                     {!isAdmission ? (
                         <div className="mt-auto grid grid-cols-2 gap-3">
-                            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-3 border border-white/5">
-                                <p className="text-[9px] uppercase tracking-widest text-white/60 font-bold mb-1">Attendance</p>
-                                <p className="text-xl font-black">{stats?.attendance?.percentage || 0}%</p>
+                            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-3 border border-white/20 shadow-sm flex flex-col justify-center">
+                                <p className="text-[10px] uppercase tracking-widest text-white/80 font-bold mb-0.5 flex items-center gap-1.5">
+                                    <span>Attendance</span>
+                                </p>
+                                <p className="text-xl font-black tracking-tight">{stats?.attendance?.percentage || 0}%</p>
                             </div>
-                            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-3 border border-white/5">
-                                <p className="text-[9px] uppercase tracking-widest text-white/60 font-bold mb-1">Fees</p>
-                                <p className="text-xl font-black">{stats?.fees?.pending > 0 ? "Due" : "Paid"}</p>
+                            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-3 border border-white/20 shadow-sm flex flex-col justify-center">
+                                <p className="text-[10px] uppercase tracking-widest text-white/80 font-bold mb-0.5 flex items-center gap-1.5">
+                                    <span>Fees</span>
+                                </p>
+                                <p className="text-xl font-black tracking-tight flex items-center gap-2">
+                                    {stats?.fees?.pending > 0 ? (
+                                        <>Due <span className="w-2 h-2 rounded-full bg-rose-400" /></>
+                                    ) : (
+                                        <>Paid <span className="w-2 h-2 rounded-full bg-emerald-400" /></>
+                                    )}
+                                </p>
                             </div>
                         </div>
                     ) : (
-                        <div className="mt-auto bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                            <p className="text-xs font-medium leading-relaxed">Admission application in progress. Tap for details.</p>
+                        <div className="mt-auto bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-sm">
+                            <p className="text-sm font-semibold leading-relaxed text-white/90">Admission application in progress. Tap to view tracker.</p>
                         </div>
                     )}
                 </div>

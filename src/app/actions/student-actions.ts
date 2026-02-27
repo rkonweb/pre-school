@@ -74,7 +74,11 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
                 { firstName: { contains: search } },
                 { lastName: { contains: search } },
                 { admissionNumber: { contains: search } },
-                { parentName: { contains: search } }
+                { parentName: { contains: search } },
+                { parentMobile: { contains: search } },
+                { fatherPhone: { contains: search } },
+                { motherPhone: { contains: search } },
+                { emergencyContactPhone: { contains: search } },
             ];
         }
 
@@ -167,6 +171,8 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
                 gender: s.gender || "Unknown",
                 parent: s.parentName || "Unknown",
                 parentMobile: s.parentMobile || "",
+                fatherPhone: s.fatherPhone || "",
+                motherPhone: s.motherPhone || "",
                 joiningDate: s.joiningDate,
                 status: s.status,
                 avatar: s.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.firstName}`,
@@ -191,7 +197,7 @@ export async function getStudentAction(schoolSlug: string, id: string) {
         if (!auth.success) return { success: false, error: auth.error };
 
         const student = await prisma.student.findUnique({
-            where: { id },
+            where: { id, school: { slug: schoolSlug } },
             include: {
                 classroom: true,
                 promotedToClassroom: true,
@@ -211,65 +217,96 @@ import { syncStudent, removeStudentFromIndex } from "@/lib/search-sync";
 export async function createStudentAction(schoolSlug: string, data: {
     firstName: string;
     lastName: string;
-    age?: number;
     gender?: string;
+    dateOfBirth?: string;
+    admissionNumber?: string;
+    joiningDate?: string;
     classroomId?: string;
+    bloodGroup?: string;
+    allergies?: string;
+    medicalConditions?: string;
+    emergencyContactName?: string;
+    emergencyContactPhone?: string;
     parentName?: string;
-    parentMobile?: string;
+    relationship?: string;
+    parentMobile: string;
     parentEmail?: string;
-    avatar?: string;
-    branchId?: string; // Added branchId
+    secondaryPhone?: string;
+    fatherName?: string;
+    fatherOccupation?: string;
+    fatherPhone?: string;
+    fatherEmail?: string;
+    motherName?: string;
+    motherOccupation?: string;
+    motherPhone?: string;
+    motherEmail?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zip?: string;
+    branchId?: string;
 }) {
-    const auth = await validateUserSchoolAction(schoolSlug);
-    if (!auth.success || !auth.user) throw new Error(auth.error);
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
-    if (!(await hasPermissionAction(auth.user, "students", "create"))) {
-        throw new Error("Unauthorized to create student");
-    }
-
-    const currentUser = auth.user as any;
-    // Determine Branch
-    const branchId = data.branchId || currentUser.currentBranchId;
-
-    // Find school id
-    const school = await prisma.school.findUnique({
-        where: { slug: schoolSlug }
-    });
-
-    if (!school) throw new Error("School not found");
-
-    // If no branch, try to fall back to 'Main Branch' automatically or fail?
-    // Let's first try to find Main Branch
-    let finalBranchId = branchId;
-
-    if (!finalBranchId) {
-        // Fallback: Find Main Branch or First Branch
-        const branches = await prisma.branch.findMany({
-            where: { schoolId: school.id }
-        });
-        const main = branches.find(b => b.name === 'Main Branch') || branches[0];
-        if (main) finalBranchId = main.id;
-    }
-
-    const student = await prisma.student.create({
-        data: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            age: data.age,
-            gender: data.gender,
-            classroomId: data.classroomId,
-            parentName: data.parentName,
-            parentMobile: data.parentMobile,
-            parentEmail: data.parentEmail,
-            avatar: data.avatar,
-            schoolId: school.id,
-            branchId: finalBranchId
+        if (!(await hasPermissionAction(auth.user, "students", "create"))) {
+            return { success: false, error: "Unauthorized to create student" };
         }
-    });
 
-    await syncStudent(student.id);
-    revalidatePath(`/s/${schoolSlug}/students`);
-    return student;
+        const currentUser = auth.user as any;
+        const branchId = data.branchId || currentUser.currentBranchId;
+
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
+        let finalBranchId = branchId;
+        if (!finalBranchId) {
+            const branches = await prisma.branch.findMany({
+                where: { schoolId: school.id }
+            });
+            const main = branches.find(b => b.name === 'Main Branch') || branches[0];
+            if (main) finalBranchId = main.id;
+        }
+
+        const student = await prisma.student.create({
+            data: {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                gender: data.gender,
+                dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+                joiningDate: data.joiningDate ? new Date(data.joiningDate) : new Date(),
+                admissionNumber: data.admissionNumber,
+                classroomId: data.classroomId,
+                bloodGroup: data.bloodGroup,
+                allergies: data.allergies,
+                medicalConditions: data.medicalConditions,
+                emergencyContactName: data.emergencyContactName,
+                emergencyContactPhone: data.emergencyContactPhone,
+                parentName: data.parentName || `Parent of ${data.firstName}`,
+                parentMobile: data.parentMobile,
+                parentEmail: data.parentEmail,
+                fatherName: data.fatherName,
+                fatherPhone: data.fatherPhone,
+                motherName: data.motherName,
+                motherPhone: data.motherPhone,
+                schoolId: school.id,
+                branchId: finalBranchId,
+                status: "ACTIVE"
+            }
+        });
+
+        await syncStudent(student.id);
+        revalidatePath(`/s/${schoolSlug}/students`);
+        return { success: true, data: student };
+    } catch (error: any) {
+        console.error("Create Student Action Error:", error);
+        return { success: false, error: error.message || "Failed to create student profile" };
+    }
 }
 
 export async function updateStudentAction(schoolSlug: string, id: string, data: any) {
@@ -282,11 +319,9 @@ export async function updateStudentAction(schoolSlug: string, id: string, data: 
         }
 
         // Remove nested objects and auto-fields for update
-        // Added 'school' and 'conversations' to exclude list to prevent Prisma relation errors
-        // Remove nested objects and auto-fields for update
         const {
             classroom,
-            promotedToClassroom, // Exclude this too
+            promotedToClassroom,
             school,
             conversations,
             fees,
@@ -298,8 +333,9 @@ export async function updateStudentAction(schoolSlug: string, id: string, data: 
             schoolId,
             dateOfBirth,
             joiningDate,
-            classroomId, // Extract to handle manually
-            promotedToClassroomId, // Extract to handle manually
+            classroomId,
+            promotedToClassroomId,
+            branchId,
             ...updateData
         } = data;
 
@@ -328,8 +364,15 @@ export async function updateStudentAction(schoolSlug: string, id: string, data: 
             prismaUpdateData.promotedToClassroom = { disconnect: true };
         }
 
+        // Handle Branch Relation
+        if (branchId) {
+            prismaUpdateData.branch = { connect: { id: branchId } };
+        } else {
+            // Don't disconnect branch if branchId is simply not provided — leave it as-is
+        }
+
         const student = await (prisma as any).student.update({
-            where: { id },
+            where: { id, school: { slug: schoolSlug } },
             data: prismaUpdateData
         });
 
@@ -353,7 +396,7 @@ export async function deleteStudentAction(schoolSlug: string, id: string) {
         }
 
         await prisma.student.delete({
-            where: { id }
+            where: { id, school: { slug: schoolSlug } }
         });
 
         await removeStudentFromIndex(id);
@@ -387,7 +430,7 @@ export async function updateStudentAvatarAction(schoolSlug: string, studentId: s
         const avatarPath = `/uploads/students/${safeName}`;
 
         await prisma.student.update({
-            where: { id: studentId },
+            where: { id: studentId, school: { slug: schoolSlug } },
             data: { avatar: avatarPath }
         });
 
@@ -436,7 +479,7 @@ export async function connectSiblingAction(schoolSlug: string, primaryStudentId:
         if (!auth.success) return { success: false, error: auth.error };
 
         const primary = await prisma.student.findUnique({
-            where: { id: primaryStudentId }
+            where: { id: primaryStudentId, school: { slug: schoolSlug } }
         });
         if (!primary) return { success: false, error: "Primary student not found" };
 
@@ -467,7 +510,7 @@ export async function disconnectSiblingAction(schoolSlug: string, studentId: str
         if (!auth.success) return { success: false, error: auth.error };
 
         await prisma.student.update({
-            where: { id: studentId },
+            where: { id: studentId, school: { slug: schoolSlug } },
             data: {
                 parentMobile: null
             }

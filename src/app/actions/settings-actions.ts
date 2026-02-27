@@ -358,10 +358,7 @@ export async function getIntegrationSettingsAction(slug: string) {
             select: {
                 id: true,
                 integrationsConfig: true,
-                googleMapsApiKey: true,
-                googleDriveClientEmail: true,
-                googleDrivePrivateKey: true,
-                googleDriveFolderId: true
+                googleMapsApiKey: true
             }
         });
 
@@ -379,10 +376,10 @@ export async function getIntegrationSettingsAction(slug: string) {
         else if (!config.maps.apiKey && school.googleMapsApiKey) config.maps.apiKey = school.googleMapsApiKey;
 
         if (!config.googleDrive) config.googleDrive = {
-            enabled: !!school.googleDriveClientEmail,
-            clientEmail: school.googleDriveClientEmail || "",
-            privateKey: school.googleDrivePrivateKey || "",
-            folderId: school.googleDriveFolderId || ""
+            enabled: false,
+            clientEmail: "",
+            privateKey: "",
+            folderId: ""
         };
 
         return { success: true, data: config };
@@ -412,11 +409,6 @@ export async function saveIntegrationSettingsAction(slug: string, data: any) {
         if (data.maps?.apiKey) {
             updateData.googleMapsApiKey = data.maps.apiKey;
         }
-
-        // Sync Google Drive keys if available
-        if (data.googleDrive?.clientEmail) updateData.googleDriveClientEmail = data.googleDrive.clientEmail;
-        if (data.googleDrive?.privateKey) updateData.googleDrivePrivateKey = data.googleDrive.privateKey;
-        if (data.googleDrive?.folderId) updateData.googleDriveFolderId = data.googleDrive.folderId;
 
         await (prisma as any).school.update({
             where: { id: school.id },

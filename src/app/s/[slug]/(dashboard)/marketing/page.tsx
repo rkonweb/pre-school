@@ -13,8 +13,16 @@ import {
     Calendar,
     Sparkles,
     SearchX,
-    ArrowUpRight
+    ArrowUpRight,
+    MoreHorizontal,
+    Users
 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import {
     getMarketingTemplatesAction,
@@ -80,11 +88,33 @@ export default function SchoolMarketingPage() {
                         Create and share high-impact assets for {slug}
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="h-12 px-6 bg-brand-soft text-brand rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 border border-brand/10">
+                <div className="flex flex-wrap items-center gap-3">
+                    <Link
+                        href={`/s/${slug}/marketing/customize`}
+                        className="h-12 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 transition-all border-none"
+                    >
                         <Sparkles className="h-4 w-4" />
-                        Smart Branding Active
-                    </div>
+                        Customize Studio
+                    </Link>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className="h-12 px-3 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-2xl flex items-center justify-center shadow-sm transition-all outline-none"
+                                title="More options"
+                            >
+                                <MoreHorizontal className="h-5 w-5 text-zinc-400" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-52">
+                            <DropdownMenuItem asChild>
+                                <Link href={`/s/${slug}/admissions/inquiry/list`} className="flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-zinc-400" />
+                                    Admissions Leads
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
@@ -134,6 +164,7 @@ export default function SchoolMarketingPage() {
                     <div className="flex items-center gap-2 px-4 py-2 bg-white border border-zinc-200 rounded-xl dark:border-zinc-800 dark:bg-zinc-950">
                         <Filter className="h-4 w-4 text-zinc-400" />
                         <select
+                            title="Filter by Category"
                             value={activeCategory}
                             onChange={(e) => setActiveCategory(e.target.value)}
                             className="bg-transparent text-[10px] font-black uppercase tracking-widest text-zinc-500 outline-none cursor-pointer min-w-[120px]"

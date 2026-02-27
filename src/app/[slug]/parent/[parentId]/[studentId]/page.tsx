@@ -19,7 +19,10 @@ import {
     BellRing,
     AlertCircle,
     MessageSquare,
-    TrendingUp
+    TrendingUp,
+    Building2,
+    Utensils,
+    Coffee
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -117,6 +120,9 @@ export default function StudentDashboardPage() {
 
     const brandColor = schoolContext?.brandColor || schoolContext?.primaryColor || "#6366f1";
 
+    const activeHostel = student?.hostelAllocations?.[0];
+    const activeCanteen = student?.canteenSubscriptions?.[0];
+
     return (
         <div className="flex flex-col min-h-screen bg-[#F1F5F9] pb-32 text-slate-900 font-sans selection:bg-indigo-500/20">
             {/* HEADER */}
@@ -209,6 +215,50 @@ export default function StudentDashboardPage() {
                 {/* 2. COMPREHENSIVE MODULES GRID */}
                 <section>
                     <div className="grid grid-cols-2 gap-4">
+                        {/* Hostel Widget */}
+                        {activeHostel ? (
+                            <Link href={`/${slug}/parent/${parentId}/${studentId}/hostel${phone ? `?phone=${phone}` : ''}`} className="block h-full">
+                                <motion.div
+                                    whileTap={{ scale: 0.98 }}
+                                    className="rounded-[2.5rem] p-7 text-white shadow-2xl relative overflow-hidden group flex flex-col justify-between h-full bg-gradient-to-br from-fuchsia-500 to-purple-600 shadow-purple-200"
+                                >
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-110 transition-transform duration-700" />
+                                    <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+                                        <Building2 className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div className="mt-8">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mb-1 leading-none">Hostel Room</p>
+                                        <h4 className="text-xl font-black text-white leading-tight">
+                                            Rm {activeHostel.room?.roomNumber}
+                                        </h4>
+                                        <p className="text-[9px] font-bold text-white/80 mt-1 uppercase truncate">{activeHostel.room?.hostel?.name}</p>
+                                    </div>
+                                </motion.div>
+                            </Link>
+                        ) : null}
+
+                        {/* Canteen Widget */}
+                        {true && (
+                            <Link href={`/${slug}/parent/${parentId}/${studentId}/canteen${phone ? `?phone=${phone}` : ''}`} className="block h-full">
+                                <motion.div
+                                    whileTap={{ scale: 0.98 }}
+                                    className="rounded-[2.5rem] p-7 text-white shadow-2xl relative overflow-hidden group flex flex-col justify-between h-full bg-gradient-to-br from-orange-400 to-red-500 shadow-red-200"
+                                >
+                                    <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-12 -mb-12 blur-2xl shrink-0" />
+                                    <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+                                        <Utensils className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div className="mt-8">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mb-1 leading-none">Canteen</p>
+                                        <h4 className="text-sm font-black text-white leading-tight">
+                                            {activeCanteen ? activeCanteen.planType.replace('_', ' ') : 'Wallet / POS'}
+                                        </h4>
+                                        <p className="text-[9px] font-bold text-white/80 mt-1 uppercase tracking-widest leading-none">View Menu</p>
+                                    </div>
+                                </motion.div>
+                            </Link>
+                        )}
+
                         {/* Transport Module Card - Live Updates */}
                         <Link href={`/${slug}/parent/${parentId}/mobile/transport${phone ? `?phone=${phone}` : ''}`} className="block h-full">
                             <motion.div
@@ -392,7 +442,7 @@ export default function StudentDashboardPage() {
                                     whileHover={{ scale: 1.05 }}
                                     className="aspect-square rounded-3xl overflow-hidden bg-slate-100 shadow-lg border border-white"
                                 >
-                                    <img src={item.url} className="h-full w-full object-cover" />
+                                    <img src={item.url} alt="Gallery item" className="h-full w-full object-cover" />
                                 </motion.div>
                             ))
                         ) : (

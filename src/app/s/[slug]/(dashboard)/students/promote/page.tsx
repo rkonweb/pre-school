@@ -11,7 +11,10 @@ import { getAcademicYearsAction } from "@/app/actions/academic-year-actions";
 import { getStudentsAction } from "@/app/actions/student-actions";
 import { promoteStudentsAction } from "@/app/actions/student-promotion-actions";
 import { Badge } from "@/components/ui/badge";
-// Separator removed due to potential module resolution issues
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StudentAvatar, cleanName } from "@/components/dashboard/students/StudentAvatar";
 
 export default function PromoteStudentsPage() {
     const params = useParams();
@@ -137,16 +140,10 @@ export default function PromoteStudentsPage() {
     };
 
     const handlePromote = async () => {
-        // DEBUG ALERTS
-        window.alert("Button clicked! handlePromote triggered.");
-
         if (!targetClassId || !targetYearId || selectedStudents.length === 0) {
-            window.alert(`Validation failed: class=${targetClassId}, year=${targetYearId}, students=${selectedStudents.length}`);
+            toast.error("Please select a target class, year, and at least one student.");
             return;
         }
-
-        const targetClassName = classrooms.find(c => c.id === targetClassId)?.name;
-        window.alert(`Attempting promotion to ${targetClassName}...`);
 
         setIsPromoting(true);
         try {
@@ -157,8 +154,6 @@ export default function PromoteStudentsPage() {
                 targetAcademicYearId: targetYearId
             });
 
-            window.alert(`Action returned: success=${res.success}`);
-
             if (res.success) {
                 toast.success(res.message);
                 router.push(`/s/${slug}/students`);
@@ -167,11 +162,9 @@ export default function PromoteStudentsPage() {
             }
         } catch (err: any) {
             console.error("Promotion Exception:", err);
-            window.alert(`Exception occurred: ${err.message}`);
             toast.error("An unexpected error occurred during promotion.");
         } finally {
             setIsPromoting(false);
-            window.alert("isPromoting set back to false.");
         }
     };
 
@@ -292,7 +285,6 @@ export default function PromoteStudentsPage() {
                             icon={Users}
                             label={`Promote ${selectedStudents.length} Students`}
                             loading={isPromoting}
-                            loadingLabel="Promoting..."
                             disabled={!targetClassId || !targetYearId || selectedStudents.length === 0}
                             className="w-full h-11 rounded-xl text-base font-semibold shadow-lg shadow-brand/20 mt-4"
                             permission={{ module: 'students.profiles', action: 'edit' }}
@@ -359,15 +351,13 @@ export default function PromoteStudentsPage() {
                                                 />
                                             </div>
                                             <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold ring-2 ring-white shadow-sm">
-                                                    {student.avatar ? (
-                                                        <img src={student.avatar} alt={student.name} className="h-full w-full rounded-full object-cover" />
-                                                    ) : (
-                                                        student.name[0]
-                                                    )}
-                                                </div>
+                                                <StudentAvatar
+                                                    src={student.avatar}
+                                                    name={student.name}
+                                                    className="h-10 w-10 ring-2 ring-white shadow-sm"
+                                                />
                                                 <div>
-                                                    <div className="font-semibold text-zinc-900">{student.name}</div>
+                                                    <div className="font-semibold text-zinc-900">{cleanName(student.name)}</div>
                                                     <div className="text-xs text-zinc-500 font-medium uppercase tracking-wide">
                                                         Adm: {student.admissionNumber || "N/A"}
                                                     </div>

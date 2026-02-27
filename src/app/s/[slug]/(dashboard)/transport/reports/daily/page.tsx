@@ -20,16 +20,18 @@ import { cn } from "@/lib/utils";
 import SyncLogsButton from "@/components/transport/SyncLogsButton";
 import ReportTabs from "@/components/transport/ReportTabs";
 
-export default async function DailyReportsPage({ params, searchParams }: {
-    params: { slug: string },
-    searchParams: { date?: string, vehicleId?: string }
+export default async function DailyReportsPage(props: {
+    params: Promise<{ slug: string }>,
+    searchParams: Promise<{ date?: string, vehicleId?: string }>
 }) {
+    const params = await props.params;
+    const searchParams = await props.searchParams;
     const { slug } = params;
     const dateStr = searchParams.date || new Date().toISOString().split('T')[0];
     const vehicleId = searchParams.vehicleId;
 
     const reportsRes = await getTransportDailyReportsAction(slug, { date: dateStr, vehicleId });
-    const reports = reportsRes.success ? reportsRes.data : [];
+    const reports = reportsRes.success && reportsRes.data ? reportsRes.data : [];
 
     // Get all vehicles for the filter
     const vehicles = await prisma.transportVehicle.findMany({
@@ -63,13 +65,17 @@ export default async function DailyReportsPage({ params, searchParams }: {
                     <input
                         type="date"
                         defaultValue={dateStr}
+                        aria-label="Select Date"
                         className="bg-transparent border-none text-sm font-bold text-zinc-900 outline-none focus:ring-0"
                     />
                 </div>
                 <div className="h-6 w-px bg-zinc-200 hidden md:block" />
                 <div className="flex items-center gap-2">
                     <Bus className="h-4 w-4 text-zinc-400" />
-                    <select className="bg-transparent border-none text-sm font-bold text-zinc-900 outline-none focus:ring-0 appearance-none pr-8">
+                    <select
+                        aria-label="Select Vehicle"
+                        className="bg-transparent border-none text-sm font-bold text-zinc-900 outline-none focus:ring-0 appearance-none pr-8"
+                    >
                         <option value="">All Vehicles</option>
                         {vehicles.map(v => (
                             <option key={v.id} value={v.id}>{v.registrationNumber}</option>
@@ -80,7 +86,7 @@ export default async function DailyReportsPage({ params, searchParams }: {
 
             {/* Daily Logs Content */}
             <div className="grid grid-cols-1 gap-8">
-                {reports.length > 0 ? reports.map((log: any) => (
+                {(reports || []).length > 0 ? (reports || []).map((log: any) => (
                     <Card key={log.id} className="border-none shadow-xl shadow-zinc-200/50 overflow-hidden group">
                         <div className="grid grid-cols-1 lg:grid-cols-4">
                             {/* Vehicle Sidebar Info */}

@@ -116,6 +116,9 @@ Prisma.NullTypes = {
  */
 
 exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 });
 
@@ -139,12 +142,10 @@ exports.Prisma.SchoolScalarFieldEnum = {
   latitude: 'latitude',
   linkedin: 'linkedin',
   logo: 'logo',
-  printableLogo: 'printableLogo',
   longitude: 'longitude',
   motto: 'motto',
   state: 'state',
   timezone: 'timezone',
-  maxBranches: 'maxBranches',
   twitter: 'twitter',
   website: 'website',
   youtube: 'youtube',
@@ -152,7 +153,6 @@ exports.Prisma.SchoolScalarFieldEnum = {
   googleMapsApiKey: 'googleMapsApiKey',
   academicYearEnd: 'academicYearEnd',
   academicYearStart: 'academicYearStart',
-  academicYearStartMonth: 'academicYearStartMonth',
   primaryColor: 'primaryColor',
   schoolTimings: 'schoolTimings',
   secondaryColor: 'secondaryColor',
@@ -161,7 +161,10 @@ exports.Prisma.SchoolScalarFieldEnum = {
   customDomain: 'customDomain',
   modulesConfig: 'modulesConfig',
   addonsConfig: 'addonsConfig',
-  integrationsConfig: 'integrationsConfig'
+  academicYearStartMonth: 'academicYearStartMonth',
+  integrationsConfig: 'integrationsConfig',
+  maxBranches: 'maxBranches',
+  printableLogo: 'printableLogo'
 };
 
 exports.Prisma.AcademicYearScalarFieldEnum = {
@@ -217,18 +220,18 @@ exports.Prisma.AdmissionScalarFieldEnum = {
   schoolId: 'schoolId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  automationPaused: 'automationPaused',
   branchId: 'branchId',
-  marketingStatus: 'marketingStatus',
-  score: 'score',
   counsellorId: 'counsellorId',
-  lastMeaningfulActionAt: 'lastMeaningfulActionAt',
-  tourStatus: 'tourStatus',
-  feeConcernLevel: 'feeConcernLevel',
   distanceConcern: 'distanceConcern',
-  timingConcern: 'timingConcern',
+  feeConcernLevel: 'feeConcernLevel',
+  lastMeaningfulActionAt: 'lastMeaningfulActionAt',
+  marketingStatus: 'marketingStatus',
   programFit: 'programFit',
+  score: 'score',
   seatAvailability: 'seatAvailability',
-  automationPaused: 'automationPaused'
+  timingConcern: 'timingConcern',
+  tourStatus: 'tourStatus'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -271,9 +274,9 @@ exports.Prisma.UserScalarFieldEnum = {
   instagram: 'instagram',
   customRoleId: 'customRoleId',
   biometricId: 'biometricId',
+  avatarAdjustment: 'avatarAdjustment',
   branchId: 'branchId',
-  signupStep: 'signupStep',
-  avatarAdjustment: 'avatarAdjustment'
+  signupStep: 'signupStep'
 };
 
 exports.Prisma.LeavePolicyScalarFieldEnum = {
@@ -363,7 +366,18 @@ exports.Prisma.ClassroomScalarFieldEnum = {
   capacity: 'capacity',
   roomNumber: 'roomNumber',
   timetable: 'timetable',
-  branchId: 'branchId'
+  branchId: 'branchId',
+  timetableStructureId: 'timetableStructureId'
+};
+
+exports.Prisma.TimetableStructureScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  config: 'config',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.StudentScalarFieldEnum = {
@@ -385,15 +399,28 @@ exports.Prisma.StudentScalarFieldEnum = {
   emergencyContactName: 'emergencyContactName',
   emergencyContactPhone: 'emergencyContactPhone',
   classroomId: 'classroomId',
-  promotedToClassroomId: 'promotedToClassroomId',
-  promotedToGrade: 'promotedToGrade',
   schoolId: 'schoolId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   admissionNumber: 'admissionNumber',
   joiningDate: 'joiningDate',
+  branchId: 'branchId',
   leavingDate: 'leavingDate',
-  branchId: 'branchId'
+  promotedToClassroomId: 'promotedToClassroomId',
+  promotedToGrade: 'promotedToGrade',
+  address: 'address',
+  city: 'city',
+  country: 'country',
+  fatherName: 'fatherName',
+  fatherPhone: 'fatherPhone',
+  motherName: 'motherName',
+  motherPhone: 'motherPhone',
+  state: 'state',
+  zip: 'zip',
+  fatherOccupation: 'fatherOccupation',
+  fatherEmail: 'fatherEmail',
+  motherOccupation: 'motherOccupation',
+  motherEmail: 'motherEmail'
 };
 
 exports.Prisma.TransferCertificateScalarFieldEnum = {
@@ -418,9 +445,9 @@ exports.Prisma.FeeScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   description: 'description',
-  category: 'category',
   academicYearId: 'academicYearId',
-  branchId: 'branchId'
+  branchId: 'branchId',
+  category: 'category'
 };
 
 exports.Prisma.FeePaymentScalarFieldEnum = {
@@ -440,9 +467,9 @@ exports.Prisma.AttendanceScalarFieldEnum = {
   status: 'status',
   notes: 'notes',
   studentId: 'studentId',
-  academicYearId: 'academicYearId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  academicYearId: 'academicYearId'
 };
 
 exports.Prisma.ReportCardScalarFieldEnum = {
@@ -452,9 +479,9 @@ exports.Prisma.ReportCardScalarFieldEnum = {
   comments: 'comments',
   published: 'published',
   studentId: 'studentId',
-  academicYearId: 'academicYearId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  academicYearId: 'academicYearId'
 };
 
 exports.Prisma.OtpScalarFieldEnum = {
@@ -478,16 +505,16 @@ exports.Prisma.SubscriptionPlanScalarFieldEnum = {
   maxStudents: 'maxStudents',
   maxStaff: 'maxStaff',
   maxStorageGB: 'maxStorageGB',
-  additionalStaffPrice: 'additionalStaffPrice',
   tier: 'tier',
   supportLevel: 'supportLevel',
   isActive: 'isActive',
   isPopular: 'isPopular',
   includedModules: 'includedModules',
-  addonUserTiers: 'addonUserTiers',
-  sortOrder: 'sortOrder',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  sortOrder: 'sortOrder',
+  additionalStaffPrice: 'additionalStaffPrice',
+  addonUserTiers: 'addonUserTiers'
 };
 
 exports.Prisma.SubscriptionScalarFieldEnum = {
@@ -495,9 +522,9 @@ exports.Prisma.SubscriptionScalarFieldEnum = {
   status: 'status',
   startDate: 'startDate',
   endDate: 'endDate',
-  addonUsers: 'addonUsers',
   planId: 'planId',
-  schoolId: 'schoolId'
+  schoolId: 'schoolId',
+  addonUsers: 'addonUsers'
 };
 
 exports.Prisma.MasterDataScalarFieldEnum = {
@@ -918,22 +945,27 @@ exports.Prisma.TransportVehicleScalarFieldEnum = {
   schoolId: 'schoolId',
   status: 'status',
   gpsDeviceId: 'gpsDeviceId',
-  insuranceNumber: 'insuranceNumber',
-  insuranceExpiry: 'insuranceExpiry',
-  insuranceDocUrl: 'insuranceDocUrl',
-  pollutionNumber: 'pollutionNumber',
-  pollutionExpiry: 'pollutionExpiry',
-  pollutionDocUrl: 'pollutionDocUrl',
-  fitnessExpiry: 'fitnessExpiry',
-  fitnessDocUrl: 'fitnessDocUrl',
-  permitNumber: 'permitNumber',
-  permitExpiry: 'permitExpiry',
-  permitDocUrl: 'permitDocUrl',
-  rcDocUrl: 'rcDocUrl',
-  documents: 'documents',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  branchId: 'branchId'
+  branchId: 'branchId',
+  documents: 'documents',
+  fitnessDocUrl: 'fitnessDocUrl',
+  fitnessExpiry: 'fitnessExpiry',
+  insuranceDocUrl: 'insuranceDocUrl',
+  insuranceExpiry: 'insuranceExpiry',
+  insuranceNumber: 'insuranceNumber',
+  permitDocUrl: 'permitDocUrl',
+  permitExpiry: 'permitExpiry',
+  permitNumber: 'permitNumber',
+  pollutionDocUrl: 'pollutionDocUrl',
+  pollutionExpiry: 'pollutionExpiry',
+  pollutionNumber: 'pollutionNumber',
+  rcDocUrl: 'rcDocUrl',
+  currentMileage: 'currentMileage',
+  lastMaintenanceDate: 'lastMaintenanceDate',
+  lastMaintenanceMileage: 'lastMaintenanceMileage',
+  maintenanceIntervalDays: 'maintenanceIntervalDays',
+  maintenanceIntervalMileage: 'maintenanceIntervalMileage'
 };
 
 exports.Prisma.TransportDriverScalarFieldEnum = {
@@ -945,6 +977,20 @@ exports.Prisma.TransportDriverScalarFieldEnum = {
   status: 'status',
   userId: 'userId',
   createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  averageScore: 'averageScore'
+};
+
+exports.Prisma.TransportDriverReviewScalarFieldEnum = {
+  id: 'id',
+  driverId: 'driverId',
+  reviewerId: 'reviewerId',
+  studentId: 'studentId',
+  rating: 'rating',
+  comment: 'comment',
+  reviewTheme: 'reviewTheme',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
@@ -953,12 +999,12 @@ exports.Prisma.TransportRouteScalarFieldEnum = {
   name: 'name',
   description: 'description',
   schoolId: 'schoolId',
-  pickupVehicleId: 'pickupVehicleId',
-  dropVehicleId: 'dropVehicleId',
   driverId: 'driverId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  branchId: 'branchId'
+  branchId: 'branchId',
+  dropVehicleId: 'dropVehicleId',
+  pickupVehicleId: 'pickupVehicleId'
 };
 
 exports.Prisma.TransportStopScalarFieldEnum = {
@@ -970,9 +1016,9 @@ exports.Prisma.TransportStopScalarFieldEnum = {
   longitude: 'longitude',
   pickupTime: 'pickupTime',
   dropTime: 'dropTime',
-  monthlyFee: 'monthlyFee',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  monthlyFee: 'monthlyFee'
 };
 
 exports.Prisma.StudentTransportProfileScalarFieldEnum = {
@@ -982,15 +1028,28 @@ exports.Prisma.StudentTransportProfileScalarFieldEnum = {
   pickupStopId: 'pickupStopId',
   dropStopId: 'dropStopId',
   transportFee: 'transportFee',
-  status: 'status',
-  startDate: 'startDate',
-  endDate: 'endDate',
-  rejectionReason: 'rejectionReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   applicationAddress: 'applicationAddress',
   applicationLat: 'applicationLat',
   applicationLng: 'applicationLng',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  endDate: 'endDate',
+  rejectionReason: 'rejectionReason',
+  startDate: 'startDate',
+  status: 'status'
+};
+
+exports.Prisma.TransportBoardingLogScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  vehicleId: 'vehicleId',
+  routeId: 'routeId',
+  status: 'status',
+  type: 'type',
+  timestamp: 'timestamp',
+  notes: 'notes',
+  recordedBy: 'recordedBy',
+  transportDailyLogId: 'transportDailyLogId'
 };
 
 exports.Prisma.TransportMaintenanceScalarFieldEnum = {
@@ -1038,14 +1097,14 @@ exports.Prisma.ExamScalarFieldEnum = {
   classrooms: 'classrooms',
   subjects: 'subjects',
   maxMarks: 'maxMarks',
-  minMarks: 'minMarks',
   gradingSystem: 'gradingSystem',
   schoolId: 'schoolId',
   createdById: 'createdById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  questionPaperUrl: 'questionPaperUrl',
-  academicYearId: 'academicYearId'
+  academicYearId: 'academicYearId',
+  minMarks: 'minMarks',
+  questionPaperUrl: 'questionPaperUrl'
 };
 
 exports.Prisma.ExamResultScalarFieldEnum = {
@@ -1649,6 +1708,11 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
@@ -1665,6 +1729,7 @@ exports.Prisma.ModelName = {
   LeaveBalance: 'LeaveBalance',
   SalaryRevision: 'SalaryRevision',
   Classroom: 'Classroom',
+  TimetableStructure: 'TimetableStructure',
   Student: 'Student',
   TransferCertificate: 'TransferCertificate',
   Fee: 'Fee',
@@ -1705,9 +1770,11 @@ exports.Prisma.ModelName = {
   LibraryBook: 'LibraryBook',
   TransportVehicle: 'TransportVehicle',
   TransportDriver: 'TransportDriver',
+  TransportDriverReview: 'TransportDriverReview',
   TransportRoute: 'TransportRoute',
   TransportStop: 'TransportStop',
   StudentTransportProfile: 'StudentTransportProfile',
+  TransportBoardingLog: 'TransportBoardingLog',
   TransportMaintenance: 'TransportMaintenance',
   LibraryTransaction: 'LibraryTransaction',
   LibrarySettings: 'LibrarySettings',

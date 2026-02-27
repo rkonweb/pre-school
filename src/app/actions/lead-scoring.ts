@@ -2,19 +2,23 @@
 
 import { prisma } from "@/lib/prisma";
 
-export async function calculateLeadScore(leadId: string, customWeights?: any): Promise<number> {
-    const lead = await prisma.lead.findUnique({
-        where: { id: leadId },
-        include: {
-            school: {
-                include: { aiSettings: true }
-            }
-        }
+export async function calculateLeadScore(id: string, customWeights?: any): Promise<number> {
+    // Try to find as Lead first, then Admission
+    let data: any = await prisma.lead.findUnique({
+        where: { id },
+        include: { school: { include: { aiSettings: true } } }
     });
 
-    if (!lead || !lead.school) return 0;
+    if (!data) {
+        data = await (prisma as any).admission.findUnique({
+            where: { id },
+            include: { school: { include: { aiSettings: true } } }
+        });
+    }
 
-    const settings = lead.school.aiSettings;
+    if (!data || !data.school) return 0;
+
+    const settings = data.school.aiSettings;
     let weights = customWeights || {
         responsiveness: 30,
         programInterest: 25,
@@ -31,13 +35,22 @@ export async function calculateLeadScore(leadId: string, customWeights?: any): P
         }
     }
 
+    // Map Admission fields to Lead-style internal vars for scoring
+    const firstResponseTime = data.firstResponseTime ?? null;
+    const tourStatus = data.tourStatus || 'NONE';
+    const repliesCount = data.repliesCount || 0;
+    const distanceConcern = data.distanceConcern ?? null;
+    const feeConcernLevel = data.feeConcernLevel || 'NONE';
+    const callConnectedCount = data.callConnectedCount || 0;
+    const linkClicks = data.linkClicks || 0;
+
     // 1. Responsiveness (0-100)
     let responsiveness = 0;
-    if (lead.firstResponseTime) {
-        if (lead.firstResponseTime < 15) responsiveness = 100;
-        else if (lead.firstResponseTime < 60) responsiveness = 80;
-        else if (lead.firstResponseTime < 360) responsiveness = 60;
-        else if (lead.firstResponseTime < 1440) responsiveness = 40;
+    if (firstResponseTime) {
+        if (firstResponseTime < 15) responsiveness = 100;
+        else if (firstResponseTime < 60) responsiveness = 80;
+        else if (firstResponseTime < 360) responsiveness = 60;
+        else if (firstResponseTime < 1440) responsiveness = 40;
         else responsiveness = 20;
     } else {
         responsiveness = 50; // Neutral if unknown
@@ -45,27 +58,26 @@ export async function calculateLeadScore(leadId: string, customWeights?: any): P
 
     // 2. Program Interest (0-100)
     let interest = 0;
-    if (lead.tourStatus === 'COMPLETED') interest = 100;
-    else if (lead.tourStatus === 'SCHEDULED') interest = 80;
-    else if (lead.repliesCount > 5) interest = 70;
-    else if (lead.repliesCount > 2) interest = 50;
+    if (tourStatus === 'COMPLETED') interest = 100;
+    else if (tourStatus === 'SCHEDULED') interest = 80;
+    else if (repliesCount > 5) interest = 70;
+    else if (repliesCount > 2) interest = 50;
     else interest = 30;
 
     // 3. Location (0-100)
     let location = 50;
-    if (lead.distanceConcern === false) location = 100;
-    if (lead.distanceConcern === true) location = 20;
+    if (distanceConcern === false) location = 100;
+    if (distanceConcern === true) location = 20;
 
     // 4. Budget (0-100)
     let budget = 60;
-    if (lead.feeConcernLevel === 'NONE') budget = 100;
-    else if (lead.feeConcernLevel === 'MILD') budget = 60;
-    else if (lead.feeConcernLevel === 'STRONG') budget = 20;
+    if (feeConcernLevel === 'NONE') budget = 100;
+    else if (feeConcernLevel === 'MILD') budget = 60;
+    else if (feeConcernLevel === 'STRONG') budget = 20;
 
     // 5. Engagement (0-100)
-    let engagement = 0;
-    const interactions = (lead.callConnectedCount * 20) + (lead.linkClicks * 15) + (lead.repliesCount * 10);
-    engagement = Math.min(100, interactions);
+    const interactions = (callConnectedCount * 20) + (linkClicks * 15) + (repliesCount * 10);
+    let engagement = Math.min(100, interactions);
 
     // Calculate final weighted score
     const weightedScore = (
@@ -77,7 +89,7 @@ export async function calculateLeadScore(leadId: string, customWeights?: any): P
     );
 
     // Apply Decay
-    const lastAction = lead.lastMeaningfulActionAt || lead.createdAt;
+    const lastAction = data.lastMeaningfulActionAt || data.createdAt;
     const daysSinceLastAction = Math.floor((Date.now() - new Date(lastAction).getTime()) / (1000 * 60 * 60 * 24));
     let decayFactor = 1;
 
@@ -90,12 +102,25 @@ export async function calculateLeadScore(leadId: string, customWeights?: any): P
     return Math.round(finalScore);
 }
 
-export async function refreshLeadScoreAction(leadId: string) {
-    const score = await calculateLeadScore(leadId);
-    await prisma.lead.update({
-        where: { id: leadId },
-        data: { score }
-    });
+export async function refreshLeadScoreAction(id: string) {
+    const score = await calculateLeadScore(id);
+
+    // Update both if applicable (usually one will fail or we check existence)
+    try {
+        await prisma.lead.update({
+            where: { id: id },
+            data: { score }
+        });
+    } catch (e) {
+        try {
+            await (prisma as any).admission.update({
+                where: { id: id },
+                data: { score }
+            });
+        } catch (e2) {
+            console.error("Failed to update score for any model:", id);
+        }
+    }
     return score;
 }
 

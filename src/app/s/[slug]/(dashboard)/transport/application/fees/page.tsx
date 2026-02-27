@@ -3,15 +3,18 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { CircleDollarSign, Calendar, FileText, ArrowUpRight } from "lucide-react";
 import { getTransportFeesAction } from "@/app/actions/transport-fee-actions";
+import { getCurrencySymbol } from "@/lib/utils";
 
-export default async function TransportFeesPage({ params }: { params: { slug: string } }) {
-    const { slug } = await params;
+export default async function TransportFeesPage(props: { params: Promise<{ slug: string }> }) {
+    const params = await props.params;
+    const { slug } = params;
 
     // Fetch stats
     const school = await prisma.school.findUnique({
         where: { slug },
-        select: { id: true }
+        select: { id: true, currency: true }
     });
+    const currencySymbol = getCurrencySymbol(school?.currency || 'INR');
 
     if (!school) return <div>School not found</div>;
 
@@ -50,7 +53,7 @@ export default async function TransportFeesPage({ params }: { params: { slug: st
                             <ArrowUpRight className="h-3 w-3" /> +12%
                         </span>
                     </div>
-                    <div className="text-3xl font-bold text-zinc-900">₹{totalRevenue.toLocaleString()}</div>
+                    <div className="text-3xl font-bold text-zinc-900">{currencySymbol}{totalRevenue.toLocaleString()}</div>
                     <div className="text-xs text-zinc-500 mt-1">Total Billed Revenue</div>
                 </div>
 
@@ -60,7 +63,7 @@ export default async function TransportFeesPage({ params }: { params: { slug: st
                             <Calendar className="h-5 w-5" />
                         </div>
                     </div>
-                    <div className="text-3xl font-bold text-zinc-900">₹{collectedFees.toLocaleString()}</div>
+                    <div className="text-3xl font-bold text-zinc-900">{currencySymbol}{collectedFees.toLocaleString()}</div>
                     <div className="text-xs text-zinc-500 mt-1">Collected Amount</div>
                 </div>
 
@@ -70,7 +73,7 @@ export default async function TransportFeesPage({ params }: { params: { slug: st
                             <FileText className="h-5 w-5" />
                         </div>
                     </div>
-                    <div className="text-3xl font-bold text-zinc-900">₹{pendingFees.toLocaleString()}</div>
+                    <div className="text-3xl font-bold text-zinc-900">{currencySymbol}{pendingFees.toLocaleString()}</div>
                     <div className="text-xs text-zinc-500 mt-1">Pending Collection</div>
                 </div>
             </div>
@@ -103,7 +106,7 @@ export default async function TransportFeesPage({ params }: { params: { slug: st
                                             <div className="font-medium text-zinc-900">{fee.title}</div>
                                             <div className="text-xs text-zinc-500 truncate max-w-[200px]">{fee.description}</div>
                                         </td>
-                                        <td className="px-6 py-3 font-semibold text-zinc-900">₹{fee.amount.toLocaleString()}</td>
+                                        <td className="px-6 py-3 font-semibold text-zinc-900">{currencySymbol}{fee.amount.toLocaleString()}</td>
                                         <td className="px-6 py-3 text-zinc-500">{new Date(fee.dueDate).toLocaleDateString()}</td>
                                         <td className="px-6 py-3">
                                             <StatusBadge status={fee.status} />

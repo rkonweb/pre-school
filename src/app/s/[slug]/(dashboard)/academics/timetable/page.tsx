@@ -18,14 +18,16 @@ import {
     Info,
     AlertTriangle,
     X,
-    Loader2
+    Loader2,
+    Pencil
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getClassroomsAction, updateClassroomAction } from "@/app/actions/classroom-actions";
 import { getStaffAction } from "@/app/actions/staff-actions";
-import { getTimetableConfigAction, updateTimetableConfigAction, checkTeacherAvailabilityAction } from "@/app/actions/timetable-actions";
+import { checkTeacherAvailabilityAction } from "@/app/actions/timetable-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
+import { getTimetableStructuresAction, createTimetableStructureAction, updateTimetableStructureAction, deleteTimetableStructureAction, assignTimetableStructureAction } from "@/app/actions/timetable-structure-actions";
 
 type PeriodNode = {
     id: string;
@@ -37,7 +39,15 @@ type PeriodNode = {
 
 type TimetableConfig = {
     periods: PeriodNode[];
-    workingDays: string[]; // e.g. ["Monday", "Tuesday", ...]
+    workingDays: string[];
+};
+
+type TimetableStructure = {
+    id: string;
+    name: string;
+    description: string | null;
+    config: string;
+    _count?: { classrooms: number };
 };
 
 export default function TimetablePage() {
@@ -51,7 +61,7 @@ export default function TimetablePage() {
     const [classrooms, setClassrooms] = useState<any[]>([]);
     const [staff, setStaff] = useState<any[]>([]);
     const [subjects, setSubjects] = useState<any[]>([]);
-    const [config, setConfig] = useState<TimetableConfig>({ periods: [], workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] });
+    const [structures, setStructures] = useState<TimetableStructure[]>([]);
 
     useEffect(() => {
         loadData();
@@ -60,18 +70,15 @@ export default function TimetablePage() {
     async function loadData(showLoader = true) {
         if (showLoader) setIsLoading(true);
         try {
-            const [classesRes, staffRes, configRes, subjectsRes] = await Promise.all([
+            const [classesRes, staffRes, structuresRes, subjectsRes] = await Promise.all([
                 getClassroomsAction(slug),
                 getStaffAction(slug),
-                getTimetableConfigAction(slug),
+                getTimetableStructuresAction(slug),
                 getMasterDataAction("SUBJECT")
             ]);
 
             if (classesRes.success) setClassrooms(classesRes.data || []);
             if (staffRes.success) {
-                // Filter staff to include those with "Teacher" in their designation OR "STAFF" role (as per user logic)
-                // The user specifically said: "School Portal > Staff > with Teacher Role"
-                // But since roles are STAFF/ADMIN/PARENT, we look at designation or customRole if exists.
                 const teachersOnly = (staffRes.data || []).filter((s: any) =>
                     (s.designation && s.designation.toLowerCase().includes("teacher")) ||
                     (s.role === "STAFF")
@@ -81,24 +88,9 @@ export default function TimetablePage() {
             if (subjectsRes.success) {
                 setSubjects(subjectsRes.data || []);
             }
-            if (configRes.success && configRes.config) {
-                // Ensure defaults
-                const loadedConfig = configRes.config;
-                if (!loadedConfig.periods) loadedConfig.periods = [];
-                if (!loadedConfig.workingDays) loadedConfig.workingDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-                setConfig(loadedConfig);
-            } else {
-                // Default config if none exists
-                setConfig({
-                    periods: [
-                        { id: "p1", name: "Period 1", startTime: "09:00", endTime: "09:45", type: "CLASS" },
-                        { id: "b1", name: "Break", startTime: "09:45", endTime: "10:00", type: "BREAK" },
-                        { id: "p2", name: "Period 2", startTime: "10:00", endTime: "10:45", type: "CLASS" },
-                    ],
-                    workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-                });
+            if (structuresRes.success) {
+                setStructures(structuresRes.structures || []);
             }
-
         } catch (error) {
             toast.error("Failed to load data");
             console.error(error);
@@ -114,7 +106,7 @@ export default function TimetablePage() {
                 <div>
                     <h2 className="text-3xl font-black tracking-tight text-zinc-900">Timetable Management</h2>
                     <p className="text-sm font-medium text-zinc-500 mt-1">
-                        Configure school timings and manage class schedules.
+                        Configure multiple school timings and manage class schedules.
                     </p>
                 </div>
 
@@ -150,13 +142,13 @@ export default function TimetablePage() {
             ) : (
                 <>
                     {activeTab === "config" ? (
-                        <ConfigView config={config} setConfig={setConfig} slug={slug} onSave={() => loadData(false)} />
+                        <StructuresView structures={structures} slug={slug} onUpdate={() => loadData(false)} />
                     ) : (
                         <SchedulerView
                             classrooms={classrooms}
                             staff={staff}
                             subjects={subjects}
-                            config={config}
+                            structures={structures}
                             slug={slug}
                             onUpdate={() => loadData(false)}
                         />
@@ -167,10 +159,147 @@ export default function TimetablePage() {
     );
 }
 
-// --- Configuration View ---
-function ConfigView({ config, setConfig, slug, onSave }: any) {
+// --- Structures List & Config View ---
+function StructuresView({ structures, slug, onUpdate }: any) {
+    const [editingStructure, setEditingStructure] = useState<TimetableStructure | null>(null);
+    const [isCreatingNew, setIsCreatingNew] = useState(false);
+
+    if (editingStructure || isCreatingNew) {
+        return (
+            <StructureEditor
+                structure={editingStructure}
+                slug={slug}
+                onClose={() => {
+                    setEditingStructure(null);
+                    setIsCreatingNew(false);
+                }}
+                onSave={() => {
+                    setEditingStructure(null);
+                    setIsCreatingNew(false);
+                    onUpdate();
+                }}
+            />
+        );
+    }
+
+    return (
+        <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-orange-50 border border-orange-100 p-6 rounded-[2rem] flex items-start gap-4">
+                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
+                    <Info className="h-5 w-5" />
+                </div>
+                <div>
+                    <h3 className="font-bold text-orange-900">Multiple Timing Structures</h3>
+                    <p className="text-sm text-orange-700 mt-1 max-w-2xl leading-relaxed">
+                        Create multiple distinct timetable schedules (e.g., Primary timings, High School timings). You can then explicitly assign a specific structure to each Classroom from the Class Schedules tab.
+                    </p>
+                </div>
+                <div className="ml-auto shrink-0">
+                    <button
+                        onClick={() => setIsCreatingNew(true)}
+                        className="h-10 px-5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-colors shadow-lg shadow-orange-600/20"
+                    >
+                        <Plus className="h-4 w-4" />
+                        New Structure
+                    </button>
+                </div>
+            </div>
+
+            {structures.length === 0 ? (
+                <div className="text-center py-24 bg-white rounded-[32px] border border-dashed border-zinc-200">
+                    <Settings className="h-10 w-10 text-zinc-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-black text-zinc-900">No Timetable Structures</h3>
+                    <p className="text-zinc-400 font-medium mt-1">Create your first structure to start scheduling classrooms.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {structures.map((s: any) => {
+                        let parsedConfig: any = { periods: [], workingDays: [] };
+                        try {
+                            parsedConfig = JSON.parse(s.config);
+                        } catch (e) { }
+
+                        return (
+                            <div key={s.id} className="bg-white rounded-[32px] border border-zinc-100 p-6 shadow-sm hover:shadow-md transition-all group flex flex-col h-full">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="flex-1 pr-4">
+                                        <h3 className="text-lg font-black text-zinc-900 line-clamp-1">{s.name}</h3>
+                                        <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mt-1 line-clamp-1">
+                                            {s.description || "No description"}
+                                        </p>
+                                    </div>
+                                    <div className="h-10 w-10 bg-brand/10 text-brand rounded-full flex items-center justify-center shrink-0">
+                                        <Clock className="h-5 w-5" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3 mt-auto">
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-zinc-500 font-medium">Assigned Classes</span>
+                                        <span className="font-bold text-zinc-900 px-2.5 py-1 bg-zinc-100 rounded-lg">{s._count?.classrooms || 0}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-zinc-500 font-medium">Total Periods</span>
+                                        <span className="font-bold text-zinc-900 px-2.5 py-1 bg-zinc-100 rounded-lg">{parsedConfig.periods?.length || 0}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-2 mt-6 pt-6 border-t border-zinc-100">
+                                    <button
+                                        onClick={() => setEditingStructure(s)}
+                                        className="flex-1 h-10 px-4 bg-zinc-50 hover:bg-zinc-100 text-zinc-900 rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
+                                    >
+                                        <Pencil className="h-3.5 w-3.5" />
+                                        Edit Details
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            if (window.confirm("Are you sure you want to delete this structure? This will reset the timetable layout for all assigned classes.")) {
+                                                const res = await deleteTimetableStructureAction(slug, s.id);
+                                                if (res.success) onUpdate();
+                                                else toast.error("Delete failed");
+                                            }
+                                        }}
+                                        className="h-10 w-10 flex items-center justify-center text-zinc-400 hover:text-red-600 hover:bg-red-50 bg-zinc-50 rounded-xl transition-all shrink-0"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// --- Structure Editor Component ---
+function StructureEditor({ structure, slug, onClose, onSave }: any) {
+    const isEditing = !!structure;
     const [isSaving, setIsSaving] = useState(false);
-    const [localConfig, setLocalConfig] = useState<TimetableConfig>(JSON.parse(JSON.stringify(config)));
+
+    const [name, setName] = useState(structure?.name || "");
+    const [description, setDescription] = useState(structure?.description || "");
+
+    // Parse config safely
+    const defaultConfig: TimetableConfig = {
+        periods: [
+            { id: "p1", name: "Period 1", startTime: "09:00", endTime: "09:45", type: "CLASS" },
+            { id: "b1", name: "Break", startTime: "09:45", endTime: "10:00", type: "BREAK" },
+            { id: "p2", name: "Period 2", startTime: "10:00", endTime: "10:45", type: "CLASS" },
+        ],
+        workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    };
+
+    const [localConfig, setLocalConfig] = useState<TimetableConfig>(() => {
+        if (!structure?.config) return defaultConfig;
+        try {
+            return JSON.parse(structure.config);
+        } catch (e) {
+            return defaultConfig;
+        }
+    });
 
     const addPeriod = () => {
         setLocalConfig(prev => ({
@@ -201,47 +330,78 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
     };
 
     const handleSave = async () => {
-        setIsSaving(true);
-        // Validate
-        const isValid = localConfig.periods.every(p => p.name && p.startTime && p.endTime);
-        if (!isValid) {
-            toast.error("Please fill in all period details");
-            setIsSaving(false);
+        if (!name.trim()) {
+            toast.error("Please provide a name for this structure");
             return;
         }
 
+        const isValid = localConfig.periods.every(p => p.name && p.startTime && p.endTime);
+        if (!isValid) {
+            toast.error("Please fill in all period details");
+            return;
+        }
+
+        setIsSaving(true);
         try {
-            const res = await updateTimetableConfigAction(slug, localConfig);
+            const dataToSave = {
+                name,
+                description,
+                config: JSON.stringify(localConfig)
+            };
+
+            const res = isEditing
+                ? await updateTimetableStructureAction(slug, structure.id, dataToSave)
+                : await createTimetableStructureAction(slug, dataToSave);
+
             if (res.success) {
-                toast.success("Structure saved successfully");
-                setConfig(localConfig);
+                toast.success(`Structure ${isEditing ? 'updated' : 'created'} successfully`);
                 onSave();
             } else {
-                toast.error(res.error);
+                toast.error(res.error || "Failed to save");
             }
         } catch (e) {
-            toast.error("Save failed");
+            toast.error("Save error");
         }
         setIsSaving(false);
     };
 
     return (
-        <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-orange-50 border border-orange-100 p-6 rounded-[2rem] flex gap-4">
-                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
-                    <Info className="h-5 w-5" />
-                </div>
-                <div>
-                    <h3 className="font-bold text-orange-900">Configuration Guide</h3>
-                    <p className="text-sm text-orange-700 mt-1 max-w-2xl leading-relaxed">
-                        Define the master structure here. All classes will follow this timeline. Any changes here will reflect in all class timetables (though existing assigned data will attempt to map by Period ID if possible, otherwise by order).
-                        Ensure you set "Break" periods correctly.
-                    </p>
+        <div className="space-y-6 animate-in slide-in-from-right-8 duration-500">
+            <div className="flex items-center gap-4 mb-6">
+                <button
+                    onClick={onClose}
+                    className="h-10 px-4 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-600 font-bold text-sm transition-colors flex items-center justify-center"
+                >
+                    &larr; Back
+                </button>
+                <h3 className="text-2xl font-black text-zinc-900">{isEditing ? 'Edit Structure' : 'Create New Structure'}</h3>
+            </div>
+
+            <div className="bg-white rounded-[32px] border border-zinc-100 p-8 shadow-sm space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block ml-1">Structure Name *</label>
+                        <input
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="e.g. Primary School Timings"
+                            className="w-full h-14 px-5 rounded-2xl bg-zinc-50 border-none font-bold text-sm focus:ring-2 focus:ring-brand placeholder:text-zinc-300 transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase mb-2 block ml-1">Short Description</label>
+                        <input
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Optional notes"
+                            className="w-full h-14 px-5 rounded-2xl bg-zinc-50 border-none font-bold text-sm focus:ring-2 focus:ring-brand placeholder:text-zinc-300 transition-all"
+                        />
+                    </div>
                 </div>
             </div>
 
             <div className="bg-white rounded-[32px] border border-zinc-100 p-8 shadow-sm">
-                <h3 className="text-xl font-black text-zinc-900 mb-6">Working Days</h3>
+                <h3 className="text-xl font-black text-zinc-900 mb-6">Active Working Days</h3>
                 <div className="flex flex-wrap gap-3">
                     {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => {
                         const isSelected = (localConfig.workingDays || []).includes(day);
@@ -257,9 +417,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                                     } else {
                                         newDays = [...current, day];
                                     }
-                                    // Sort to maintain week order
                                     newDays.sort((a: string, b: string) => allDays.indexOf(a) - allDays.indexOf(b));
-
                                     setLocalConfig(prev => ({ ...prev, workingDays: newDays }));
                                 }}
                                 className={cn(
@@ -278,7 +436,7 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
 
             <div className="bg-white rounded-[32px] border border-zinc-100 p-8 shadow-sm">
                 <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-xl font-black text-zinc-900">Daily Timeline</h3>
+                    <h3 className="text-xl font-black text-zinc-900">Daily Timeline Blocks</h3>
                     <button
                         onClick={addPeriod}
                         className="h-10 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-colors"
@@ -356,7 +514,13 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
                     )}
                 </div>
 
-                <div className="mt-8 flex justify-end pb-4">
+                <div className="mt-8 flex gap-4 justify-end pt-6 border-t border-zinc-100">
+                    <button
+                        onClick={onClose}
+                        className="h-12 px-8 bg-zinc-100 hover:bg-zinc-200 text-zinc-500 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
+                    >
+                        Cancel
+                    </button>
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
@@ -372,28 +536,43 @@ function ConfigView({ config, setConfig, slug, onSave }: any) {
 }
 
 // --- Scheduler View ---
-function SchedulerView({ classrooms, staff, subjects, config, slug, onUpdate }: any) {
+function SchedulerView({ classrooms, staff, subjects, structures, slug, onUpdate }: any) {
     const [selectedClassId, setSelectedClassId] = useState("");
+    const [selectedStructureId, setSelectedStructureId] = useState("");
     const [schedule, setSchedule] = useState<any>({});
-    const [isSaving, setIsSaving] = useState(false);
+
+    // Structure state
+    const selectedClass = classrooms.find((c: any) => c.id === selectedClassId);
+    const assignedStructureId = selectedClass?.timetableStructureId || "";
+
+    useEffect(() => {
+        if (selectedClass) {
+            setSelectedStructureId(selectedClass.timetableStructureId || "");
+        } else {
+            setSelectedStructureId("");
+        }
+    }, [selectedClassId, classrooms]);
+
+    // Parse the assigned structure config (or return empty defaults)
+    const activeStructure = structures.find((s: any) => s.id === assignedStructureId);
+    let config: TimetableConfig = { periods: [], workingDays: [] };
+    if (activeStructure && activeStructure.config) {
+        try {
+            config = JSON.parse(activeStructure.config);
+        } catch (e) { }
+    }
 
     // Cell Editing
     const [editingCell, setEditingCell] = useState<{ day: string, periodId: string } | null>(null);
 
-    // Filtered config periods actually displayed (filtering out breaks if desired for edit view? No, show breaks but read-only)
     const periods = config.periods || [];
     const days = config.workingDays || [];
 
     useEffect(() => {
-        if (selectedClassId) {
-            const cls = classrooms.find((c: any) => c.id === selectedClassId);
-            if (cls && cls.timetable) {
-                try {
-                    setSchedule(JSON.parse(cls.timetable));
-                } catch (e) {
-                    setSchedule({});
-                }
-            } else {
+        if (selectedClassId && selectedClass?.timetable) {
+            try {
+                setSchedule(JSON.parse(selectedClass.timetable));
+            } catch (e) {
                 setSchedule({});
             }
         } else {
@@ -401,47 +580,38 @@ function SchedulerView({ classrooms, staff, subjects, config, slug, onUpdate }: 
         }
     }, [selectedClassId, classrooms]);
 
-    const handleSave = async () => {
-        if (!selectedClassId) return;
-        setIsSaving(true);
+    const handleAssignStructure = async () => {
+        if (!selectedClassId || !selectedStructureId) {
+            toast.error("Please select a classroom and structure.");
+            return;
+        }
+
+        if (assignedStructureId && assignedStructureId !== selectedStructureId) {
+            if (!window.confirm("Changing the structure will reset the current timetable layout for this class. Are you sure?")) {
+                return;
+            }
+        }
+
+        toast.loading("Applying structure...", { id: "assign" });
         try {
-            const res = await updateClassroomAction(slug, selectedClassId, {
-                timetable: JSON.stringify(schedule)
-            });
+            const res = await assignTimetableStructureAction(slug, selectedClassId, selectedStructureId || null);
             if (res.success) {
-                toast.success("Timetable saved successfully");
+                toast.success("Schedule successfully created for class", { id: "assign" });
                 onUpdate();
             } else {
-                toast.error(res.error);
+                toast.error(res.error || "Failed to apply structure", { id: "assign" });
             }
-        } catch (error) {
-            toast.error("Failed to save timetable");
+        } catch (e) {
+            toast.error("An error occurred", { id: "assign" });
         }
-        setIsSaving(false);
-    };
-
-    const selectedClass = classrooms.find((c: any) => c.id === selectedClassId);
-
-    if (periods.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-zinc-100 text-center animate-in fade-in duration-500">
-                <div className="h-24 w-24 bg-orange-50 rounded-full flex items-center justify-center mb-6 text-orange-500">
-                    <AlertTriangle className="h-10 w-10" />
-                </div>
-                <h3 className="text-xl font-black text-zinc-900">Structure Missing</h3>
-                <p className="text-zinc-400 font-medium mt-2 max-w-xs">
-                    Please go to the "Structure & Settings" tab to define periods and school timings first.
-                </p>
-            </div>
-        );
     }
 
     return (
         <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             {/* Selection Bar */}
-            <div className="bg-white p-6 rounded-[2rem] border border-zinc-100 shadow-sm flex flex-col md:flex-row items-center gap-6">
-                <div className="flex-1 w-full md:max-w-md">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 mb-2 block">Select Class</label>
+            <div className="bg-white p-6 rounded-[2rem] border border-zinc-100 shadow-sm flex flex-col lg:flex-row items-start lg:items-center gap-6">
+                <div className="flex-1 w-full lg:max-w-[400px]">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 mb-2 block">1. Select Classroom</label>
                     <div className="relative">
                         <select
                             value={selectedClassId}
@@ -457,80 +627,111 @@ function SchedulerView({ classrooms, staff, subjects, config, slug, onUpdate }: 
                     </div>
                 </div>
 
-                {selectedClass && (
-                    <div className="flex items-center gap-4 border-l border-zinc-100 pl-6 w-full md:w-auto flex-wrap">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
-                                <LayoutGrid className="h-5 w-5" />
-                            </div>
-                            <div className="shrink-0">
-                                <p className="text-sm font-bold text-zinc-900">{selectedClass.capacity || "N/A"}</p>
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Capacity</p>
-                            </div>
-                        </div>
+                <div className="flex-1 w-full lg:max-w-[400px] border-l-0 lg:border-l border-zinc-100 lg:pl-6">
+                    <label className={cn("text-[10px] font-black uppercase tracking-widest px-1 mb-2 block", selectedClassId ? "text-zinc-400" : "text-zinc-300")}>
+                        2. Select Timetable Structure
+                    </label>
+                    <div className="relative">
+                        <select
+                            disabled={!selectedClassId}
+                            value={selectedStructureId}
+                            onChange={(e) => setSelectedStructureId(e.target.value)}
+                            className="w-full h-14 pl-6 pr-10 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-brand appearance-none cursor-pointer disabled:opacity-50"
+                        >
+                            <option value="">-- Select Structure --</option>
+                            {structures.map((s: any) => (
+                                <option key={s.id} value={s.id}>{s.name}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 pointer-events-none" />
                     </div>
-                )}
+                </div>
+
+                <div className="flex shrink-0 lg:pl-6 items-end lg:h-[70px]">
+                    <button
+                        type="button"
+                        onClick={handleAssignStructure}
+                        disabled={!selectedClassId || !selectedStructureId || (assignedStructureId === selectedStructureId)}
+                        className="h-14 px-8 bg-brand hover:brightness-110 text-[var(--secondary-color)] rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand/20 disabled:opacity-50 disabled:shadow-none flex items-center justify-center w-full lg:w-auto"
+                    >
+                        {assignedStructureId === selectedStructureId && selectedStructureId !== "" ? "Active" : "Create Schedule"}
+                    </button>
+                </div>
             </div>
 
             {selectedClassId ? (
-                <div className="bg-white rounded-[32px] border border-zinc-100 shadow-xl shadow-zinc-200/20 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse min-w-[1200px]">
-                            <thead>
-                                <tr className="bg-zinc-50 border-b border-zinc-100">
-                                    <th className="p-6 text-left border-r border-zinc-100 w-48 font-black text-xs uppercase text-zinc-400 sticky left-0 bg-zinc-50 z-10">Period</th>
-                                    {days.map((day: string) => (
-                                        <th key={day} className="p-6 text-center border-r border-zinc-100 font-black text-xs uppercase tracking-widest text-zinc-800">{day}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {periods.map((period: PeriodNode) => (
-                                    <tr key={period.id} className="border-b border-zinc-100 last:border-0 group hover:bg-zinc-50/30 transition-colors">
-                                        <td className="p-4 border-r border-zinc-100 font-bold text-zinc-500 bg-zinc-50 sticky left-0 z-10 group-hover:bg-zinc-100 transition-colors">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-black text-zinc-700">{period.name}</span>
-                                                <span className="text-[10px] text-zinc-400 font-bold mt-1 flex items-center gap-1">
-                                                    <Clock className="h-3 w-3" />
-                                                    {period.startTime} - {period.endTime}
-                                                </span>
-                                                {period.type === "BREAK" && (
-                                                    <span className="mt-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 w-fit">
-                                                        BREAK
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        {period.type === "CLASS" ? (
-                                            days.map((day: string) => {
-                                                const cellData = schedule[day]?.[period.id] || {};
-                                                const teacher = staff.find((s: any) => s.id === cellData.teacherId);
+                <>
+                    {!assignedStructureId ? (
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-zinc-100 text-center animate-in fade-in duration-500 shadow-sm">
+                            <div className="h-24 w-24 bg-brand/5 rounded-full flex items-center justify-center mb-6 text-brand">
+                                <LayoutGrid className="h-10 w-10" />
+                            </div>
+                            <h3 className="text-xl font-black text-zinc-900">No Schedule Created</h3>
+                            <p className="text-zinc-400 font-medium mt-2 max-w-sm">
+                                To schedule periods for this classroom, you must first select a Timetable Structure from the dropdown menu above and click "Create Schedule".
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-[32px] border border-zinc-100 shadow-xl shadow-zinc-200/20 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full border-collapse min-w-[1200px]">
+                                    <thead>
+                                        <tr className="bg-zinc-50 border-b border-zinc-100">
+                                            <th className="p-6 text-left border-r border-zinc-100 w-48 font-black text-xs uppercase text-zinc-400 sticky left-0 bg-zinc-50 z-10">Period</th>
+                                            {days.map((day: string) => (
+                                                <th key={day} className="p-6 text-center border-r border-zinc-100 font-black text-xs uppercase tracking-widest text-zinc-800">{day}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {periods.map((period: PeriodNode) => (
+                                            <tr key={period.id} className="border-b border-zinc-100 last:border-0 group hover:bg-zinc-50/30 transition-colors">
+                                                <td className="p-4 border-r border-zinc-100 font-bold text-zinc-500 bg-zinc-50 sticky left-0 z-10 group-hover:bg-zinc-100 transition-colors">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-black text-zinc-700">{period.name}</span>
+                                                        <span className="text-[10px] text-zinc-400 font-bold mt-1 flex items-center gap-1">
+                                                            <Clock className="h-3 w-3" />
+                                                            {period.startTime} - {period.endTime}
+                                                        </span>
+                                                        {period.type === "BREAK" && (
+                                                            <span className="mt-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 w-fit">
+                                                                BREAK
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                {period.type === "CLASS" ? (
+                                                    days.map((day: string) => {
+                                                        const cellData = schedule[day]?.[period.id] || {};
+                                                        const teacher = staff.find((s: any) => s.id === cellData.teacherId);
 
-                                                return (
-                                                    <td key={`${day}-${period.id}`} className="p-2 border-r border-zinc-100 align-top h-32">
-                                                        <Cell
-                                                            data={cellData}
-                                                            teacher={teacher}
-                                                            onClick={() => setEditingCell({ day, periodId: period.id })}
-                                                        />
+                                                        return (
+                                                            <td key={`${day}-${period.id}`} className="p-2 border-r border-zinc-100 align-top h-32">
+                                                                <Cell
+                                                                    data={cellData}
+                                                                    teacher={teacher}
+                                                                    onClick={() => setEditingCell({ day, periodId: period.id })}
+                                                                />
+                                                            </td>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <td colSpan={days.length} className="bg-zinc-50/50 p-2 align-middle text-center">
+                                                        <div className="flex items-center justify-center gap-2 text-zinc-300 font-black text-4xl opacity-20 uppercase tracking-[1em]">
+                                                            Break
+                                                        </div>
                                                     </td>
-                                                );
-                                            })
-                                        ) : (
-                                            <td colSpan={days.length} className="bg-zinc-50/50 p-2 align-middle text-center">
-                                                <div className="flex items-center justify-center gap-2 text-zinc-300 font-black text-5xl opacity-20 uppercase tracking-[1em]">
-                                                    Break
-                                                </div>
-                                            </td>
-                                        )}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                                )}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </>
             ) : (
-                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-zinc-100 text-center animate-in fade-in duration-500">
+                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-zinc-100 text-center animate-in fade-in duration-500 shadow-sm">
                     <div className="h-24 w-24 bg-zinc-50 rounded-full flex items-center justify-center mb-6">
                         <Calendar className="h-10 w-10 text-zinc-300" />
                     </div>
@@ -572,7 +773,7 @@ function SchedulerView({ classrooms, staff, subjects, config, slug, onUpdate }: 
                             });
                             if (res.success) {
                                 toast.success("Saved", { id: "autosave" });
-                                onUpdate(); // Silent refresh
+                                onUpdate();
                             } else {
                                 toast.error("Failed to auto-save", { id: "autosave" });
                             }
@@ -617,11 +818,9 @@ function CellEditor({ day, periodId, initialData, staff, subjects, slug, current
     const [subject, setSubject] = useState(initialData.subject || "");
     const [teacherId, setTeacherId] = useState(initialData.teacherId || "");
 
-    // Conflict State
     const [checking, setChecking] = useState(false);
     const [conflict, setConflict] = useState<string | null>(null);
 
-    // Initial check (if editing existing)
     useEffect(() => {
         if (teacherId) {
             checkConflict(teacherId);
@@ -647,21 +846,15 @@ function CellEditor({ day, periodId, initialData, staff, subjects, slug, current
         setTeacherId(tid);
         checkConflict(tid);
 
-        // Auto-fill subject from teacher profile
         const teacher = staff.find((s: any) => s.id === tid);
         if (teacher && teacher.subjects) {
-            // Take first subject if multiple (comma separated)
             const firstSubject = teacher.subjects.split(",")[0].trim();
-            // Only auto-fill if subject is empty? Or always?
-            // User requested "Show the Selected Teacher's Subject", usually implies override or set.
             setSubject(firstSubject);
         }
     };
 
     const handleSave = () => {
         if (conflict) {
-            // Optional: Block save or just warn? User requirement: "We annot assign same teacher".
-            // Blocking save seems appropriate.
             toast.error(`Cannot assign: Teacher is busy in ${conflict}`);
             return;
         }
@@ -682,7 +875,6 @@ function CellEditor({ day, periodId, initialData, staff, subjects, slug, current
                 </div>
 
                 <div className="space-y-4">
-                    {/* Subject Selector */}
                     <div>
                         <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1.5 block ml-1">Subject</label>
                         <div className="space-y-2">
@@ -691,7 +883,7 @@ function CellEditor({ day, periodId, initialData, staff, subjects, slug, current
                                 value={subjects.some((s: any) => s.name === subject) ? subject : subject ? "___CUSTOM___" : ""}
                                 onChange={(e) => {
                                     if (e.target.value === "___CUSTOM___") {
-                                        setSubject(""); // Clear to allow custom typing
+                                        setSubject("");
                                     } else {
                                         setSubject(e.target.value);
                                     }
@@ -704,7 +896,6 @@ function CellEditor({ day, periodId, initialData, staff, subjects, slug, current
                                 <option value="___CUSTOM___" className="text-brand font-bold">+ Other / Custom</option>
                             </select>
 
-                            {/* Show text input only if Subject is not in the list or "Other" was chosen */}
                             {(!subjects.some((s: any) => s.name === subject) || subject === "") && (
                                 <div className="relative animate-in slide-in-from-top-2 duration-200">
                                     <input
@@ -741,7 +932,6 @@ function CellEditor({ day, periodId, initialData, staff, subjects, slug, current
                         </select>
                     </div>
 
-                    {/* Conflict Status */}
                     <div className="h-10">
                         {checking ? (
                             <div className="flex items-center gap-2 text-xs text-zinc-400 font-medium">

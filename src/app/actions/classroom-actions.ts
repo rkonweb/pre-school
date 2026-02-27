@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-import { getCurrentUserAction } from "./session-actions";
+import { getCurrentUserAction, validateUserSchoolAction } from "./session-actions";
 
 export async function getClassroomsAction(schoolSlug: string) {
     try {
@@ -56,10 +56,13 @@ export async function getClassroomsAction(schoolSlug: string) {
     }
 }
 
-export async function getClassroomAction(id: string) {
+export async function getClassroomAction(id: string, slug: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const classroom = await prisma.classroom.findUnique({
-            where: { id },
+            where: { id, school: { slug } },
             include: {
                 teacher: true,
                 students: true
@@ -72,6 +75,9 @@ export async function getClassroomAction(id: string) {
 }
 
 export async function createClassroomAction(schoolSlug: string, name: string, teacherId?: string) {
+    const auth = await validateUserSchoolAction(schoolSlug);
+    if (!auth.success || !auth.user) throw new Error(auth.error || "Unauthorized");
+
     const school = await prisma.school.findUnique({
         where: { slug: schoolSlug }
     });
@@ -92,13 +98,16 @@ export async function createClassroomAction(schoolSlug: string, name: string, te
 
 export async function updateClassroomAction(schoolSlug: string, id: string, data: any) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const updateData = { ...data };
         if (updateData.teacherId === "") {
             updateData.teacherId = null;
         }
 
         const classroom = await prisma.classroom.update({
-            where: { id },
+            where: { id, school: { slug: schoolSlug } },
             data: updateData
         });
         revalidatePath(`/s/${schoolSlug}/academics/classes`);
@@ -110,8 +119,11 @@ export async function updateClassroomAction(schoolSlug: string, id: string, data
 
 export async function deleteClassroomAction(schoolSlug: string, id: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         await prisma.classroom.delete({
-            where: { id }
+            where: { id, school: { slug: schoolSlug } }
         });
         revalidatePath(`/s/${schoolSlug}/academics/classes`);
         return { success: true };

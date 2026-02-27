@@ -81,7 +81,7 @@ export async function updateBranchAction(slug: string, id: string, data: { name:
         }
 
         const branch = await prisma.branch.update({
-            where: { id },
+            where: { id, school: { slug } },
             data: {
                 name: data.name,
                 address: data.address,
@@ -109,7 +109,7 @@ export async function deleteBranchAction(slug: string, id: string) {
 
         // Prevent deleting if has students or users
         const branch = await prisma.branch.findUnique({
-            where: { id },
+            where: { id, school: { slug } },
             include: {
                 _count: {
                     select: { students: true, users: true }
@@ -123,7 +123,7 @@ export async function deleteBranchAction(slug: string, id: string) {
             return { success: false, error: "Cannot delete branch with active students or staff." };
         }
 
-        await prisma.branch.delete({ where: { id } });
+        await prisma.branch.delete({ where: { id, school: { slug } } });
 
         revalidatePath(`/s/${slug}/settings/branches`);
         revalidatePath(`/s/${slug}/dashboard`, 'layout');

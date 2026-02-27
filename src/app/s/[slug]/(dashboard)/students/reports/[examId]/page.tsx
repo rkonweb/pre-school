@@ -105,7 +105,7 @@ export default function MarksEntryPage() {
 
         // Fetch Class Students
         const { getClassroomAction } = await import("@/app/actions/classroom-actions");
-        const clsRes = await getClassroomAction(selectedClassId);
+        const clsRes = await getClassroomAction(selectedClassId, slug);
 
         if (clsRes.success && clsRes.classroom) {
             setStudents(clsRes.classroom.students);

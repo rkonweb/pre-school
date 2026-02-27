@@ -215,134 +215,118 @@ export function RouteForm({
                     </div>
 
                     {/* Waypoints Sequence Matrix */}
-                    <div className="bg-white rounded-[40px] p-10 border border-zinc-200 shadow-xl shadow-zinc-200/40">
-                        <div className="flex items-start justify-between mb-10">
+                    <div className="bg-[#fafafa] rounded-[40px] p-8 border border-zinc-100 shadow-sm relative">
+                        <div className="flex items-start justify-between mb-8">
                             <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-brand text-[var(--secondary-color)] flex items-center justify-center shadow-lg">
+                                <div className="h-12 w-12 rounded-2xl bg-[#a67c66] text-white flex items-center justify-center">
                                     <Compass className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Stops</h2>
+                                    <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight">Stops</h2>
                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-0.5">List of pickup and drop points</p>
                                 </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={addStop}
-                                className="h-12 px-6 bg-zinc-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
+                                className="h-12 px-6 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
                             >
                                 <Plus className="h-4 w-4" />
                                 Add Stop
                             </button>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {formData.stops.map((stop: any, fileIndex: number) => (
-                                <div key={fileIndex} className="group/stop relative grid gap-6 rounded-[32px] border border-zinc-100 bg-zinc-50/50 p-8 transition-all hover:bg-white hover:shadow-2xl hover:shadow-zinc-200/50">
-                                    {/* Delete Button */}
-                                    <button
-                                        type="button"
-                                        onClick={() => removeStop(fileIndex)}
-                                        className="absolute -right-2 -top-2 flex h-10 w-10 items-center justify-center rounded-full bg-white text-zinc-300 opacity-0 shadow-xl ring-1 ring-zinc-50 transition-all hover:text-red-600 hover:scale-110 group-hover/stop:opacity-100 z-10"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
-
-                                    <div className="flex flex-col lg:flex-row gap-8">
-                                        <div className="flex-1 space-y-8">
-                                            <div className="flex items-center gap-5">
-                                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white font-black text-xs italic shadow-lg">
-                                                    {String(fileIndex + 1).padStart(2, '0')}
-                                                </div>
-                                                <div className="flex-1 border-b-2 border-dashed border-zinc-200 focus-within:border-brand transition-colors">
-                                                    <input
-                                                        placeholder="ENTER STOP NAME..."
-                                                        required
-                                                        className="w-full border-0 bg-transparent p-0 pb-2 text-xl font-black text-zinc-900 focus:ring-0 placeholder:text-zinc-200 uppercase tracking-tight"
-                                                        value={stop.name}
-                                                        onChange={(e) => updateStop(fileIndex, "name", e.target.value)}
-                                                    />
-                                                </div>
+                                <div key={fileIndex} className="group/stop relative rounded-xl bg-white p-5 border border-zinc-200 shadow-sm">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-6 w-6 items-center justify-center rounded bg-zinc-100 text-xs font-semibold text-zinc-700">
+                                                {fileIndex + 1}
                                             </div>
+                                            <h4 className="text-sm font-semibold text-zinc-900">Stop Details</h4>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeStop(fileIndex)}
+                                            className="text-zinc-400 hover:text-red-600 transition-colors p-1"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </div>
 
-                                            <div className="grid grid-cols-3 gap-6">
-                                                <div className="p-5 rounded-2xl bg-white border border-zinc-100 shadow-sm">
-                                                    <label className="text-[9px] font-black uppercase tracking-widest text-brand mb-2 block italic">Morning</label>
-                                                    <label className="text-[11px] font-black uppercase tracking-tight text-zinc-900 mb-2 block">Pick Time</label>
-                                                    <div className="relative">
-                                                        <Clock className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300" />
-                                                        <input
-                                                            type="time"
-                                                            className="w-full border-0 bg-transparent pl-6 p-0 font-bold text-zinc-900 focus:ring-0"
-                                                            value={stop.pickupTime}
-                                                            onChange={(e) => updateStop(fileIndex, "pickupTime", e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="p-5 rounded-2xl bg-white border border-zinc-100 shadow-sm">
-                                                    <label className="text-[9px] font-black uppercase tracking-widest text-brand mb-2 block italic">Evening</label>
-                                                    <label className="text-[11px] font-black uppercase tracking-tight text-zinc-900 mb-2 block">Drop Time</label>
-                                                    <div className="relative">
-                                                        <Clock className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300" />
-                                                        <input
-                                                            type="time"
-                                                            className="w-full border-0 bg-transparent pl-6 p-0 font-bold text-zinc-900 focus:ring-0"
-                                                            value={stop.dropTime}
-                                                            onChange={(e) => updateStop(fileIndex, "dropTime", e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="p-5 rounded-2xl bg-white border border-zinc-100 shadow-sm">
-                                                    <label className="text-[9px] font-black uppercase tracking-widest text-brand mb-2 block text-right italic">Billing</label>
-                                                    <label className="text-[11px] font-black uppercase tracking-tight text-zinc-900 mb-2 block text-right">Monthly Fee</label>
-                                                    <div className="relative flex justify-end">
-                                                        <input
-                                                            type="number"
-                                                            className="w-full border-0 bg-transparent pr-6 p-0 font-bold text-zinc-900 focus:ring-0 text-right"
-                                                            value={stop.monthlyFee}
-                                                            onChange={(e) => updateStop(fileIndex, "monthlyFee", e.target.value)}
-                                                        />
-                                                        <span className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold text-zinc-300">₹</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                                        <div className="md:col-span-4 space-y-1.5 flex flex-col justify-end">
+                                            <label className="text-xs font-medium text-zinc-700">Stop Name</label>
+                                            <input
+                                                placeholder="e.g. Central Library"
+                                                required
+                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 placeholder:text-zinc-400"
+                                                value={stop.name}
+                                                onChange={(e) => updateStop(fileIndex, "name", e.target.value)}
+                                            />
                                         </div>
 
-                                        {/* Coordinates Input */}
-                                        <div className="lg:w-64 space-y-4 p-6 rounded-[28px] bg-zinc-900 text-white shadow-xl">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <Activity className="h-3 w-3 text-brand" />
-                                                    <span className="text-[8px] font-black uppercase tracking-[3px] text-zinc-500">Location Settings</span>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => getCurrentLocation(fileIndex)}
-                                                    className="h-7 px-3 bg-brand/10 text-brand rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-brand hover:text-[var(--secondary-color)] transition-all active:scale-95"
-                                                >
-                                                    GET LOCATION
-                                                </button>
-                                            </div>
-                                            <div className="space-y-3">
-                                                <div className="relative group/coord">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[8px] font-bold text-zinc-500 uppercase">Lat</span>
-                                                    <input
-                                                        type="text"
-                                                        className="w-full h-10 bg-white/5 border-0 rounded-xl pl-10 pr-3 text-[10px] font-bold focus:ring-1 focus:ring-brand transition-all"
-                                                        value={stop.lat === 0 ? '' : stop.lat}
-                                                        onChange={(e) => updateStop(fileIndex, "lat", e.target.value)}
-                                                    />
-                                                </div>
-                                                <div className="relative group/coord">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[8px] font-bold text-zinc-500 uppercase">Lng</span>
-                                                    <input
-                                                        type="text"
-                                                        className="w-full h-10 bg-white/5 border-0 rounded-xl pl-10 pr-3 text-[10px] font-bold focus:ring-1 focus:ring-brand transition-all"
-                                                        value={stop.lng === 0 ? '' : stop.lng}
-                                                        onChange={(e) => updateStop(fileIndex, "lng", e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
+                                        <div className="md:col-span-2 space-y-1.5 flex flex-col justify-end">
+                                            <label className="text-xs font-medium text-zinc-700">Morning Pick</label>
+                                            <input
+                                                type="time"
+                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400"
+                                                value={stop.pickupTime}
+                                                onChange={(e) => updateStop(fileIndex, "pickupTime", e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-2 space-y-1.5 flex flex-col justify-end">
+                                            <label className="text-xs font-medium text-zinc-700">Evening Drop</label>
+                                            <input
+                                                type="time"
+                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400"
+                                                value={stop.dropTime}
+                                                onChange={(e) => updateStop(fileIndex, "dropTime", e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-2 space-y-1.5 flex flex-col justify-end">
+                                            <label className="text-xs font-medium text-zinc-700">Fee (₹)</label>
+                                            <input
+                                                type="number"
+                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400"
+                                                value={stop.monthlyFee}
+                                                onChange={(e) => updateStop(fileIndex, "monthlyFee", e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-2 flex flex-col justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => getCurrentLocation(fileIndex)}
+                                                className="w-full flex h-[38px] items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 text-xs font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
+                                            >
+                                                <Activity className="h-3 w-3" />
+                                                Locate
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 bg-zinc-50 rounded-lg p-3 border border-zinc-100">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Latitude</label>
+                                            <input
+                                                type="text"
+                                                className="w-full border-0 bg-transparent p-0 text-sm font-medium text-zinc-600 focus:ring-0"
+                                                value={stop.lat === 0 ? '' : stop.lat}
+                                                onChange={(e) => updateStop(fileIndex, "lat", e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Longitude</label>
+                                            <input
+                                                type="text"
+                                                className="w-full border-0 bg-transparent p-0 text-sm font-medium text-zinc-600 focus:ring-0"
+                                                value={stop.lng === 0 ? '' : stop.lng}
+                                                onChange={(e) => updateStop(fileIndex, "lng", e.target.value)}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -351,16 +335,14 @@ export function RouteForm({
                             {formData.stops.length === 0 && (
                                 <button
                                     type="button"
-                                    className="w-full flex flex-col items-center justify-center p-20 border-2 border-dashed border-zinc-200 rounded-[40px] bg-zinc-50/30 group hover:border-brand hover:bg-white transition-all duration-500"
+                                    className="w-full flex flex-col items-center justify-center py-12 border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-colors group"
                                     onClick={addStop}
                                 >
-                                    <div className="h-20 w-20 bg-white rounded-3xl shadow-xl flex items-center justify-center mb-6 ring-1 ring-zinc-50 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
-                                        <MapPin className="h-8 w-8 text-zinc-100 group-hover:text-brand" />
+                                    <div className="h-10 w-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 ring-1 ring-zinc-200 group-hover:scale-110 transition-all">
+                                        <Plus className="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 transition-colors" />
                                     </div>
-                                    <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest leading-relaxed text-center italic">
-                                        No stops added yet.<br />
-                                        <span className="text-brand not-italic">Click to add your first stop</span>
-                                    </h3>
+                                    <span className="text-sm font-medium text-zinc-700">No stops added yet</span>
+                                    <span className="text-xs text-zinc-500 mt-1">Click to add your first route stop</span>
                                 </button>
                             )}
                         </div>
@@ -370,7 +352,7 @@ export function RouteForm({
                 {/* Sidebar: Right Column */}
                 <div className="lg:col-span-4 space-y-8">
                     {/* Live Preview Map */}
-                    <div className="h-[400px] w-full sticky top-8 z-20">
+                    <div className="h-[400px] w-full z-20">
                         <RouteMapPreview stops={formData.stops} apiKey={apiKey} />
                     </div>
 

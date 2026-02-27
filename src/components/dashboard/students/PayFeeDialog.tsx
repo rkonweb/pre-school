@@ -10,9 +10,10 @@ interface PayFeeDialogProps {
     onClose: () => void;
     onSuccess: () => void;
     currency?: string;
+    slug: string;
 }
 
-export function PayFeeDialog({ fee, isOpen, onClose, onSuccess, currency }: PayFeeDialogProps) {
+export function PayFeeDialog({ fee, isOpen, onClose, onSuccess, currency, slug }: PayFeeDialogProps) {
     const [amount, setAmount] = useState("");
     const [method, setMethod] = useState("CASH");
     const [reference, setReference] = useState("");
@@ -51,7 +52,7 @@ export function PayFeeDialog({ fee, isOpen, onClose, onSuccess, currency }: PayF
 
         setIsSubmitting(true);
         try {
-            const res = await recordPaymentAction(fee.id, payAmount, method, reference, new Date(paymentDate));
+            const res = await recordPaymentAction(slug, fee.id, payAmount, method, reference, new Date(paymentDate));
             if (res.success) {
                 toast.success("Payment recorded");
                 onSuccess();

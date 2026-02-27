@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu, Search, Clock as ClockIcon } from "lucide-react";
+import { Bell, Menu, Search, Clock as ClockIcon, Maximize, Minimize } from "lucide-react";
 import Link from "next/link";
 import { ProfileMenu } from "./ProfileMenu";
 import { AcademicYearSelector } from "./AcademicYearSelector";
@@ -10,6 +10,7 @@ import { useSidebar } from "@/context/SidebarContext";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { searchGlobalAction } from "@/app/actions/search-actions";
 import { useParams, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export function Header({
     schoolName,
@@ -22,7 +23,7 @@ export function Header({
     branches?: any[];
     currentBranchId?: string;
 }) {
-    const { toggleSidebar } = useSidebar();
+    const { toggleSidebar, isAppFullscreen, toggleFullscreen } = useSidebar();
     const [currentTime, setCurrentTime] = useState("");
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -84,7 +85,10 @@ export function Header({
     return (
         <header
             style={{ backgroundColor: 'var(--brand-color)' }}
-            className="sticky top-0 z-[999] flex h-[94px] w-full items-center justify-between border-b border-white/10 bg-gradient-to-r from-brand to-brand/90 px-4 shadow-xl shadow-brand/5 backdrop-blur-md sm:px-6 lg:px-8"
+            className={cn(
+                "sticky top-0 z-[999] flex h-[94px] w-full items-center justify-between border-b border-white/10 bg-gradient-to-r from-brand to-brand/90 px-4 shadow-xl shadow-brand/5 backdrop-blur-md sm:px-6 lg:px-8",
+                isAppFullscreen && "hidden"
+            )}
         >
             {/* Mobile Menu Trigger & Search */}
             <div className="flex items-center gap-6">
@@ -129,6 +133,14 @@ export function Header({
                     <Bell className="h-5 w-5" />
                     <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white dark:ring-zinc-950" />
                     <span className="sr-only">Notifications</span>
+                </button>
+
+                <button
+                    onClick={toggleFullscreen}
+                    className="rounded-full p-1.5 text-white/80 hover:bg-white/10 transition-colors"
+                    title={isAppFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                >
+                    {isAppFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
                 </button>
 
                 <ProfileMenu

@@ -1,17 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Send, MessageCircle, Check, Sparkles, Loader2, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { getAIDraftResponseAction } from "@/app/actions/admission-actions";
-
-const MOCK_TEMPLATES = [
-    { id: "t1", title: "Initial Inquiry Response", category: "INQUIRY", content: "Hi {{parentName}}, thank you for your interest in {{schoolName}}. We would love to schedule a tour for you and {{childName}}." },
-    { id: "t2", title: "Tour Invitation", category: "TOUR", content: "Hello {{parentName}}, are you available for a school tour this Saturday at 10 AM? It's a great way to see our campus." },
-    { id: "t3", title: "Fee Structure Details", category: "FEE", content: "Dear {{parentName}}, as requested, here are the details regarding our fee structure for the upcoming academic year..." },
-    { id: "t4", title: "Follow-up: No Response", category: "FOLLOWUP", content: "Hi {{parentName}}, just checking in to see if you had any further questions about our programs." },
-];
+import { getWhatsAppTemplatesAction } from "@/app/actions/whatsapp-template-actions";
+import { useParams } from "next/navigation";
 
 export function WhatsAppTemplates({
     leadId,
@@ -22,15 +17,30 @@ export function WhatsAppTemplates({
     onSelect?: (template: any) => void,
     onSend?: (template: any) => void
 }) {
+    const params = useParams();
+    const slug = params.slug as string;
     const [search, setSearch] = useState("");
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isDrafting, setIsDrafting] = useState(false);
     const [aiDraft, setAiDraft] = useState<string | null>(null);
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filtered = MOCK_TEMPLATES.filter(t => t.title.toLowerCase().includes(search.toLowerCase()));
+    useEffect(() => {
+        if (slug) {
+            getWhatsAppTemplatesAction(slug).then(res => {
+                if (res.success && res.templates) {
+                    setTemplates(res.templates);
+                }
+                setIsLoading(false);
+            });
+        }
+    }, [slug]);
+
+    const filtered = templates.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
 
     const handleAIDraft = async () => {
-        const template = MOCK_TEMPLATES.find(t => t.id === selectedId);
+        const template = templates.find(t => t.id === selectedId);
         if (!template) return;
 
         setIsDrafting(true);
@@ -72,7 +82,15 @@ export function WhatsAppTemplates({
             </div>
 
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                {filtered.map(t => (
+                {isLoading ? (
+                    <div className="flex justify-center p-4">
+                        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+                    </div>
+                ) : filtered.length === 0 ? (
+                    <div className="text-center p-4 text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+                        No templates found
+                    </div>
+                ) : filtered.map(t => (
                     <div
                         key={t.id}
                         onClick={() => handleSelect(t)}
@@ -84,11 +102,11 @@ export function WhatsAppTemplates({
                         )}
                     >
                         <div className="flex items-center justify-between mb-1">
-                            <h4 className={cn("text-xs font-bold", selectedId === t.id ? "text-green-800" : "text-zinc-700")}>{t.title}</h4>
+                            <h4 className={cn("text-xs font-bold", selectedId === t.id ? "text-green-800" : "text-zinc-700")}>{t.name}</h4>
                             {selectedId === t.id && <Check className="h-3 w-3 text-green-600" />}
                         </div>
                         <p className="text-[10px] text-zinc-500 line-clamp-2 leading-relaxed">
-                            {selectedId === t.id && aiDraft ? aiDraft : t.content}
+                            {selectedId === t.id && aiDraft ? aiDraft : t.body}
                         </p>
                     </div>
                 ))}
@@ -119,8 +137,8 @@ export function WhatsAppTemplates({
 
                     <Button
                         onClick={() => {
-                            const t = MOCK_TEMPLATES.find(x => x.id === selectedId);
-                            if (t && onSend) onSend({ ...t, content: aiDraft || t.content });
+                            const t = templates.find(x => x.id === selectedId);
+                            if (t && onSend) onSend({ ...t, content: aiDraft || t.body });
                         }}
                         className="w-full h-9 bg-green-600 hover:bg-green-700 text-white text-xs font-black uppercase tracking-widest gap-2 shadow-lg shadow-green-600/20"
                     >

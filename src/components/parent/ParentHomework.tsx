@@ -138,65 +138,66 @@ function TaskCard({ task, index, onClick, brandColor }: any) {
             transition={{ delay: index * 0.1 }}
             whileHover={{ scale: 1.01, y: -4 }}
             onClick={onClick}
-            className="relative bg-white rounded-[3rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border-4 border-transparent hover:border-indigo-100/50 transition-all cursor-pointer overflow-hidden group"
+            className="relative bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 shadow-lg shadow-slate-200/50 border border-white/60 hover:border-white transition-all cursor-pointer overflow-hidden group"
         >
-            {/* Status Bar */}
+            {/* Status Bar / Glow */}
             <div
-                className="absolute left-0 top-0 bottom-0 w-2.5 transition-all group-hover:w-3.5"
-                style={{ backgroundColor: isReviewed ? '#10b981' : isSubmitted ? brandColor : '#f1f5f9' }}
+                className="absolute -left-10 -top-10 w-32 h-32 blur-3xl rounded-full opacity-40 group-hover:opacity-60 transition-opacity"
+                style={{ backgroundColor: isReviewed ? '#10b981' : isSubmitted ? brandColor : '#fcd34d' }}
             />
 
             {/* Status Badge */}
-            <div className="absolute top-8 right-8">
+            <div className="absolute top-6 right-6">
                 {isReviewed ? (
-                    <div className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-full shadow-xl shadow-emerald-200/40">
-                        <CheckCircle className="h-4 w-4" />
-                        <span className="font-black text-[10px] uppercase tracking-widest text-white">Reviewed</span>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-full shadow-sm backdrop-blur-md">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <span className="font-bold text-[10px] uppercase tracking-widest">Reviewed</span>
                     </div>
                 ) : isSubmitted ? (
-                    <div className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-full shadow-xl shadow-indigo-200/40">
-                        <Clock className="h-4 w-4" />
-                        <span className="font-black text-[10px] uppercase tracking-widest text-white">Submitted</span>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 shadow-sm backdrop-blur-md rounded-full border"
+                        style={{ backgroundColor: `${brandColor}15`, color: brandColor, borderColor: `${brandColor}30` }}>
+                        <Clock className="h-3.5 w-3.5" />
+                        <span className="font-bold text-[10px] uppercase tracking-widest">Submitted</span>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-2 px-5 py-2.5 bg-amber-50 text-amber-600 rounded-full border border-amber-100 animate-pulse">
-                        <Star className="h-4 w-4" />
-                        <span className="font-black text-[10px] uppercase tracking-widest leading-none">New Task</span>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-full border border-amber-100 shadow-sm animate-pulse">
+                        <Star className="h-3.5 w-3.5" />
+                        <span className="font-bold text-[10px] uppercase tracking-widest leading-none">New Task</span>
                     </div>
                 )}
             </div>
 
-            <div className="pr-20">
-                <div className="flex items-center gap-3 mb-4">
-                    <span className="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest border border-slate-100">
+            <div className="relative z-10 pr-16 sm:pr-20">
+                <div className="flex items-center gap-3 mb-3">
+                    <span className="px-3 py-1 rounded-xl bg-white/60 backdrop-blur-sm text-slate-500 text-[9px] font-black uppercase tracking-widest border border-white/40 shadow-sm">
                         {task.subject || "General"}
                     </span>
                 </div>
 
-                <h3 className="text-3xl font-black text-slate-800 tracking-tight leading-[0.9] mb-4 group-hover:text-slate-900 transition-colors">
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight leading-[1] mb-3 group-hover:text-slate-900 transition-colors">
                     {task.title}
                 </h3>
 
-                <p className="text-[11px] text-slate-400 font-medium italic mb-8 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-500 font-medium italic mb-6 line-clamp-2 leading-relaxed">
                     "{task.description}"
                 </p>
 
                 {/* Media Badges */}
-                <div className="flex flex-wrap gap-2 mb-8">
+                <div className="flex flex-wrap gap-2 mb-6">
                     {task.videoUrl && (
-                        <span className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-rose-100">
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 rounded-[10px] text-[10px] font-bold tracking-wide border border-rose-100 shadow-sm">
                             <Video className="h-3.5 w-3.5" />
                             Video
                         </span>
                     )}
                     {task.voiceNoteUrl && (
-                        <span className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-purple-100">
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-600 rounded-[10px] text-[10px] font-bold tracking-wide border border-purple-100 shadow-sm">
                             <Mic className="h-3.5 w-3.5" />
                             Voice
                         </span>
                     )}
                     {task.worksheetUrl && (
-                        <span className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-[10px] text-[10px] font-bold tracking-wide border border-emerald-100 shadow-sm">
                             <FileText className="h-3.5 w-3.5" />
                             Worksheet
                         </span>
@@ -204,27 +205,27 @@ function TaskCard({ task, index, onClick, brandColor }: any) {
                 </div>
 
                 <div className="flex items-center justify-between mt-auto">
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 sm:gap-6">
                         {task.dueDate && (
-                            <div className="flex items-center gap-2.5">
-                                <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
-                                    <Calendar className="h-4 w-4" />
+                            <div className="flex items-center gap-2">
+                                <div className="h-7 w-7 rounded-full bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-50">
+                                    <Calendar className="h-3.5 w-3.5" />
                                 </div>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <span className="text-[10px] font-bold text-slate-500 tracking-wide">
                                     {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                 </span>
                             </div>
                         )}
-                        <div className="flex items-center gap-2.5">
-                            <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
-                                <Clock className="h-4 w-4" />
+                        <div className="flex items-center gap-2">
+                            <div className="h-7 w-7 rounded-full bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-50">
+                                <Clock className="h-3.5 w-3.5" />
                             </div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{task.estimatedTime || "15m"}</span>
+                            <span className="text-[10px] font-bold text-slate-500 tracking-wide">{task.estimatedTime || "15m"}</span>
                         </div>
                     </div>
 
                     {!isSubmitted && (
-                        <div className="flex items-center gap-2 text-indigo-600 group-hover:translate-x-1 transition-transform">
+                        <div className="flex items-center gap-1.5 text-indigo-600 group-hover:translate-x-1 transition-transform">
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Start</span>
                             <ChevronRight className="h-4 w-4" />
                         </div>
@@ -236,20 +237,19 @@ function TaskCard({ task, index, onClick, brandColor }: any) {
                     <motion.div
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className="mt-8 p-5 rounded-[2rem] border-2 border-amber-100 shadow-lg shadow-amber-500/5 relative overflow-hidden"
-                        style={{ background: 'linear-gradient(135deg, #fffbeb, #fef3c7)' }}
+                        className="mt-6 p-4 rounded-3xl border border-amber-200/50 shadow-lg shadow-amber-500/10 relative overflow-hidden bg-gradient-to-br from-amber-50/80 to-yellow-100/80 backdrop-blur-md"
                     >
-                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-200/20 rounded-full blur-2xl" />
-                        <div className="flex items-center gap-5 relative z-10">
-                            <div className="h-14 w-14 bg-white rounded-full flex items-center justify-center shadow-md">
-                                {stickerType === "EXCELLENT" && <Star className="h-7 w-7 text-amber-400 fill-amber-400" />}
-                                {stickerType === "CREATIVE" && <Sparkles className="h-7 w-7 text-amber-400" />}
-                                {stickerType === "STAR" && <Star className="h-7 w-7 text-amber-400 fill-amber-400" />}
-                                {stickerType === "MEDAL" && <Award className="h-7 w-7 text-amber-400" />}
+                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-300/20 rounded-full blur-2xl" />
+                        <div className="flex items-center gap-4 relative z-10">
+                            <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-white">
+                                {stickerType === "EXCELLENT" && <Star className="h-6 w-6 text-amber-500 fill-amber-500" />}
+                                {stickerType === "CREATIVE" && <Sparkles className="h-6 w-6 text-amber-500" />}
+                                {stickerType === "STAR" && <Star className="h-6 w-6 text-amber-500 fill-amber-500" />}
+                                {stickerType === "MEDAL" && <Award className="h-6 w-6 text-amber-500" />}
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-amber-700 uppercase tracking-[0.2em] mb-0.5">Sticker Awarded!</p>
-                                <p className="text-xl font-black text-amber-900 leading-none">{stickerType.replace('_', ' ')}</p>
+                                <p className="text-[9px] font-black text-amber-700 uppercase tracking-[0.2em] mb-0.5 opacity-80">Sticker Awarded!</p>
+                                <p className="text-lg font-black text-amber-900 leading-none">{stickerType.replace('_', ' ')}</p>
                             </div>
                         </div>
                     </motion.div>

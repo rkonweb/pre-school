@@ -340,24 +340,24 @@ export default function DiaryPage() {
                                                             <span className="truncate flex-1">{entry.title}</span>
                                                         </div>
                                                         {/* Hover Actions */}
-                                                        <div className="absolute inset-0 bg-black/80 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 z-10">
+                                                        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-10">
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     handleEdit(entry);
                                                                 }}
-                                                                className="p-1 bg-white rounded text-zinc-900 hover:bg-zinc-100"
+                                                                className="p-1.5 bg-white border border-zinc-200 shadow-sm rounded-md text-zinc-700 hover:bg-zinc-50 hover:text-brand transition-colors"
                                                             >
-                                                                <Edit2 className="h-3 w-3" />
+                                                                <Edit2 className="h-3.5 w-3.5" />
                                                             </button>
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     handleDelete(entry.id);
                                                                 }}
-                                                                className="p-1 bg-red-500 rounded text-white hover:bg-red-600"
+                                                                className="p-1.5 bg-red-50 border border-red-100 shadow-sm rounded-md text-red-600 hover:bg-red-100 transition-colors"
                                                             >
-                                                                <Trash2 className="h-3 w-3" />
+                                                                <Trash2 className="h-3.5 w-3.5" />
                                                             </button>
                                                         </div>
                                                     </div>

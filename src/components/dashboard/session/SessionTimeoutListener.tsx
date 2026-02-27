@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
 import { toast } from "sonner";
 
@@ -11,6 +11,8 @@ interface SessionTimeoutListenerProps {
 
 export function SessionTimeoutListener({ timeoutMinutes = 15 }: SessionTimeoutListenerProps) {
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const lastActivityRef = useRef<number>(Date.now());
 
@@ -22,14 +24,15 @@ export function SessionTimeoutListener({ timeoutMinutes = 15 }: SessionTimeoutLi
             // Show toast (though it might disappear quickly on redirect)
             toast.error("Session timed out due to inactivity.");
 
-            // Force redirect to login
-            router.push("/school-login");
+            // Force redirect to login with callbackUrl
+            const currentUrl = encodeURIComponent(`${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`);
+            router.push(`/school-login?callbackUrl=${currentUrl}`);
         } catch (error) {
             console.error("Logout failed:", error);
             // Fallback redirect
             window.location.href = "/school-login";
         }
-    }, [router]);
+    }, [router, pathname, searchParams]);
 
     const resetTimer = useCallback(() => {
         if (timerRef.current) {

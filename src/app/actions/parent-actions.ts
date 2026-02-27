@@ -501,6 +501,13 @@ export async function getStudentDetailsAction(slug: string, studentId: string, p
                         timetableConfig: true,
                         workingDays: true
                     }
+                },
+                hostelAllocations: {
+                    where: { status: 'ACTIVE' },
+                    include: { room: { include: { hostel: true } } }
+                },
+                canteenSubscriptions: {
+                    where: { status: 'ACTIVE' }
                 }
             }
         });

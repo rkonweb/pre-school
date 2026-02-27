@@ -38,7 +38,7 @@ export default function EditClassPage() {
         setIsLoading(true);
         try {
             const [classRes, staffRes, gradesRes, sectionsRes] = await Promise.all([
-                getClassroomAction(classId),
+                getClassroomAction(classId, slug),
                 getStaffAction(slug),
                 getMasterDataAction("GRADE", null),
                 getMasterDataAction("SECTION", null)

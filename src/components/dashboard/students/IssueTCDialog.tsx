@@ -117,12 +117,14 @@ export function IssueTCDialog({
 
                         <div className="space-y-2">
                             <Label>Upload Softcopy (PDF) <span className="text-red-500">*</span></Label>
+                            <input type="hidden" name="studentId" value={studentId} title="Student ID" />
                             <div className="border-2 border-dashed border-zinc-200 rounded-lg p-6 hover:bg-zinc-50 transition-colors text-center cursor-pointer relative group">
                                 <input
                                     type="file"
                                     name="file"
                                     accept="application/pdf"
                                     required
+                                    title="Upload TC PDF"
                                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                                     onChange={(e) => setFile(e.target.files?.[0] || null)}
                                 />

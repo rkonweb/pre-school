@@ -6,15 +6,7 @@ import { generateText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { createBlogPostAction } from "./cms-actions"
-
-// Helper to get AI Configuration
-async function getAIConfig() {
-    const settings = await prisma.systemSettings.findUnique({
-        where: { id: 'global' }
-    });
-    if (!settings?.integrationsConfig) return null;
-    return JSON.parse(settings.integrationsConfig as string);
-}
+import { resolveSchoolAIModel } from "@/lib/school-integrations"
 
 // Fetch Automation Settings
 export async function getBlogAutomationSettingsAction() {
@@ -97,13 +89,12 @@ export async function triggerAutoBlogGenerationAction(force: boolean = false, cl
             console.log("[Blog AI] Proceeding: Scheduled window met and last run is outdated.");
         }
 
-        const config = await getAIConfig();
-        if (!config?.openAiKey && !config?.googleAiKey) {
-            throw new Error("AI API keys are missing in System Settings");
-        }
+        // Per-school AI model resolution
+        // Blog automation targets the first/only school if no slug is available
+        const firstSchool = await prisma.school.findFirst({ select: { slug: true } });
+        if (!firstSchool?.slug) throw new Error("No school found for blog generation.");
 
-        const apiKey = config.openAiKey || config.googleAiKey;
-        const provider = config.openAiKey ? 'openai' : 'google';
+        const { apiKey, provider } = await resolveSchoolAIModel(firstSchool.slug);
 
         const model = provider === 'openai'
             ? createOpenAI({ apiKey })('gpt-4o-mini')

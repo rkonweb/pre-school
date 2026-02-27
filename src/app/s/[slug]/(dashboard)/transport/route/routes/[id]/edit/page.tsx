@@ -17,7 +17,7 @@ export default async function EditRoutePage({
     const [vehiclesRes, driversRes, routeRes, school] = await Promise.all([
         getVehiclesAction(slug),
         getDriversAction(slug),
-        getRouteDetailsAction(id),
+        getRouteDetailsAction(id, slug),
         prisma.school.findUnique({
             where: { slug },
             select: { googleMapsApiKey: true }

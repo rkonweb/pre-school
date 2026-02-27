@@ -85,7 +85,9 @@ export async function updateTransportExpenseAction(schoolSlug: string, expenseId
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
         const user = auth.user;
 
-        const existing = await prisma.transportExpense.findUnique({ where: { id: expenseId } });
+        const existing = await prisma.transportExpense.findUnique({
+            where: { id: expenseId, schoolId: user.schoolId as string }
+        });
         if (!existing) return { success: false, error: "Expense not found" };
 
         // Permission check
@@ -127,7 +129,7 @@ export async function updateTransportExpenseAction(schoolSlug: string, expenseId
         const newStatus = canApprove ? existing.status : "PENDING";
 
         const expense = await prisma.transportExpense.update({
-            where: { id: expenseId },
+            where: { id: expenseId, schoolId: user.schoolId as string },
             data: {
                 vehicleId: data.vehicleId,
                 category: data.category,
@@ -202,7 +204,7 @@ export async function resolveExpenseAnomalyAction(schoolSlug: string, expenseId:
         if (!canApprove) return { success: false, error: "Unauthorized to resolve anomalies" };
 
         await prisma.transportExpense.update({
-            where: { id: expenseId },
+            where: { id: expenseId, schoolId: user.schoolId as string },
             data: { isSuspicious: false, anomalyReason: null }
         });
 
@@ -222,7 +224,9 @@ export async function deleteTransportExpenseAction(schoolSlug: string, expenseId
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
         const user = auth.user;
 
-        const existing = await prisma.transportExpense.findUnique({ where: { id: expenseId } });
+        const existing = await prisma.transportExpense.findUnique({
+            where: { id: expenseId, schoolId: user.schoolId as string }
+        });
         if (!existing) return { success: false, error: "Expense not found" };
 
         const userPerms = typeof user.customRole?.permissions === 'string'
@@ -240,7 +244,7 @@ export async function deleteTransportExpenseAction(schoolSlug: string, expenseId
         }
 
         await prisma.transportExpense.delete({
-            where: { id: expenseId }
+            where: { id: expenseId, schoolId: user.schoolId as string }
         });
 
         revalidatePath(`/s/${schoolSlug}/transport/expenses`);
@@ -270,7 +274,7 @@ export async function approveTransportExpenseAction(schoolSlug: string, expenseI
         if (!canApprove) return { success: false, error: "Unauthorized to approve expenses" };
 
         await prisma.transportExpense.update({
-            where: { id: expenseId },
+            where: { id: expenseId, schoolId: user.schoolId as string },
             data: {
                 status: "APPROVED",
                 approvedById: user.id
@@ -304,7 +308,7 @@ export async function rejectTransportExpenseAction(schoolSlug: string, expenseId
         if (!canApprove) return { success: false, error: "Unauthorized to reject expenses" };
 
         await prisma.transportExpense.update({
-            where: { id: expenseId },
+            where: { id: expenseId, schoolId: user.schoolId as string },
             data: {
                 status: "REJECTED",
                 rejectionReason: reason,

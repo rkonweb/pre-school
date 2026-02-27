@@ -24,10 +24,17 @@ import {
 import Link from "next/link";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { cn } from "@/lib/utils";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
 import { getBillingDashboardAction } from "@/app/actions/billing-dashboard-actions";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { getCookie } from "@/lib/cookies";
+import { useSidebar } from "@/context/SidebarContext";
 
 export default function BillingDashboard() {
     const params = useParams();
@@ -35,6 +42,7 @@ export default function BillingDashboard() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState<any>(null);
+    const { currency } = useSidebar();
 
     // Query State
     const [searchTerm, setSearchTerm] = useState("");
@@ -45,13 +53,25 @@ export default function BillingDashboard() {
         direction: "desc"
     });
 
-    // Debounce search
+    // Immediate load for pagination and filters
+    useEffect(() => {
+        loadData();
+    }, [slug, page, statusFilter, sortConfig]);
+
+    // Debounced load for search
     useEffect(() => {
         const timer = setTimeout(() => {
-            loadData();
+            if (searchTerm) loadData();
         }, 500);
         return () => clearTimeout(timer);
-    }, [slug, page, searchTerm, statusFilter, sortConfig]);
+    }, [searchTerm]);
+
+    // Clear search immediate trigger
+    useEffect(() => {
+        if (searchTerm === "") {
+            loadData();
+        }
+    }, [searchTerm]);
 
     async function loadData() {
         // Only show full loader on initial load or severe context switch
@@ -92,10 +112,9 @@ export default function BillingDashboard() {
         return sortConfig.direction === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />;
     };
 
-    const currencyFormatter = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: data?.currency || "USD"
-    });
+    const formatCurrency = (amount: number) => {
+        return `${currency}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
 
     const hasNextPage = data?.pagination?.page < data?.pagination?.totalPages;
     const hasPrevPage = data?.pagination?.page > 1;
@@ -120,18 +139,39 @@ export default function BillingDashboard() {
                         Manage student fees, generate invoices, and track payments.
                     </p>
                 </div>
-                <div className="flex gap-3">
-                    <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900">
-                        <Download className="h-4 w-4" />
-                        Export Report
-                    </button>
+                <div className="flex flex-wrap gap-3">
                     <Link
                         href={`/s/${slug}/billing/bulk`}
                         className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-[var(--secondary-color)] transition-colors hover:brightness-110 shadow-sm shadow-brand/20"
                     >
                         <Plus className="h-4 w-4" />
-                        Bulk Generate Invoices
+                        Bulk Generate
                     </Link>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                                title="More options"
+                            >
+                                <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-48">
+                            <DropdownMenuItem asChild>
+                                <Link href={`/s/${slug}/settings/fees`} className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4" />
+                                    Fee Structures
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href={`/s/${slug}/accounts/transactions`} className="flex items-center gap-2">
+                                    <CreditCard className="h-4 w-4" />
+                                    Transactions
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
@@ -139,28 +179,28 @@ export default function BillingDashboard() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     title="Total Billed"
-                    value={currencyFormatter.format(data?.stats?.totalBilled || 0)}
+                    value={formatCurrency(data?.stats?.totalBilled || 0)}
                     subValue="All time"
                     icon={FileText}
                     color="brand"
                 />
                 <StatCard
                     title="Collected"
-                    value={currencyFormatter.format(data?.stats?.collected || 0)}
+                    value={formatCurrency(data?.stats?.collected || 0)}
                     subValue={`${data?.stats?.totalBilled ? Math.round((data.stats.collected / data.stats.totalBilled) * 100) : 0}% collection rate`}
                     icon={CheckCircle}
                     color="green"
                 />
                 <StatCard
                     title="Pending"
-                    value={currencyFormatter.format(data?.stats?.pending || 0)}
+                    value={formatCurrency(data?.stats?.pending || 0)}
                     subValue="Receivables"
                     icon={Clock}
                     color="orange"
                 />
                 <StatCard
                     title="Overdue"
-                    value={currencyFormatter.format(data?.stats?.overdue || 0)}
+                    value={formatCurrency(data?.stats?.overdue || 0)}
                     subValue="Requires active follow-up"
                     icon={AlertCircle}
                     color="purple"
@@ -201,6 +241,7 @@ export default function BillingDashboard() {
                                     value={statusFilter}
                                     onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                                     className="appearance-none rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-8 text-sm font-medium focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 min-w-[140px]"
+                                    title="Filter by Status"
                                 >
                                     <option value="ALL">All Status</option>
                                     <option value="PAID">Paid</option>
@@ -267,9 +308,9 @@ export default function BillingDashboard() {
                                             <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 font-medium">{inv.title}</td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold text-zinc-900 dark:text-zinc-50">{currencyFormatter.format(inv.amount)}</span>
+                                                    <span className="font-bold text-zinc-900 dark:text-zinc-50">{formatCurrency(inv.amount)}</span>
                                                     {inv.paid > 0 && (
-                                                        <span className="text-[10px] text-green-600 font-medium">Paid: {currencyFormatter.format(inv.paid)}</span>
+                                                        <span className="text-[10px] text-green-600 font-medium">Paid: {formatCurrency(inv.paid)}</span>
                                                     )}
                                                 </div>
                                             </td>
@@ -288,9 +329,24 @@ export default function BillingDashboard() {
                                                 {format(new Date(inv.dueDate), "MMM dd, yyyy")}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <button className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 transition-colors">
-                                                    <MoreHorizontal className="h-5 w-5" />
-                                                </button>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button
+                                                            className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 transition-colors"
+                                                            title="Options"
+                                                        >
+                                                            <MoreHorizontal className="h-5 w-5" />
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent className="w-40">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={`/s/${slug}/billing/invoice/${inv.id}`} className="flex items-center gap-2 cursor-pointer">
+                                                                <FileText className="h-4 w-4" />
+                                                                View / Print
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </td>
                                         </tr>
                                     ))

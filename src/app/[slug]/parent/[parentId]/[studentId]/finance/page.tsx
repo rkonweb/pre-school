@@ -225,35 +225,46 @@ function FinanceSummaryCard({ summary, brandColor, secondaryColor }: { summary: 
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative h-56 rounded-[2.5rem] p-8 overflow-hidden shadow-2xl relative group"
-            style={{ boxShadow: `0 20px 40px -10px ${brandColor}40` }}
+            className="relative h-60 rounded-[2.5rem] p-7 sm:p-8 overflow-hidden shadow-2xl group border border-white/20"
+            style={{
+                background: `linear-gradient(135deg, ${brandColor}, ${secondaryColor})`,
+                boxShadow: `0 20px 40px -10px ${brandColor}50`
+            }}
         >
-            <div className="absolute inset-0" style={{ backgroundImage: `radial-gradient( circle farthest-corner at 8.3% 21.6%,  rgba(252,92,125,1) 13.1%, rgba(106,130,251,1) 90% )` }} />
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+            {/* Decorative Blur Orbs */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-[50px] -translate-y-1/2 translate-x-1/3 mix-blend-overlay transition-transform duration-700 group-hover:scale-110" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/20 rounded-full blur-[40px] translate-y-1/3 -translate-x-1/3 mix-blend-overlay" />
 
             <div className="relative z-10 h-full flex flex-col justify-between text-white">
                 <div className="flex justify-between items-start">
-                    <div>
-                        <p className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em] mb-2">Total Outstanding</p>
-                        <h2 className="text-4xl font-black tracking-tighter leading-none">
-                            <span className="text-xl mr-1 opacity-60">R</span>
+                    <div className="flex flex-col gap-1">
+                        <div className="inline-flex w-fit items-center px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/20 shadow-sm mb-2">
+                            <span className="text-[9px] font-black text-white/90 uppercase tracking-[0.2em] leading-none">Total Balance</span>
+                        </div>
+                        <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-none flex items-start gap-1">
+                            <span className="text-xl sm:text-2xl mt-1 opacity-70">R</span>
                             {summary?.totalDue.toLocaleString() || "0"}
                         </h2>
                     </div>
-                    <div className="h-12 w-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-lg">
-                        <Wallet className="h-6 w-6 text-white" />
+                    <div className="h-12 w-12 sm:h-14 sm:w-14 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/30 shadow-[0_8px_16px_rgba(0,0,0,0.1)] shrink-0">
+                        <Wallet className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white/10 rounded-2xl p-3 border border-white/10 backdrop-blur-sm">
-                        <p className="text-[9px] font-black text-white/50 uppercase tracking-widest mb-1">Paid YTD</p>
-                        <p className="text-lg font-black leading-none">R{summary?.totalPaid.toLocaleString() || "0"}</p>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-auto">
+                    <div className="bg-white/10 rounded-2xl p-3 sm:p-4 border border-white/20 backdrop-blur-md shadow-inner flex flex-col justify-center">
+                        <p className="text-[9px] sm:text-[10px] font-black text-white/70 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            Paid YTD
+                        </p>
+                        <p className="text-lg sm:text-xl font-black leading-none tracking-tight">R{summary?.totalPaid.toLocaleString() || "0"}</p>
                     </div>
-                    <div className="bg-white/10 rounded-2xl p-3 border border-white/10 backdrop-blur-sm">
-                        <p className="text-[9px] font-black text-white/50 uppercase tracking-widest mb-1">Overdue</p>
-                        <p className="text-lg font-black leading-none text-rose-200">
+                    <div className="bg-white/10 rounded-2xl p-3 sm:p-4 border border-white/20 backdrop-blur-md shadow-inner flex flex-col justify-center">
+                        <p className="text-[9px] sm:text-[10px] font-black text-white/70 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                            Overdue
+                        </p>
+                        <p className="text-lg sm:text-xl font-black leading-none text-rose-100 tracking-tight">
                             {summary?.overdue || 0} Items
                         </p>
                     </div>
@@ -265,70 +276,71 @@ function FinanceSummaryCard({ summary, brandColor, secondaryColor }: { summary: 
 
 function FeeCard({ fee, index, brandColor, onPay }: any) {
     const isOverdue = fee.status === "OVERDUE";
-    const statusColor = isOverdue ? "text-rose-500 bg-rose-50 border-rose-100" : "text-indigo-500 bg-indigo-50 border-indigo-100";
+    const statusColor = isOverdue ? "text-rose-600 bg-rose-50 border-rose-100" : "text-indigo-600 bg-indigo-50 border-indigo-100";
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group"
+            className="bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-[2rem] border border-white shadow-lg shadow-slate-200/40 relative overflow-hidden group hover:shadow-xl transition-all"
         >
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-5">
                 <div className="flex gap-4">
                     <div
-                        className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-slate-50"
-                        style={{ backgroundColor: isOverdue ? '#fff1f2' : `${brandColor}10` }}
+                        className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border"
+                        style={{
+                            backgroundColor: isOverdue ? '#fff1f2' : `${brandColor}15`,
+                            borderColor: isOverdue ? '#ffe4e6' : `${brandColor}30`
+                        }}
                     >
                         <Receipt
-                            className="h-6 w-6"
-                            style={{ color: isOverdue ? '#f43f5e' : brandColor }}
+                            className="h-6 w-6 sm:h-7 sm:w-7"
+                            style={{ color: isOverdue ? '#e11d48' : brandColor }}
                         />
                     </div>
-                    <div>
-                        <h4 className="font-black text-slate-800 text-base tracking-tight leading-snug mb-1">{fee.title}</h4>
+                    <div className="flex flex-col justify-center">
+                        <h4 className="font-black text-slate-800 text-base sm:text-lg tracking-tight leading-snug mb-1.5">{fee.title}</h4>
                         <div className="flex items-center gap-2">
                             <span className={cn(
-                                "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border",
+                                "text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-sm",
                                 statusColor
                             )}>
                                 {fee.status}
                             </span>
-                            <span className="text-[10px] font-bold text-slate-400">
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
                                 Due {format(new Date(fee.dueDate), "MMM do")}
                             </span>
                         </div>
                     </div>
                 </div>
-                <div className="text-right">
-                    <p className="text-xl font-black text-slate-900 tracking-tight">
+                <div className="text-right flex flex-col items-end">
+                    <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
                         <span className="text-xs text-slate-400 mr-0.5">R</span>
                         {fee.amount.toLocaleString()}
                     </p>
                 </div>
             </div>
 
-            <div className="flex items-center gap-3 pt-4 border-t border-slate-50">
-                <div className="flex-1 flex flex-col gap-1">
-                    {/* Breakdown Placeholder (if we had line items) */}
-                    {/* For now, just a simplified view */}
-                    <div className="flex justify-between text-[10px] font-medium text-slate-400">
+            <div className="flex items-center gap-4 pt-5 border-t border-slate-100/60">
+                <div className="flex-1 flex flex-col gap-2">
+                    <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                         <span>Tuition & Fees</span>
                         <span>100%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: '0%', backgroundColor: brandColor }} />
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                        <div className="h-full rounded-full transition-all duration-1000" style={{ width: '0%', backgroundColor: brandColor }} />
                     </div>
                 </div>
 
                 <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={onPay}
-                    className="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-2 transition-all"
+                    className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shrink-0"
                     style={{ backgroundColor: brandColor }}
                 >
                     Pay Now
-                    <ArrowRight className="h-3 w-3" />
+                    <ArrowRight className="h-4 w-4" />
                 </motion.button>
             </div>
         </motion.div>
@@ -341,25 +353,26 @@ function PaymentHistoryCard({ transaction, index, brandColor }: any) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between"
+            className="bg-white/90 backdrop-blur-md p-5 rounded-[2rem] border border-white shadow-lg shadow-slate-200/40 flex items-center justify-between hover:shadow-xl transition-all"
         >
             <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 shadow-sm">
                     <CheckCircle className="h-6 w-6 text-emerald-500" />
                 </div>
-                <div>
-                    <h4 className="font-bold text-slate-800 text-sm leading-tight mb-0.5">{transaction.feeTitle}</h4>
-                    <p className="text-[10px] font-bold text-slate-400">
-                        Paid on {transaction.createdAt ? format(new Date(transaction.createdAt), "MMM do, yyyy") : "Unknown Date"}
+                <div className="flex flex-col gap-1">
+                    <h4 className="font-black text-slate-800 text-sm sm:text-base leading-tight">{transaction.feeTitle}</h4>
+                    <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5">
+                        <Calendar className="h-3 w-3" />
+                        {transaction.createdAt ? format(new Date(transaction.createdAt), "MMM do, yyyy") : "Unknown Date"}
                     </p>
                 </div>
             </div>
-            <div className="text-right">
-                <p className="text-lg font-black text-slate-900">
+            <div className="text-right flex flex-col items-end gap-1.5">
+                <p className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-none">
                     <span className="text-xs text-slate-400 mr-0.5">R</span>
                     {transaction.amount.toLocaleString()}
                 </p>
-                <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-widest">
+                <span className="text-[9px] font-black text-emerald-700 bg-emerald-100/50 border border-emerald-200 px-2.5 py-1 rounded-lg uppercase tracking-widest shadow-sm">
                     {transaction.method || "PAID"}
                 </span>
             </div>
@@ -400,35 +413,36 @@ function PaymentModal({ fee, phone, onClose, onSuccess, brandColor }: any) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-end sm:items-center justify-center sm:p-4"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
         >
             <motion.div
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
-                className="bg-[#F8FAFC] w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl relative"
+                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                className="bg-white/95 backdrop-blur-md w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] overflow-hidden shadow-2xl relative border border-white/50"
             >
                 {step === "METHOD" && (
-                    <div className="p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-black text-slate-900">Payment details</h3>
-                            <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200">
+                    <div className="p-8">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-xl font-black text-slate-800 tracking-tight">Payment Details</h3>
+                            <button onClick={onClose} className="p-2.5 bg-slate-50 rounded-full hover:bg-slate-100 transition-colors">
                                 <X className="h-5 w-5 text-slate-500" />
                             </button>
                         </div>
 
-                        <div className="text-center mb-8">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Amount</p>
-                            <h2 className="text-4xl font-black text-slate-900 tracking-tight">
-                                <span className="text-xl text-slate-400 mr-1">R</span>
+                        <div className="text-center mb-10 pb-8 border-b border-slate-100/60">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Total Amount due</p>
+                            <h2 className="text-5xl font-black text-slate-900 tracking-tighter leading-none flex items-start justify-center gap-1.5">
+                                <span className="text-2xl text-slate-300 mt-1.5">R</span>
                                 {fee.amount.toLocaleString()}
                             </h2>
-                            <span className="inline-block mt-2 px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-500">
+                            <span className="inline-flex mt-4 px-4 py-1.5 bg-slate-50 rounded-xl border border-slate-100 text-[10px] font-black text-slate-500 uppercase tracking-widest shadow-sm">
                                 {fee.title}
                             </span>
                         </div>
 
-                        <div className="space-y-3 mb-8">
+                        <div className="space-y-3 mb-10">
                             <PaymentMethodOption icon={Smartphone} label="UPI Apps" subLabel="GPay, PhonePe" selected={method === "UPI"} onClick={() => setMethod("UPI")} brandColor={brandColor} />
                             <PaymentMethodOption icon={CreditCard} label="Cards" subLabel="Credit / Debit" selected={method === "CARD"} onClick={() => setMethod("CARD")} brandColor={brandColor} />
                             <PaymentMethodOption icon={Building} label="Net Banking" subLabel="All Banks" selected={method === "NETBANKING"} onClick={() => setMethod("NETBANKING")} brandColor={brandColor} />
@@ -437,30 +451,48 @@ function PaymentModal({ fee, phone, onClose, onSuccess, brandColor }: any) {
                         <button
                             disabled={!method}
                             onClick={handlePay}
-                            className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-white shadow-lg transition-all disabled:opacity-50"
-                            style={{ backgroundColor: brandColor }}
+                            className="w-full py-4.5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest text-white shadow-lg shadow-slate-200/50 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
+                            style={{
+                                backgroundColor: brandColor,
+                                background: `linear-gradient(135deg, ${brandColor}, ${brandColor}dd)`
+                            }}
                         >
                             Pay Securely
+                            <ShieldCheck className="h-4 w-4" />
                         </button>
                     </div>
                 )}
 
                 {step === "PROCESSING" && (
-                    <div className="p-12 flex flex-col items-center justify-center text-center min-h-[400px]">
-                        <Loader2 className="h-12 w-12 animate-spin mb-4" style={{ color: brandColor }} />
-                        <h3 className="text-xl font-black text-slate-900">Processing...</h3>
-                        <p className="text-xs font-bold text-slate-400 mt-2">Securely contacting gateway</p>
+                    <div className="p-12 flex flex-col items-center justify-center text-center min-h-[460px]">
+                        <div className="relative mb-8">
+                            <div className="absolute inset-0 bg-indigo-100 rounded-full blur-xl opacity-50 animate-pulse" />
+                            <div className="relative h-20 w-20 bg-white shadow-xl shadow-slate-200/50 rounded-2xl flex items-center justify-center border border-slate-50">
+                                <Loader2 className="h-8 w-8 animate-spin" style={{ color: brandColor }} />
+                            </div>
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-2">Processing...</h3>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Securely contacting gateway</p>
                     </div>
                 )}
 
                 {step === "SUCCESS" && (
-                    <div className="p-12 flex flex-col items-center justify-center text-center min-h-[400px]">
-                        <div className="h-20 w-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
-                            <CheckCircle className="h-10 w-10 text-emerald-600" />
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="p-12 flex flex-col items-center justify-center text-center min-h-[460px]"
+                    >
+                        <div className="relative mb-8">
+                            <div className="absolute inset-0 bg-emerald-200 rounded-full blur-2xl opacity-40 animate-pulse" />
+                            <div className="relative h-24 w-24 bg-gradient-to-br from-emerald-400 to-emerald-500 rounded-[2rem] flex items-center justify-center shadow-xl shadow-emerald-200/50">
+                                <CheckCircle className="h-10 w-10 text-white" />
+                            </div>
                         </div>
-                        <h3 className="text-2xl font-black text-slate-900">Payment Successful!</h3>
-                        <p className="text-sm font-bold text-slate-400 mt-2">Transaction ID: TXN-{Date.now().toString().slice(-6)}</p>
-                    </div>
+                        <h3 className="text-3xl font-black text-slate-800 tracking-tight mb-3 leading-none">Payment Successful!</h3>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 mt-2">
+                            REF: TXN-{Date.now().toString().slice(-6)}
+                        </p>
+                    </motion.div>
                 )}
             </motion.div>
         </motion.div>

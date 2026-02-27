@@ -159,7 +159,9 @@ export async function sendOtpAction(mobile: string, type: "signup" | "login" | "
             }
         }
 
-        const code = "123456"; // Always 123456 for testing purposes
+        const code = process.env.NODE_ENV === "production"
+            ? randomInt(100000, 999999).toString()
+            : "123456"; // Always 123456 for testing purposes
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
         // Invalidate old OTPs
@@ -201,8 +203,8 @@ export async function verifyOtpAction(mobile: string, code: string, context: "si
     }
 
     try {
-        // BACKDOOR FOR TESTING (KEPT AS REQUESTED)
-        const isBackdoor = code === "123456";
+        // BACKDOOR FOR TESTING (DISABLED IN PRODUCTION)
+        const isBackdoor = code === "123456" && process.env.NODE_ENV !== "production";
 
         if (!isBackdoor) {
             const record = await prisma.otp.findFirst({

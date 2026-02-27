@@ -113,7 +113,7 @@ export default function VehiclesPage() {
                     </div>
                 </div>
                 <Link
-                    href={`/s/${slug}/transport/vehicles/new`}
+                    href={`/s/${slug}/transport/fleet/vehicles/new`}
                     style={{ backgroundColor: brandColor }}
                     className="h-12 px-8 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >

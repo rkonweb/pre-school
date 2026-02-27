@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
     getBooksAction,
     createBookAction,
@@ -20,8 +20,16 @@ import {
     Upload,
     FileSpreadsheet,
     Image as ImageIcon,
-    X
+    X,
+    MoreHorizontal,
+    CreditCard
 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import Papa from "papaparse";
@@ -30,6 +38,7 @@ import { useConfirm } from "@/contexts/ConfirmContext";
 
 export default function LibraryInventoryPage() {
     const params = useParams();
+    const router = useRouter();
     const slug = params.slug as string;
     const { confirm: confirmDialog } = useConfirm();
     const [books, setBooks] = useState<any[]>([]);
@@ -38,6 +47,7 @@ export default function LibraryInventoryPage() {
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: "asc" | "desc" }>({ key: "createdAt", direction: "desc" });
     const [categoryFilter, setCategoryFilter] = useState("All");
     const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+    const [debouncedSearch, setDebouncedSearch] = useState("");
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,11 +75,24 @@ export default function LibraryInventoryPage() {
 
     useEffect(() => {
         fetchBooks();
-    }, [slug, search, sortConfig, categoryFilter]);
+    }, [slug, debouncedSearch, sortConfig, categoryFilter]);
+
+    useEffect(() => {
+        if (!search) {
+            setDebouncedSearch("");
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [search]);
 
     async function fetchBooks() {
         setLoading(true);
-        const res = await getBooksAction(slug, search, sortConfig.key, sortConfig.direction, categoryFilter);
+        const res = await getBooksAction(slug, debouncedSearch, sortConfig.key, sortConfig.direction, categoryFilter);
         if (res.success) {
             setBooks(res.data || []);
             if (res.categories) setAvailableCategories(res.categories);
@@ -124,7 +147,7 @@ export default function LibraryInventoryPage() {
             let bookId = editingBook?.id;
 
             if (editingBook) {
-                res = await updateBookAction(editingBook.id, formData, slug);
+                res = await updateBookAction(slug, editingBook.id, formData);
             } else {
                 res = await createBookAction(formData, slug);
                 // We need the ID for image upload. createBookAction doesn't return ID currently in our lightweight implementation.
@@ -147,9 +170,9 @@ export default function LibraryInventoryPage() {
                 // Let's find the book we just added if it was a create action.
                 if (!bookId && res.success) {
                     // Try to find the book we just created to attach image
-                    // This is a bit "hacky" but works without changing backend signature immediately.
-                    const recentRes = await getBooksAction(slug, formData.isbn || formData.title);
-                    if (recentRes.success && recentRes.data.length > 0) {
+                    const searchStr = (formData.isbn || formData.title) as string;
+                    const recentRes = await getBooksAction(slug, searchStr);
+                    if (recentRes.success && recentRes.data && recentRes.data.length > 0) {
                         bookId = recentRes.data[0].id;
                     }
                 }
@@ -247,7 +270,7 @@ export default function LibraryInventoryPage() {
 
         if (!confirmed) return;
 
-        const res = await deleteBookAction(id, slug);
+        const res = await deleteBookAction(slug, id);
         if (res.success) {
             toast.success("Book deleted");
             fetchBooks();
@@ -263,13 +286,12 @@ export default function LibraryInventoryPage() {
                     <h1 className="text-3xl font-black text-zinc-900">Book Inventory</h1>
                     <p className="text-zinc-500">Manage your library catalog.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     <button
-                        onClick={() => setIsBulkModalOpen(true)}
+                        onClick={() => router.push(`/s/${slug}/library/issue`)}
                         className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-bold text-zinc-600 shadow-sm transition-all hover:bg-zinc-50"
                     >
-                        <FileSpreadsheet className="h-4 w-4" />
-                        Bulk Upload
+                        Issue / Return
                     </button>
                     <button
                         onClick={() => handleOpenModal()}
@@ -278,6 +300,27 @@ export default function LibraryInventoryPage() {
                         <Plus className="h-4 w-4" />
                         Add New Book
                     </button>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className="flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm font-bold text-zinc-600 shadow-sm transition-all hover:bg-zinc-50"
+                                title="More options"
+                            >
+                                <MoreHorizontal className="h-5 w-5" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-48">
+                            <DropdownMenuItem onClick={() => router.push(`/s/${slug}/library/transactions`)} className="flex items-center gap-2">
+                                <CreditCard className="h-4 w-4" />
+                                Transactions
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setIsBulkModalOpen(true)} className="flex items-center gap-2">
+                                <FileSpreadsheet className="h-4 w-4" />
+                                Bulk Upload
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
@@ -299,6 +342,7 @@ export default function LibraryInventoryPage() {
                         onChange={(e) => setCategoryFilter(e.target.value)}
                         className="w-full h-full rounded-2xl border-0 bg-white px-4 py-4 text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus:ring-2 focus:ring-brand appearance-none cursor-pointer"
                         style={{ backgroundImage: 'none' }}
+                        title="Filter by category"
                     >
                         <option value="All">All Categories</option>
                         {availableCategories.map(cat => (
@@ -309,341 +353,357 @@ export default function LibraryInventoryPage() {
             </div>
 
             {/* Book List - Table View */}
-            {loading ? (
-                <div className="flex justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-brand" />
-                </div>
-            ) : (
-                <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm ring-1 ring-zinc-100">
-                    <table className="w-full text-left">
-                        <thead className="bg-zinc-50 border-b border-zinc-100">
-                            <tr>
-                                <th
-                                    onClick={() => handleSort("title")}
-                                    className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-pointer hover:text-zinc-700 hover:bg-zinc-100 transition-colors select-none"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        Book
-                                        {sortConfig.key === "title" && (
-                                            <span className="text-brand">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                                        )}
-                                    </div>
-                                </th>
-                                <th
-                                    onClick={() => handleSort("copies")}
-                                    className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-pointer hover:text-zinc-700 hover:bg-zinc-100 transition-colors select-none"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        Stock
-                                        {sortConfig.key === "copies" && (
-                                            <span className="text-brand">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                                        )}
-                                    </div>
-                                </th>
-                                <th
-                                    onClick={() => handleSort("category")}
-                                    className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-pointer hover:text-zinc-700 hover:bg-zinc-100 transition-colors select-none"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        Details
-                                        {sortConfig.key === "category" && (
-                                            <span className="text-brand">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                                        )}
-                                    </div>
-                                </th>
-                                <th className="px-6 py-4 text-[10px] text-right font-black uppercase tracking-widest text-zinc-400">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-50">
-                            {books.length === 0 ? (
+            {
+                loading ? (
+                    <div className="flex justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-brand" />
+                    </div>
+                ) : (
+                    <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm ring-1 ring-zinc-100">
+                        <table className="w-full text-left">
+                            <thead className="bg-zinc-50 border-b border-zinc-100">
                                 <tr>
-                                    <td colSpan={4} className="py-12 text-center text-zinc-500">
-                                        No books found. Add one manually or use bulk upload.
-                                    </td>
+                                    <th
+                                        onClick={() => handleSort("title")}
+                                        className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-pointer hover:text-zinc-700 hover:bg-zinc-100 transition-colors select-none"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Book
+                                            {sortConfig.key === "title" && (
+                                                <span className="text-brand">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                                            )}
+                                        </div>
+                                    </th>
+                                    <th
+                                        onClick={() => handleSort("copies")}
+                                        className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-pointer hover:text-zinc-700 hover:bg-zinc-100 transition-colors select-none"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Stock
+                                            {sortConfig.key === "copies" && (
+                                                <span className="text-brand">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                                            )}
+                                        </div>
+                                    </th>
+                                    <th
+                                        onClick={() => handleSort("category")}
+                                        className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-pointer hover:text-zinc-700 hover:bg-zinc-100 transition-colors select-none"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Details
+                                            {sortConfig.key === "category" && (
+                                                <span className="text-brand">{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                                            )}
+                                        </div>
+                                    </th>
+                                    <th className="px-6 py-4 text-[10px] text-right font-black uppercase tracking-widest text-zinc-400">Actions</th>
                                 </tr>
-                            ) : (
-                                books.map((book) => (
-                                    <tr key={book.id} className="group hover:bg-zinc-50/50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-16 w-12 shrink-0 overflow-hidden rounded-md bg-zinc-100 shadow-sm border border-zinc-100">
-                                                    {book.coverUrl ? (
-                                                        <img
-                                                            src={book.coverUrl}
-                                                            alt={book.title}
-                                                            className="h-full w-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="flex h-full w-full items-center justify-center text-zinc-300 bg-zinc-50">
-                                                            <ImageIcon className="h-4 w-4" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <div className="font-bold text-zinc-900 line-clamp-2 max-w-[200px]">{book.title}</div>
-                                                    <div className="text-xs text-zinc-500">{book.author}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total</span>
-                                                    <span className="font-bold text-zinc-900">{book.copies}</span>
-                                                </div>
-                                                <div className="h-8 w-px bg-zinc-100"></div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Avail</span>
-                                                    <span className={cn(
-                                                        "font-bold",
-                                                        book.available > 0 ? "text-emerald-600" : "text-red-600"
-                                                    )}>
-                                                        {book.available}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-wrap gap-2 text-xs font-medium">
-                                                {book.category && (
-                                                    <span className="inline-flex items-center rounded-md bg-zinc-100 px-2 py-1 text-zinc-600 border border-zinc-200">
-                                                        {book.category}
-                                                    </span>
-                                                )}
-                                                {book.shelfNo && (
-                                                    <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-amber-700 border border-amber-100">
-                                                        Shelf: {book.shelfNo}
-                                                    </span>
-                                                )}
-                                                {book.isbn && (
-                                                    <span className="inline-flex items-center rounded-md bg-brand/5 px-2 py-1 text-brand border border-brand/10 font-mono text-[10px]">
-                                                        ISBN: {book.isbn}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={() => handleOpenModal(book)}
-                                                    className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/40 transition-all shadow-sm"
-                                                    title="Edit Book"
-                                                >
-                                                    <Edit className="h-3.5 w-3.5" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(book.id)}
-                                                    className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
-                                                    title="Delete Book"
-                                                >
-                                                    <Trash className="h-3.5 w-3.5" />
-                                                </button>
-                                            </div>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-50">
+                                {books.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="py-12 text-center text-zinc-500">
+                                            No books found. Add one manually or use bulk upload.
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                                ) : (
+                                    books.map((book) => (
+                                        <tr key={book.id} className="group hover:bg-zinc-50/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-16 w-12 shrink-0 overflow-hidden rounded-md bg-zinc-100 shadow-sm border border-zinc-100">
+                                                        {book.coverUrl ? (
+                                                            <img
+                                                                src={book.coverUrl}
+                                                                alt={book.title}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-full w-full items-center justify-center text-zinc-300 bg-zinc-50">
+                                                                <ImageIcon className="h-4 w-4" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <div className="font-bold text-zinc-900 line-clamp-2 max-w-[200px]">{book.title}</div>
+                                                        <div className="text-xs text-zinc-500">{book.author}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-6">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total</span>
+                                                        <span className="font-bold text-zinc-900">{book.copies}</span>
+                                                    </div>
+                                                    <div className="h-8 w-px bg-zinc-100"></div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Avail</span>
+                                                        <span className={cn(
+                                                            "font-bold",
+                                                            book.available > 0 ? "text-emerald-600" : "text-red-600"
+                                                        )}>
+                                                            {book.available}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-wrap gap-2 text-xs font-medium">
+                                                    {book.category && (
+                                                        <span className="inline-flex items-center rounded-md bg-zinc-100 px-2 py-1 text-zinc-600 border border-zinc-200">
+                                                            {book.category}
+                                                        </span>
+                                                    )}
+                                                    {book.shelfNo && (
+                                                        <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-amber-700 border border-amber-100">
+                                                            Shelf: {book.shelfNo}
+                                                        </span>
+                                                    )}
+                                                    {book.isbn && (
+                                                        <span className="inline-flex items-center rounded-md bg-brand/5 px-2 py-1 text-brand border border-brand/10 font-mono text-[10px]">
+                                                            ISBN: {book.isbn}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => handleOpenModal(book)}
+                                                        className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/40 transition-all shadow-sm"
+                                                        title="Edit Book"
+                                                    >
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(book.id)}
+                                                        className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
+                                                        title="Delete Book"
+                                                    >
+                                                        <Trash className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )
+            }
 
             {/* Add/Edit Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4 backdrop-blur-sm">
-                    <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
-                        <div className="mb-6 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-zinc-900">
-                                {editingBook ? "Edit Book" : "Add New Book"}
-                            </h2>
-                            <button
-                                onClick={() => setIsModalOpen(false)}
-                                className="rounded-full p-2 hover:bg-zinc-100"
-                            >
-                                <X className="h-5 w-5 text-zinc-500" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* Image Upload Field */}
-                            <div className="flex justify-center mb-6">
-                                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                                    <div className="h-32 w-24 overflow-hidden rounded-xl bg-zinc-100 ring-2 ring-zinc-200 ring-offset-2 transition-all group-hover:ring-brand">
-                                        {previewUrl ? (
-                                            <img src={previewUrl} alt="Cover Preview" className="h-full w-full object-cover" />
-                                        ) : (
-                                            <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-zinc-400">
-                                                <Upload className="h-6 w-6" />
-                                                <span className="text-[10px] font-bold uppercase tracking-wider">Cover</span>
-                                            </div>
-                                        )}
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                                            <p className="text-white text-xs font-bold">Change</p>
-                                        </div>
-                                    </div>
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        onChange={handleFileSelect}
-                                        accept="image/*"
-                                        className="hidden"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="mb-1 block text-sm font-medium text-zinc-700">Book Title</label>
-                                <input
-                                    required
-                                    type="text"
-                                    className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium text-zinc-700">Author</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
-                                        value={formData.author}
-                                        onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium text-zinc-700">Category</label>
-                                    <input
-                                        type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium text-zinc-700">ISBN</label>
-                                    <input
-                                        type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
-                                        value={formData.isbn}
-                                        onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium text-zinc-700">Publisher</label>
-                                    <input
-                                        type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
-                                        value={formData.publisher}
-                                        onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium text-zinc-700">Total Copies</label>
-                                    <input
-                                        required
-                                        type="number"
-                                        min="1"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
-                                        value={formData.copies}
-                                        onChange={(e) => setFormData({ ...formData, copies: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="mb-1 block text-sm font-medium text-zinc-700">Shelf No.</label>
-                                    <input
-                                        type="text"
-                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
-                                        value={formData.shelfNo}
-                                        onChange={(e) => setFormData({ ...formData, shelfNo: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end gap-2 pt-4">
+            {
+                isModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4 backdrop-blur-sm">
+                        <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+                            <div className="mb-6 flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-zinc-900">
+                                    {editingBook ? "Edit Book" : "Add New Book"}
+                                </h2>
                                 <button
-                                    type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-500 hover:bg-zinc-100"
+                                    className="rounded-full p-2 hover:bg-zinc-100"
+                                    title="Close modal"
                                 >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="flex items-center gap-2 rounded-xl bg-brand px-6 py-2 text-sm font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl disabled:opacity-50"
-                                >
-                                    {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                                    {editingBook ? "Update Book" : "Add Book"}
+                                    <X className="h-5 w-5 text-zinc-500" />
                                 </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
-            {/* Bulk Upload Modal */}
-            {isBulkModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4 backdrop-blur-sm">
-                    <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-                        <div className="mb-6 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-zinc-900">Bulk Upload</h2>
-                            <button
-                                onClick={() => setIsBulkModalOpen(false)}
-                                className="rounded-full p-2 hover:bg-zinc-100"
-                            >
-                                <X className="h-5 w-5 text-zinc-500" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="rounded-xl bg-brand/10 p-4 text-sm text-brand border border-brand/20">
-                                <p className="font-bold mb-1">CSV Format guide:</p>
-                                <p>Headers: Title, Author, ISBN, Category, Copies, Shelf</p>
-                            </div>
-
-                            <div className="flex w-full items-center justify-center">
-                                <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 hover:border-brand/40 transition-all">
-                                    <div className="flex flex-col items-center justify-center pb-6 pt-5">
-                                        <Upload className="mb-2 h-8 w-8 text-zinc-400" />
-                                        <p className="mb-2 text-sm text-zinc-500">
-                                            <span className="font-semibold">Click to upload</span> or drag and drop
-                                        </p>
-                                        <p className="text-xs text-zinc-500">CSV files only</p>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                {/* Image Upload Field */}
+                                <div className="flex justify-center mb-6">
+                                    <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                                        <div className="h-32 w-24 overflow-hidden rounded-xl bg-zinc-100 ring-2 ring-zinc-200 ring-offset-2 transition-all group-hover:ring-brand">
+                                            {previewUrl ? (
+                                                <img src={previewUrl} alt="Cover Preview" className="h-full w-full object-cover" />
+                                            ) : (
+                                                <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-zinc-400">
+                                                    <Upload className="h-6 w-6" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Cover</span>
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                                                <p className="text-white text-xs font-bold">Change</p>
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleFileSelect}
+                                            accept="image/*"
+                                            className="hidden"
+                                            title="Upload Book Cover"
+                                        />
                                     </div>
-                                    <input type="file" className="hidden" accept=".csv" onChange={handleBulkFileChange} />
-                                </label>
-                            </div>
+                                </div>
 
-                            {bulkFile && (
-                                <div className="flex items-center gap-2 rounded-lg border border-zinc-200 p-3">
-                                    <FileSpreadsheet className="h-5 w-5 text-emerald-600" />
-                                    <span className="text-sm font-medium text-zinc-700 flex-1 truncate">
-                                        {bulkFile.name}
-                                    </span>
-                                    <button onClick={() => setBulkFile(null)} className="text-zinc-400 hover:text-red-500">
-                                        <X className="h-4 w-4" />
+                                <div>
+                                    <label className="mb-1 block text-sm font-medium text-zinc-700">Book Title</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        placeholder="Enter book title"
+                                        className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-zinc-700">Author</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            placeholder="Enter author name"
+                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
+                                            value={formData.author}
+                                            onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-zinc-700">Category</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter category"
+                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-zinc-700">ISBN</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter ISBN"
+                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
+                                            value={formData.isbn}
+                                            onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-zinc-700">Publisher</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter publisher"
+                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
+                                            value={formData.publisher}
+                                            onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-zinc-700">Total Copies</label>
+                                        <input
+                                            required
+                                            type="number"
+                                            min="1"
+                                            placeholder="Number of copies"
+                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
+                                            value={formData.copies}
+                                            onChange={(e) => setFormData({ ...formData, copies: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-zinc-700">Shelf No.</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter shelf number"
+                                            className="w-full rounded-xl border-zinc-200 bg-zinc-50 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
+                                            value={formData.shelfNo}
+                                            onChange={(e) => setFormData({ ...formData, shelfNo: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-2 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-500 hover:bg-zinc-100"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={submitting}
+                                        className="flex items-center gap-2 rounded-xl bg-brand px-6 py-2 text-sm font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl disabled:opacity-50"
+                                    >
+                                        {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                                        {editingBook ? "Update Book" : "Add Book"}
                                     </button>
                                 </div>
-                            )}
-
-                            <button
-                                onClick={handleBulkSubmit}
-                                disabled={!bulkFile || isBulkUploading}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3 text-sm font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 disabled:opacity-50"
-                            >
-                                {isBulkUploading && <Loader2 className="h-4 w-4 animate-spin" />}
-                                Upload & Process
-                            </button>
+                            </form>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+
+            {/* Bulk Upload Modal */}
+            {
+                isBulkModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4 backdrop-blur-sm">
+                        <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+                            <div className="mb-6 flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-zinc-900">Bulk Upload</h2>
+                                <button
+                                    onClick={() => setIsBulkModalOpen(false)}
+                                    className="rounded-full p-2 hover:bg-zinc-100"
+                                    title="Close bulk upload modal"
+                                >
+                                    <X className="h-5 w-5 text-zinc-500" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="rounded-xl bg-brand/10 p-4 text-sm text-brand border border-brand/20">
+                                    <p className="font-bold mb-1">CSV Format guide:</p>
+                                    <p>Headers: Title, Author, ISBN, Category, Copies, Shelf</p>
+                                </div>
+
+                                <div className="flex w-full items-center justify-center">
+                                    <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 hover:border-brand/40 transition-all">
+                                        <div className="flex flex-col items-center justify-center pb-6 pt-5">
+                                            <Upload className="mb-2 h-8 w-8 text-zinc-400" />
+                                            <p className="mb-2 text-sm text-zinc-500">
+                                                <span className="font-semibold">Click to upload</span> or drag and drop
+                                            </p>
+                                            <p className="text-xs text-zinc-500">CSV files only</p>
+                                        </div>
+                                        <input type="file" className="hidden" accept=".csv" onChange={handleBulkFileChange} />
+                                    </label>
+                                </div>
+
+                                {bulkFile && (
+                                    <div className="flex items-center gap-2 rounded-lg border border-zinc-200 p-3">
+                                        <FileSpreadsheet className="h-5 w-5 text-emerald-600" />
+                                        <span className="text-sm font-medium text-zinc-700 flex-1 truncate">
+                                            {bulkFile.name}
+                                        </span>
+                                        <button onClick={() => setBulkFile(null)} className="text-zinc-400 hover:text-red-500" title="Remove file">
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handleBulkSubmit}
+                                    disabled={!bulkFile || isBulkUploading}
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-3 text-sm font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 disabled:opacity-50"
+                                >
+                                    {isBulkUploading && <Loader2 className="h-4 w-4 animate-spin" />}
+                                    Upload & Process
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 }

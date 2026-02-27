@@ -171,7 +171,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "I:\\anti-gravity\\pre-school\\src\\generated\\training-client",
+      "value": "/Users/rk/Bodhi-Board/pre-school/src/generated/training-client",
       "fromEnvVar": null
     },
     "config": {
@@ -180,16 +180,20 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "darwin-arm64",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "darwin-arm64"
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "I:\\anti-gravity\\pre-school\\prisma\\schema.local.prisma",
+    "sourceFilePath": "/Users/rk/Bodhi-Board/pre-school/prisma/schema.local.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../.env",
+    "rootEnvPath": null,
     "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
@@ -208,8 +212,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/training-client\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel TrainingCategory {\n  id          String           @id @default(cuid())\n  name        String           @unique\n  slug        String           @unique\n  description String?\n  modules     TrainingModule[]\n  createdAt   DateTime         @default(now())\n  updatedAt   DateTime         @updatedAt\n}\n\nmodel TrainingModule {\n  id          String            @id @default(cuid())\n  title       String\n  description String?\n  cover       String?\n  role        String            @default(\"TEACHER\")\n  categoryId  String?\n  category    TrainingCategory? @relation(fields: [categoryId], references: [id])\n  isPublished Boolean           @default(false)\n  slug        String            @unique\n  order       Int               @default(0)\n  createdAt   DateTime          @default(now())\n  updatedAt   DateTime          @updatedAt\n  topics      TrainingTopic[]\n}\n\nmodel TrainingTopic {\n  id          String         @id @default(cuid())\n  moduleId    String\n  module      TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)\n  title       String\n  description String?\n  order       Int            @default(0)\n  createdAt   DateTime       @default(now())\n  updatedAt   DateTime       @updatedAt\n  pages       TrainingPage[]\n\n  @@index([moduleId])\n}\n\nmodel TrainingPage {\n  id          String               @id @default(cuid())\n  topicId     String\n  topic       TrainingTopic        @relation(fields: [topicId], references: [id], onDelete: Cascade)\n  title       String\n  content     String\n  order       Int                  @default(0)\n  isPublished Boolean              @default(false)\n  createdAt   DateTime             @default(now())\n  updatedAt   DateTime             @updatedAt\n  attachments TrainingAttachment[]\n\n  @@index([topicId])\n}\n\nmodel TrainingAttachment {\n  id        String       @id @default(cuid())\n  pageId    String\n  page      TrainingPage @relation(fields: [pageId], references: [id], onDelete: Cascade)\n  name      String\n  url       String\n  size      Int          @default(0) // in bytes\n  type      String       @default(\"file\") // 'pdf', 'image', etc.\n  createdAt DateTime     @default(now())\n\n  @@index([pageId])\n}\n",
-  "inlineSchemaHash": "ee3636e1d57c5361789a57e9de734e4c09ba1cee4a9fe22a2ecdc1d0d222802b",
+  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../src/generated/training-client\"\n  binaryTargets = [\"native\", \"darwin-arm64\"]\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel TrainingCategory {\n  id          String           @id @default(cuid())\n  name        String           @unique\n  slug        String           @unique\n  description String?\n  modules     TrainingModule[]\n  createdAt   DateTime         @default(now())\n  updatedAt   DateTime         @updatedAt\n}\n\nmodel TrainingModule {\n  id          String            @id @default(cuid())\n  title       String\n  description String?\n  cover       String?\n  role        String            @default(\"TEACHER\")\n  categoryId  String?\n  category    TrainingCategory? @relation(fields: [categoryId], references: [id])\n  isPublished Boolean           @default(false)\n  slug        String            @unique\n  order       Int               @default(0)\n  createdAt   DateTime          @default(now())\n  updatedAt   DateTime          @updatedAt\n  topics      TrainingTopic[]\n}\n\nmodel TrainingTopic {\n  id          String         @id @default(cuid())\n  moduleId    String\n  module      TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)\n  title       String\n  description String?\n  order       Int            @default(0)\n  createdAt   DateTime       @default(now())\n  updatedAt   DateTime       @updatedAt\n  pages       TrainingPage[]\n\n  @@index([moduleId])\n}\n\nmodel TrainingPage {\n  id          String               @id @default(cuid())\n  topicId     String\n  topic       TrainingTopic        @relation(fields: [topicId], references: [id], onDelete: Cascade)\n  title       String\n  content     String\n  order       Int                  @default(0)\n  isPublished Boolean              @default(false)\n  createdAt   DateTime             @default(now())\n  updatedAt   DateTime             @updatedAt\n  attachments TrainingAttachment[]\n\n  @@index([topicId])\n}\n\nmodel TrainingAttachment {\n  id        String       @id @default(cuid())\n  pageId    String\n  page      TrainingPage @relation(fields: [pageId], references: [id], onDelete: Cascade)\n  name      String\n  url       String\n  size      Int          @default(0) // in bytes\n  type      String       @default(\"file\") // 'pdf', 'image', etc.\n  createdAt DateTime     @default(now())\n\n  @@index([pageId])\n}\n",
+  "inlineSchemaHash": "fc460a58e1ee1540555979b89e853e4f9915018f87f54b478b1399b6d5978122",
   "copyEngine": true
 }
 
@@ -247,8 +251,8 @@ exports.PrismaClient = PrismaClient
 Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
-path.join(__dirname, "query_engine-windows.dll.node");
-path.join(process.cwd(), "src/generated/training-client/query_engine-windows.dll.node")
+path.join(__dirname, "libquery_engine-darwin-arm64.dylib.node");
+path.join(process.cwd(), "src/generated/training-client/libquery_engine-darwin-arm64.dylib.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
 path.join(process.cwd(), "src/generated/training-client/schema.prisma")

@@ -12,6 +12,7 @@ import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { getStudentsAction } from "@/app/actions/student-actions";
 import { toast } from "sonner";
 import { getCookie } from "@/lib/cookies";
+import { StudentAvatar, cleanName } from "@/components/dashboard/students/StudentAvatar";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -433,17 +434,13 @@ export default function ReportsDashboardPage() {
                                                         onCheckedChange={() => toggleStudentSelection(student.id)}
                                                         className="rounded-md border-zinc-300"
                                                     />
-                                                    <div className="h-10 w-10 rounded-full bg-zinc-100 overflow-hidden ring-2 ring-zinc-100 ring-offset-1">
-                                                        {student.avatar ? (
-                                                            <img src={student.avatar} alt={student.name} className="h-full w-full object-cover" />
-                                                        ) : (
-                                                            <div className="h-full w-full flex items-center justify-center font-bold text-zinc-400">
-                                                                {student.name[0]}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    <StudentAvatar
+                                                        src={student.avatar}
+                                                        name={student.name}
+                                                        className="h-10 w-10 ring-2 ring-zinc-100 ring-offset-1"
+                                                    />
                                                     <div>
-                                                        <h4 className="font-bold text-zinc-900 group-hover:text-brand transition-colors">{student.name}</h4>
+                                                        <h4 className="font-bold text-zinc-900 group-hover:text-brand transition-colors">{cleanName(student.name)}</h4>
                                                         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
                                                             {student.class} • Adm: {student.admissionNumber || "N/A"}
                                                         </p>

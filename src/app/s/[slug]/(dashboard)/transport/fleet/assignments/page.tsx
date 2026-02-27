@@ -28,10 +28,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "@/context/SidebarContext";
 
 export default function TransportAssignmentsPage() {
     const params = useParams();
     const router = useRouter();
+    const { currency } = useSidebar();
     const slug = params.slug as string;
 
     // State
@@ -61,6 +63,7 @@ export default function TransportAssignmentsPage() {
         if (res.success && res.data) setRoutes(res.data);
     }
 
+    // Debounced load for search query
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             if (searchQuery.length > 2) {
@@ -68,6 +71,13 @@ export default function TransportAssignmentsPage() {
             }
         }, 500);
         return () => clearTimeout(delayDebounce);
+    }, [searchQuery]);
+
+    // Handle clearing search term immediately
+    useEffect(() => {
+        if (searchQuery === "") {
+            handleSearch();
+        }
     }, [searchQuery]);
 
     async function handleSearch() {
@@ -81,7 +91,7 @@ export default function TransportAssignmentsPage() {
     useEffect(() => {
         if (selectedRouteId) {
             async function fetchStops() {
-                const res = await getRouteDetailsAction(selectedRouteId);
+                const res = await getRouteDetailsAction(selectedRouteId, slug);
                 if (res.success && res.data) {
                     setStops(res.data.stops);
                 }
@@ -154,6 +164,7 @@ export default function TransportAssignmentsPage() {
                     <button
                         onClick={() => router.push(`/s/${slug}/transport`)}
                         className="group flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white transition-all hover:border-zinc-900 active:scale-95 shadow-sm"
+                        title="Back to Transport Dashboard"
                     >
                         <ArrowLeft className="h-5 w-5 text-zinc-500 group-hover:text-zinc-900" />
                     </button>
@@ -326,6 +337,7 @@ export default function TransportAssignmentsPage() {
                                                         className="w-full h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-6 pr-12 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-brand focus:bg-white outline-none transition-all shadow-sm appearance-none dark:bg-zinc-900 dark:border-zinc-800 dark:text-white"
                                                         value={pickupStopId}
                                                         onChange={(e) => setPickupStopId(e.target.value)}
+                                                        title="Select Pickup Point"
                                                     >
                                                         <option value="">Select Pickup Point</option>
                                                         {stops.map(stop => (
@@ -346,6 +358,7 @@ export default function TransportAssignmentsPage() {
                                                         className="w-full h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-6 pr-12 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-brand focus:bg-white outline-none transition-all shadow-sm appearance-none dark:bg-zinc-900 dark:border-zinc-800 dark:text-white"
                                                         value={dropStopId}
                                                         onChange={(e) => setDropStopId(e.target.value)}
+                                                        title="Select Drop Point"
                                                     >
                                                         <option value="">Select Drop Point</option>
                                                         {stops.map(stop => (
@@ -370,7 +383,7 @@ export default function TransportAssignmentsPage() {
                                                 <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Transport Fee</h4>
                                             </div>
                                             <div className="relative max-w-xs">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-emerald-600 text-sm">₹</span>
+                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-emerald-600 text-sm">{currency}</span>
                                                 <input
                                                     type="number"
                                                     placeholder="0.00"

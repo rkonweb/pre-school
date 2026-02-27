@@ -121,22 +121,41 @@ export function DashboardHeader({
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    {/* Back Button or Logo */}
-                    {showBack ? (
+                    {/* Back Button */}
+                    {showBack && (
                         <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={handleBack}
-                            className="h-10 w-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm"
+                            className="h-10 w-10 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-sm shrink-0"
                         >
                             <ChevronLeft className="h-6 w-6" />
                         </motion.button>
-                    ) : (
-                        logoUrl && (
-                            <div className="h-12 w-auto flex items-center justify-center overflow-hidden">
-                                <img src={logoUrl} alt="School Logo" className="h-full w-auto object-contain" />
-                            </div>
-                        )
                     )}
+
+                    {/* Title / Logo Area */}
+                    <div className="flex items-center gap-3">
+                        {!showBack && logoUrl && (
+                            <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-sm p-1">
+                                <img src={logoUrl} alt={title || "Logo"} className="h-full w-full object-contain" />
+                            </div>
+                        )}
+                        <div className="flex flex-col">
+                            {subtitle && (
+                                <span className={cn(
+                                    "text-[10px] font-black uppercase tracking-widest leading-none mb-0.5",
+                                    brandColor ? "text-white/70" : "text-slate-400"
+                                )}>
+                                    {subtitle}
+                                </span>
+                            )}
+                            <h1 className={cn(
+                                "text-xl font-black leading-none tracking-tight",
+                                brandColor ? "text-white" : "text-slate-900"
+                            )}>
+                                {title}
+                            </h1>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">

@@ -152,3 +152,72 @@ export async function generateTransportInvoicesAction(
         return { success: false, error: error.message };
     }
 }
+
+export async function sendTransportFeeRemindersAction(slug: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000 - 1);
+
+        const threeDaysFromNowStart = new Date(startOfToday.getTime() + 3 * 24 * 60 * 60 * 1000);
+        const threeDaysFromNowEnd = new Date(endOfToday.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+        // Find all pending transport fees
+        const pendingFees = await prisma.fee.findMany({
+            where: {
+                student: { schoolId: auth.user.schoolId },
+                category: "TRANSPORT",
+                status: "PENDING"
+            },
+            include: { student: true }
+        });
+
+        let sentCount = 0;
+
+        for (const fee of pendingFees) {
+            const dueDate = new Date(fee.dueDate);
+            const isDueToday = dueDate >= startOfToday && dueDate <= endOfToday;
+            const isDueIn3Days = dueDate >= threeDaysFromNowStart && dueDate <= threeDaysFromNowEnd;
+            const isOverdue = dueDate < startOfToday;
+
+            let title = "";
+            let message = "";
+
+            if (isDueToday) {
+                title = "Transport Fee Due Today";
+                message = `Reminder: The transport fee of ${fee.amount} for ${(fee as any).student.firstName} is due today. Please pay to avoid late charges.`;
+            } else if (isDueIn3Days) {
+                title = "Upcoming Transport Fee";
+                message = `Reminder: The transport fee of ${fee.amount} for ${(fee as any).student.firstName} is due in 3 days.`;
+            } else if (isOverdue) {
+                // To avoid spam, we might only want to send overdue reminders weekly. For this implementation, we assume a cron job manages frequency.
+                title = "Overdue Transport Fee";
+                message = `Alert: The transport fee of ${fee.amount} for ${(fee as any).student.firstName} is overdue. Please settle immediately.`;
+            }
+
+            if (title) {
+                await prisma.notification.create({
+                    data: {
+                        userId: fee.studentId,
+                        userType: "STUDENT",
+                        title,
+                        message,
+                        type: "FEE_REMINDER",
+                        relatedId: fee.id,
+                        relatedType: "Fee",
+                        isRead: false
+                    }
+                });
+                sentCount++;
+            }
+        }
+
+        return { success: true, count: sentCount };
+    } catch (e: any) {
+        console.error("Reminder Generation Error:", e);
+        return { success: false, error: e.message };
+    }
+}

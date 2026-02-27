@@ -558,12 +558,19 @@ export default function StaffAttendancePage() {
                 <form onSubmit={handleLeaveSubmit} className="space-y-8 p-1">
                     <div className="space-y-3">
                         <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Staff Member</label>
-                        <select name="userId" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand">
-                            <option value="">Select Employee</option>
-                            {staff.map(s => (
-                                <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
-                            ))}
-                        </select>
+                        {currentUser?.role === "ADMIN" || currentUser?.role === "SUPER_ADMIN" ? (
+                            <select name="userId" required className="w-full bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand">
+                                <option value="">Select Employee</option>
+                                {staff.map(s => (
+                                    <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            <div className="w-full bg-zinc-100 dark:bg-zinc-800 border dark:border-zinc-700 rounded-2xl px-5 py-4 text-sm font-bold text-zinc-500 cursor-not-allowed">
+                                {currentUser?.firstName || "You"} {currentUser?.lastName || ""}
+                                <input type="hidden" name="userId" value={currentUser?.id || ""} />
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

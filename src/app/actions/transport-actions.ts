@@ -50,7 +50,7 @@ export async function updateRouteAction(slug: string, routeId: string, data: any
         if (!auth.success) return { success: false, error: auth.error };
         // Update route details
         await prisma.transportRoute.update({
-            where: { id: routeId },
+            where: { id: routeId, school: { slug } },
             data: {
                 name: data.name,
                 description: data.description,
@@ -68,7 +68,8 @@ export async function updateRouteAction(slug: string, routeId: string, data: any
             await prisma.transportStop.deleteMany({
                 where: {
                     routeId,
-                    id: { notIn: incomingStopIds }
+                    id: { notIn: incomingStopIds },
+                    route: { school: { slug } }
                 }
             });
 
@@ -89,11 +90,16 @@ export async function updateRouteAction(slug: string, routeId: string, data: any
                 if (s.id && !s.id.startsWith('new-')) {
                     // Update existing
                     await prisma.transportStop.update({
-                        where: { id: s.id },
+                        where: { id: s.id, route: { school: { slug } } },
                         data: stopData
                     });
                 } else {
-                    // Create new
+                    // Create new - verify route belongs to school first
+                    const route = await prisma.transportRoute.findUnique({
+                        where: { id: routeId, school: { slug } }
+                    });
+                    if (!route) throw new Error("Route not found or unauthorized");
+
                     await prisma.transportStop.create({
                         data: stopData
                     });
@@ -112,7 +118,9 @@ export async function deleteRouteAction(slug: string, routeId: string) {
     try {
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success) return { success: false, error: auth.error };
-        await prisma.transportRoute.delete({ where: { id: routeId } });
+        await prisma.transportRoute.delete({
+            where: { id: routeId, school: { slug } }
+        });
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -135,10 +143,30 @@ export async function getRoutesAction(slug: string) {
     }
 }
 
-export async function getRouteDetailsAction(routeId: string) {
+export async function getAllRoutesWithStopsAction(slug: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const routes = await prisma.transportRoute.findMany({
+            where: { schoolId: auth.user.schoolId! },
+            include: { stops: { orderBy: { sequenceOrder: 'asc' } } },
+            orderBy: { name: 'asc' }
+        });
+
+        return { success: true, data: routes };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getRouteDetailsAction(routeId: string, slug: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const route = await prisma.transportRoute.findUnique({
-            where: { id: routeId },
+            where: { id: routeId, school: { slug } },
             include: {
                 stops: {
                     orderBy: { sequenceOrder: 'asc' }
@@ -158,6 +186,11 @@ export async function addStopAction(slug: string, routeId: string, data: any) {
     try {
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success) return { success: false, error: auth.error };
+        const route = await prisma.transportRoute.findUnique({
+            where: { id: routeId, school: { slug } }
+        });
+        if (!route) return { success: false, error: "Route not found or unauthorized" };
+
         await prisma.transportStop.create({
             data: {
                 routeId,
@@ -209,11 +242,23 @@ export async function assignStudentToRouteAction(studentId: string, routeId: str
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success) return { success: false, error: auth.error };
 
+        const student = await prisma.student.findUnique({
+            where: { id: studentId, school: { slug } }
+        });
+        if (!student) return { success: false, error: "Student not found or unauthorized" };
+
+        const route = await prisma.transportRoute.findUnique({
+            where: { id: routeId, school: { slug } }
+        });
+        if (!route) return { success: false, error: "Route not found or unauthorized" };
+
         // Upsert Transport Profile
-        const existing = await prisma.studentTransportProfile.findUnique({ where: { studentId } });
+        const existing = await prisma.studentTransportProfile.findUnique({
+            where: { studentId, student: { school: { slug } } }
+        });
         if (existing) {
             await prisma.studentTransportProfile.update({
-                where: { studentId },
+                where: { studentId, student: { school: { slug } } },
                 data: {
                     routeId,
                     pickupStopId,
@@ -264,7 +309,7 @@ export async function removeStudentFromTransportAction(studentId: string, slug: 
         if (!auth.success) return { success: false, error: auth.error };
 
         await prisma.studentTransportProfile.update({
-            where: { studentId },
+            where: { studentId, student: { school: { slug } } },
             data: {
                 routeId: null,
                 pickupStopId: null,
@@ -285,13 +330,13 @@ export async function applyForTransportAction(slug: string, studentId: string, d
         if (!auth.success) return { success: false, error: auth.error };
         // 1. Check if profile exists
         const existing = await prisma.studentTransportProfile.findUnique({
-            where: { studentId }
+            where: { studentId, student: { school: { slug } } }
         });
 
         if (existing) {
             // Update existing application
             await prisma.studentTransportProfile.update({
-                where: { studentId },
+                where: { studentId, student: { school: { slug } } },
                 data: {
                     status: "PENDING",
                     applicationAddress: data.address,
@@ -305,6 +350,12 @@ export async function applyForTransportAction(slug: string, studentId: string, d
             });
         } else {
             // Create new
+            // Create new after verifying student
+            const student = await prisma.student.findUnique({
+                where: { id: studentId, school: { slug } }
+            });
+            if (!student) return { success: false, error: "Student not found or unauthorized" };
+
             await prisma.studentTransportProfile.create({
                 data: {
                     studentId,
@@ -331,14 +382,14 @@ export async function approveTransportRequestAction(slug: string, studentId: str
         // assignmentData: { routeId, stopId, startDate }
 
         const stop = await prisma.transportStop.findUnique({
-            where: { id: assignmentData.stopId }
+            where: { id: assignmentData.stopId, route: { school: { slug } } }
         });
 
         if (!stop) throw new Error("Invalid stop selected");
 
         // 1. Update Profile
         await prisma.studentTransportProfile.update({
-            where: { studentId },
+            where: { studentId, student: { school: { slug } } },
             data: {
                 status: "APPROVED",
                 routeId: assignmentData.routeId,
@@ -372,7 +423,7 @@ export async function rejectTransportRequestAction(slug: string, studentId: stri
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success) return { success: false, error: auth.error };
         await prisma.studentTransportProfile.update({
-            where: { studentId },
+            where: { studentId, student: { school: { slug } } },
             data: { status: "REJECTED" }
         });
         return { success: true };
@@ -411,7 +462,7 @@ export async function deleteVehicleAction(slug: string, vehicleId: string) {
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success) return { success: false, error: auth.error };
         const vehicle = await prisma.transportVehicle.findUnique({
-            where: { id: vehicleId }
+            where: { id: vehicleId, school: { slug } }
         }) as any;
 
         if (vehicle) {
@@ -440,7 +491,7 @@ export async function deleteVehicleAction(slug: string, vehicleId: string) {
         }
 
         await prisma.transportVehicle.delete({
-            where: { id: vehicleId }
+            where: { id: vehicleId, school: { slug } }
         });
         revalidatePath(`/s/${slug}/transport/fleet/vehicles`);
         return { success: true };
@@ -493,10 +544,13 @@ export async function createVehicleAction(data: any, schoolSlug: string) {
     }
 }
 
-export async function getVehicleByIdAction(vehicleId: string) {
+export async function getVehicleByIdAction(vehicleId: string, slug: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const vehicle = await prisma.transportVehicle.findUnique({
-            where: { id: vehicleId }
+            where: { id: vehicleId, school: { slug } }
         });
         return { success: true, data: vehicle };
     } catch (error: any) {
@@ -508,7 +562,7 @@ export async function getVehicleByIdAction(vehicleId: string) {
 export async function updateVehicleAction(vehicleId: string, data: any, schoolSlug: string) {
     try {
         await prisma.transportVehicle.update({
-            where: { id: vehicleId },
+            where: { id: vehicleId, school: { slug: schoolSlug } },
             data: {
                 registrationNumber: data.registrationNumber,
                 model: data.model,
@@ -662,6 +716,9 @@ export async function createDriverAction(data: any, schoolSlug: string) {
  */
 export async function getTransportDashboardStatsAction(slug: string) {
     try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
         const school = await prisma.school.findUnique({
             where: { slug },
             include: {
@@ -726,5 +783,119 @@ export async function getTransportDashboardStatsAction(slug: string) {
         };
     } catch (e: any) {
         return { success: false, error: e.message };
+    }
+}
+
+// --- AUTOMATED FEE GENERATION ---
+
+export async function generateMonthlyTransportFeesAction(schoolSlug: string) {
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "School not found" };
+
+        // Find all active transport profiles for this school
+        const activeProfiles = await prisma.studentTransportProfile.findMany({
+            where: {
+                student: { schoolId: schoolId },
+                status: 'APPROVED',
+                transportFee: { gt: 0 }
+            },
+            include: {
+                student: true
+            }
+        });
+
+        let generatedCount = 0;
+        const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+        const currentYear = new Date().getFullYear();
+
+        for (const profile of activeProfiles) {
+            const feeTitle = `Transport Fee - ${currentMonthName} ${currentYear}`;
+
+            // Check if a fee for this month already exists to avoid duplicates
+            const existingFee = await prisma.fee.findFirst({
+                where: {
+                    studentId: profile.studentId,
+                    category: 'TRANSPORT',
+                    title: feeTitle
+                }
+            });
+
+            if (!existingFee) {
+                // Due date is typically the 10th of the current month (or any school specific logic)
+                const dueDate = new Date();
+                dueDate.setDate(10);
+
+                // If it's already past the 10th, maybe set due date to next few days
+                if (new Date() > dueDate) {
+                    dueDate.setDate(new Date().getDate() + 5);
+                }
+
+                await prisma.fee.create({
+                    data: {
+                        studentId: profile.studentId,
+                        title: feeTitle,
+                        amount: profile.transportFee,
+                        category: "TRANSPORT",
+                        status: "PENDING",
+                        description: `Automated monthly transportation charge for Route.`,
+                        dueDate: dueDate
+                    }
+                });
+                generatedCount++;
+            }
+        }
+
+        return { success: true, count: generatedCount };
+    } catch (e: any) {
+        console.error("Monthly Transport Fee Generation Error:", e);
+        return { success: false, error: e.message };
+    }
+}
+
+// --- STUDENT TRANSPORT TRACKING ---
+
+export async function getFleetStudentsAction(schoolSlug: string) {
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug },
+            select: { id: true }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
+        const students = await prisma.studentTransportProfile.findMany({
+            where: {
+                student: { schoolId: school.id },
+                status: 'APPROVED' // Or active statuses
+            },
+            include: {
+                student: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        admissionNumber: true,
+                        classroom: { select: { name: true } }
+                    }
+                },
+                route: { select: { id: true, name: true } },
+                pickupStop: { select: { id: true, name: true, pickupTime: true } },
+                dropStop: { select: { id: true, name: true, dropTime: true } }
+            },
+            orderBy: {
+                student: { firstName: 'asc' }
+            }
+        });
+
+        return { success: true, data: students };
+    } catch (error: any) {
+        console.error("Error fetching fleet students:", error);
+        return { success: false, error: error.message };
     }
 }

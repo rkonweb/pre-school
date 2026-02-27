@@ -4,6 +4,7 @@ import { generateText } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { prisma } from "@/lib/prisma";
+import { resolveSchoolAIModel } from "@/lib/school-integrations";
 import { getDashboardStatsAction } from "./dashboard-actions";
 
 export async function askAuraAction(query: string, slug: string, staffId?: string) {
@@ -21,43 +22,24 @@ export async function askAuraAction(query: string, slug: string, staffId?: strin
         const contextData = statsRes.stats;
         const recentActivity = statsRes.recentActivity;
 
-        // 2. Get API Key
-        const settings = await prisma.systemSettings.findUnique({
-            where: { id: 'global' }
-        });
-
-        // 2.5 Get Expanded Data (New Intelligence Layer)
-        const expandedData = await getExpandedSchoolData(slug);
-
-        const configRes = (settings as any)?.integrationsConfig;
-        let apiKey = "";
-        let provider = "openai"; // Default
-
-        if (configRes) {
-            const config = JSON.parse(configRes);
-            if (config.googleAiKey) {
-                apiKey = config.googleAiKey;
-                provider = "google";
-            } else if (config.openAiKey) {
-                apiKey = config.openAiKey;
-                provider = "openai";
-            }
-        }
-
-        // If no API key config, use rule-based fallback or mock for demo
-        if (!apiKey) {
-            // Fallback: Simple Rule-Based Response for Demo if no key
-            console.warn("No AI API Key found. Using fallback logic.");
+        // 2. Get AI model key from PER-SCHOOL integration config
+        let model;
+        try {
+            const { apiKey, provider } = await resolveSchoolAIModel(slug);
+            model = provider === 'google'
+                ? createGoogleGenerativeAI({ apiKey })('gemini-flash-latest')
+                : createOpenAI({ apiKey })('gpt-4o');
+        } catch {
+            // Fallback: Simple Rule-Based Response if no key configured
+            console.warn(`[Aura Engine] No AI key for school: ${slug}. Using fallback logic.`);
             return {
                 success: true,
                 data: generateFallbackResponse(query, contextData)
             };
         }
 
-        // 3. Call LLM
-        const model = provider === 'google'
-            ? createGoogleGenerativeAI({ apiKey })('gemini-flash-latest')
-            : createOpenAI({ apiKey })('gpt-4o');
+        // 2.5 Get Expanded Data (richer context for the AI)
+        const expandedData = await getExpandedSchoolData(slug);
 
         const systemPrompt = `
             You are Aura, the AI intelligence for this school dashboard.
@@ -145,7 +127,7 @@ async function getExpandedSchoolData(slug: string) {
                 where: { schoolId: schoolData.id },
                 orderBy: { createdAt: 'desc' },
                 take: 5,
-                select: { childName: true, classAppliedFor: true, officialStatus: true }
+                select: { childName: true, classAppliedFor: true, officialStatus: true } as any
             }),
             prisma.transportVehicle.findMany({
                 where: { schoolId: schoolData.id, status: 'ACTIVE' },
@@ -168,7 +150,7 @@ async function getExpandedSchoolData(slug: string) {
             operationalContext: {
                 upcomingExams: exams.map(e => `${e.title} (${new Date(e.date).toLocaleDateString()})`),
                 activeFeePlans: feeStructures.map(f => f.name),
-                recentAdmissions: recentAdmissions.map(a => `${a.childName} (${a.officialStatus})`),
+                recentAdmissions: recentAdmissions.map((a: any) => `${a.childName} (${a.officialStatus})`),
                 fleet: `Active Vehicles: ${vehicles.length}`
             }
         };

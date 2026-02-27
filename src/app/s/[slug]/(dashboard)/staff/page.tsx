@@ -1,9 +1,18 @@
 "use client";
 
-import { Plus, Search, MoreHorizontal, Filter, User as UserIcon, Edit2, Trash2, ArrowUpDown } from "lucide-react";
+import {
+    Plus, Search, MoreHorizontal, Filter, User as UserIcon, Edit2, Trash2, ArrowUpDown,
+    ShieldCheck, CalendarCheck, CreditCard
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { getStaffAction, deleteStaffAction, updateStaffBasicInfoAction } from "@/app/actions/staff-actions";
 import { searchStaffElasticAction } from "@/app/actions/search-actions";
@@ -12,6 +21,7 @@ import { toast } from "sonner";
 import { AvatarWithAdjustment } from "@/components/dashboard/staff/AvatarWithAdjustment";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { useConfirm } from "@/contexts/ConfirmContext";
+import { DashboardLoader } from "@/components/ui/DashboardLoader";
 
 export default function StaffPage() {
     const params = useParams();
@@ -38,12 +48,25 @@ export default function StaffPage() {
         loadMasterData();
     }, [slug]);
 
+    // Immediate load for filters
+    useEffect(() => {
+        loadData();
+    }, [slug, roleFilter, deptFilter, empTypeFilter, statusFilter]);
+
+    // Debounced load for search
     useEffect(() => {
         const timer = setTimeout(() => {
-            loadData();
+            if (searchTerm) loadData();
         }, 500);
         return () => clearTimeout(timer);
-    }, [slug, searchTerm, roleFilter, deptFilter]);
+    }, [searchTerm]);
+
+    // Clear search immediate trigger
+    useEffect(() => {
+        if (searchTerm === "") {
+            loadData();
+        }
+    }, [searchTerm]);
 
     async function loadMasterData() {
         const [desigRes, deptRes, empRes] = await Promise.all([
@@ -146,7 +169,7 @@ export default function StaffPage() {
     }
 
     return (
-        <div className="flex flex-col gap-6 p-8">
+        <div className="flex flex-col gap-6 p-8 min-w-0">
             {/* Page Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -157,13 +180,46 @@ export default function StaffPage() {
                         View and manage your teaching and administrative team.
                     </p>
                 </div>
-                <Link
-                    href={`/s/${slug}/staff/add`}
-                    className="h-12 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all"
-                >
-                    <Plus className="h-4 w-4" />
-                    Add Staff Member
-                </Link>
+                <div className="flex flex-wrap gap-3">
+                    <Link
+                        href={`/s/${slug}/staff/add`}
+                        className="h-12 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Add Staff Member
+                    </Link>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className="h-12 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm transition-all outline-none"
+                                title="More options"
+                            >
+                                <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-52">
+                            <DropdownMenuItem asChild>
+                                <Link href={`/s/${slug}/roles`} className="flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-zinc-400" />
+                                    Custom Roles
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href={`/s/${slug}/staff/attendance`} className="flex items-center gap-2">
+                                    <CalendarCheck className="h-4 w-4 text-zinc-400" />
+                                    Attendance
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href={`/s/${slug}/staff/payroll`} className="flex items-center gap-2">
+                                    <CreditCard className="h-4 w-4 text-zinc-400" />
+                                    Payroll
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
 
             {/* Filters & Search */}
@@ -179,8 +235,8 @@ export default function StaffPage() {
                     <select
                         value={roleFilter}
                         onChange={(e) => setRoleFilter(e.target.value)}
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
-                        style={{ '--tw-ring-color': 'var(--brand-color)' } as any}
+                        title="Filter by Designation"
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 focus:ring-2 focus:ring-brand"
                     >
                         <option value="all">All Designations</option>
                         {designations.map(d => (
@@ -191,6 +247,7 @@ export default function StaffPage() {
                     <select
                         value={deptFilter}
                         onChange={(e) => setDeptFilter(e.target.value)}
+                        title="Filter by Department"
                         className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                     >
                         <option value="all">All Departments</option>
@@ -202,6 +259,7 @@ export default function StaffPage() {
                     <select
                         value={empTypeFilter}
                         onChange={(e) => setEmpTypeFilter(e.target.value)}
+                        title="Filter by Employment Type"
                         className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                     >
                         <option value="all">All Emp. Types</option>
@@ -213,6 +271,7 @@ export default function StaffPage() {
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
+                        title="Filter by Status"
                         className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                     >
                         <option value="all">All Status</option>
@@ -228,6 +287,7 @@ export default function StaffPage() {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
+                            title="Sort By"
                             className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                         >
                             <option value="name">Sort by Name</option>
@@ -237,6 +297,7 @@ export default function StaffPage() {
                         </select>
                         <button
                             onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                            title={sortOrder === "asc" ? "Sort Descending" : "Sort Ascending"}
                             className="p-2 text-zinc-500 hover:text-brand transition-colors"
                         >
                             {sortOrder === "asc" ? "↑" : "↓"}
@@ -246,7 +307,7 @@ export default function StaffPage() {
             </div>
 
             {/* Staff Table */}
-            <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <table className="w-full text-left text-sm">
                     <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-400">
                         <tr>
@@ -262,23 +323,11 @@ export default function StaffPage() {
                     </thead>
                     <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                         {isLoading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <tr key={i} className="animate-pulse">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                                            <div className="h-4 w-24 rounded bg-zinc-100 dark:bg-zinc-800" />
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4"><div className="h-4 w-20 rounded bg-zinc-100 dark:bg-zinc-800" /></td>
-                                    <td className="px-6 py-4"><div className="h-4 w-28 rounded bg-zinc-100 dark:bg-zinc-800" /></td>
-                                    <td className="px-6 py-4"><div className="h-4 w-24 rounded bg-zinc-100 dark:bg-zinc-800" /></td>
-                                    <td className="px-6 py-4"><div className="h-4 w-20 rounded bg-zinc-100 dark:bg-zinc-800" /></td>
-                                    <td className="px-6 py-4"><div className="h-4 w-16 rounded bg-zinc-100 dark:bg-zinc-800" /></td>
-                                    <td className="px-6 py-4"><div className="h-6 w-16 rounded-full bg-zinc-100 dark:bg-zinc-800" /></td>
-                                    <td className="px-6 py-4 text-right"><div className="ml-auto h-8 w-16 rounded bg-zinc-100 dark:bg-zinc-800" /></td>
-                                </tr>
-                            ))
+                            <tr>
+                                <td colSpan={8} className="p-0">
+                                    <DashboardLoader message="Loading staff data..." />
+                                </td>
+                            </tr>
                         ) : filteredAndSortedStaff.map((person) => (
                             <tr key={person.id} className="group hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors">
                                 <td className="px-6 py-4">
@@ -300,7 +349,9 @@ export default function StaffPage() {
                                     {person.email || "N/A"}
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ring-1 ring-inset whitespace-nowrap" style={{ backgroundColor: 'rgba(var(--brand-color-rgb, 37, 99, 235), 0.1)', color: 'var(--brand-color)', borderColor: 'rgba(var(--brand-color-rgb, 37, 99, 235), 0.2)' } as any}>
+                                    <span
+                                        className="inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ring-1 ring-inset whitespace-nowrap bg-brand/10 text-brand border-brand/20"
+                                    >
                                         {person.designation || "-"}
                                     </span>
                                 </td>

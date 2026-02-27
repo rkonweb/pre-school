@@ -79,7 +79,7 @@ function StatusBadge({ status }: { status: MilestoneStatus }) {
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
-export function StudentDevelopmentTab({ schoolSlug, schoolId, studentId, studentName, studentGrade }: Props) {
+export default function StudentDevelopmentTab({ schoolSlug, schoolId, studentId, studentName, studentGrade }: Props) {
     const [subTab, setSubTab] = useState<SubTab>("milestones");
     const [domains, setDomains] = useState<any[]>([]);
     const [milestoneRecords, setMilestoneRecords] = useState<any[]>([]);

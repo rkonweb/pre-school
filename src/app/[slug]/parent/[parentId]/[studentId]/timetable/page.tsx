@@ -95,10 +95,18 @@ function TimetableView({ classroom, fullStudent, timetableDay, setTimetableDay, 
     // Timetable Logic
     let periods: any[] = [];
     try {
-        const rawConfig = fullStudent?.school?.timetableConfig;
-        if (rawConfig) {
-            const parsed = JSON.parse(rawConfig);
+        // First, check if the classroom has a specific structure assigned
+        const classStructureConfig = classroom?.timetableStructure?.config;
+        if (classStructureConfig) {
+            const parsed = JSON.parse(classStructureConfig);
             periods = parsed.periods || [];
+        } else {
+            // Fallback to old global school config if no structure assigned
+            const rawConfig = fullStudent?.school?.timetableConfig;
+            if (rawConfig) {
+                const parsed = JSON.parse(rawConfig);
+                periods = parsed.periods || [];
+            }
         }
     } catch (e) {
         console.error("Timetable config parse error:", e);
@@ -177,6 +185,11 @@ function TimetableView({ classroom, fullStudent, timetableDay, setTimetableDay, 
                     const slotData = classroom?.timetable?.[timetableDay]?.[period.id];
                     const isBreak = period.type === "BREAK";
 
+                    // Only show breaks or periods with actual assignments (as requested: hide empty slots)
+                    if (!isBreak && (!slotData || (!slotData.subject && !slotData.teacherId))) {
+                        return null; // Don't render empty slots
+                    }
+
                     // Check if current time is within this period (simple check)
                     const now = new Date();
                     const [startH, startM] = period.startTime.split(':').map(Number);
@@ -230,50 +243,38 @@ function TimetableView({ classroom, fullStudent, timetableDay, setTimetableDay, 
                                         </span>
                                     </div>
 
-                                    {slotData ? (
-                                        <>
-                                            <h4 className={cn(
-                                                "text-xl font-black uppercase tracking-tight mb-3",
-                                                isNow ? "text-white" : "text-zinc-900"
-                                            )}>
-                                                {slotData.subject}
-                                            </h4>
+                                    <>
+                                        <h4 className={cn(
+                                            "text-xl font-black uppercase tracking-tight mb-3",
+                                            isNow ? "text-white" : "text-zinc-900"
+                                        )}>
+                                            {slotData.subject}
+                                        </h4>
 
-                                            <div className="flex items-center gap-3">
-                                                <div className={cn(
-                                                    "h-8 w-8 rounded-2xl flex items-center justify-center transition-colors",
-                                                    isNow ? "bg-white/20" : "bg-zinc-50 group-hover:bg-indigo-50"
-                                                )}>
-                                                    <User className={cn("h-4 w-4", isNow ? "text-white" : "text-zinc-400")} />
-                                                </div>
-                                                <span className={cn(
-                                                    "text-xs font-black uppercase tracking-tight",
-                                                    isNow ? "text-white/90" : "text-zinc-500"
-                                                )}>
-                                                    {slotData.teacherName || "Assigned Teacher"}
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn(
+                                                "h-8 w-8 rounded-2xl flex items-center justify-center transition-colors",
+                                                isNow ? "bg-white/20" : "bg-zinc-50 group-hover:bg-indigo-50"
+                                            )}>
+                                                <User className={cn("h-4 w-4", isNow ? "text-white" : "text-zinc-400")} />
+                                            </div>
+                                            <span className={cn(
+                                                "text-xs font-black uppercase tracking-tight",
+                                                isNow ? "text-white/90" : "text-zinc-500"
+                                            )}>
+                                                {slotData.teacherName || "Assigned Teacher"}
+                                            </span>
+                                        </div>
+
+                                        {slotData.room && (
+                                            <div className="flex items-center gap-2 mt-3">
+                                                <MapPin className={cn("h-3 w-3", isNow ? "text-white/60" : "text-zinc-300")} />
+                                                <span className={cn("text-[9px] font-black uppercase tracking-widest", isNow ? "text-white/60" : "text-zinc-400")}>
+                                                    Location: Room {slotData.room}
                                                 </span>
                                             </div>
-
-                                            {slotData.room && (
-                                                <div className="flex items-center gap-2 mt-3">
-                                                    <MapPin className={cn("h-3 w-3", isNow ? "text-white/60" : "text-zinc-300")} />
-                                                    <span className={cn("text-[9px] font-black uppercase tracking-widest", isNow ? "text-white/60" : "text-zinc-400")}>
-                                                        Location: Room {slotData.room}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <div className="flex items-center gap-4 py-1">
-                                            <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400">
-                                                <Clock className="h-6 w-6" />
-                                            </div>
-                                            <div>
-                                                <p className="font-black text-slate-900 uppercase text-xs tracking-tight">Free Period</p>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Self Study / Library</p>
-                                            </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </>
                                 </div>
                             </div>
                         </div>

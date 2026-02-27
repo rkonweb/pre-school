@@ -3,12 +3,12 @@
 import React from "react";
 import { LucideIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button, ButtonProps } from "@/components/ui/button";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
+import Link from "next/link";
 
-export type ActionButtonVariant = 'primary' | 'view' | 'edit' | 'delete' | 'success' | 'warning' | 'ghost' | 'outline';
+export type ActionButtonVariant = 'primary' | 'secondary' | 'view' | 'edit' | 'delete' | 'success' | 'warning' | 'ghost' | 'outline';
 
-interface StandardActionButtonProps extends Omit<ButtonProps, 'variant'> {
+interface StandardActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     icon?: LucideIcon;
     loading?: boolean;
     variant?: ActionButtonVariant;
@@ -19,6 +19,10 @@ interface StandardActionButtonProps extends Omit<ButtonProps, 'variant'> {
         module: string;
         action: string;
     };
+    // asChild support: if provided, renders children (e.g. Link) wrapping the button content
+    asChild?: boolean;
+    href?: string;
+    size?: string;
 }
 
 export const StandardActionButton = React.forwardRef<HTMLButtonElement, StandardActionButtonProps>(
@@ -33,6 +37,8 @@ export const StandardActionButton = React.forwardRef<HTMLButtonElement, Standard
         className,
         children,
         disabled,
+        asChild,
+        href,
         ...props
     }, ref) => {
         const { can, isLoading: isPermsLoading } = useRolePermissions();
@@ -43,90 +49,83 @@ export const StandardActionButton = React.forwardRef<HTMLButtonElement, Standard
 
         if (!hasPermission && !isPermsLoading) return null;
 
-        const getVariantClasses = () => {
-            const baseCircle = "h-8 w-8 rounded-full flex items-center justify-center p-0";
-            const baseLabel = "h-9 px-4 rounded-xl text-sm font-medium flex items-center gap-2";
+        const isIconButton = iconOnly || (Icon && !label);
+
+        const getVariantClasses = (): string => {
+            const base = "inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 cursor-pointer transition-all select-none";
+            const iconCircle = "h-8 w-8 rounded-full p-0";
+            const labelBase = "h-9 px-4 rounded-xl text-sm font-medium";
 
             switch (variant) {
                 case 'primary':
-                    return "h-11 px-6 bg-brand text-[var(--secondary-color)] rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-brand/20 hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all border-none flex items-center justify-center";
+                    return cn(base,
+                        "h-11 px-5 bg-brand text-[var(--secondary-color)] rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-brand/20 hover:scale-[1.02] hover:brightness-110 active:scale-95 border-none disabled:opacity-50"
+                    );
+                case 'secondary':
+                    return cn(base,
+                        "h-11 px-5 bg-zinc-100 text-zinc-700 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-zinc-200 active:scale-95 disabled:opacity-50"
+                    );
                 case 'view':
-                    return cn(
-                        isIconButton ? baseCircle : baseLabel,
-                        "bg-white border border-brand/40 text-brand hover:bg-brand/5 hover:scale-110 active:scale-95 transition-all shadow-sm"
+                    return cn(base,
+                        isIconButton ? iconCircle : labelBase,
+                        "bg-white border border-brand/40 text-brand hover:bg-brand/5 hover:scale-110 active:scale-95 shadow-sm"
                     );
                 case 'edit':
-                    return cn(
-                        isIconButton ? baseCircle : baseLabel,
-                        "bg-white border border-amber-300 text-amber-600 hover:bg-amber-50 hover:scale-110 active:scale-95 transition-all shadow-sm"
+                    return cn(base,
+                        isIconButton ? iconCircle : labelBase,
+                        "bg-white border border-amber-300 text-amber-600 hover:bg-amber-50 hover:scale-110 active:scale-95 shadow-sm"
                     );
                 case 'delete':
-                    return cn(
-                        isIconButton ? baseCircle : baseLabel,
-                        "bg-white border border-red-300 text-red-600 hover:bg-red-50 hover:scale-110 active:scale-95 transition-all shadow-sm"
+                    return cn(base,
+                        isIconButton ? iconCircle : labelBase,
+                        "bg-white border border-red-300 text-red-600 hover:bg-red-50 hover:scale-110 active:scale-95 shadow-sm"
                     );
                 case 'success':
-                    return "p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 active:scale-95 transition-all flex items-center gap-2";
+                    return cn(base, "p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 active:scale-95");
                 case 'warning':
-                    return "p-2 rounded-lg text-orange-600 hover:bg-orange-50 active:scale-95 transition-all flex items-center gap-2";
+                    return cn(base, "p-2 rounded-lg text-orange-600 hover:bg-orange-50 active:scale-95");
                 case 'ghost':
-                    return "hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 transition-all flex items-center gap-2";
+                    return cn(base, "hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50");
                 case 'outline':
-                    return "border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 hover:text-brand hover:border-brand/40 transition-all px-4 py-2 rounded-xl text-sm font-medium shadow-sm flex items-center gap-2";
+                    return cn(base, labelBase, "border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 hover:text-brand hover:border-brand/40 shadow-sm");
                 default:
-                    return "";
+                    return base;
             }
         };
 
-        const childHasContent = props.asChild
-            ? React.isValidElement(children) && !!(children.props as any).children
-            : !!children;
-        const isIconButton = iconOnly || (Icon && !label && !childHasContent);
-
-        const renderContent = (innerChildren?: React.ReactNode) => (
+        const content = (
             <>
-                {loading ? (
-                    <Loader2 className={cn("h-4 w-4 animate-spin", !isIconButton && "mr-2")} />
-                ) : (
-                    Icon && <Icon className={cn("h-4 w-4", !isIconButton && "mr-2")} />
-                )}
-                {!iconOnly && (label || innerChildren)}
+                {loading
+                    ? <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                    : Icon && <Icon className="h-4 w-4 shrink-0" />
+                }
+                {!iconOnly && label && <span>{label}</span>}
             </>
         );
 
-        if (props.asChild && React.isValidElement(children)) {
-            return (
-                <Button
-                    ref={ref}
-                    disabled={disabled || loading}
-                    className={cn(
-                        getVariantClasses(),
-                        isIconButton && "p-0 flex items-center justify-center",
-                        className
-                    )}
-                    title={tooltip || label}
-                    asChild
-                    {...props}
-                >
-                    {React.cloneElement(children as React.ReactElement, {}, renderContent((children.props as any).children))}
-                </Button>
-            );
+        const combinedClassName = cn(getVariantClasses(), className);
+
+        // If asChild is used with a Link child, wrap content inside the Link
+        if (asChild && React.isValidElement(children)) {
+            const child = children as React.ReactElement<any>;
+            // It's a Link/anchor — clone it with our button styles
+            return React.cloneElement(child, {
+                className: cn(combinedClassName, child.props.className),
+                title: tooltip || label,
+            }, content);
         }
 
         return (
-            <Button
+            <button
                 ref={ref}
                 disabled={disabled || loading}
-                className={cn(
-                    getVariantClasses(),
-                    isIconButton && "p-0 flex items-center justify-center",
-                    className
-                )}
+                className={combinedClassName}
                 title={tooltip || label}
                 {...props}
             >
-                {renderContent(children)}
-            </Button>
+                {content}
+                {!iconOnly && !label && children}
+            </button>
         );
     }
 );

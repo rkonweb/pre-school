@@ -3,32 +3,59 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.text(); // ZKTeco often pushes raw text or form-data
+        const body = await req.text();
         console.log("[BIOMETRIC_PUSH] Received:", body);
 
-        // Basic parsing for ADMS format (example: "cdata?SN=...&table=ATTLOG&...")
-        // In a real implementation, we would parse the specific ZKTeco/hikvision format
-        // For this MVP, we'll assume a JSON push or basic text parsing
+        // Extract SN from query params
+        const url = new URL(req.url);
+        const deviceSn = url.searchParams.get("sn");
 
-        let logs = [];
-        try {
-            logs = JSON.parse(body);
-        } catch (e) {
-            // Fallback for text format if needed, but for now we expect a JSON wrapper or will log raw
-            console.log("[BIOMETRIC_PUSH] Not JSON, processing as raw text");
+        if (!deviceSn) {
+            console.error("[BIOMETRIC_PUSH] No Serial Number provided");
+            return new NextResponse("ERROR: NO_SN", { status: 400 });
         }
 
-        // TODO: Extract Serial Number (SN) to identify the school/device
-        // For MVP, we will extract from a query param or header if available
-        const url = new URL(req.url);
-        const deviceSn = url.searchParams.get("sn") || "UNKNOWN_DEVICE";
+        // Find school that has this device SN in their logs or mapping
+        // For now, we'll try to find any log with this SN to find the school, 
+        // OR better: schools should have a dedicated device mapping.
+        // For MVP: Search BiometricLog for this SN to get schoolId, or default to a lookup.
+        const existingLog = await prisma.biometricLog.findFirst({
+            where: { deviceId: deviceSn },
+            select: { schoolId: true }
+        });
 
-        // Find school by device mapping (skipping for now, assuming deviceId is enough)
+        const schoolId = existingLog?.schoolId;
 
-        // Simulating log storage
-        const timestamp = new Date();
+        if (!schoolId) {
+            console.error("[BIOMETRIC_PUSH] Device not associated with any school:", deviceSn);
+            // In a real system, we'd have a 'Devices' table. For now, we'll just log it.
+            return new NextResponse("OK", { status: 200 });
+        }
 
-        // Return protocol success code (often "OK" or "cdata=OK")
+        // ADMS format parsing (Example)
+        // Usually it's multiple lines of "USERID=...&TIME=...&STATUS=..."
+        const lines = body.split("\n").filter(l => l.trim().length > 0);
+
+        for (const line of lines) {
+            const params = new URLSearchParams(line);
+            const deviceUserId = params.get("USERID");
+            const timeStr = params.get("TIME");
+            const status = parseInt(params.get("STATUS") || "0");
+
+            if (deviceUserId && timeStr) {
+                await prisma.biometricLog.create({
+                    data: {
+                        deviceId: deviceSn,
+                        deviceUserId: deviceUserId,
+                        timestamp: new Date(timeStr),
+                        status: status,
+                        schoolId: schoolId,
+                        raw: line
+                    }
+                });
+            }
+        }
+
         return new NextResponse("OK", { status: 200 });
 
     } catch (e) {
@@ -38,6 +65,5 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-    // ZKTeco devices often "ping" the server with a GET request to check connectivity
     return new NextResponse("OK", { status: 200 });
 }

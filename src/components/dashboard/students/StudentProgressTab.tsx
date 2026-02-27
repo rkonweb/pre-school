@@ -18,7 +18,7 @@ interface StudentProgressTabProps {
     studentId: string;
 }
 
-export function StudentProgressTab({ schoolSlug, studentId }: StudentProgressTabProps) {
+export default function StudentProgressTab({ schoolSlug, studentId }: StudentProgressTabProps) {
     const [data, setData] = useState<SmartAnalytics | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");

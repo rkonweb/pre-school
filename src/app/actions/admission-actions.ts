@@ -25,10 +25,47 @@ export async function getAdmissionsAction(slug: string) {
             where.branchId = currentBranchId;
         }
 
-        const admissions = await prisma.admission.findMany({
+        const admissions = await (prisma as any).admission.findMany({
             where,
+            include: {
+                followUps: {
+                    where: { status: "PENDING", type: "STAGNATION_REVIEW" }
+                }
+            },
             orderBy: { dateReceived: 'desc' }
         });
+
+        // Trigger side-effects without blocking the request
+        Promise.resolve().then(async () => {
+            const now = Date.now();
+            for (const adm of admissions) {
+                if (adm.stage === "ENROLLED" || adm.stage === "LOST" || adm.stage === "REJECTED") continue;
+
+                const lastAction = new Date(adm.lastMeaningfulActionAt || adm.createdAt).getTime();
+                const hours = (now - lastAction) / (1000 * 60 * 60);
+
+                // If stagnant for > 72 hours and no existing pending STAGNATION_REVIEW followup
+                if (hours > 72 && (!adm.followUps || adm.followUps.length === 0)) {
+                    await prisma.followUp.create({
+                        data: {
+                            admissionId: adm.id,
+                            type: "STAGNATION_REVIEW",
+                            scheduledAt: new Date(now + 24 * 60 * 60 * 1000), // Due in 24h
+                            notes: "Lead has been stagnant for over 3 days. Recommend immediate outreach.",
+                            status: "PENDING"
+                        }
+                    });
+
+                    await prisma.leadInteraction.create({
+                        data: {
+                            admissionId: adm.id,
+                            type: "AUTOMATION",
+                            content: `System auto-scheduled a Stagnation Review as no action occurred in 3+ days.`
+                        }
+                    });
+                }
+            }
+        }).catch(console.error);
 
         return { success: true, admissions };
     } catch (error: any) {
@@ -103,6 +140,13 @@ export async function createInquiryAction(slug: string, data: any) {
             }
         });
 
+        // Calculate & Save Initial Score
+        const initialScore = await calculateLeadScore(admission.id);
+        await (prisma as any).admission.update({
+            where: { id: admission.id },
+            data: { score: initialScore }
+        });
+
         revalidatePath(`/s/${slug}/admissions`);
         return { success: true, data: admission };
     } catch (error: any) {
@@ -122,8 +166,22 @@ export async function updateAdmissionStageAction(slug: string, admissionId: stri
 
         const updated = await (prisma as any).admission.update({
             where: { id: admissionId },
-            data: { stage: newStage }
+            data: {
+                stage: newStage,
+                lastMeaningfulActionAt: new Date()
+            }
         });
+
+        // Smart Trigger: Log automated recommendation on high-intent stage moves
+        if (["APPLICATION", "INTERVIEW"].includes(newStage)) {
+            await prisma.leadInteraction.create({
+                data: {
+                    admissionId,
+                    type: "AUTOMATION",
+                    content: `AI Suggestion: Lead is now in ${newStage} stage. Recommended to ${newStage === 'INTERVIEW' ? 'send prep kit' : 'verify documents'} immediately.`,
+                }
+            });
+        }
 
         revalidatePath(`/s/${slug}/admissions`);
         return { success: true, data: updated };
@@ -139,7 +197,14 @@ export async function getAdmissionAction(slug: string, id: string) {
         if (!auth.success) return { success: false, error: auth.error };
 
         const admission = await (prisma as any).admission.findUnique({
-            where: { id }
+            where: { id },
+            include: {
+                interactions: {
+                    include: { staff: { select: { name: true, image: true } } },
+                    orderBy: { createdAt: 'desc' }
+                },
+                followUps: { orderBy: { createdAt: 'desc' } }
+            }
         });
         if (!admission) return { success: false, error: "Admission not found" };
         if (admission.schoolId !== (auth.user as any).schoolId) return { success: false, error: "Tenant mismatch" };
@@ -477,8 +542,6 @@ export async function approveAdmissionAction(slug: string, id: string, classroom
                     parentName: admission.parentName || (admission.fatherName ? admission.fatherName : admission.motherName),
                     parentMobile: admission.parentPhone || admission.fatherPhone || admission.motherPhone,
                     parentEmail: admission.parentEmail || admission.fatherEmail || admission.motherEmail,
-                    relationship: admission.relationship,
-                    secondaryPhone: admission.secondaryPhone,
                     fatherName: admission.fatherName,
                     fatherPhone: admission.fatherPhone,
                     fatherEmail: admission.fatherEmail,
@@ -874,13 +937,14 @@ export async function getAIDashboardDataAction(slug: string) {
 
         const idleHotLeads = hotLeads.filter((a: any) => {
             const lastAction = a.lastMeaningfulActionAt || a.createdAt;
+            // Hot leads with no action for > 24 hours
             return lastAction < yesterday;
         }).length;
 
         const scheduledToursToday = admissions.filter((a: any) => {
             if (a.tourStatus !== "SCHEDULED") return false;
             return a.followUps?.some((f: any) =>
-                f.type === "VISIT" &&
+                f.status === "PENDING" &&
                 f.scheduledAt >= startOfToday &&
                 f.scheduledAt <= endOfToday
             );
@@ -906,9 +970,9 @@ export async function getAIDashboardDataAction(slug: string) {
             data: {
                 kpis: {
                     hotLeads: { value: hotLeads.length.toString(), subtext: `${hotLeadsToday} new today` },
-                    idleHot: { value: idleHotLeads.toString(), subtext: "Needs attention" },
-                    toursToday: { value: scheduledToursToday.toString(), subtext: "Scheduled for today" },
-                    predictedAdmits: { value: predictedAdmits.toString(), subtext: "High probability" }
+                    idleHot: { value: idleHotLeads.toString(), subtext: "Urgent: No action in 24h" },
+                    toursToday: { value: scheduledToursToday.toString(), subtext: "Review visit logs" },
+                    predictedAdmits: { value: predictedAdmits.toString(), subtext: "90% conversion probability" }
                 },
                 worklist,
                 forecast: {
@@ -938,33 +1002,52 @@ export async function getLeadIntelligenceAction(slug: string, id: string) {
 
         if (!admission) return { success: false, error: "Admission not found" };
 
-        // 1. Calculate Propensity (Simple heuristic for demo)
-        let propensity = admission.score || 50;
-        if (admission.tourStatus === "COMPLETED") propensity += 20;
-        if (admission.followUps.some((f: any) => f.status === "OVERDUE")) propensity -= 15;
-        propensity = Math.min(100, Math.max(0, propensity));
+        // 1. Refresh & Get Score
+        const propensity = await calculateLeadScore(id);
+        await (prisma as any).admission.update({
+            where: { id },
+            data: { score: propensity }
+        });
 
-        // 2. Real Sentiment Heuristic
+        // 2. Real Sentiment & Profile Strength Heuristics
         const interactionsCount = admission.interactions.length;
-        const connectedCalls = admission.interactions.filter((i: any) => i.type === "CALL_LOG" && i.content.toLowerCase().includes("connected")).length;
+        const totalDurationDays = Math.floor((Date.now() - new Date(admission.createdAt).getTime()) / (1000 * 60 * 60 * 24));
 
         let sentiment = "NEUTRAL";
-        let sentimentScore = 50;
+        let sentimentScore = propensity; // Anchor sentiment to propensity for now
 
-        if (connectedCalls > 2) {
+        if (interactionsCount > 5) {
             sentiment = "POSITIVE";
-            sentimentScore = 85;
-        } else if (admission.interactions.some((i: any) => i.type === "CALL_LOG" && i.content.toLowerCase().includes("not interested"))) {
+            sentimentScore = Math.min(100, propensity + 10);
+        } else if (interactionsCount < 2 && totalDurationDays > 3) {
             sentiment = "NEGATIVE";
-            sentimentScore = 15;
+            sentimentScore = Math.max(0, propensity - 20);
         }
 
         // 3. Dynamic NBA (Next Best Action)
-        let nba: any = { type: 'CALL', label: 'Call Parent (Evening)', reason: 'Strong interest detected' };
-        if (admission.tourStatus === "NONE") {
-            nba = { type: 'TOUR', label: 'Invite for Tour', reason: 'High interest signal detected' };
-        } else if (admission.tourStatus === "COMPLETED") {
-            nba = { type: 'FEE', label: 'Send Fee Structure', reason: 'Mentioned budget concern' };
+        let nba: any = { type: 'CALL', label: 'Call Parent (Evening)', reason: 'Lead needs initial qualification' };
+
+        if (admission.stage === "INQUIRY" && !admission.parentPhone) {
+            nba = { type: 'DOC', label: 'Collect Contact Details', reason: 'Missing vital contact information' };
+        } else if (admission.tourStatus === "NONE" && propensity > 70) {
+            nba = { type: 'TOUR', label: 'Invite for School Visit', reason: 'High intent detected - strike while hot' };
+        } else if (admission.stage === "APPLICATION" && !admission.documents) {
+            nba = { type: 'DOC', label: 'Request Missing Documents', reason: 'Application incomplete' };
+        }
+
+        // 4. Stagnation & Risk Detectors
+        const risks = [];
+        const lastActionAt = admission.lastMeaningfulActionAt || admission.createdAt;
+        const hoursSinceLastAction = Math.floor((Date.now() - new Date(lastActionAt).getTime()) / (1000 * 60 * 60));
+
+        if (hoursSinceLastAction > 48 && admission.stage !== "ENROLLED") {
+            risks.push({ label: "Stagnation Risk", severity: "HIGH", description: "No activity in > 48 hours" });
+        }
+        if (admission.priority === "HIGH" && hoursSinceLastAction > 24) {
+            risks.push({ label: "High Value Drift", severity: "MEDIUM", description: "Hot lead cooling off" });
+        }
+        if (!admission.parentPhone && !admission.parentEmail) {
+            risks.push({ label: "Dead End Risk", severity: "HIGH", description: "No contact channel available" });
         }
 
         return {
@@ -974,7 +1057,7 @@ export async function getLeadIntelligenceAction(slug: string, id: string) {
                 sentiment,
                 sentimentScore,
                 nba,
-                risks: propensity < 40 ? [{ label: "Low Engagement Risk", severity: "HIGH" }] : []
+                risks
             }
         };
     } catch (error: any) {
@@ -1153,6 +1236,67 @@ export async function getAIDistributionPreviewAction(slug: string, weights: any)
         return { success: true, distribution };
     } catch (error: any) {
         console.error("Distribution Simulation Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function addAdmissionInteractionAction(slug: string, admissionId: string, data: { type: string, content: string }) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const interaction = await prisma.leadInteraction.create({
+            data: {
+                admissionId,
+                type: data.type,
+                content: data.content,
+                staffId: auth.user.id
+            }
+        });
+
+        // Update last meaningful action
+        await (prisma as any).admission.update({
+            where: { id: admissionId },
+            data: { lastMeaningfulActionAt: new Date() }
+        });
+
+        revalidatePath(`/s/${slug}/admissions/${admissionId}`);
+        return { success: true, interaction };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getAdmissionSourceStatsAction(slug: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        const schoolId = (auth.user as any).schoolId;
+
+        const admissions = await (prisma as any).admission.findMany({
+            where: { schoolId },
+            select: { source: true }
+        });
+
+        const stats: Record<string, number> = {};
+        admissions.forEach((a: any) => {
+            const s = a.source || "UNKNOWN";
+            stats[s] = (stats[s] || 0) + 1;
+        });
+
+        const chartData = Object.entries(stats).map(([label, value]) => ({
+            id: label,
+            label: label.replace(/_/g, ' '),
+            value,
+            fill: label === "SOCIAL_MEDIA" ? "#8b5cf6" :
+                label === "WALK_IN" ? "#f97316" :
+                    label === "REFERRAL" ? "#10b981" :
+                        label === "ADVERTISEMENT" ? "#3b82f6" : "#94a3b8"
+        }));
+
+        return { success: true, data: chartData };
+    } catch (error: any) {
         return { success: false, error: error.message };
     }
 }

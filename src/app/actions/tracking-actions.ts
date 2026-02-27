@@ -367,6 +367,22 @@ async function triggerProactiveAlerts(vehicleId: string, telemetry: any, schoolI
                             createdAt: new Date()
                         }))
                     });
+
+                    // If Bus is Near Drop Stop (Home) - Send Pre-Arrival & Prepare for Safe Trip trigger
+                    if (studentsAtStop.some(s => s.dropStopId === stop.id)) {
+                        await prisma.notification.createMany({
+                            data: studentsAtStop.filter(s => s.dropStopId === stop.id).map(s => ({
+                                userId: s.student.id,
+                                userType: "STUDENT",
+                                title: "Arriving Home",
+                                message: `The bus is arriving at ${stop.name}. Safe drop-off imminent.`,
+                                type: "TRANSPORT_SAFE_TRIP",
+                                relatedId: stop.id,
+                                relatedType: "TransportStop",
+                                createdAt: new Date()
+                            }))
+                        });
+                    }
                 }
             }
         }
@@ -456,6 +472,79 @@ export async function getVehicleTelemetryHistoryAction(
         return { success: true, data: telemetry };
     } catch (error: any) {
         console.error("Error fetching telemetry history:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Log student boarding (IN/OUT/ABSENT)
+ */
+export async function logStudentBoardingAction(
+    slug: string,
+    data: {
+        studentId: string;
+        vehicleId: string;
+        routeId: string;
+        status: "IN" | "OUT" | "ABSENT";
+        type: "PICKUP" | "DROP";
+        notes?: string;
+        recordedBy?: string;
+    }
+) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        const log = await prisma.transportBoardingLog.create({
+            data: {
+                studentId: data.studentId,
+                vehicleId: data.vehicleId,
+                routeId: data.routeId,
+                status: data.status,
+                type: data.type,
+                notes: data.notes,
+                recordedBy: data.recordedBy
+            },
+            include: {
+                student: { select: { firstName: true, lastName: true } },
+                route: { select: { name: true } }
+            }
+        });
+
+        // Trigger parent notifications based on status
+        let message = "";
+        let title = "";
+
+        const studentName = `${log.student.firstName} ${log.student.lastName}`;
+
+        if (data.status === "IN") {
+            title = "Student Boarded Bus";
+            message = `${studentName} has boarded the bus for the ${data.type.toLowerCase()} route (${log.route.name}).`;
+        } else if (data.status === "OUT") {
+            title = "Student Dropped Off";
+            message = `${studentName} has been dropped off from the ${data.type.toLowerCase()} route (${log.route.name}).`;
+        } else if (data.status === "ABSENT") {
+            title = "Student Missed Bus";
+            message = `${studentName} was marked absent for the ${data.type.toLowerCase()} route (${log.route.name}).`;
+        }
+
+        if (title && message) {
+            await prisma.notification.create({
+                data: {
+                    userId: log.studentId, // Parent would theoretically be linked, targeting student for now as proxy
+                    userType: "STUDENT",   // Adjust if PARENT role exists
+                    title,
+                    message,
+                    type: "TRANSPORT_BOARDING_ALERT",
+                    relatedId: log.id,
+                    relatedType: "TransportBoardingLog"
+                }
+            });
+        }
+
+        return { success: true, data: log };
+    } catch (error: any) {
+        console.error("Error logging student boarding:", error);
         return { success: false, error: error.message };
     }
 }

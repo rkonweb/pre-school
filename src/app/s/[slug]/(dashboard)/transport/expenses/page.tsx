@@ -24,6 +24,7 @@ import Link from "next/link";
 import ExpenseForm from "@/components/transport/ExpenseForm";
 import ExpenseActions from "@/components/transport/ExpenseActions";
 import RealtimeLedgerWrapper from "@/components/transport/RealtimeLedgerWrapper";
+import ExpenseCharts from "@/components/transport/ExpenseCharts";
 
 export default async function TransportExpensesPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -134,6 +135,9 @@ export default async function TransportExpensesPage({ params }: { params: Promis
                     </button>
                 </div>
             )}
+
+            {/* Expense Analytics Charts */}
+            <ExpenseCharts expenses={expenses} />
 
             {/* Ledger Table */}
             <RealtimeLedgerWrapper>

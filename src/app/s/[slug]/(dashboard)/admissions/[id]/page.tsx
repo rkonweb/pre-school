@@ -42,6 +42,7 @@ import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { getClassroomsAction, createClassroomAction } from "@/app/actions/classroom-actions";
 import { toast } from "sonner";
 import { useModal } from "@/components/ui/modal/ModalContext";
+import { AdmissionInteractionTimeline } from "@/components/dashboard/admissions/AdmissionInteractionTimeline";
 
 export default function AdmissionDetailPage() {
     const params = useParams();
@@ -295,9 +296,9 @@ export default function AdmissionDetailPage() {
                     toast.success("Success! Student Enrolled.");
                     loadData();
                 } else {
-                    console.error("Approval Response Error:", res.error);
-                    const errorMessage = 'error' in res ? (res as any).error : 'Unknown error';
-                    toast.error(`Approval Failed: ${errorMessage}`);
+                    const errorMsg = (res as any).error;
+                    console.error("Approval Response Error:", errorMsg);
+                    toast.error(`Approval Failed: ${errorMsg || 'Unknown error'}`);
                 }
             } catch (err: any) {
                 console.error("Unexpected Approval Error:", err);
@@ -525,6 +526,7 @@ export default function AdmissionDetailPage() {
                                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Grade for Enrollment</label>
                                 <select
                                     disabled={isReadOnly}
+                                    title="Grade for Enrollment"
                                     value={formData.enrolledGrade || ""}
                                     onChange={e => setFormData({ ...formData, enrolledGrade: e.target.value })}
                                     className={cn(
@@ -615,6 +617,7 @@ export default function AdmissionDetailPage() {
                                         <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Blood Group</label>
                                         <select
                                             disabled={isReadOnly}
+                                            title="Blood Group"
                                             value={formData.bloodGroup || ""}
                                             onChange={e => setFormData({ ...formData, bloodGroup: e.target.value })}
                                             className={cn(
@@ -705,6 +708,7 @@ export default function AdmissionDetailPage() {
                                                                 {!isReadOnly && (
                                                                     <button
                                                                         type="button"
+                                                                        title="Remove Document"
                                                                         onClick={() => handleRemoveDoc(doc.key)}
                                                                         className="h-10 w-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center hover:bg-red-100 transition-all"
                                                                     >
@@ -799,6 +803,7 @@ export default function AdmissionDetailPage() {
                             <SectionTitle icon={Building2} title="Inquiry Source" />
                             <select
                                 disabled={isReadOnly}
+                                title="Inquiry Source"
                                 value={formData.source || ""}
                                 onChange={e => setFormData({ ...formData, source: e.target.value })}
                                 className="w-full mt-4 bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-sm appearance-none"
@@ -837,15 +842,26 @@ export default function AdmissionDetailPage() {
                             </div>
                         </div>
 
-                        <div className="mt-10">
-                            <SectionTitle icon={FileText} title="Administrative Notes" />
-                            <textarea
-                                readOnly={isReadOnly}
-                                value={formData.notes || ""}
-                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                className="w-full mt-4 bg-zinc-50 border-0 rounded-2xl p-6 text-sm font-bold min-h-[150px] resize-none focus:ring-2 focus:ring-brand outline-none"
-                                placeholder="Internal observations..."
-                            />
+                        <div className="mt-10 lg:h-[600px]">
+                            {isReadOnly ? (
+                                <AdmissionInteractionTimeline
+                                    admissionId={id}
+                                    slug={slug}
+                                    interactions={formData.interactions || []}
+                                    onInteractionAdded={loadData}
+                                />
+                            ) : (
+                                <div>
+                                    <SectionTitle icon={FileText} title="Administrative Notes" />
+                                    <textarea
+                                        readOnly={isReadOnly}
+                                        value={formData.notes || ""}
+                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                        className="w-full mt-4 bg-zinc-50 border-0 rounded-2xl p-6 text-sm font-bold min-h-[150px] resize-none focus:ring-2 focus:ring-brand outline-none"
+                                        placeholder="Internal observations..."
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {!isReadOnly && (
@@ -922,6 +938,7 @@ export default function AdmissionDetailPage() {
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-brand-foreground/60 uppercase tracking-widest px-1">Assign Grade</label>
                                         <select
+                                            title="Assign Grade"
                                             value={selectedGrade}
                                             onChange={e => setSelectedGrade(e.target.value)}
                                             className="w-full bg-white/10 border-white/20 rounded-2xl py-4 px-6 font-bold text-white transition-all outline-none focus:ring-2 focus:ring-white/50 appearance-none"
@@ -936,6 +953,7 @@ export default function AdmissionDetailPage() {
                                     <label className="text-[10px] font-black text-brand-foreground/60 uppercase tracking-widest px-1">Assign Section</label>
                                     <div className="space-y-1">
                                         <select
+                                            title="Assign Section"
                                             value={selectedSection}
                                             onChange={e => setSelectedSection(e.target.value)}
                                             className="w-full bg-white/10 border-white/20 rounded-2xl py-4 px-6 font-bold text-white transition-all outline-none focus:ring-2 focus:ring-white/50 appearance-none"
@@ -1017,6 +1035,7 @@ export default function AdmissionDetailPage() {
             {/* Hidden File Input */}
             < input
                 type="file"
+                title="Upload Document"
                 ref={fileInputRef}
                 className="hidden"
                 accept="image/*,application/pdf"
@@ -1043,6 +1062,7 @@ function InputField({ label, value, readOnly, type = "text", onChange }: any) {
             <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">{label}</label>
             <input
                 type={type}
+                title={label}
                 value={value || ""}
                 readOnly={readOnly}
                 onChange={(e) => onChange?.(e.target.value)}
@@ -1061,6 +1081,7 @@ function SelectField({ label, value, options, onChange, readOnly, placeholder = 
             <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">{label}</label>
             <div className="relative">
                 <select
+                    title={label}
                     value={value || ""}
                     disabled={readOnly}
                     onChange={(e) => onChange?.(e.target.value)}

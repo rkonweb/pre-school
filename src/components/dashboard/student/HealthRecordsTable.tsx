@@ -28,6 +28,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { StudentAvatar, cleanName } from "@/components/dashboard/students/StudentAvatar";
 
 interface StudentHealthData {
     id: string;
@@ -206,6 +207,8 @@ export function HealthRecordsTable({ data, slug }: Props) {
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             className="pl-9 w-full md:max-w-sm"
+                            aria-label="Search Health Records"
+                            title="Search Health Records"
                         />
                     </div>
 
@@ -344,15 +347,22 @@ export function HealthRecordsTable({ data, slug }: Props) {
                                             {student.admissionNumber || "-"}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex flex-col">
-                                                <span className="font-semibold text-zinc-900">{student.firstName} {student.lastName}</span>
-                                                <span className="text-xs text-muted-foreground">{student.gender || "-"}</span>
-                                                {(student.allergies || student.chronicConditions) && (
-                                                    <div className="flex gap-1 mt-1">
-                                                        {student.allergies && <Badge variant="destructive" className="text-[10px] px-1 py-0 h-4 gap-1"><AlertCircle className="h-2 w-2" /> Allergy</Badge>}
-                                                        {student.chronicConditions && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">Medical</Badge>}
-                                                    </div>
-                                                )}
+                                            <div className="flex items-center gap-3">
+                                                <StudentAvatar
+                                                    src={null} // Current data doesn't have avatar, will use fallback
+                                                    name={`${student.firstName} ${student.lastName}`}
+                                                    className="h-10 w-10 rounded-xl"
+                                                />
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-zinc-900">{cleanName(`${student.firstName} ${student.lastName}`)}</span>
+                                                    <span className="text-xs text-muted-foreground">{student.gender || "-"}</span>
+                                                    {(student.allergies || student.chronicConditions) && (
+                                                        <div className="flex gap-1 mt-1">
+                                                            {student.allergies && <Badge variant="destructive" className="text-[10px] px-1 py-0 h-4 gap-1"><AlertCircle className="h-2 w-2" /> Allergy</Badge>}
+                                                            {student.chronicConditions && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">Medical</Badge>}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>

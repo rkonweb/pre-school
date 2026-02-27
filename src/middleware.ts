@@ -12,7 +12,16 @@ export async function middleware(req: NextRequest) {
 
     let response: NextResponse;
 
-    // --- LOGIC START ---
+    // --- LOCALHOST DEV: Clear any browser-cached CSP/HSTS that could force HTTPS ---
+    // This clears cached security policies from before the upgrade-insecure-requests fix.
+    if (hostname === "localhost" && process.env.NODE_ENV !== "production") {
+        // Redirect any accidental HTTPS requests back to HTTP
+        if (req.nextUrl.protocol === "https:") {
+            const httpUrl = req.nextUrl.clone();
+            httpUrl.protocol = "http:";
+            return NextResponse.redirect(httpUrl);
+        }
+    }
 
     // 3. Protect Admin Routes (Strict Server-Side Check - HIGHEST PRIORITY)
     if (url.pathname.startsWith("/admin") && !url.pathname.startsWith("/admin/login")) {
@@ -31,9 +40,11 @@ export async function middleware(req: NextRequest) {
         }
 
         if (!isValid) {
-            const redirect = NextResponse.redirect(new URL("/admin/login", req.url));
-            redirect.cookies.delete("admin_session");
-            response = redirect;
+            const redirectUrl = new URL("/admin/login", req.url);
+            redirectUrl.searchParams.set("callbackUrl", req.nextUrl.pathname + req.nextUrl.search);
+            const redirectParams = NextResponse.redirect(redirectUrl);
+            redirectParams.cookies.delete("admin_session");
+            response = redirectParams;
             return applySecurityHeaders(response);
         }
     }
@@ -101,7 +112,9 @@ export async function middleware(req: NextRequest) {
         }
 
         if (!isAuthorized) {
-            response = NextResponse.redirect(new URL(redirectPath, req.url));
+            const redirectUrl = new URL(redirectPath, req.url);
+            redirectUrl.searchParams.set("callbackUrl", req.nextUrl.pathname + req.nextUrl.search);
+            response = NextResponse.redirect(redirectUrl);
             return applySecurityHeaders(response);
         }
     }
@@ -140,6 +153,25 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
     response.headers.set("X-XSS-Protection", "1; mode=block");
+    response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(self), interest-cohort=()");
+
+    // Content Security Policy
+    const cspValue = `
+        default-src 'self';
+        script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.google.com https://*.googleapis.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' blob: data: https://*.googleusercontent.com https://*.googleapis.com;
+        connect-src 'self' https://*.googleapis.com;
+        frame-src 'none';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+        ${process.env.NODE_ENV === "production" ? "upgrade-insecure-requests;" : ""}
+    `.replace(/\s{2,}/g, ' ').trim();
+
+    response.headers.set("Content-Security-Policy", cspValue);
 
     // HSTS (Production Only)
     if (process.env.NODE_ENV === "production") {

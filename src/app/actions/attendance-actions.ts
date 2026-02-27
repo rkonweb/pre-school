@@ -202,10 +202,11 @@ export async function togglePunchAction(schoolSlug: string, userId: string, date
         try {
             // 0a. Get User Role
             const targetUser = await prisma.user.findUnique({
-                where: { id: userId },
+                where: { id: userId, school: { slug: schoolSlug } },
                 // @ts-ignore: Stale client
-                select: { customRoleId: true } as any
+                select: { id: true, customRoleId: true } as any
             });
+            if (!targetUser) throw new Error("Staff member not found in this school");
 
             let policy: any = null;
 
@@ -256,6 +257,9 @@ export async function togglePunchAction(schoolSlug: string, userId: string, date
             create: { userId, date: targetDate },
             include: { punches: { orderBy: { timestamp: "desc" } } }
         });
+
+        // Security check for upsert result (ensure it belongs to school via targetUser check above)
+        // If upsert succeeded, targetUser.id was used, and targetUser was verified to belong to schoolSlug.
 
         // Check Max Punches Limit
         if ((attendance as any).punches.length >= maxPunches) {
@@ -473,6 +477,12 @@ export async function createLeaveRequestAction(schoolSlug: string, data: { userI
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success) return { success: false, error: auth.error };
 
+        // Verify user belongs to school
+        const targetUser = await prisma.user.findUnique({
+            where: { id: data.userId, school: { slug: schoolSlug } }
+        });
+        if (!targetUser) return { success: false, error: "Staff member not found in this school" };
+
         const request = await prisma.leaveRequest.create({
             data: {
                 userId: data.userId,
@@ -494,12 +504,83 @@ export async function updateLeaveStatusAction(schoolSlug: string, id: string, st
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success) return { success: false, error: auth.error };
 
-        const request = await prisma.leaveRequest.update({
-            where: { id },
-            data: { status }
+        const existingRequest = await prisma.leaveRequest.findUnique({
+            where: { id, user: { school: { slug: schoolSlug } } }
         });
-        revalidatePath(`/s/${schoolSlug}/staff/attendance`);
-        return { success: true, data: request };
+
+        if (!existingRequest) return { success: false, error: "Request not found" };
+
+        return await prisma.$transaction(async (tx) => {
+            const updatedRequest = await tx.leaveRequest.update({
+                where: { id },
+                data: { status }
+            });
+
+            // If we are changing to APPROVED from something else
+            if (status === "APPROVED" && existingRequest.status !== "APPROVED") {
+                const daysDiff = Math.ceil((existingRequest.endDate.getTime() - existingRequest.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1; // Inclusive
+
+                // Attempt to find and deduct from LeaveBalance
+                // First get the LeaveType based on name/code if possible, assuming existingRequest.type matches a LeaveType.name or LeaveType.code
+                const currentYear = existingRequest.startDate.getFullYear();
+
+                const leaveType = await tx.leaveType.findFirst({
+                    where: {
+                        OR: [
+                            { name: existingRequest.type },
+                            { code: existingRequest.type }
+                        ],
+                        policy: { school: { slug: schoolSlug } }
+                    }
+                });
+
+                if (leaveType) {
+                    await tx.leaveBalance.updateMany({
+                        where: {
+                            userId: existingRequest.userId,
+                            leaveTypeId: leaveType.id,
+                            year: currentYear
+                        },
+                        data: {
+                            remaining: { decrement: daysDiff },
+                            used: { increment: daysDiff }
+                        }
+                    });
+                }
+            }
+
+            // If we are reverting FROM APPROVED TO REJECTED/PENDING
+            if (existingRequest.status === "APPROVED" && status !== "APPROVED") {
+                const daysDiff = Math.ceil((existingRequest.endDate.getTime() - existingRequest.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                const currentYear = existingRequest.startDate.getFullYear();
+
+                const leaveType = await tx.leaveType.findFirst({
+                    where: {
+                        OR: [
+                            { name: existingRequest.type },
+                            { code: existingRequest.type }
+                        ],
+                        policy: { school: { slug: schoolSlug } }
+                    }
+                });
+
+                if (leaveType) {
+                    await tx.leaveBalance.updateMany({
+                        where: {
+                            userId: existingRequest.userId,
+                            leaveTypeId: leaveType.id,
+                            year: currentYear
+                        },
+                        data: {
+                            remaining: { increment: daysDiff },
+                            used: { decrement: daysDiff }
+                        }
+                    });
+                }
+            }
+
+            return { success: true, data: updatedRequest };
+        });
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -600,7 +681,7 @@ export async function getStaffAttendanceHistoryAction(schoolSlug: string, userId
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
         const attendance = await prisma.staffAttendance.findMany({
-            where: { userId },
+            where: { userId, user: { school: { slug: schoolSlug } } },
             include: { punches: { orderBy: { timestamp: "asc" } } },
             orderBy: { date: "desc" }
         });
@@ -626,7 +707,7 @@ export async function getStaffLeaveHistoryAction(schoolSlug: string, userId: str
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
         const leaves = await prisma.leaveRequest.findMany({
-            where: { userId },
+            where: { userId, user: { school: { slug: schoolSlug } } },
             orderBy: { startDate: "desc" }
         });
         return { success: true, data: leaves };
@@ -651,6 +732,7 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
         const students = await prisma.student.findMany({
             where: {
                 classroomId: classroomId,
+                school: { slug: schoolSlug },
                 status: "ACTIVE"
             },
             select: {
@@ -668,7 +750,8 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
             where: {
                 studentId: { in: studentIds },
                 date: targetDate,
-                academicYearId: academicYearId || undefined
+                academicYearId: academicYearId || undefined,
+                student: { school: { slug: schoolSlug } }
             }
         });
 
@@ -698,10 +781,13 @@ export async function markAttendanceAction(schoolSlug: string, studentId: string
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
         const student = await prisma.student.findUnique({
-            where: { id: studentId },
+            where: { id: studentId, school: { slug: schoolSlug } },
             include: { school: { select: { timezone: true } } }
         });
-        const timezone = student?.school?.timezone || "Asia/Kolkata";
+
+        if (!student) return { success: false, error: "Student not found in this school" };
+
+        const timezone = student.school?.timezone || "Asia/Kolkata";
         const targetDate = new Date(date);
         const targetDateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
 
@@ -737,9 +823,6 @@ export async function markAttendanceAction(schoolSlug: string, studentId: string
             }
         });
 
-        // Optional: Revalidate if we were showing a summary on another page
-        // revalidatePath(...)
-
         return { success: true };
     } catch (error: any) {
         console.error("Mark Student Attendance Error:", error);
@@ -758,7 +841,7 @@ export async function getStudentAttendanceAction(schoolSlug: string, studentId: 
         }
 
         const attendance = await prisma.attendance.findMany({
-            where: query,
+            where: { ...query, student: { school: { slug: schoolSlug } } },
             orderBy: { date: 'desc' }
         });
         return { success: true, data: attendance };

@@ -341,7 +341,7 @@ export async function getStaffMemberAction(schoolSlug: string, id: string) {
         if (!auth.success) return { success: false, error: auth.error };
 
         const staff = await prisma.user.findUnique({
-            where: { id },
+            where: { id, school: { slug: schoolSlug } },
             include: {
                 salaryRevisions: {
                     orderBy: { effectiveDate: "desc" }
@@ -380,7 +380,7 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
 
         // Fetch staff to check branch
         const targetStaff = await prisma.user.findUnique({
-            where: { id },
+            where: { id, school: { slug: schoolSlug } },
             select: { branchId: true }
         });
 
@@ -408,7 +408,7 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
                         where: { id: phoneCheck.entityId! },
                         select: { schoolId: true }
                     });
-                    const staff = await prisma.user.findUnique({ where: { id }, select: { schoolId: true } });
+                    const staff = await prisma.user.findUnique({ where: { id, school: { slug: schoolSlug } }, select: { schoolId: true } });
                     if (existingDriver?.schoolId !== staff?.schoolId) {
                         return { success: false, error: phoneCheck.error };
                     }
@@ -506,7 +506,7 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
 
         console.log("Updating staff member in database:", id);
         const staff = await prisma.user.update({
-            where: { id },
+            where: { id, school: { slug: schoolSlug } },
             data: data as any, // Type assertion needed until Prisma Client is regenerated
             include: {
                 school: {
@@ -552,7 +552,7 @@ export async function updateStaffBasicInfoAction(schoolSlug: string, id: string,
 
         // Fetch staff to check branch
         const targetStaff = await prisma.user.findUnique({
-            where: { id },
+            where: { id, school: { slug: schoolSlug } },
             select: { branchId: true }
         });
 
@@ -563,7 +563,7 @@ export async function updateStaffBasicInfoAction(schoolSlug: string, id: string,
         }
 
         const updated = await prisma.user.update({
-            where: { id },
+            where: { id, school: { slug: schoolSlug } },
             data
         });
         await syncStaff(id);
@@ -598,7 +598,7 @@ export async function deleteStaffAction(schoolSlug: string, id: string) {
         }
 
         await prisma.user.delete({
-            where: { id }
+            where: { id, school: { slug: schoolSlug } }
         });
         await removeStaffFromIndex(id);
         revalidatePath(`/s/${schoolSlug}/staff`);
@@ -632,6 +632,12 @@ export async function addSalaryRevisionAction(schoolSlug: string, userId: string
         if (auth.user.role !== 'ADMIN' && auth.user.role !== 'SUPER_ADMIN') {
             return { success: false, error: "Only admins can manage salary revisions" };
         }
+
+        // Verify that the user belongs to the school
+        const staff = await prisma.user.findUnique({
+            where: { id: userId, school: { slug: schoolSlug } }
+        });
+        if (!staff) return { success: false, error: "Staff member not found in this school" };
 
         const revision = await prisma.salaryRevision.create({
             data: {
@@ -671,7 +677,7 @@ export async function deleteSalaryRevisionAction(schoolSlug: string, id: string)
         }
 
         await prisma.salaryRevision.delete({
-            where: { id }
+            where: { id, user: { school: { slug: schoolSlug } } }
         });
         return { success: true };
     } catch (error: any) {
@@ -685,7 +691,7 @@ export async function getStaffClassAccessAction(schoolSlug: string, userId: stri
         if (!auth.success) return { success: false, error: auth.error };
 
         const access = await prisma.classAccess.findMany({
-            where: { userId },
+            where: { userId, user: { school: { slug: schoolSlug } } },
             select: { classroomId: true, canRead: true }
         });
         return { success: true, access };
@@ -708,14 +714,15 @@ export async function updateStaffClassAccessBulkAction(schoolSlug: string, userI
             await tx.classAccess.deleteMany({
                 where: {
                     userId,
+                    user: { school: { slug: schoolSlug } },
                     classroomId: { notIn: activeClassIds }
                 }
             });
 
             // 2. Ensure active list exists
             for (const classId of activeClassIds) {
-                const existing = await tx.classAccess.findUnique({
-                    where: { userId_classroomId: { userId, classroomId: classId } }
+                const existing = await tx.classAccess.findFirst({
+                    where: { userId, classroomId: classId, user: { school: { slug: schoolSlug } } }
                 });
 
                 if (!existing) {

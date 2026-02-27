@@ -20,8 +20,17 @@ import { getTransportDashboardStatsAction } from "@/app/actions/transport-action
 import { getFleetStatusAction } from "@/app/actions/tracking-actions";
 import { cn } from "@/lib/utils";
 import FleetMapPreview from "@/components/transport/FleetMapPreview";
+import { toast } from "sonner";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
 
-export default async function TransportDashboard({ params }: { params: { slug: string } }) {
+export default async function TransportDashboard(props: { params: Promise<{ slug: string }> }) {
+    const params = await props.params;
     const slug = params.slug;
     const statsRes = await getTransportDashboardStatsAction(slug);
     const fleetRes = await getFleetStatusAction(slug);
@@ -36,14 +45,22 @@ export default async function TransportDashboard({ params }: { params: { slug: s
         );
     }
 
+    const handleGenerateFees = async () => {
+        "use server";
+        const { generateMonthlyTransportFeesAction } = await import("@/app/actions/transport-actions");
+        return generateMonthlyTransportFeesAction(slug);
+    };
+
     const { finances, fleet, drivers } = statsRes.data;
     const initialFleet = fleetRes.success && fleetRes.data ? fleetRes.data : [];
 
     // Additional data for basic stats
     const school = await prisma.school.findUnique({
         where: { slug },
-        select: { id: true, googleMapsApiKey: true }
+        select: { id: true, googleMapsApiKey: true, currency: true }
     });
+
+    const currencySymbol = school?.currency || 'INR';
 
     const pendingRequests = await prisma.studentTransportProfile.count({
         where: { student: { schoolId: school?.id }, status: "PENDING" }
@@ -65,18 +82,39 @@ export default async function TransportDashboard({ params }: { params: { slug: s
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-xl font-bold shadow-lg shadow-red-200 hover:bg-red-700 transition-all active:scale-95 group">
-                        <ShieldAlert className="h-5 w-5 group-hover:animate-pulse" />
-                        EMERGENCY SOS BROADCAST
-                    </button>
+                <div className="flex flex-wrap items-center gap-3">
                     <Link
                         href={`/s/${slug}/transport/fleet/tracking`}
                         className="flex items-center gap-2 px-6 py-2.5 bg-zinc-900 text-white rounded-xl font-bold hover:bg-zinc-800 transition-all"
                     >
-                        <Navigation className="h-5 w-5" />
+                        <Activity className="h-5 w-5" />
                         Live Fleet Map
                     </Link>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className="flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-zinc-700 hover:bg-zinc-50 transition-all shadow-sm"
+                                title="More options"
+                            >
+                                <MoreHorizontal className="h-5 w-5" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-48">
+                            <DropdownMenuItem asChild>
+                                <Link href={`/s/${slug}/transport/route/routes`} className="flex items-center gap-2">
+                                    <Navigation className="h-4 w-4" />
+                                    Manage Routes
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href={`/s/${slug}/settings/fees`} className="flex items-center gap-2">
+                                    <DollarSign className="h-4 w-4" />
+                                    Fee Settings
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
@@ -122,10 +160,13 @@ export default async function TransportDashboard({ params }: { params: { slug: s
                                 </div>
                                 <div className="flex flex-col">
                                     <h3 className="text-3xl font-black text-[var(--secondary-color)]">
-                                        {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(finances.totalCollected)}
+                                        {new Intl.NumberFormat('en-IN', { style: 'currency', currency: currencySymbol, maximumFractionDigits: 0 }).format(finances.totalCollected)}
                                     </h3>
                                     <div className="mt-4 w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
-                                        <div className="h-full bg-white transition-all duration-500" style={{ width: `${finances.collectionRate}%` }}></div>
+                                        <div
+                                            className="h-full bg-white transition-all duration-500"
+                                            style={{ width: `${finances.collectionRate}%` } as React.CSSProperties}
+                                        ></div>
                                     </div>
                                     <p className="text-[10px] font-bold mt-2 uppercase text-[var(--secondary-color)] opacity-80">{finances.collectionRate.toFixed(1)}% Collected</p>
                                 </div>
@@ -199,8 +240,12 @@ export default async function TransportDashboard({ params }: { params: { slug: s
                         <CardContent className="p-4 flex flex-col gap-2">
                             {[
                                 { name: "Route Planning", href: `/s/${slug}/transport/route/routes`, icon: Navigation, desc: "Optimize Paths" },
-                                { name: "Vehicles & Docs", href: `/s/${slug}/transport/fleet/vehicles`, icon: Bus, desc: "Compliance Check" },
+                                { name: "Vehicles & Docs", href: `/s/${slug}/transport/fleet/vehicles`, icon: Bus, desc: "Predictive Maintenance" },
                                 { name: "Driver Scorecards", href: `/s/${slug}/transport/fleet/drivers`, icon: Users, desc: "Safety Metrics" },
+                                { name: "Fleet Students", href: `/s/${slug}/transport/students`, icon: UserCheck, desc: "Boarding & Alerts" },
+                                { name: "Manual Enroll", href: `/s/${slug}/transport/application/apply`, icon: Navigation, desc: "Direct Assignment" },
+                                { name: "Expense Ledger", href: `/s/${slug}/transport/expenses`, icon: DollarSign, desc: "Fleet Spends & Fuel" },
+                                { name: "Transport Accounts", href: `/s/${slug}/transport/fees`, icon: Activity, desc: "Fee Tracking & Comm" },
                                 { name: "Full Tracking", href: `/s/${slug}/transport/fleet/tracking`, icon: NavPosition, desc: "Global Control" },
                             ].map((action) => (
                                 <Link
@@ -218,6 +263,26 @@ export default async function TransportDashboard({ params }: { params: { slug: s
                                     <ArrowRight className="h-4 w-4 ml-auto text-zinc-300 transition-all group-hover:translate-x-1" />
                                 </Link>
                             ))}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-xl shadow-zinc-200/50">
+                        <CardHeader className="bg-zinc-50/50 border-b border-zinc-100">
+                            <CardTitle className="text-lg text-emerald-700">Financial Intelligence</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4">
+                            <Link href={`/s/${slug}/transport/fees`} className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-all group">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-white rounded-lg shadow-sm">
+                                        <DollarSign className="h-5 w-5 text-emerald-600" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-sm font-bold leading-tight">View Accounts</p>
+                                        <p className="text-[10px] font-medium uppercase tracking-tight opacity-70">Automated Billing & Reminders</p>
+                                    </div>
+                                </div>
+                                <ArrowRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
+                            </Link>
                         </CardContent>
                     </Card>
                 </div>

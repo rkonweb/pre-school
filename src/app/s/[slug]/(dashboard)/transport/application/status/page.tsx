@@ -3,7 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Bus, Clock, Phone, User as UserIcon } from "lucide-react";
 
-export default async function TransportStatusPage({ params }: { params: { slug: string } }) {
+export default async function TransportStatusPage(props: { params: Promise<{ slug: string }> }) {
+    const params = await props.params;
+    const { slug } = params;
     // TODO: Get student from session
     // const student = await getStudent();
     const student = null; // Placeholder
@@ -34,8 +36,8 @@ export default async function TransportStatusPage({ params }: { params: { slug: 
                     <div className="flex justify-between items-center">
                         <CardTitle>Application Status</CardTitle>
                         <Badge
-                            variant={profile.status === "APPROVED" ? "outline" : "warning"}
-                            className={profile.status === "APPROVED" ? "bg-emerald-50 text-emerald-600 border-emerald-200" : ""}
+                            variant={profile.status === "APPROVED" ? "outline" : "secondary"}
+                            className={profile.status === "APPROVED" ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-amber-50 text-amber-600 border-amber-200"}
                         >
                             {profile.status}
                         </Badge>

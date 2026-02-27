@@ -16,7 +16,8 @@ import {
     getBiometricUnmappedUsersAction,
     getRecentBiometricLogsAction,
     mapBiometricUserAction,
-    getConnectedDevicesAction
+    getConnectedDevicesAction,
+    generateSampleBiometricDataAction
 } from "@/app/actions/biometric-actions";
 import { getStaffAction } from "@/app/actions/staff-actions";
 import { useParams } from "next/navigation";
@@ -36,6 +37,7 @@ export default function BiometricSettingsPage() {
     const [selectedUser, setSelectedUser] = useState<string>("");
     const [isLoading, setIsLoading] = useState(true);
     const [copied, setCopied] = useState(false);
+    const [serverUrl, setServerUrl] = useState("");
 
     const loadData = async () => {
         setIsLoading(true);
@@ -59,7 +61,13 @@ export default function BiometricSettingsPage() {
     };
 
     useEffect(() => {
-        if (slug) loadData();
+        if (slug) {
+            loadData();
+            // Auto refresh every 30 seconds
+            const interval = setInterval(loadData, 30000);
+            setServerUrl(`${window.location.origin}/api/biometric/push?sn=SN-TEST-8899`);
+            return () => clearInterval(interval);
+        }
     }, [slug]);
 
     const handleLinkUser = async (deviceUserId: string) => {
@@ -76,7 +84,8 @@ export default function BiometricSettingsPage() {
     };
 
     const copyToClipboard = () => {
-        navigator.clipboard.writeText("https://app.schoolerp.com/api/biometric/push");
+        if (!serverUrl) return;
+        navigator.clipboard.writeText(serverUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -90,13 +99,25 @@ export default function BiometricSettingsPage() {
                     <h1 className="text-2xl font-bold text-zinc-900">Biometric Attendance</h1>
                     <p className="text-zinc-500">Connect devices and manage attendance data sources.</p>
                 </div>
-                <button
-                    onClick={loadData}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50"
-                >
-                    <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-                    Refresh Status
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={async () => {
+                            const res = await generateSampleBiometricDataAction(slug);
+                            if (res.success) loadData();
+                        }}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 shadow-sm ring-1 ring-inset ring-indigo-200 hover:bg-indigo-100"
+                    >
+                        <Activity className="h-4 w-4" />
+                        Generate Sample Data
+                    </button>
+                    <button
+                        onClick={loadData}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50"
+                    >
+                        <RefreshCcw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                        Refresh Status
+                    </button>
+                </div>
             </div>
 
             {/* Quick Connect Guide (Hero) */}
@@ -114,8 +135,8 @@ export default function BiometricSettingsPage() {
                         <div className="mt-4 space-y-2">
                             <label className="text-xs font-medium uppercase tracking-wider text-[var(--secondary-color)] opacity-60">Server URL Endpoint</label>
                             <div className="flex items-center gap-2 rounded-xl bg-white/10 p-2 pr-4 backdrop-blur-md ring-1 ring-white/20 transition-all hover:bg-white/20">
-                                <code className="flex-1 px-3 font-mono text-sm tracking-wide text-[var(--secondary-color)]">
-                                    https://app.schoolerp.com/api/biometric/push
+                                <code className="flex-1 px-3 font-mono text-sm tracking-wide text-[var(--secondary-color)] break-all">
+                                    {serverUrl || "Loading..."}
                                 </code>
                                 <button
                                     onClick={copyToClipboard}
@@ -277,6 +298,7 @@ export default function BiometricSettingsPage() {
                                                             <select
                                                                 className="w-full rounded-lg border-zinc-200 text-sm focus:border-brand focus:ring-brand"
                                                                 value={selectedUser}
+                                                                title="Select Staff Member"
                                                                 onChange={(e) => setSelectedUser(e.target.value)}
                                                             >
                                                                 <option value="">Select Staff Member...</option>

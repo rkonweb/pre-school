@@ -10,6 +10,7 @@ import { getAcademicYearsAction } from "@/app/actions/academic-year-actions";
 import { getFeeStructuresAction } from "@/app/actions/fee-settings-actions";
 import { Check, Loader2, Calendar, Bus, Filter, Users, LayoutGrid } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
+import { DashboardLoader } from "@/components/ui/DashboardLoader";
 
 export default function GenerateInvoicesPage() {
     const params = useParams();
@@ -155,8 +156,8 @@ export default function GenerateInvoicesPage() {
 
     if (isLoadingData) {
         return (
-            <div className="flex-1 flex items-center justify-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-zinc-300" />
+            <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] gap-8">
+                <DashboardLoader message="Loading transport configuration..." />
             </div>
         );
     }

@@ -191,10 +191,13 @@ export async function getPayrollsAction(schoolSlug: string) {
     }
 }
 
-export async function getPayslipsAction(payrollId: string) {
+export async function getPayslipsAction(payrollId: string, schoolSlug: string) {
     try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
         const payslips = await (prisma as any).payslip.findMany({
-            where: { payrollId },
+            where: { payrollId, payroll: { schoolId: auth.user.schoolId } },
             include: { user: true }
         });
         return { success: true, data: payslips };
@@ -207,13 +210,15 @@ export async function markAsPaidAction(payrollId: string, schoolSlug: string) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.user?.schoolId) return { success: false, error: "Unauthorized" };
+
         await (prisma as any).payroll.update({
-            where: { id: payrollId },
+            where: { id: payrollId, schoolId: auth.user.schoolId },
             data: { status: "PAID" }
         });
 
         await (prisma as any).payslip.updateMany({
-            where: { payrollId },
+            where: { payrollId, payroll: { schoolId: auth.user.schoolId } },
             data: { status: "PAID", paidAt: new Date() }
         });
 
@@ -237,7 +242,8 @@ export async function getSchoolDetailsAction(slug: string) {
                 address: true,
                 email: true,
                 phone: true,
-                brandColor: true
+                brandColor: true,
+                currency: true
             }
         });
         return { success: true, data: school };

@@ -29,6 +29,7 @@ import {
     X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "@/context/SidebarContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useReactToPrint } from "react-to-print";
@@ -49,6 +50,7 @@ type ViewState = "LIST" | "DETAILS";
 export default function PayrollPage() {
     const params = useParams();
     const slug = params.slug as string;
+    const { currency } = useSidebar();
 
     const [view, setView] = useState<ViewState>("LIST");
     const [isLoading, setIsLoading] = useState(true);
@@ -110,7 +112,7 @@ export default function PayrollPage() {
     async function handleViewDetails(payroll: any) {
         setSelectedPayroll(payroll);
         setIsLoading(true);
-        const res = await getPayslipsAction(payroll.id);
+        const res = await getPayslipsAction(payroll.id, slug);
         if (res.success) {
             setPayslips(res.data);
             setView("DETAILS");
@@ -139,7 +141,7 @@ export default function PayrollPage() {
         const res = await generatePayrollAction(slug, selectedPayroll.month, selectedPayroll.year);
         if (res.success) {
             toast.success("Payroll recalculated successfully");
-            const refreshRes = await getPayslipsAction(selectedPayroll.id);
+            const refreshRes = await getPayslipsAction(selectedPayroll.id, slug);
             if (refreshRes.success) setPayslips(refreshRes.data);
             loadData();
         }
@@ -189,6 +191,7 @@ export default function PayrollPage() {
                         <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-2 rounded-2xl shadow-sm ring-4 ring-zinc-500/5">
                             <select
                                 value={genMonth}
+                                title="Select Month"
                                 onChange={(e) => setGenMonth(Number(e.target.value))}
                                 className="bg-transparent text-xs font-black px-3 focus:outline-none appearance-none cursor-pointer uppercase tracking-widest text-zinc-600 dark:text-zinc-400"
                             >
@@ -199,6 +202,7 @@ export default function PayrollPage() {
                             <div className="w-[1px] h-4 bg-zinc-200 dark:bg-zinc-800" />
                             <select
                                 value={genYear}
+                                title="Select Year"
                                 onChange={(e) => setGenYear(Number(e.target.value))}
                                 className="bg-transparent text-xs font-black px-3 focus:outline-none appearance-none cursor-pointer uppercase tracking-widest text-zinc-600 dark:text-zinc-400"
                             >
@@ -256,7 +260,7 @@ export default function PayrollPage() {
                             <div className="mt-12 pt-8 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                                 <div>
                                     <span className="text-[9px] block font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">Monthly Expenditure</span>
-                                    <span className="text-2xl font-black text-emerald-600 tracking-tighter">₹{p.totalAmount.toLocaleString()}</span>
+                                    <span className="text-2xl font-black text-emerald-600 tracking-tighter">{currency}{p.totalAmount.toLocaleString()}</span>
                                 </div>
                                 <div className="h-12 w-12 rounded-2xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:text-emerald-500 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-500/10 transition-all">
                                     <ChevronRight className="h-6 w-6" />
@@ -284,21 +288,21 @@ export default function PayrollPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <StatCard
                             label="Net Disbursement"
-                            value={`₹${stats.totalNet.toLocaleString()}`}
+                            value={`${currency}${stats.totalNet.toLocaleString()}`}
                             icon={Banknote}
                             color="emerald"
                             subtitle={`${stats.paidCount} of ${stats.staffCount} Paid`}
                         />
                         <StatCard
                             label="Institutional Gross"
-                            value={`₹${stats.totalGross.toLocaleString()}`}
+                            value={`${currency}${stats.totalGross.toLocaleString()}`}
                             icon={TrendingUp}
                             color="brand"
                             subtitle="Before Deductions"
                         />
                         <StatCard
                             label="Total Deductions"
-                            value={`₹${stats.totalDeductions.toLocaleString()}`}
+                            value={`${currency}${stats.totalDeductions.toLocaleString()}`}
                             icon={AlertCircle}
                             color="rose"
                             subtitle="Taxes & Benefits"
@@ -385,6 +389,7 @@ export default function PayrollPage() {
                                     className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl pl-16 pr-6 py-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
+                                    title="Search staff profiles"
                                 />
                             </div>
 
@@ -394,7 +399,10 @@ export default function PayrollPage() {
                                     <p className="text-sm font-black text-zinc-900 dark:text-zinc-50">Filtered Result: {filteredPayslips.length} Staff</p>
                                 </div>
                                 <div className="w-[1px] h-10 bg-zinc-200 dark:bg-zinc-800 mx-4 hidden lg:block" />
-                                <button className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-2xl text-zinc-500 hover:text-emerald-500 transition-colors">
+                                <button
+                                    className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-2xl text-zinc-500 hover:text-emerald-500 transition-colors"
+                                    title="More options"
+                                >
                                     <MoreHorizontal className="h-5 w-5" />
                                 </button>
                             </div>
@@ -451,14 +459,14 @@ export default function PayrollPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-10 py-8 text-right font-mono font-black text-zinc-600 dark:text-zinc-400 text-sm whitespace-nowrap tracking-tighter">
-                                                    ₹{p.grossSalary.toLocaleString()}
+                                                    {currency}{p.grossSalary.toLocaleString()}
                                                 </td>
                                                 <td className="px-10 py-8 text-right font-mono text-sm font-black text-rose-500 whitespace-nowrap tracking-tighter italic">
-                                                    -₹{totalDeductions.toLocaleString()}
+                                                    -{currency}{totalDeductions.toLocaleString()}
                                                 </td>
                                                 <td className="px-10 py-8 text-right whitespace-nowrap">
                                                     <div className="font-mono font-black text-emerald-600 text-2xl tracking-tighter italic drop-shadow-sm group-hover:scale-110 transition-transform origin-right">
-                                                        ₹{p.netSalary.toLocaleString()}
+                                                        {currency}{p.netSalary.toLocaleString()}
                                                     </div>
                                                 </td>
                                                 <td className="px-10 py-8">
@@ -472,6 +480,7 @@ export default function PayrollPage() {
                                                                 setIsPayslipOpen(true);
                                                             }}
                                                             className="h-12 w-12 flex items-center justify-center bg-brand dark:bg-white text-[var(--secondary-color)] dark:text-zinc-900 rounded-2xl shadow-xl transition-all hover:scale-110 active:scale-90"
+                                                            title="View Detailed Payslip"
                                                         >
                                                             <Eye className="h-5 w-5" />
                                                         </button>
@@ -482,6 +491,7 @@ export default function PayrollPage() {
                                                                 setTimeout(handlePrint, 100);
                                                             }}
                                                             className="h-12 w-12 flex items-center justify-center bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-emerald-500 rounded-2xl shadow-sm transition-all hover:scale-110 active:scale-90"
+                                                            title="Print Payslip"
                                                         >
                                                             <Printer className="h-5 w-5" />
                                                         </button>
@@ -529,15 +539,15 @@ export default function PayrollPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="p-8 bg-zinc-50 rounded-[2.5rem] border border-zinc-100 flex flex-col items-center justify-center text-center">
                                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Gross Earnings</p>
-                                <p className="text-2xl font-black italic text-zinc-900 tracking-tighter">₹{selectedPayslip.grossSalary.toLocaleString()}</p>
+                                <p className="text-2xl font-black italic text-zinc-900 tracking-tighter">{currency}{selectedPayslip.grossSalary.toLocaleString()}</p>
                             </div>
                             <div className="p-8 bg-rose-50 border-rose-100 rounded-[2.5rem] border flex flex-col items-center justify-center text-center shadow-sm">
                                 <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Total Deductions</p>
-                                <p className="text-2xl font-black italic text-rose-500 tracking-tighter">₹{(selectedPayslip.tax + selectedPayslip.pf + selectedPayslip.insurance + selectedPayslip.leaveDeduction + selectedPayslip.otherDeductions).toLocaleString()}</p>
+                                <p className="text-2xl font-black italic text-rose-500 tracking-tighter">{currency}{(selectedPayslip.tax + selectedPayslip.pf + selectedPayslip.insurance + selectedPayslip.leaveDeduction + selectedPayslip.otherDeductions).toLocaleString()}</p>
                             </div>
                             <div className="col-span-2 p-10 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-[3rem] text-white flex flex-col items-center justify-center text-center shadow-[0_40px_80px_-20px_rgba(16,185,129,0.3)] border-4 border-white/20">
                                 <p className="text-[11px] font-black text-emerald-100 uppercase tracking-[0.2em] mb-2 opacity-80">Net Disbursement Liquidated</p>
-                                <h3 className="text-5xl font-black italic tracking-tighter">₹{selectedPayslip.netSalary.toLocaleString()}</h3>
+                                <h3 className="text-5xl font-black italic tracking-tighter">{currency}{selectedPayslip.netSalary.toLocaleString()}</h3>
                                 <div className="mt-6 flex items-center gap-2 bg-black/10 px-6 py-2 rounded-full border border-white/10 backdrop-blur-sm">
                                     <ShieldCheck className="h-4 w-4 text-emerald-200" />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Verified Transaction ID: #{selectedPayslip.id.slice(-8).toUpperCase()}</span>
@@ -588,6 +598,7 @@ export default function PayrollPage() {
                             <button
                                 onClick={handlePrint}
                                 className="flex-1 bg-brand text-[var(--secondary-color)] hover:brightness-110 py-6 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 shadow-3xl shadow-brand/20 transition-all hover:-translate-y-1 active:scale-95 border-b-4 border-black"
+                                title="Print this verified payslip"
                             >
                                 <Printer className="h-5 w-5" />
                                 Execute Print Command
@@ -607,6 +618,7 @@ export default function PayrollPage() {
 }
 
 function BreakdownRow({ label, value, isDeduction }: { label: string, value: number, isDeduction?: boolean }) {
+    const { currency } = useSidebar();
     if (value === 0 && isDeduction) return null; // Don't show empty deductions
     return (
         <div className="flex items-center justify-between group">
@@ -616,7 +628,7 @@ function BreakdownRow({ label, value, isDeduction }: { label: string, value: num
                 "font-mono font-black text-sm pl-4 italic tracking-tighter",
                 isDeduction ? "text-rose-500" : "text-zinc-900"
             )}>
-                {isDeduction ? "-" : ""}₹{value.toLocaleString()}
+                {isDeduction ? "-" : ""}{currency}{value.toLocaleString()}
             </span>
         </div>
     );
@@ -681,6 +693,7 @@ function StatusBadge({ status }: { status: string }) {
 function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
     if (!payslip) return null;
     const totalDeductions = payslip.tax + payslip.pf + payslip.insurance + payslip.leaveDeduction + payslip.otherDeductions;
+    const currencyStr = school?.currency ? (school.currency === 'INR' ? '₹' : (school.currency === 'USD' ? '$' : school.currency)) : '₹'; // Quick fallback for print view logic if SidebarContext isn't available in print window (though usually it is)
 
     return (
         <div className="max-w-[800px] mx-auto p-12 bg-white text-zinc-900 font-sans border border-zinc-200">
@@ -753,7 +766,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
             <div className="grid grid-cols-2 gap-12 mb-12">
                 <div>
                     <h2 className="text-xs font-black uppercase tracking-[0.3em] mb-6 border-b-2 border-zinc-900 pb-3 flex justify-between">
-                        Earnings Structure <span className="text-zinc-300 font-bold tracking-normal italic">(INR)</span>
+                        Earnings Structure <span className="text-zinc-300 font-bold tracking-normal italic">({school?.currency || 'INR'})</span>
                     </h2>
                     <div className="space-y-4">
                         <PrintRow label="Basic Salary" value={payslip.basic} />
@@ -765,7 +778,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                         ))}
                         <div className="pt-4 border-t-2 border-zinc-100 flex justify-between items-center px-2">
                             <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Total Gross</span>
-                            <span className="font-black text-lg italic tracking-tighter">₹{payslip.grossSalary.toLocaleString()}</span>
+                            <span className="font-black text-lg italic tracking-tighter">{currencyStr}{payslip.grossSalary.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -784,7 +797,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                         <PrintRow label="Other Recoveries" value={payslip.otherDeductions} isDeduction />
                         <div className="pt-4 border-t-2 border-zinc-100 flex justify-between items-center px-2">
                             <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Total Withheld</span>
-                            <span className="font-black text-lg italic tracking-tighter text-rose-500">-₹{totalDeductions.toLocaleString()}</span>
+                            <span className="font-black text-lg italic tracking-tighter text-rose-500">-{currencyStr}{totalDeductions.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -797,7 +810,7 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
                 </div>
                 <div>
                     <p className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.4em] mb-3 leading-none opacity-80">Net Disbursement Amount</p>
-                    <h3 className="text-6xl font-black italic text-zinc-900 tracking-tighter leading-none">₹{payslip.netSalary.toLocaleString()}</h3>
+                    <h3 className="text-6xl font-black italic text-zinc-900 tracking-tighter leading-none">{currencyStr}{payslip.netSalary.toLocaleString()}</h3>
                 </div>
                 <div className="text-right mt-6 lg:mt-0 pt-6 lg:pt-0 lg:border-l-2 border-emerald-200 lg:pl-10">
                     <p className="text-[9px] font-black text-emerald-800 uppercase tracking-widest mb-2 opacity-60">Authentication Stamp</p>
@@ -824,11 +837,12 @@ function PrintablePayslip({ payslip, school }: { payslip: any, school: any }) {
 }
 
 function PrintRow({ label, value, isDeduction }: { label: string, value: number, isDeduction?: boolean }) {
+    const { currency } = useSidebar();
     return (
         <div className="flex items-center justify-between text-xs px-2">
             <span className="font-bold text-zinc-600 uppercase tracking-tighter">{label}</span>
             <span className={cn("font-mono font-black italic", isDeduction ? "text-rose-500" : "text-zinc-900")}>
-                {isDeduction && value > 0 ? "-" : ""}₹{value.toLocaleString()}
+                {isDeduction && value > 0 ? "-" : ""}{currency}{value.toLocaleString()}
             </span>
         </div>
     );

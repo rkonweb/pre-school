@@ -5,15 +5,18 @@ import { WhatsAppTemplates } from "./WhatsAppTemplates";
 import { AutomationStatus } from "./AutomationStatus";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MessageCircle, Phone, FileText, ChevronRight, X, Lightbulb, TrendingUp } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export function AICopilotPanel({ lead, onClose }: { lead: any, onClose?: () => void }) {
+    const params = useParams();
+    const slug = params.slug as string;
     const { getScoreBand, getNBA, getRisks, leadIntelligence, fetchLeadIntelligence } = useAI();
 
     useEffect(() => {
-        if (lead?.id) {
-            fetchLeadIntelligence(lead.id);
+        if (slug && lead?.id) {
+            fetchLeadIntelligence(slug, lead.id);
         }
-    }, [lead?.id]);
+    }, [slug, lead?.id]);
 
     const intel = leadIntelligence[lead.id];
     const score = intel?.propensity || lead.score || 50;
@@ -40,7 +43,7 @@ export function AICopilotPanel({ lead, onClose }: { lead: any, onClose?: () => v
 
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 <div className="p-4 space-y-6">
-                    <AutomationStatus lead={lead} status={lead.score > 80 ? "active" : "paused"} />
+                    <AutomationStatus lead={lead} />
 
                     {/* 1. Lead Intelligence */}
                     <section>
@@ -105,6 +108,7 @@ export function AICopilotPanel({ lead, onClose }: { lead: any, onClose?: () => v
                     {/* 3. Communication Assistant */}
                     <section className="h-[400px]">
                         <WhatsAppTemplates
+                            leadId={lead.id}
                             onSelect={(t) => console.log('Selected', t)}
                             onSend={(t) => alert(`Sending WhatsApp: ${t.content}`)}
                         />

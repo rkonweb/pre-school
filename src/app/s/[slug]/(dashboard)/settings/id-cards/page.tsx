@@ -4,9 +4,11 @@ import { Plus, Edit2, Trash2, CreditCard, Layout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TemplateListClient } from "./TemplateListClient";
 
-export default async function IDCardTemplatesPage({ params }: { params: { slug: string } }) {
+export default async function IDCardTemplatesPage(props: { params: Promise<{ slug: string }> }) {
+    const params = await props.params;
+    const { slug } = params;
     const school = await prisma.school.findUnique({
-        where: { slug: params.slug },
+        where: { slug: slug },
         include: {
             idCardTemplates: true,
             idCardSettings: true
@@ -42,7 +44,7 @@ export default async function IDCardTemplatesPage({ params }: { params: { slug: 
                         Create and manage reusable ID card templates for students and staff.
                     </p>
                 </div>
-                <Link href={`/s/${params.slug}/settings/id-cards/designer/new`}>
+                <Link href={`/s/${slug}/settings/id-cards/designer/new`}>
                     <Button className="rounded-2xl h-12 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-2">
                         <Plus className="h-4 w-4" /> Create Template
                     </Button>
@@ -50,7 +52,7 @@ export default async function IDCardTemplatesPage({ params }: { params: { slug: 
             </div>
 
             <TemplateListClient
-                slug={params.slug}
+                slug={slug}
                 schoolId={school.id}
                 initialTemplates={templates}
             />

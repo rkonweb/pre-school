@@ -21,9 +21,9 @@ export function HeaderSettingsButton({ slug, parentId, studentId, phone }: Heade
     return (
         <Link
             href={menuUrl}
-            className="h-10 w-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm transition-transform active:scale-95"
+            className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-white/40 backdrop-blur-md border border-white/60 flex items-center justify-center text-slate-700 shadow-sm transition-all hover:bg-white/60 active:scale-95"
         >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
         </Link>
     );
 }

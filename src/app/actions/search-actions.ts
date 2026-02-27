@@ -70,13 +70,35 @@ export async function searchStudentsElasticAction(schoolSlug: string, query: str
         const must_not: any[] = [];
 
         if (query) {
-            must.push({
-                multi_match: {
-                    query: query,
-                    fields: ['fullName^3', 'admissionNumber^4', 'parentName', 'parentMobile'],
-                    fuzziness: 'AUTO'
-                }
-            });
+            // Phone number detection: 3+ digits (allow spaces, dashes, +)
+            const isPhoneLike = /^[\d\s\-+]{3,}$/.test(query.trim());
+
+            if (isPhoneLike) {
+                // match_phrase_prefix works on standard analyzed fields (no .keyword mapping needed)
+                const cleanPhone = query.replace(/[\s\-]/g, "");
+                must.push({
+                    bool: {
+                        should: [
+                            { match_phrase_prefix: { "parentMobile": { query: cleanPhone } } },
+                            { match_phrase_prefix: { "fatherPhone": { query: cleanPhone } } },
+                            { match_phrase_prefix: { "motherPhone": { query: cleanPhone } } },
+                            { match_phrase_prefix: { "emergencyContactPhone": { query: cleanPhone } } },
+                        ],
+                        minimum_should_match: 1
+                    }
+                });
+            } else {
+                // Text search: tighter fuzziness (1 edit) + name/admission boost
+                must.push({
+                    multi_match: {
+                        query: query,
+                        fields: ['fullName^4', 'firstName^3', 'lastName^3', 'admissionNumber^5', 'parentName^2', 'fatherPhone', 'motherPhone', 'emergencyContactPhone'],
+                        fuzziness: 1,
+                        prefix_length: 2,
+                        minimum_should_match: "75%"
+                    }
+                });
+            }
         }
 
         if (filters.status && filters.status !== 'all') {

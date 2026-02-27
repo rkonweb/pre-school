@@ -63,6 +63,7 @@ export async function createAcademicYearAction(slug: string, data: { name: strin
         const year = await (prisma as any).academicYear.create({
             data: {
                 ...data,
+                name: data.name.replace(/\s+/g, ''),
                 schoolId: school.id,
                 status: "ACTIVE"
             }
@@ -95,7 +96,10 @@ export async function updateAcademicYearAction(slug: string, id: string, data: a
 
         const year = await (prisma as any).academicYear.update({
             where: { id },
-            data
+            data: {
+                ...data,
+                name: data.name ? data.name.replace(/\s+/g, '') : undefined
+            }
         });
 
         // SHIFT STUDENTS if this year is now current
@@ -190,14 +194,27 @@ export async function ensureNextYearAction(slug: string) {
         if (!school) return;
 
         // 1. Get current academic year
-        const currentYear = await prisma.academicYear.findFirst({
-            where: { schoolId: school.id, isCurrent: true }
-        });
+        let currentYear: any;
+        try {
+            currentYear = await (prisma as any).academicYear.findFirst({
+                where: { schoolId: school.id, isCurrent: true }
+            });
+        } catch (e) {
+            const tempYears = await prisma.$queryRawUnsafe(
+                `SELECT * FROM AcademicYear WHERE schoolId = ? AND isCurrent = 1 LIMIT 1`,
+                school.id
+            ) as any[];
+            currentYear = tempYears.length > 0 ? {
+                ...tempYears[0],
+                isCurrent: true,
+                startDate: new Date(tempYears[0].startDate),
+                endDate: new Date(tempYears[0].endDate)
+            } : null;
+        }
 
         if (!currentYear) return;
 
         // 2. Calculate threshold (10 months before end)
-        // End Date: March 31st, 2026 -> Threshold: May 31st, 2025
         const endDate = new Date(currentYear.endDate);
         const thresholdDate = new Date(endDate);
         thresholdDate.setMonth(thresholdDate.getMonth() - 10);
@@ -208,31 +225,41 @@ export async function ensureNextYearAction(slug: string) {
 
         // 3. Check if we need to create next year
         if (today >= thresholdDate) {
-            // Calculate next year name
-            // Assumption: "YYYY-YYYY" format
             const parts = currentYear.name.split("-");
             if (parts.length === 2) {
                 const start = parseInt(parts[0]);
                 const end = parseInt(parts[1]);
                 const nextYearName = `${start + 1}-${end + 1}`;
 
-                // Check if exists
-                const existing = await prisma.academicYear.findFirst({
-                    where: { schoolId: school.id, name: nextYearName }
-                });
+                let existing: any;
+                try {
+                    existing = await (prisma as any).academicYear.findFirst({
+                        where: { schoolId: school.id, name: nextYearName }
+                    });
+                } catch (e) {
+                    const temp = await prisma.$queryRawUnsafe(
+                        `SELECT * FROM AcademicYear WHERE schoolId = ? AND name = ? LIMIT 1`,
+                        school.id, nextYearName
+                    ) as any[];
+                    existing = temp.length > 0 ? temp[0] : null;
+                }
 
                 if (!existing) {
                     console.log(`[Auto-Create] Creating next academic year: ${nextYearName} for ${slug}`);
-                    await prisma.academicYear.create({
-                        data: {
-                            name: nextYearName,
-                            startDate: new Date(start + 1, 3, 1), // April 1st
-                            endDate: new Date(end + 1, 2, 31),   // March 31st
-                            schoolId: school.id,
-                            isCurrent: false,
-                            status: "ACTIVE"
-                        }
-                    });
+                    try {
+                        await (prisma as any).academicYear.create({
+                            data: {
+                                name: nextYearName.replace(/\s+/g, ''),
+                                startDate: new Date(start + 1, 3, 1), // April 1st
+                                endDate: new Date(end + 1, 2, 31),   // March 31st
+                                schoolId: school.id,
+                                isCurrent: false,
+                                status: "ACTIVE"
+                            }
+                        });
+                    } catch (e) {
+                        console.error("Failed to auto create academic year with standard prisma:", e);
+                    }
                 }
             }
         }

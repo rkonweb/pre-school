@@ -17,7 +17,15 @@ import {
     Users,
     Sparkles,
     AlertTriangle,
+    Plus,
+    MoreHorizontal
 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { getLeadsAction } from "@/app/actions/lead-actions";
 import { searchLeadsElasticAction } from "@/app/actions/search-actions";
@@ -37,12 +45,25 @@ export default function LeadListPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
 
+    // Immediate load for status change
+    useEffect(() => {
+        loadLeads();
+    }, [slug, statusFilter]);
+
+    // Debounced load for search
     useEffect(() => {
         const timer = setTimeout(() => {
-            loadLeads();
+            if (searchTerm) loadLeads();
         }, 500);
         return () => clearTimeout(timer);
-    }, [slug, statusFilter, searchTerm]);
+    }, [searchTerm]);
+
+    // Clear search trigger
+    useEffect(() => {
+        if (searchTerm === "") {
+            loadLeads();
+        }
+    }, [searchTerm]);
 
     async function loadLeads() {
         setIsLoading(true);
@@ -81,14 +102,32 @@ export default function LeadListPage() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="h-10 px-4 border border-zinc-200 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-zinc-50 transition-all">
-                            <Download className="h-4 w-4" />
-                            Export
-                        </button>
-                        <button className="h-10 px-6 bg-zinc-900 text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl hover:scale-[1.02] transition-all">
-                            <Users className="h-4 w-4" />
-                            Bulk Assign
-                        </button>
+                        <Link
+                            href={`/s/${slug}/admissions/inquiry/add`}
+                            className="h-10 px-6 bg-brand text-[var(--secondary-color)] rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl hover:brightness-110 hover:scale-[1.02] transition-all"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add Inquiry
+                        </Link>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className="h-10 px-3 border border-zinc-200 rounded-xl flex items-center justify-center hover:bg-zinc-50 transition-all outline-none"
+                                    title="More options"
+                                >
+                                    <MoreHorizontal className="h-4 w-4 text-zinc-600" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-48">
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${slug}/admissions/inquiry/settings`} className="flex items-center gap-2">
+                                        <Sparkles className="h-4 w-4 text-brand" />
+                                        Status Settings
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
 
@@ -104,6 +143,7 @@ export default function LeadListPage() {
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
+                        title="Filter by Stage"
                         className="rounded-xl border-zinc-200 bg-zinc-50 py-2.5 px-4 text-sm font-bold focus:ring-2 focus:ring-brand"
                     >
                         <option value="all">All Stages</option>
@@ -113,7 +153,10 @@ export default function LeadListPage() {
                         <option value="TOUR_SCHEDULED">Tour Scheduled</option>
                         <option value="TOUR_COMPLETED">Tour Completed</option>
                     </select>
-                    <button className="h-10 w-10 flex items-center justify-center border border-zinc-200 rounded-xl hover:bg-zinc-50">
+                    <button
+                        title="Search Filters"
+                        className="h-10 w-10 flex items-center justify-center border border-zinc-200 rounded-xl hover:bg-zinc-50"
+                    >
                         <Filter className="h-4 w-4 text-zinc-500" />
                     </button>
                 </div>
@@ -142,7 +185,7 @@ export default function LeadListPage() {
 }
 
 function LeadTableBody({ isLoading, leads, slug, router }: any) {
-    const { getNBA, getRisks, generateMockScore } = useAI();
+    const { getNBA, getRisks } = useAI();
 
     return (
         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -160,7 +203,7 @@ function LeadTableBody({ isLoading, leads, slug, router }: any) {
                 </tr>
             ) : (
                 leads.map((lead: any) => {
-                    const score = lead.score || generateMockScore();
+                    const score = lead.score || 50;
                     const nba = getNBA(lead.id);
                     const risks = getRisks(lead.id);
 
@@ -197,13 +240,22 @@ function LeadTableBody({ isLoading, leads, slug, router }: any) {
                             </td>
                             <td className="px-8 py-6 text-right" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex items-center justify-end gap-2">
-                                    <button className="h-8 w-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:scale-110 transition-all shadow-sm">
+                                    <button
+                                        title="Call Parent"
+                                        className="h-8 w-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
+                                    >
                                         <Phone className="h-3.5 w-3.5" />
                                     </button>
-                                    <button className="h-8 w-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center hover:scale-110 transition-all shadow-sm">
+                                    <button
+                                        title="WhatsApp Message"
+                                        className="h-8 w-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
+                                    >
                                         <MessageCircle className="h-3.5 w-3.5" />
                                     </button>
-                                    <button className="h-8 w-8 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center hover:scale-110 transition-all shadow-sm">
+                                    <button
+                                        title="Schedule Visit"
+                                        className="h-8 w-8 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
+                                    >
                                         <Calendar className="h-3.5 w-3.5" />
                                     </button>
                                 </div>

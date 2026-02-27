@@ -125,7 +125,7 @@ export default function PipelinePage() {
 }
 
 function PipelineColumnContent({ leads, updateLeadStatus, slug, columns, columnId }: any) {
-    const { getNBA, getRisks, generateMockScore } = useAI();
+    const { getNBA, getRisks } = useAI();
 
     if (leads.length === 0) {
         return (
@@ -139,7 +139,7 @@ function PipelineColumnContent({ leads, updateLeadStatus, slug, columns, columnI
     return (
         <>
             {leads.map((lead: any) => {
-                const score = lead.score || generateMockScore(); // Mock if missing
+                const score = lead.score || 50; // Default to 50 if missing
                 const nba = getNBA(lead.id);
                 const risks = getRisks(lead.id);
 

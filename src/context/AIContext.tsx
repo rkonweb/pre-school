@@ -7,9 +7,8 @@ interface AIContextType {
     getScoreBand: (score: number) => any;
     getNBA: (leadId: string) => any;
     getRisks: (leadId: string) => any[];
-    generateMockScore: () => number;
     leadIntelligence: Record<string, any>;
-    fetchLeadIntelligence: (leadId: string) => Promise<void>;
+    fetchLeadIntelligence: (slug: string, leadId: string) => Promise<void>;
 }
 
 const AIContext = createContext<AIContextType | null>(null);
@@ -25,12 +24,12 @@ export function AIProvider({ children }: { children: ReactNode }) {
     };
 
     const getNBA = (leadId: string) => {
-        // Use real NBA if available, fallback to deterministic mock
+        // Use real NBA if available
         const intel = leadIntelligence[leadId];
         if (intel?.nba) return intel.nba;
 
-        const index = leadId.charCodeAt(leadId.length - 1) % MOCK_AI_DATA.NBAs.length;
-        return MOCK_AI_DATA.NBAs[index];
+        // Default fallback if no intelligence is generated yet
+        return { label: "Review Application", type: "GENERAL" };
     };
 
     const getRisks = (leadId: string) => {
@@ -39,12 +38,10 @@ export function AIProvider({ children }: { children: ReactNode }) {
         return [];
     };
 
-    const generateMockScore = () => Math.floor(Math.random() * 100);
-
-    const fetchLeadIntelligence = async (leadId: string) => {
+    const fetchLeadIntelligence = async (slug: string, leadId: string) => {
         try {
             const { getLeadIntelligenceAction } = await import('@/app/actions/admission-actions');
-            const res = await getLeadIntelligenceAction(leadId);
+            const res = await getLeadIntelligenceAction(slug, leadId);
             if (res.success) {
                 setLeadIntelligence(prev => ({
                     ...prev,
@@ -61,7 +58,6 @@ export function AIProvider({ children }: { children: ReactNode }) {
             getScoreBand,
             getNBA,
             getRisks,
-            generateMockScore,
             leadIntelligence,
             fetchLeadIntelligence
         }}>

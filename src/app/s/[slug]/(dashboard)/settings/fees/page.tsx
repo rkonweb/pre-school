@@ -9,6 +9,7 @@ import { FeeStructureManager } from "@/components/dashboard/settings/FeeStructur
 import { Loader2 } from "lucide-react";
 
 import { getAcademicYearsAction, getCurrentAcademicYearAction } from "@/app/actions/academic-year-actions";
+import { DashboardLoader } from "@/components/ui/DashboardLoader";
 
 export default function FeeSettingsPage() {
     const params = useParams();
@@ -55,7 +56,7 @@ export default function FeeSettingsPage() {
 
     if (isLoading) return (
         <div className="flex-1 flex items-center justify-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin text-zinc-300" />
+            <DashboardLoader message="Loading fee configuration..." />
         </div>
     );
 

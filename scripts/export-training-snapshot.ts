@@ -1,5 +1,5 @@
 
-import { PrismaClient } from "../src/generated/client";
+import { PrismaClient } from "../src/generated/client_final";
 import fs from "fs";
 import path from "path";
 

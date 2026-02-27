@@ -133,21 +133,21 @@ export default function MessagesPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-1 bg-white rounded-[2.5rem] shadow-xl shadow-zinc-200/50 border border-zinc-100 overflow-hidden"
+                    className="flex flex-1 bg-white/60 backdrop-blur-xl rounded-[3rem] shadow-2xl shadow-zinc-200/50 border border-white/60 overflow-hidden relative"
                 >
                     {/* Chat List Sidebar */}
                     <div className={`
-                    flex flex-col w-full md:w-96 border-r border-zinc-50 bg-white
+                    flex flex-col w-full md:w-96 border-r border-white/40 bg-white/40
                     ${selectedChatId ? 'hidden md:flex' : 'flex'}
                 `}>
                         {/* Sidebar Header */}
-                        <header className="px-6 py-5 border-b border-zinc-50 flex-shrink-0">
-                            <div className="relative">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                        <header className="px-6 py-6 border-b border-white/40 flex-shrink-0">
+                            <div className="relative group">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 transition-colors" />
                                 <input
                                     type="text"
-                                    placeholder="Search..."
-                                    className="w-full pl-10 pr-4 py-3 bg-zinc-50 border-none rounded-xl text-sm font-medium focus:ring-0 placeholder:text-zinc-400 outline-none transition-all"
+                                    placeholder="Search messages..."
+                                    className="w-full pl-12 pr-4 py-3.5 bg-white/60 border border-white/40 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600/30 placeholder:text-zinc-400 outline-none transition-all shadow-sm"
                                 />
                             </div>
                         </header>
@@ -160,15 +160,15 @@ export default function MessagesPage() {
                                 conversations.map((chat) => (
                                     <motion.div
                                         key={chat.id}
-                                        whileHover={{ x: 4 }}
+                                        whileHover={{ scale: 1.02 }}
                                         onClick={() => setSelectedChatId(chat.id)}
                                         className={`
-                                        relative flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border
-                                        ${selectedChatId === chat.id ? 'bg-zinc-50 border-zinc-200' : 'bg-white border-transparent hover:bg-zinc-50/50'}
+                                        relative flex items-center gap-4 p-4 rounded-[1.5rem] cursor-pointer transition-all border mx-2 mb-2
+                                        ${selectedChatId === chat.id ? 'bg-white shadow-lg shadow-zinc-200/40 border-white/60' : 'bg-transparent border-transparent hover:bg-white/50'}
                                     `}
                                     >
                                         <div className="relative flex-shrink-0">
-                                            <div className="h-12 w-12 rounded-full overflow-hidden border border-zinc-100 bg-zinc-50">
+                                            <div className="h-14 w-14 rounded-full overflow-hidden border-2 border-white shadow-md bg-zinc-50 flex items-center justify-center">
                                                 <img
                                                     src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${chat.title}`}
                                                     alt={chat.title}
@@ -177,7 +177,7 @@ export default function MessagesPage() {
                                             </div>
                                             {chat.unreadCount > 0 && (
                                                 <div
-                                                    className="absolute -top-1 -right-1 h-4 w-4 text-white text-[9px] font-black rounded-full border-2 border-white flex items-center justify-center"
+                                                    className="absolute -top-1 -right-1 h-5 w-5 text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center shadow-md animate-pulse"
                                                     style={{ backgroundColor: brandColor }}
                                                 >
                                                     {chat.unreadCount}
@@ -186,15 +186,15 @@ export default function MessagesPage() {
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between mb-0.5">
-                                                <h4 className={`text-sm font-bold truncate ${chat.unreadCount > 0 ? 'text-zinc-900' : 'text-zinc-700'}`}>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <h4 className={`text-sm font-black truncate ${chat.unreadCount > 0 ? 'text-zinc-900' : 'text-zinc-800'}`}>
                                                     {chat.title}
                                                 </h4>
-                                                <span className="text-[10px] font-semibold text-zinc-400">
+                                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                                                     {chat.lastMessageTime ? formatDistanceToNow(new Date(chat.lastMessageTime), { addSuffix: false }).replace('about ', '').replace(' hours', 'h') : ''}
                                                 </span>
                                             </div>
-                                            <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-zinc-900 font-bold' : 'text-zinc-400 font-medium'}`}>
+                                            <p className={`text-[13px] truncate ${chat.unreadCount > 0 ? 'text-zinc-900 font-bold' : 'text-zinc-500 font-medium'}`}>
                                                 {chat.lastMessage || "Start a conversation"}
                                             </p>
                                         </div>
@@ -206,39 +206,47 @@ export default function MessagesPage() {
 
                     {/* Chat Window */}
                     <div className={`
-                    flex-1 flex flex-col bg-zinc-50/30
+                    flex-1 flex flex-col bg-slate-50/20 relative
                     ${!selectedChatId ? 'hidden md:flex' : 'flex'}
                 `}>
                         {!selectedChatId ? (
-                            <div className="flex-1 flex flex-col items-center justify-center p-10 text-center space-y-4">
-                                <div className="h-20 w-20 bg-zinc-100 rounded-full flex items-center justify-center">
-                                    <MessageCircle className="h-10 w-10 text-zinc-300" />
+                            <div className="flex-1 flex flex-col items-center justify-center p-10 text-center space-y-6">
+                                <div className="relative h-24 w-24">
+                                    <div className="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-20" />
+                                    <div className="relative h-full w-full bg-white rounded-full flex items-center justify-center shadow-xl border border-white">
+                                        <MessageCircle className="h-10 w-10 text-indigo-500" />
+                                    </div>
                                 </div>
-                                <h3 className="text-xl font-black text-zinc-900">No chat selected</h3>
-                                <p className="text-zinc-400 max-w-xs text-sm">Select a conversation from the sidebar to start messaging.</p>
+                                <div>
+                                    <h3 className="text-2xl font-black text-zinc-900 tracking-tight mb-2">Your Messages</h3>
+                                    <p className="text-zinc-500 font-bold max-w-xs mx-auto">Select a conversation from the sidebar to chat.</p>
+                                </div>
                             </div>
                         ) : (
                             <>
                                 {/* Chat Header */}
-                                <header className="bg-white px-6 py-4 flex items-center justify-between border-b border-zinc-100 shadow-sm z-10">
+                                <header className="bg-white/60 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-white/60 shadow-sm z-10 sticky top-0">
                                     <div className="flex items-center gap-4">
                                         <button
                                             onClick={() => setSelectedChatId(null)}
-                                            className="md:hidden h-8 w-8 flex items-center justify-center -ml-2 rounded-full hover:bg-zinc-50"
+                                            className="md:hidden p-2 -ml-2 rounded-xl hover:bg-white border border-transparent hover:border-zinc-200 transition-all shadow-sm hover:shadow-md"
+                                            title="Back to chat list"
+                                            aria-label="Back to chat list"
                                         >
-                                            <ArrowLeft className="h-5 w-5 text-zinc-600" />
+                                            <ArrowLeft className="h-5 w-5 text-zinc-700" />
                                         </button>
 
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full overflow-hidden border border-zinc-100">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-zinc-50 flex items-center justify-center">
                                                 <img
                                                     src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedChat?.title}`}
                                                     alt={selectedChat?.title}
+                                                    className="w-full h-full object-cover"
                                                 />
                                             </div>
                                             <div>
-                                                <h3 className="text-sm font-black text-zinc-900">{selectedChat?.title}</h3>
-                                                <p className="text-xs text-zinc-500 font-medium">{selectedChat?.studentName}</p>
+                                                <h3 className="text-base font-black text-zinc-900 tracking-tight">{selectedChat?.title}</h3>
+                                                <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-widest">{selectedChat?.studentName}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -259,17 +267,17 @@ export default function MessagesPage() {
                                             const isMe = msg.senderType === "PARENT";
                                             return (
                                                 <motion.div
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
+                                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
                                                     key={msg.id || idx}
                                                     className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                                                 >
                                                     <div className={`
-                                                    max-w-[85%] px-5 py-3 rounded-2xl text-sm font-medium leading-relaxed shadow-sm
-                                                    ${isMe ? 'bg-blue-600 text-white hover:bg-blue-700 rounded-tr-sm' : 'bg-white border border-zinc-100 text-zinc-700 rounded-tl-sm'}
+                                                    max-w-[85%] px-5 py-3.5 rounded-[1.5rem] text-[14px] font-semibold leading-relaxed shadow-md
+                                                    ${isMe ? 'bg-indigo-600 text-white shadow-indigo-600/20 rounded-br-sm border border-indigo-500' : 'bg-white/90 backdrop-blur-sm border border-white text-zinc-800 rounded-bl-sm shadow-zinc-200/50'}
                                                 `}>
                                                         {msg.content}
-                                                        <div className={`text-[9px] mt-1 text-right font-bold ${isMe ? 'text-zinc-500' : 'text-zinc-300'}`}>
+                                                        <div className={`text-[9px] mt-1.5 text-right font-black uppercase tracking-widest ${isMe ? 'text-indigo-200' : 'text-zinc-400'}`}>
                                                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </div>
                                                     </div>
@@ -281,25 +289,27 @@ export default function MessagesPage() {
                                 </div>
 
                                 {/* Input Area */}
-                                <div className="p-4 bg-white border-t border-zinc-100 mb-[env(safe-area-inset-bottom)]">
+                                <div className="p-4 sm:p-6 bg-white/60 backdrop-blur-md border-t border-white/60 mb-[env(safe-area-inset-bottom)] z-10 sticky bottom-0">
                                     <form
                                         onSubmit={handleSendMessage}
-                                        className="flex items-center gap-2 bg-zinc-50 p-2 rounded-[1.5rem] border border-zinc-200 focus-within:ring-2 focus-within:ring-zinc-900/10 focus-within:border-zinc-300 transition-all shadow-sm"
+                                        className="flex items-center gap-3 bg-white p-2 rounded-[2rem] border border-zinc-200/60 focus-within:ring-4 focus-within:ring-indigo-600/10 focus-within:border-indigo-600/30 transition-all shadow-lg shadow-zinc-200/40"
                                     >
                                         <input
                                             type="text"
                                             value={messageInput}
                                             onChange={(e) => setMessageInput(e.target.value)}
-                                            placeholder="Type a message..."
-                                            className="flex-1 bg-transparent border-none px-4 py-2 text-sm font-medium focus:ring-0 placeholder:text-zinc-400 outline-none"
+                                            placeholder="Type your message..."
+                                            className="flex-1 bg-transparent border-none px-5 py-3 text-sm font-bold text-zinc-700 focus:ring-0 placeholder:text-zinc-400 outline-none"
                                         />
                                         <button
                                             type="submit"
                                             disabled={!messageInput.trim() || isSending}
-                                            className="h-10 w-10 flex items-center justify-center rounded-full text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+                                            className="h-12 w-12 flex items-center justify-center rounded-full text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-md shrink-0"
                                             style={{ backgroundColor: brandColor }}
+                                            title="Send Message"
+                                            aria-label="Send Message"
                                         >
-                                            {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                                            {isSending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 ml-1" />}
                                         </button>
                                     </form>
                                 </div>

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { sendOtpAction } from "@/app/actions/auth-actions";
+import { COUNTRY_CODES } from "@/components/ui/PhoneInput";
 
 interface PhoneLoginProps {
     type: "school" | "parent";
@@ -14,6 +15,7 @@ interface PhoneLoginProps {
 
 export function PhoneLogin({ type }: PhoneLoginProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [phoneNumber, setPhoneNumber] = useState("");
     const [countryCode, setCountryCode] = useState("+91");
     const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +49,11 @@ export function PhoneLogin({ type }: PhoneLoginProps) {
                     sessionStorage.setItem("phoneNumber", fullNumber);
                 }
 
-                const redirectPath = type === "school" ? "/school-login/verify-otp" : "/parent-login/verify-otp";
+                const callbackUrl = searchParams.get("callbackUrl");
+                let redirectPath = type === "school" ? "/school-login/verify-otp" : "/parent-login/verify-otp";
+                if (callbackUrl) {
+                    redirectPath += `?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+                }
 
                 setIsLoading(false);
                 setTimeout(() => {
@@ -87,12 +93,17 @@ export function PhoneLogin({ type }: PhoneLoginProps) {
 
                         <div className="flex gap-3">
                             <select
+                                aria-label="Country Code"
+                                title="Country Code"
                                 value={countryCode}
                                 onChange={(e) => setCountryCode(e.target.value)}
-                                className="w-24 px-2 py-3 bg-slate-900 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-teal-500/30 outline-none transition-all cursor-pointer hover:bg-slate-800 font-bold"
+                                className="w-32 px-2 py-3 bg-slate-900 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-teal-500/30 outline-none transition-all cursor-pointer hover:bg-slate-800 font-bold text-sm"
                             >
-                                <option value="+91">🇮🇳 +91</option>
-                                <option value="+1">🇺🇸 +1</option>
+                                {COUNTRY_CODES.map(c => (
+                                    <option key={`${c.code}-${c.name}`} value={c.code}>
+                                        {c.flag} {c.code}
+                                    </option>
+                                ))}
                             </select>
                             <div className="flex-1 relative">
                                 <Input

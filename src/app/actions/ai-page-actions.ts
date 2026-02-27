@@ -4,31 +4,17 @@ import { generateText } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { prisma } from "@/lib/prisma";
+import { resolveSchoolAIModel } from "@/lib/school-integrations";
 
 
-export async function generatePageAction(rawText: string, images: string[] = [], provider: 'google' | 'openai' = 'openai') {
-    console.log(`[AI] Generating page with ${provider}. Text length: ${rawText.length}, Images: ${images.length}`);
+export async function generatePageAction(slug: string, rawText: string, images: string[] = [], provider?: 'google' | 'openai') {
+    console.log(`[AI] Generating page for school ${slug} with provider ${provider || 'auto'}`);
     try {
+        // Get per-school API key
+        const { apiKey, provider: resolvedProvider } = await resolveSchoolAIModel(slug, provider);
 
-        // 1. Get API Key from System Settings
-        const settings = await prisma.systemSettings.findUnique({
-            where: { id: 'global' }
-        });
-
-        const configRes = (settings as any).integrationsConfig;
-        if (!configRes) {
-            throw new Error("AI integrations are not configured in Admin Settings.");
-        }
-
-        const config = JSON.parse(configRes);
-        const apiKey = provider === 'google' ? config.googleAiKey : config.openAiKey;
-
-        if (!apiKey) {
-            throw new Error(`API Key for ${provider} is missing. Please configure it in Settings.`);
-        }
-
-        // 2. Select Model
-        const model = provider === 'google'
+        // Select Model
+        const model = resolvedProvider === 'google'
             ? createGoogleGenerativeAI({ apiKey })('gemini-flash-latest')
             : createOpenAI({ apiKey })('gpt-4o');
 
@@ -111,22 +97,12 @@ export async function generatePageAction(rawText: string, images: string[] = [],
 }
 
 
-export async function generateBlogContentAction(rawText: string, images: string[] = [], provider: 'google' | 'openai' = 'openai') {
-    console.log(`[AI Blog] Starting generation. Provider: ${provider}, Text Len: ${rawText.length}, Images: ${images.length}`);
+export async function generateBlogContentAction(slug: string, rawText: string, images: string[] = [], provider?: 'google' | 'openai') {
+    console.log(`[AI Blog] Starting generation for school ${slug}. Text Len: ${rawText.length}`);
     try {
-        const settings = await prisma.systemSettings.findUnique({ where: { id: 'global' } });
-        console.log(`[AI Blog] Settings found: ${!!settings}`);
+        const { apiKey, provider: resolvedProvider } = await resolveSchoolAIModel(slug, provider);
 
-        const configRes = (settings as any).integrationsConfig;
-        if (!configRes) throw new Error("AI integrations not configured.");
-
-        const config = JSON.parse(configRes);
-        const apiKey = provider === 'google' ? config.googleAiKey : config.openAiKey;
-        if (!apiKey) throw new Error(`API Key for ${provider} is missing.`);
-
-        console.log(`[AI Blog] API Key found for ${provider}. Initializing model...`);
-
-        const model = provider === 'google'
+        const model = resolvedProvider === 'google'
             ? createGoogleGenerativeAI({ apiKey })('gemini-flash-latest')
             : createOpenAI({ apiKey })('gpt-4o-mini');
 
@@ -194,16 +170,10 @@ export async function generateBlogContentAction(rawText: string, images: string[
     }
 }
 
-export async function generateImageAction(prompt: string, provider: 'openai' = 'openai') {
-    console.log(`[AI Image] Generating image for: ${prompt.substring(0, 50)}...`);
+export async function generateImageAction(slug: string, prompt: string) {
+    console.log(`[AI Image] Generating image for school ${slug}: ${prompt.substring(0, 50)}...`);
     try {
-        const settings = await prisma.systemSettings.findUnique({ where: { id: 'global' } });
-        const configRes = (settings as any).integrationsConfig;
-        if (!configRes) throw new Error("AI integrations not configured.");
-
-        const config = JSON.parse(configRes);
-        const apiKey = config.openAiKey;
-        if (!apiKey) throw new Error("OpenAI API Key is missing for image generation.");
+        const { apiKey } = await resolveSchoolAIModel(slug, 'openai');
 
         // Call OpenAI DALL-E 3
         const response = await fetch("https://api.openai.com/v1/images/generations", {

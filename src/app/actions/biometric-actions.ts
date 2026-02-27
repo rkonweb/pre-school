@@ -110,10 +110,43 @@ export async function getConnectedDevicesAction(schoolSlug: string) {
             serialNumber: d.deviceId,
             lastSeen: d._max.timestamp,
             totalPunches: d._count._all,
-            status: d._max.timestamp && (new Date().getTime() - new Date(d._max.timestamp).getTime() < 1000 * 60 * 5) ? "ONLINE" : "OFFLINE"
+            status: d._max.timestamp && (new Date().getTime() - new Date(d._max.timestamp).getTime() < 1000 * 60 * 15) ? "ONLINE" : "OFFLINE"
         }));
 
         return { success: true, data: devices };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function generateSampleBiometricDataAction(schoolSlug: string) {
+    try {
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug },
+            select: { id: true }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
+        const deviceId = "SN-TEST-8899";
+        const deviceUserIds = ["101", "102", "105", "200"];
+
+        // Create 5 random logs
+        for (let i = 0; i < 5; i++) {
+            const randomUserId = deviceUserIds[Math.floor(Math.random() * deviceUserIds.length)];
+            await prisma.biometricLog.create({
+                data: {
+                    deviceId,
+                    deviceUserId: randomUserId,
+                    timestamp: new Date(),
+                    status: Math.random() > 0.5 ? 0 : 1, // 0=IN, 1=OUT
+                    schoolId: school.id
+                }
+            });
+        }
+
+        revalidatePath(`/s/${schoolSlug}/settings/biometric`);
+        return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
