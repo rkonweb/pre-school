@@ -24,7 +24,11 @@ export async function getCurrentUserAction() {
 
         const user = await prisma.user.findUnique({
             where: { id: payload.userId },
-            include: {
+            select: {
+                id: true,
+                role: true,
+                branchId: true,
+                schoolId: true,
                 school: {
                     select: {
                         id: true,
@@ -47,7 +51,13 @@ export async function getCurrentUserAction() {
                 branch: {
                     select: { id: true, name: true }
                 },
-                customRole: true
+                customRole: {
+                    select: {
+                        id: true,
+                        name: true,
+                        permissions: true
+                    }
+                }
             }
         });
 
@@ -158,11 +168,14 @@ export async function clearUserSessionAction() {
     return { success: true };
 }
 
+import { cache } from "react";
+
 /**
  * Validate that the current user belongs to a specific school slug.
  * Used for server-side authorization in actions.
+ * MEMOIZED to prevent redundant session/DB lookups in one request.
  */
-export async function validateUserSchoolAction(slug: string) {
+export const validateUserSchoolAction = cache(async (slug: string) => {
     const res = await getCurrentUserAction();
     if (!res.success || !res.data) {
         return { success: false, error: "Authentication required" };
@@ -181,7 +194,7 @@ export async function validateUserSchoolAction(slug: string) {
     }
 
     return { success: true, user };
-}
+});
 
 /**
  * Check if the user has a specific permission for a module.

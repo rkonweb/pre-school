@@ -39,6 +39,17 @@ import { AdmissionBoard } from "@/components/dashboard/admissions/AdmissionBoard
 import { LayoutGrid, List, PieChart } from "lucide-react";
 import { AdmissionSourceChart } from "@/components/dashboard/admissions/AdmissionSourceChart";
 
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuSeparator,
+    DropdownMenuLabel,
+    DropdownMenuCheckboxItem
+} from "@/components/ui/dropdown-menu";
+import { Settings2, GripVertical } from "lucide-react";
+
 export default function AdmissionsPage() {
     const params = useParams();
     const router = useRouter();
@@ -55,6 +66,23 @@ export default function AdmissionsPage() {
     const [sourceStats, setSourceStats] = useState<any[]>([]);
     const [mounted, setMounted] = useState(false);
     const [showSourceChart, setShowSourceChart] = useState(false);
+
+    // Column Management State
+    const [columns, setColumns] = useState([
+        { id: 'applicant', label: 'Applicant' },
+        { id: 'targetGrade', label: 'Target Grade' },
+        { id: 'pipelineStage', label: 'Pipeline Stage' },
+        { id: 'guardian', label: 'Guardian' },
+        { id: 'priority', label: 'Priority' }
+    ]);
+
+    const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
+        applicant: true,
+        targetGrade: true,
+        pipelineStage: true,
+        guardian: true,
+        priority: true
+    });
 
     useEffect(() => {
         setMounted(true);
@@ -101,6 +129,14 @@ export default function AdmissionsPage() {
         }
     };
 
+    const handleDragEnd = (result: any) => {
+        if (!result.destination) return;
+        const items = Array.from(columns);
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+        setColumns(items);
+    };
+
     const filteredApplicants = applicants.filter(app =>
         (activeStage === "all" || app.stage === activeStage) &&
         (app.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,10 +179,10 @@ export default function AdmissionsPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                            Admissions Pipeline
+                            Admissions CRM
                         </h1>
                         <p className="text-sm text-zinc-500 font-medium">
-                            Real-time enrollment tracking for {slug}
+                            Lead pipeline & enrollment tracking for {slug}
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -269,6 +305,63 @@ export default function AdmissionsPage() {
                                 className="w-full rounded-xl border border-zinc-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-brand dark:border-zinc-800 dark:bg-zinc-950"
                             />
                         </div>
+
+                        {viewType === "table" && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="h-10 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm hover:border-brand/30 hover:text-brand transition-all outline-none">
+                                        <Settings2 className="h-4 w-4" />
+                                        Columns
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-56 p-2 rounded-2xl shadow-xl">
+                                    <DropdownMenuLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                                        Customize Columns
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DragDropContext onDragEnd={handleDragEnd}>
+                                        <Droppable droppableId="adm-columns">
+                                            {(provided) => (
+                                                <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                    {columns.map((col, index) => (
+                                                        <Draggable key={col.id} draggableId={col.id} index={index}>
+                                                            {(provided, snapshot) => (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    className={cn(
+                                                                        "flex items-center gap-2 rounded-xl px-2 py-1 transition-colors",
+                                                                        snapshot.isDragging ? "bg-zinc-100 shadow-sm" : "hover:bg-zinc-50"
+                                                                    )}
+                                                                >
+                                                                    <div
+                                                                        {...provided.dragHandleProps}
+                                                                        className="cursor-pointer p-1 text-zinc-400 hover:text-zinc-600"
+                                                                    >
+                                                                        <GripVertical className="h-4 w-4" />
+                                                                    </div>
+                                                                    <DropdownMenuCheckboxItem
+                                                                        className="flex-1 rounded-lg cursor-pointer data-[highlighted]:bg-transparent"
+                                                                        checked={visibleColumns[col.id]}
+                                                                        onCheckedChange={(checked) =>
+                                                                            setVisibleColumns(prev => ({ ...prev, [col.id]: !!checked }))
+                                                                        }
+                                                                        onSelect={(e) => e.preventDefault()}
+                                                                    >
+                                                                        {col.label}
+                                                                    </DropdownMenuCheckboxItem>
+                                                                </div>
+                                                            )}
+                                                        </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                </div>
+                                            )}
+                                        </Droppable>
+                                    </DragDropContext>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                     </div>
 
                     {viewType === "board" ? (
@@ -281,21 +374,20 @@ export default function AdmissionsPage() {
                         /* Table */
                         <div className="rounded-[32px] border border-zinc-200 bg-white shadow-xl shadow-zinc-200/40 dark:border-zinc-800 dark:bg-zinc-950 overflow-hidden">
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left text-sm border-collapse">
+                                <table className="w-full text-left text-sm border-collapse min-w-max">
                                     <thead className="bg-zinc-50/50 text-zinc-400 uppercase text-[10px] font-black tracking-widest border-b border-zinc-100">
                                         <tr>
-                                            <th className="px-8 py-5">Applicant</th>
-                                            <th className="px-8 py-5">Target Grade</th>
-                                            <th className="px-8 py-5">Pipeline Stage</th>
-                                            <th className="px-8 py-5">Guardian</th>
-                                            <th className="px-8 py-5">Priority</th>
-                                            <th className="px-8 py-5 text-right">Action</th>
+                                            <th className="px-8 py-5 sticky left-0 bg-zinc-50/50 z-10 border-r border-zinc-100">Action</th>
+                                            {columns.map(col => {
+                                                if (!visibleColumns[col.id]) return null;
+                                                return <th key={col.id} className="px-8 py-5 whitespace-nowrap">{col.label}</th>;
+                                            })}
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white">
                                         {filteredApplicants.length === 0 ? (
                                             <tr>
-                                                <td colSpan={6} className="px-8 py-20 text-center">
+                                                <td colSpan={columns.filter(c => visibleColumns[c.id]).length + 1} className="px-8 py-20 text-center">
                                                     <div className="flex flex-col items-center gap-4">
                                                         <div className="h-16 w-16 bg-zinc-50 rounded-full flex items-center justify-center">
                                                             <Search className="h-8 w-8 text-zinc-200" />
@@ -307,43 +399,8 @@ export default function AdmissionsPage() {
                                         ) : (
                                             filteredApplicants.map((app) => (
                                                 <tr key={app.id} className="group hover:bg-zinc-50/80 transition-all">
-                                                    <td className="px-8 py-6">
-                                                        <div>
-                                                            <p className="font-black text-zinc-900 dark:text-zinc-50 text-base">{app.studentName}</p>
-                                                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{app.studentAge} years old</p>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-8 py-6">
-                                                        <span className="text-xs font-black text-zinc-900 bg-zinc-100 px-3 py-1 rounded-lg">
-                                                            {app.enrolledGrade || "N/A"}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-8 py-6">
-                                                        <div
-                                                            className={cn(
-                                                                "rounded-full px-4 py-1.5 text-[10px] font-black tracking-wider uppercase border-0 inline-flex items-center",
-                                                                STAGES.find(s => s.id === app.stage)?.color
-                                                            )}
-                                                        >
-                                                            {STAGES.find(s => s.id === app.stage)?.label || app.stage}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-8 py-6">
-                                                        <div>
-                                                            <p className="font-bold text-zinc-700 dark:text-zinc-300">{app.parentName}</p>
-                                                            <p className="text-xs text-zinc-400 mt-0.5">{app.parentPhone || app.parentEmail || "No contact"}</p>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-8 py-6">
-                                                        <span className={cn(
-                                                            "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg",
-                                                            app.priority === "HIGH" ? "bg-red-50 text-red-600" : app.priority === "MEDIUM" ? "bg-orange-50 text-orange-600" : "bg-zinc-50 text-zinc-400"
-                                                        )}>
-                                                            {app.priority}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-8 py-6 text-right">
-                                                        <div className="flex items-center justify-end gap-2">
+                                                    <td className="px-8 py-6 sticky left-0 bg-white group-hover:bg-zinc-50/80 z-10 border-r border-zinc-100 shadow-[4px_0_15px_-5px_rgba(0,0,0,0.05)] text-left">
+                                                        <div className="flex items-center justify-start gap-2 relative z-20">
                                                             <Link
                                                                 href={`/s/${slug}/admissions/${app.id}`}
                                                                 className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/20 transition-all"
@@ -362,6 +419,61 @@ export default function AdmissionsPage() {
                                                             )}
                                                         </div>
                                                     </td>
+                                                    {columns.map(col => {
+                                                        if (!visibleColumns[col.id]) return null;
+
+                                                        if (col.id === 'applicant') return (
+                                                            <td key={col.id} className="px-8 py-6 whitespace-nowrap">
+                                                                <div>
+                                                                    <p className="font-black text-zinc-900 dark:text-zinc-50 text-base">{app.studentName}</p>
+                                                                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{app.studentAge} years old</p>
+                                                                </div>
+                                                            </td>
+                                                        );
+
+                                                        if (col.id === 'targetGrade') return (
+                                                            <td key={col.id} className="px-8 py-6 whitespace-nowrap">
+                                                                <span className="text-xs font-black text-zinc-900 bg-zinc-100 px-3 py-1 rounded-lg">
+                                                                    {app.enrolledGrade || "N/A"}
+                                                                </span>
+                                                            </td>
+                                                        );
+
+                                                        if (col.id === 'pipelineStage') return (
+                                                            <td key={col.id} className="px-8 py-6 whitespace-nowrap">
+                                                                <div
+                                                                    className={cn(
+                                                                        "rounded-full px-4 py-1.5 text-[10px] font-black tracking-wider uppercase border-0 inline-flex items-center",
+                                                                        STAGES.find(s => s.id === app.stage)?.color
+                                                                    )}
+                                                                >
+                                                                    {STAGES.find(s => s.id === app.stage)?.label || app.stage}
+                                                                </div>
+                                                            </td>
+                                                        );
+
+                                                        if (col.id === 'guardian') return (
+                                                            <td key={col.id} className="px-8 py-6 whitespace-nowrap">
+                                                                <div>
+                                                                    <p className="font-bold text-zinc-700 dark:text-zinc-300">{app.parentName}</p>
+                                                                    <p className="text-xs text-zinc-400 mt-0.5">{app.parentPhone || app.parentEmail || "No contact"}</p>
+                                                                </div>
+                                                            </td>
+                                                        );
+
+                                                        if (col.id === 'priority') return (
+                                                            <td key={col.id} className="px-8 py-6 whitespace-nowrap">
+                                                                <span className={cn(
+                                                                    "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg",
+                                                                    app.priority === "HIGH" ? "bg-red-50 text-red-600" : app.priority === "MEDIUM" ? "bg-orange-50 text-orange-600" : "bg-zinc-50 text-zinc-400"
+                                                                )}>
+                                                                    {app.priority}
+                                                                </span>
+                                                            </td>
+                                                        );
+
+                                                        return null;
+                                                    })}
                                                 </tr>
                                             ))
                                         )}

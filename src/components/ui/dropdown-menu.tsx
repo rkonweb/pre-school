@@ -82,3 +82,26 @@ export function DropdownMenuItem({ children, className, onClick, asChild }: { ch
         </button>
     );
 }
+
+export function DropdownMenuCheckboxItem({ children, checked, onCheckedChange, onSelect, className }: { children: React.ReactNode; checked?: boolean; onCheckedChange?: (checked: boolean) => void; onSelect?: (e: any) => void; className?: string }) {
+    return (
+        <button
+            onClick={(e) => {
+                if (onCheckedChange) onCheckedChange(!checked);
+                if (onSelect) onSelect(e as any);
+            }}
+            className={cn("flex w-full items-center justify-between px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 rounded-xl transition-colors", className)}
+        >
+            {children}
+            {checked && <span className="h-2 w-2 rounded-full bg-brand"></span>}
+        </button>
+    );
+}
+
+export function DropdownMenuSeparator() {
+    return <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />;
+}
+
+export function DropdownMenuLabel({ children, className }: { children: React.ReactNode; className?: string }) {
+    return <div className={cn("px-4 py-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100", className)}>{children}</div>;
+}

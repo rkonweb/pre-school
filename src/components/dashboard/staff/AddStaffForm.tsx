@@ -10,6 +10,7 @@ import Cropper from "react-easy-crop";
 import { AvatarWithAdjustment } from "./AvatarWithAdjustment";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { validateEmail, validatePhone, isEmpty } from "@/lib/validators";
+import Link from "next/link";
 
 
 
@@ -86,6 +87,7 @@ export function AddStaffForm({
     const [zoom, setZoom] = useState(1);
     const [isCropModalOpen, setIsCropModalOpen] = useState(false);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+    const [croppedArea, setCroppedArea] = useState<any>(null);
     const avatarInputRef = useRef<HTMLInputElement>(null);
 
     // Form State
@@ -129,13 +131,15 @@ export function AddStaffForm({
     };
 
     const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+        setCroppedArea(croppedArea);
         setCroppedAreaPixels(croppedAreaPixels);
     };
 
     const finalizeAdjustment = () => {
-        if (croppedAreaPixels) {
+        if (croppedArea || croppedAreaPixels) {
             const adj = JSON.stringify({
-                ...croppedAreaPixels,
+                croppedArea,
+                croppedAreaPixels,
                 zoom
             });
             setAvatarAdjustment(adj);
@@ -500,7 +504,7 @@ export function AddStaffForm({
                     )}
 
                     {/* Permissions Role (Hidden if Admin?) - Let's keep it but optional for Admin */}
-                    {selectedRole === "STAFF" && (
+                    {selectedRole !== "ADMIN" && (
                         <div className="space-y-2 md:col-span-2">
                             <label htmlFor="customRoleId" className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                                 Access Permissions Profile
@@ -512,7 +516,7 @@ export function AddStaffForm({
                                     defaultValue={initialData?.customRoleId || ""}
                                     className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
                                 >
-                                    <option value="">Standard Teacher Access</option>
+                                    <option value="">Standard (Restricted Access)</option>
                                     {roles?.map((role) => (
                                         <option key={role.id} value={role.id}>
                                             {role.name}
@@ -524,7 +528,7 @@ export function AddStaffForm({
                                 </div>
                             </div>
                             <p className="text-xs text-zinc-500">
-                                Defines specific module access for non-admin staff.
+                                Defines specific module access for non-admin staff. These profiles are managed in the <Link href={`/s/${schoolSlug}/hr/roles`} className="text-brand hover:underline">Roles</Link> section.
                             </p>
                         </div>
                     )}

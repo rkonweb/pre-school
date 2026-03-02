@@ -4,6 +4,43 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { validateUserSchoolAction } from "./session-actions";
 
+// ─── Shared Helper ─────────────────────────────────────────────────────────────
+/**
+ * Posts a single TransportExpense as a DEBIT AccountTransaction.
+ * Guards against double-posting via sourceTransportExpenseId.
+ */
+async function postToAccountsTransaction(schoolId: string, expense: any, userId: string) {
+    // Guard: skip if already posted
+    const already = await prisma.accountTransaction.findFirst({
+        where: { sourceTransportExpenseId: expense.id }
+    });
+    if (already) return { skipped: true };
+
+    const activeYear = await prisma.accountFinancialYear.findFirst({
+        where: { schoolId, isActive: true }
+    });
+    if (!activeYear) return { error: 'No active financial year' };
+
+    await prisma.accountTransaction.create({
+        data: {
+            transactionNo: `TRX-TRP-${Date.now()}`,
+            description: `[Transport] ${expense.category} – ${expense.description ?? 'Fleet Expense'} (Vehicle: ${expense.vehicleId})`,
+            amount: expense.amount,
+            type: 'DEBIT',
+            status: 'COMPLETED',
+            date: expense.date,
+            reference: expense.id,
+            notes: `Auto-posted from Transport Expenses. Expense ID: ${expense.id}`,
+            schoolId,
+            financialYearId: activeYear.id,
+            sourceTransportExpenseId: expense.id,
+            createdById: userId,
+        }
+    });
+    return { success: true };
+}
+
+// ─── Add Expense ────────────────────────────────────────────────────────────────
 /**
  * Add a new transport expense (Fuel, Repair, Maintenance, etc.)
  * Includes automated anomaly detection for fuel theft or unusual spending.
@@ -32,19 +69,16 @@ export async function addTransportExpenseAction(schoolSlug: string, data: any) {
 
         // --- AI Anomaly Detection Logic for Fuel ---
         if (data.category === "FUEL") {
-            // Compare with vehicle's recent fuel expenses
             const recentAvg = await prisma.transportExpense.aggregate({
                 where: { vehicleId: data.vehicleId, category: "FUEL" },
                 _avg: { amount: true }
             });
 
-            // Flag if expense is > 150% of the vehicle's historical average
             if (recentAvg._avg.amount && data.amount > recentAvg._avg.amount * 1.5) {
                 isSuspicious = true;
                 anomalyReason = `Fuel expense (${data.amount}) is over 150% of vehicle average (${recentAvg._avg.amount.toFixed(2)})`;
             }
 
-            // Flag very large round numbers (potential placeholder entries)
             if (data.amount > 1000 && data.amount % 1000 === 0) {
                 isSuspicious = true;
                 anomalyReason = anomalyReason ? `${anomalyReason} + Potential round number estimate` : 'Potential round number estimate (suspicious behavior)';
@@ -68,6 +102,11 @@ export async function addTransportExpenseAction(schoolSlug: string, data: any) {
             }
         });
 
+        // Auto-sync to Accounts when expense is APPROVED
+        if (status === "APPROVED") {
+            await postToAccountsTransaction(schoolId, expense, user.id);
+        }
+
         revalidatePath(`/s/${schoolSlug}/transport/expenses`);
         return { success: true, data: expense };
     } catch (error: any) {
@@ -76,9 +115,7 @@ export async function addTransportExpenseAction(schoolSlug: string, data: any) {
     }
 }
 
-/**
- * Update an existing transport expense
- */
+// ─── Update Expense ─────────────────────────────────────────────────────────────
 export async function updateTransportExpenseAction(schoolSlug: string, expenseId: string, data: any) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
@@ -90,7 +127,6 @@ export async function updateTransportExpenseAction(schoolSlug: string, expenseId
         });
         if (!existing) return { success: false, error: "Expense not found" };
 
-        // Permission check
         const userPerms = typeof user.customRole?.permissions === 'string'
             ? JSON.parse(user.customRole.permissions)
             : (user.customRole?.permissions || []);
@@ -125,7 +161,6 @@ export async function updateTransportExpenseAction(schoolSlug: string, expenseId
             }
         }
 
-        // If a non-approver (Driver) edits an expense, it must go back to PENDING
         const newStatus = canApprove ? existing.status : "PENDING";
 
         const expense = await prisma.transportExpense.update({
@@ -151,9 +186,7 @@ export async function updateTransportExpenseAction(schoolSlug: string, expenseId
     }
 }
 
-/**
- * Fetch transport expenses with filtering
- */
+// ─── Get Expenses ───────────────────────────────────────────────────────────────
 export async function getTransportExpensesAction(schoolSlug: string, filters?: any) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
@@ -184,9 +217,7 @@ export async function getTransportExpensesAction(schoolSlug: string, filters?: a
     }
 }
 
-/**
- * Mark an anomaly as resolved/verified
- */
+// ─── Resolve Anomaly ────────────────────────────────────────────────────────────
 export async function resolveExpenseAnomalyAction(schoolSlug: string, expenseId: string) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
@@ -215,9 +246,7 @@ export async function resolveExpenseAnomalyAction(schoolSlug: string, expenseId:
     }
 }
 
-/**
- * Delete an expense record
- */
+// ─── Delete Expense ─────────────────────────────────────────────────────────────
 export async function deleteTransportExpenseAction(schoolSlug: string, expenseId: string) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
@@ -254,15 +283,15 @@ export async function deleteTransportExpenseAction(schoolSlug: string, expenseId
     }
 }
 
-/**
- * Approve a pending expense
- */
+// ─── Approve Expense ────────────────────────────────────────────────────────────
 export async function approveTransportExpenseAction(schoolSlug: string, expenseId: string) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
         const user = auth.user;
+        const schoolId = user.schoolId as string;
+
         const userPerms = typeof user.customRole?.permissions === 'string'
             ? JSON.parse(user.customRole.permissions)
             : (user.customRole?.permissions || []);
@@ -273,13 +302,16 @@ export async function approveTransportExpenseAction(schoolSlug: string, expenseI
 
         if (!canApprove) return { success: false, error: "Unauthorized to approve expenses" };
 
-        await prisma.transportExpense.update({
-            where: { id: expenseId, schoolId: user.schoolId as string },
+        const expense = await prisma.transportExpense.update({
+            where: { id: expenseId, schoolId },
             data: {
                 status: "APPROVED",
                 approvedById: user.id
             }
         });
+
+        // Auto-sync to Accounts (always)
+        await postToAccountsTransaction(schoolId, expense, user.id);
 
         revalidatePath(`/s/${schoolSlug}/transport/expenses`);
         return { success: true };
@@ -288,9 +320,7 @@ export async function approveTransportExpenseAction(schoolSlug: string, expenseI
     }
 }
 
-/**
- * Reject a pending expense
- */
+// ─── Reject Expense ─────────────────────────────────────────────────────────────
 export async function rejectTransportExpenseAction(schoolSlug: string, expenseId: string, reason: string) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
@@ -314,6 +344,62 @@ export async function rejectTransportExpenseAction(schoolSlug: string, expenseId
                 rejectionReason: reason,
                 approvedById: user.id
             }
+        });
+
+        revalidatePath(`/s/${schoolSlug}/transport/expenses`);
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ─── Manual: Post Single Expense to Accounts ───────────────────────────────────
+export async function postExpenseToAccountsAction(schoolSlug: string, expenseId: string) {
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const user = auth.user;
+        const schoolId = user.schoolId as string;
+
+        const canApprove = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+        if (!canApprove) return { success: false, error: "Only admins can post expenses to Accounts" };
+
+        const expense = await prisma.transportExpense.findUnique({
+            where: { id: expenseId, schoolId }
+        });
+        if (!expense) return { success: false, error: "Expense not found" };
+        if (expense.status !== "APPROVED") return { success: false, error: "Only approved expenses can be posted to Accounts" };
+
+        const result = await postToAccountsTransaction(schoolId, expense, user.id);
+
+        if ('skipped' in result && result.skipped) {
+            return { success: false, error: "This expense has already been posted to Accounts" };
+        }
+        if ('error' in result && result.error) {
+            return { success: false, error: result.error };
+        }
+
+        revalidatePath(`/s/${schoolSlug}/transport/expenses`);
+        revalidatePath(`/s/${schoolSlug}/accounts`);
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ─── Toggle Auto-Sync Setting ──────────────────────────────────────────────────
+export async function updateTransportAccountsSyncAction(schoolSlug: string, enabled: boolean) {
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const user = auth.user;
+
+        const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+        if (!isAdmin) return { success: false, error: "Only admins can change this setting" };
+
+        await prisma.school.update({
+            where: { slug: schoolSlug },
+            data: { transportSyncToAccounts: enabled }
         });
 
         revalidatePath(`/s/${schoolSlug}/transport/expenses`);

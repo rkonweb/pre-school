@@ -620,7 +620,10 @@ export async function getDriversAction(schoolSlug: string) {
                     { role: { in: ['DRIVER', 'Driver', 'driver'] } },
                     { customRole: { name: { contains: 'Driver' } } },
                     { customRole: { name: { contains: 'driver' } } },
-                    { customRole: { name: { contains: 'DRIVER' } } }
+                    { customRole: { name: { contains: 'DRIVER' } } },
+                    { designation: { contains: 'Driver' } },
+                    { designation: { contains: 'driver' } },
+                    { designation: { contains: 'DRIVER' } }
                 ]
             },
             include: {

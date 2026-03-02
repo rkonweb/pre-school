@@ -106,7 +106,7 @@ export async function recordPaymentAction(slug: string, feeId: string, amount: n
         // Trace fee -> student -> classroom
         const feeRecord = await prisma.fee.findUnique({
             where: { id: feeId, student: { school: { slug } } },
-            include: { student: { select: { classroomId: true, branchId: true } } }
+            include: { student: { select: { id: true, firstName: true, lastName: true, classroomId: true, branchId: true } } }
         });
 
         if (!feeRecord) return { success: false, error: "Fee not found" };
@@ -131,7 +131,55 @@ export async function recordPaymentAction(slug: string, feeId: string, amount: n
             }
         });
 
-        // 2. Update fee status
+        // 2. Automatically generate an AccountTransaction for the ledger
+        // Fetch active financial year for the school
+        const school = await prisma.school.findUnique({
+            where: { slug },
+            select: { id: true }
+        });
+
+        if (school) {
+            const activeYear = await prisma.accountFinancialYear.findFirst({
+                where: { schoolId: school.id, isActive: true }
+            });
+
+            if (activeYear) {
+                // Find a "Fee" category or default
+                let category = await prisma.accountCategory.findFirst({
+                    where: { schoolId: school.id, name: { contains: 'Fee', mode: 'insensitive' }, type: 'CREDIT' }
+                });
+
+                if (!category) {
+                    category = await prisma.accountCategory.create({
+                        data: {
+                            name: 'Student Fees',
+                            type: 'CREDIT',
+                            isSystem: true,
+                            schoolId: school.id
+                        }
+                    });
+                }
+
+                await prisma.accountTransaction.create({
+                    data: {
+                        transactionNo: `TXN-FEE-${Date.now().toString().slice(-6)}`,
+                        description: `Fee Payment - ${feeRecord.title}`,
+                        amount,
+                        type: 'CREDIT',
+                        status: 'COMPLETED',
+                        date: payment.date,
+                        reference: reference || payment.method,
+                        notes: `Student: ${feeRecord.student.firstName} ${feeRecord.student.lastName || ''} (ID: ${feeRecord.studentId}). Method: ${method}`,
+                        schoolId: school.id,
+                        financialYearId: activeYear.id,
+                        categoryId: category.id,
+                        createdById: currentUser.id
+                    }
+                });
+            }
+        }
+
+        // 3. Update fee status
         const fee = await prisma.fee.findUnique({
             where: { id: feeId },
             include: { payments: true }

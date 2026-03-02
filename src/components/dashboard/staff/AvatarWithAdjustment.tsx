@@ -31,10 +31,13 @@ export function AvatarWithAdjustment({ src, alt, adjustment, className }: Avatar
     if (adjustment) {
         try {
             const parsed = JSON.parse(adjustment);
-            // Prioritize croppedArea (percentages)
-            const area = parsed.croppedArea || parsed.croppedAreaPixels; // Fallback to pixels if percentages not available
 
-            if (area) {
+            // Find the area data - could be nested or at top level
+            // We prioritize percentage-based 'croppedArea'
+            const area = parsed.croppedArea ||
+                (parsed.width !== undefined && parsed.width <= 100 ? parsed : null);
+
+            if (area && area.width > 0) {
                 const { x, y, width, height } = area;
                 content = (
                     <img
@@ -49,22 +52,42 @@ export function AvatarWithAdjustment({ src, alt, adjustment, className }: Avatar
                         }}
                     />
                 );
-            } else if (parsed.zoom !== undefined && (parsed.x !== undefined || (parsed.crop && parsed.crop.x !== undefined))) {
-                // Older fallback logic
-                const cropX = parsed.x !== undefined ? parsed.x : parsed.crop.x;
-                const cropY = parsed.y !== undefined ? parsed.y : parsed.crop.y;
-                content = (
-                    <img
-                        src={src}
-                        alt={alt || "Avatar"}
-                        className="h-full w-full"
-                        style={{
-                            transform: `scale(${parsed.zoom})`,
-                            translate: `${-cropX}% ${-cropY}%`,
-                            objectFit: "cover",
-                        }}
-                    />
-                );
+            } else {
+                // Fallback for pixel-based or older formats
+                const zoom = parsed.zoom || 1;
+                const cropX = parsed.x !== undefined ? parsed.x : (parsed.crop?.x || 0);
+                const cropY = parsed.y !== undefined ? parsed.y : (parsed.crop?.y || 0);
+                const width = parsed.width || parsed.croppedAreaPixels?.width;
+
+                // If we have width > 100, it's pixels. We can't easily translate by pixels 
+                // without image dimensions, so we use scale and center as a better fallback
+                if (width && width > 100) {
+                    content = (
+                        <div className="h-full w-full flex items-center justify-center overflow-hidden">
+                            <img
+                                src={src}
+                                alt={alt || "Avatar"}
+                                className="h-full w-full object-cover"
+                                style={{
+                                    transform: `scale(${zoom})`,
+                                }}
+                            />
+                        </div>
+                    );
+                } else {
+                    // Final percentage fallback
+                    content = (
+                        <img
+                            src={src}
+                            alt={alt || "Avatar"}
+                            className="h-full w-full object-cover"
+                            style={{
+                                transform: `scale(${zoom})`,
+                                translate: typeof cropX === 'number' && cropX <= 100 ? `${-cropX}% ${-cropY}%` : '0 0',
+                            }}
+                        />
+                    );
+                }
             }
         } catch (e) {
             console.error("Failed to parse avatar adjustment", e);

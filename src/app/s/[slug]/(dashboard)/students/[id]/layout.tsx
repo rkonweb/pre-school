@@ -24,12 +24,14 @@ export default async function StudentProfileLayout({
     const student = res.student;
 
     return (
-        <div className="w-full max-w-full mx-auto space-y-12 pb-20 px-4 md:px-8">
+        <div className="flex flex-col gap-8 w-full max-w-full mx-auto pb-20">
             {/* Header (Client Component for interactivity like photo upload & back button) */}
             <StudentProfileHeader student={student} slug={slug} id={id} />
 
             {/* Navigation Tabs */}
-            <div className="flex p-1.5 bg-zinc-100/80 backdrop-blur-md rounded-[28px] w-full overflow-x-auto shadow-inner sticky top-4 z-40">
+            {/* The `<main>` wrapper in layout.tsx has overflow-y-auto and p-4 sm:p-6 lg:p-8 padding. 
+                To stick flush against the top border of `<main>` (under the header), we must use negative top offsets exactly equal to the padding. */}
+            <div className="flex p-1.5 bg-zinc-100/80 backdrop-blur-md rounded-[28px] w-full overflow-x-auto shadow-inner sticky -top-4 sm:-top-6 lg:-top-8 z-[90]">
                 {[
                     { id: "profile", label: "Profile", icon: "User", path: "" },
                     { id: "attendance", label: "Attendance", icon: "Activity", path: "/attendance" },

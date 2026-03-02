@@ -62,9 +62,12 @@ export default function InventoryPage() {
         <div className="flex-1 space-y-8 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Inventory Management</h2>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Track supplies, assets, and consumables.
+                    <h2 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase italic flex items-center gap-3">
+                        School <span className="text-brand">Inventory</span>
+                        <div className="h-2 w-2 rounded-full bg-brand animate-pulse hidden md:block" />
+                    </h2>
+                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-1">
+                        Track institutional supplies, assets, and consumables.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -96,7 +99,7 @@ export default function InventoryPage() {
                         activeTab === "stock" ? "border-brand text-brand" : "border-transparent text-zinc-500 hover:text-zinc-700"
                     )}
                 >
-                    Stock Inventory
+                    School Stock
                 </button>
                 <button
                     onClick={() => setActiveTab("requests")}

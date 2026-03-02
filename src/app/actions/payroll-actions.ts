@@ -164,7 +164,7 @@ export async function generatePayrollAction(schoolSlug: string, month: number, y
             }
         });
 
-        revalidatePath(`/s/${schoolSlug}/staff/payroll`);
+        revalidatePath(`/s/${schoolSlug}/hr/payroll`);
         return { success: true, data: payroll };
     } catch (error: any) {
         console.error("Payroll Generation Error:", error);
@@ -211,18 +211,54 @@ export async function markAsPaidAction(payrollId: string, schoolSlug: string) {
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success) return { success: false, error: auth.error };
         if (!auth.user?.schoolId) return { success: false, error: "Unauthorized" };
+        const schoolId = auth.user.schoolId;
 
-        await (prisma as any).payroll.update({
-            where: { id: payrollId, schoolId: auth.user.schoolId },
+        const payroll = await (prisma as any).payroll.update({
+            where: { id: payrollId, schoolId },
             data: { status: "PAID" }
         });
 
         await (prisma as any).payslip.updateMany({
-            where: { payrollId, payroll: { schoolId: auth.user.schoolId } },
+            where: { payrollId, payroll: { schoolId } },
             data: { status: "PAID", paidAt: new Date() }
         });
 
-        revalidatePath(`/s/${schoolSlug}/staff/payroll`);
+        // Auto-post to Accounts ledger as a DEBIT (Salary Expense)
+        const activeYear = await prisma.accountFinancialYear.findFirst({
+            where: { schoolId, isActive: true }
+        });
+
+        if (activeYear && payroll.totalAmount > 0) {
+            let salaryCategory = await prisma.accountCategory.findFirst({
+                where: { schoolId, name: { contains: 'Salary', mode: 'insensitive' }, type: 'DEBIT' }
+            });
+            if (!salaryCategory) {
+                salaryCategory = await prisma.accountCategory.create({
+                    data: { name: 'Staff Salaries', type: 'DEBIT', isSystem: true, schoolId }
+                });
+            }
+
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthLabel = `${monthNames[(payroll.month || 1) - 1]} ${payroll.year}`;
+
+            await prisma.accountTransaction.create({
+                data: {
+                    transactionNo: `TXN-PAY-${payrollId.slice(-6).toUpperCase()}`,
+                    description: `Staff Salary Disbursement — ${monthLabel}`,
+                    amount: payroll.totalAmount,
+                    type: 'DEBIT',
+                    status: 'COMPLETED',
+                    date: new Date(),
+                    notes: `Payroll ID: ${payrollId}. Paid on ${format(new Date(), 'dd MMM yyyy')}.`,
+                    schoolId,
+                    financialYearId: activeYear.id,
+                    categoryId: salaryCategory.id,
+                    createdById: auth.user.id
+                }
+            });
+        }
+
+        revalidatePath(`/s/${schoolSlug}/hr/payroll`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };

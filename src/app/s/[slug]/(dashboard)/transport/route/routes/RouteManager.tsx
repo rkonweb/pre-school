@@ -10,6 +10,16 @@ import { toast } from "sonner";
 import { deleteRouteAction } from "@/app/actions/transport-actions";
 import { useConfirm } from "@/contexts/ConfirmContext";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuSeparator,
+    DropdownMenuLabel,
+    DropdownMenuCheckboxItem
+} from "@/components/ui/dropdown-menu";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 type Route = any; // Using any for simplicity as per existing pattern
 
@@ -121,6 +131,30 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
         }
     };
 
+    const [columns, setColumns] = useState([
+        { id: 'name', label: 'Route Name', sortKey: 'name' },
+        { id: 'driver', label: 'Driver', sortKey: 'driver' },
+        { id: 'vehicle', label: 'Vehicle (Pick/Drop)', sortKey: 'vehicle' },
+        { id: 'stops', label: 'Stops', sortKey: 'stops' },
+        { id: 'students', label: 'Students', sortKey: 'students' }
+    ]);
+
+    const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
+        name: true,
+        driver: true,
+        vehicle: true,
+        stops: true,
+        students: true
+    });
+
+    const handleDragEnd = (result: any) => {
+        if (!result.destination) return;
+        const items = Array.from(columns);
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+        setColumns(items);
+    };
+
     // --- Render ---
 
     return (
@@ -131,13 +165,72 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
                     <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Route Management</h1>
                     <p className="text-zinc-500 text-sm mt-1">Manage transport routes, stops, and vehicle assignments.</p>
                 </div>
-                <Link
-                    href={`/s/${schoolSlug}/transport/route/routes/new`}
-                    className="flex items-center gap-2 bg-brand text-[var(--secondary-color)] px-5 py-2.5 rounded-xl shadow-lg shadow-brand/20 hover:brightness-110 active:scale-95 transition-all font-medium"
-                >
-                    <Plus className="h-4 w-4" />
-                    Create New Route
-                </Link>
+                <div className="flex items-center gap-3">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                className="h-[42px] px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-sm hover:border-brand/30 hover:text-brand transition-all outline-none"
+                            >
+                                <Filter className="h-4 w-4" />
+                                Columns
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56 p-2 rounded-2xl shadow-xl">
+                            <DropdownMenuLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                                Customize Columns
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DragDropContext onDragEnd={handleDragEnd}>
+                                <Droppable droppableId="route-columns">
+                                    {(provided) => (
+                                        <div {...provided.droppableProps} ref={provided.innerRef}>
+                                            {columns.map((col, index) => (
+                                                <Draggable key={col.id} draggableId={col.id} index={index}>
+                                                    {(provided, snapshot) => (
+                                                        <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            className={cn(
+                                                                "flex items-center gap-2 rounded-xl px-2 py-1 transition-colors",
+                                                                snapshot.isDragging ? "bg-zinc-100 shadow-sm dark:bg-zinc-800" : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                                                            )}
+                                                        >
+                                                            <div
+                                                                {...provided.dragHandleProps}
+                                                                className="cursor-pointer p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-grip-vertical"><circle cx="9" cy="12" r="1" /><circle cx="9" cy="5" r="1" /><circle cx="9" cy="19" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="5" r="1" /><circle cx="15" cy="19" r="1" /></svg>
+                                                            </div>
+                                                            <DropdownMenuCheckboxItem
+                                                                className="flex-1 rounded-lg cursor-pointer data-[highlighted]:bg-transparent"
+                                                                checked={visibleColumns[col.id]}
+                                                                onCheckedChange={(checked) =>
+                                                                    setVisibleColumns(prev => ({ ...prev, [col.id]: !!checked }))
+                                                                }
+                                                                onSelect={(e) => e.preventDefault()}
+                                                            >
+                                                                {col.label}
+                                                            </DropdownMenuCheckboxItem>
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            ))}
+                                            {provided.placeholder}
+                                        </div>
+                                    )}
+                                </Droppable>
+                            </DragDropContext>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Link
+                        href={`/s/${schoolSlug}/transport/route/routes/new`}
+                        className="flex items-center gap-2 bg-brand text-[var(--secondary-color)] px-5 h-[42px] rounded-xl shadow-lg shadow-brand/20 hover:brightness-110 active:scale-95 transition-all font-medium"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Create New Route
+                    </Link>
+                </div>
             </div>
 
             {/* Controls Bar */}
@@ -187,96 +280,24 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-zinc-50/50 border-b border-zinc-200">
-                                <SortHeader label="Route Name" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
-                                <SortHeader label="Driver" sortKey="driver" currentSort={sortConfig} onSort={handleSort} />
-                                <SortHeader label="Vehicle (Pick/Drop)" sortKey="vehicle" currentSort={sortConfig} onSort={handleSort} />
-                                <SortHeader label="Stops" sortKey="stops" currentSort={sortConfig} onSort={handleSort} />
-                                <SortHeader label="Students" sortKey="students" currentSort={sortConfig} onSort={handleSort} />
-                                <th className="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider sticky left-0 bg-zinc-50/50 z-10 border-r border-zinc-200">Actions</th>
+                                {columns.map((col) => {
+                                    if (!visibleColumns[col.id]) return null;
+                                    return (
+                                        <SortHeader key={col.id} label={col.label} sortKey={col.sortKey} currentSort={sortConfig} onSort={handleSort} />
+                                    );
+                                })}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-100">
                             {sortedRoutes.length > 0 ? (
                                 sortedRoutes.map((route) => (
                                     <tr key={route.id} className="hover:bg-zinc-50/50 transition-colors group">
-
-                                        {/* Route Name */}
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                                    <Bus className="h-5 w-5" />
-                                                </div>
-                                                <div>
-                                                    <div className="font-semibold text-zinc-900">{route.name}</div>
-                                                    <div className="text-xs text-zinc-500">{route.description || "No description"}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        {/* Driver */}
-                                        <td className="px-6 py-4">
-                                            {route.driver ? (
-                                                <div className="flex items-center gap-2">
-                                                    <User className="h-4 w-4 text-zinc-400" />
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-medium text-zinc-800">{route.driver.name}</span>
-                                                        <span className="text-[10px] text-zinc-500 flex items-center gap-1">
-                                                            <Phone className="h-3 w-3" /> {route.driver.phone}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <span className="inline-flex items-center px-2 py-1 rounded bg-yellow-50 text-yellow-700 text-xs font-medium border border-yellow-100">
-                                                    Unassigned
-                                                </span>
-                                            )}
-                                        </td>
-
-                                        {/* Vehicle Info */}
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1.5">
-                                                {route.pickupVehicle ? (
-                                                    <div className="flex items-center gap-2 text-xs">
-                                                        <span className="font-bold text-zinc-400 w-8">PICK</span>
-                                                        <span className="font-medium bg-zinc-100 px-1.5 py-0.5 rounded text-zinc-700">{route.pickupVehicle.registrationNumber}</span>
-                                                    </div>
-                                                ) : <div className="text-xs text-zinc-400">No Pickup Vehicle</div>}
-
-                                                {route.dropVehicle ? (
-                                                    <div className="flex items-center gap-2 text-xs">
-                                                        <span className="font-bold text-zinc-400 w-8">DROP</span>
-                                                        <span className="font-medium bg-zinc-100 px-1.5 py-0.5 rounded text-zinc-700">{route.dropVehicle.registrationNumber}</span>
-                                                    </div>
-                                                ) : <div className="text-xs text-zinc-400">No Drop Vehicle</div>}
-                                            </div>
-                                        </td>
-
-                                        {/* Stops */}
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-zinc-100 text-zinc-600 px-2 py-1 rounded-md text-xs font-bold border border-zinc-200">
-                                                    {route._count?.stops || route.stops?.length || 0}
-                                                </div>
-                                                <span className="text-xs text-zinc-500">Stops</span>
-                                            </div>
-                                        </td>
-
-                                        {/* Students */}
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md text-xs font-bold border border-indigo-100">
-                                                    {route._count?.students || 0}
-                                                </div>
-                                                <span className="text-xs text-zinc-500">Students</span>
-                                            </div>
-                                        </td>
-
-                                        {/* Actions */}
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <td className="px-6 py-4 sticky left-0 bg-white group-hover:bg-zinc-50/50 z-10 border-r border-zinc-200 shadow-[4px_0_15px_-5px_rgba(0,0,0,0.05)]">
+                                            <div className="flex items-center justify-start gap-2 relative z-20">
                                                 <Link
                                                     href={`/s/${schoolSlug}/transport/route/routes/${route.id}/edit`}
-                                                    className="p-2 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                                    className="p-2 text-zinc-400 hover:text-brand hover:bg-brand/5 rounded-lg transition-all"
                                                     title="Edit Route"
                                                 >
                                                     <Edit2 className="h-4 w-4" />
@@ -290,6 +311,82 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
                                                 </button>
                                             </div>
                                         </td>
+                                        {columns.map((col) => {
+                                            if (!visibleColumns[col.id]) return null;
+
+                                            if (col.id === 'name') return (
+                                                <td key={col.id} className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                                                            <Bus className="h-5 w-5" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-semibold text-zinc-900 whitespace-nowrap">{route.name}</div>
+                                                            <div className="text-xs text-zinc-500 whitespace-nowrap">{route.description || "No description"}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            );
+                                            if (col.id === 'driver') return (
+                                                <td key={col.id} className="px-6 py-4">
+                                                    {route.driver ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <User className="h-4 w-4 text-zinc-400" />
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-medium text-zinc-800 whitespace-nowrap">{route.driver.name}</span>
+                                                                <span className="text-[10px] text-zinc-500 flex items-center gap-1 whitespace-nowrap">
+                                                                    <Phone className="h-3 w-3" /> {route.driver.phone}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="inline-flex items-center px-2 py-1 rounded bg-yellow-50 text-yellow-700 text-xs font-medium border border-yellow-100 whitespace-nowrap">
+                                                            Unassigned
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            );
+                                            if (col.id === 'vehicle') return (
+                                                <td key={col.id} className="px-6 py-4">
+                                                    <div className="flex flex-col gap-1.5 whitespace-nowrap">
+                                                        {route.pickupVehicle ? (
+                                                            <div className="flex items-center gap-2 text-xs">
+                                                                <span className="font-bold text-zinc-400 w-8">PICK</span>
+                                                                <span className="font-medium bg-zinc-100 px-1.5 py-0.5 rounded text-zinc-700">{route.pickupVehicle.registrationNumber}</span>
+                                                            </div>
+                                                        ) : <div className="text-xs text-zinc-400">No Pickup Vehicle</div>}
+
+                                                        {route.dropVehicle ? (
+                                                            <div className="flex items-center gap-2 text-xs">
+                                                                <span className="font-bold text-zinc-400 w-8">DROP</span>
+                                                                <span className="font-medium bg-zinc-100 px-1.5 py-0.5 rounded text-zinc-700">{route.dropVehicle.registrationNumber}</span>
+                                                            </div>
+                                                        ) : <div className="text-xs text-zinc-400">No Drop Vehicle</div>}
+                                                    </div>
+                                                </td>
+                                            );
+                                            if (col.id === 'stops') return (
+                                                <td key={col.id} className="px-6 py-4">
+                                                    <div className="flex items-center gap-2 whitespace-nowrap">
+                                                        <div className="bg-zinc-100 text-zinc-600 px-2 py-1 rounded-md text-xs font-bold border border-zinc-200">
+                                                            {route._count?.stops || route.stops?.length || 0}
+                                                        </div>
+                                                        <span className="text-xs text-zinc-500">Stops</span>
+                                                    </div>
+                                                </td>
+                                            );
+                                            if (col.id === 'students') return (
+                                                <td key={col.id} className="px-6 py-4">
+                                                    <div className="flex items-center gap-2 whitespace-nowrap">
+                                                        <div className="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md text-xs font-bold border border-indigo-100">
+                                                            {route._count?.students || 0}
+                                                        </div>
+                                                        <span className="text-xs text-zinc-500">Students</span>
+                                                    </div>
+                                                </td>
+                                            );
+                                            return null;
+                                        })}
                                     </tr>
                                 ))
                             ) : (

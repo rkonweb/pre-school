@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { Package, TrendingUp, TrendingDown, FlaskConical } from "lucide-react";
-import { getStoreCatalogAction, updateStoreInventoryAction } from "@/app/actions/store-actions";
+import { getStoreCatalogAction, adjustInventoryAction } from "@/app/actions/store-actions";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 
@@ -30,9 +30,9 @@ export default function StoreInventory() {
         if (!selectedItem || !adjustment || parseInt(adjustment) === 0) return;
 
         startTransition(async () => {
-            const res = await updateStoreInventoryAction(selectedItem, schoolId, parseInt(adjustment));
+            const res = await adjustInventoryAction(selectedItem, schoolId, parseInt(adjustment));
             if (res.success) {
-                toast.success("Inventory updated successfully");
+                toast.success("Store Inventory updated successfully");
                 setAdjustment("0");
                 setSelectedItem("");
 
@@ -50,7 +50,9 @@ export default function StoreInventory() {
             <div className="mx-auto max-w-7xl">
                 <div className="sm:flex sm:items-center sm:justify-between mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Inventory Management</h1>
+                        <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase italic flex items-center gap-3">
+                            Store <span className="text-brand">Inventory</span>
+                        </h1>
                         <p className="mt-2 text-sm text-slate-600">
                             Track and adjust physical stock levels for store items.
                         </p>

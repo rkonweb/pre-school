@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Upload } from "lucide-react";
 import { createStudentAction } from "@/app/actions/student-actions";
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 
 export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug: string }) {
     const [isLoading, setIsLoading] = useState(false);
@@ -161,22 +162,11 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label htmlFor="phone" className="text-sm font-medium text-zinc-900 dark:text-zinc-300">
-                                    Phone Number
-                                </label>
-                                <input
-                                    id="phone"
-                                    type="tel"
-                                    placeholder="98765 43210"
+                            <div className="space-y-1.5 col-span-2">
+                                <PhoneInput
+                                    label="Phone Number"
                                     value={form.parentMobile}
-                                    maxLength={10}
-                                    onChange={e => {
-                                        const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                                        setForm({ ...form, parentMobile: val });
-                                    }}
-                                    className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                                    required
+                                    onChange={val => setForm({ ...form, parentMobile: val })}
                                 />
                             </div>
                             <div className="space-y-1.5">

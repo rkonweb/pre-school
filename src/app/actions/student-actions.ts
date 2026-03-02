@@ -1,10 +1,25 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { writeFile, mkdir } from "fs/promises";
 import { join, basename } from "path";
 import { validateUserSchoolAction, hasPermissionAction } from "./session-actions";
+import { cache } from "react";
+
+/**
+ * Cached Academic Year Fetcher
+ * Academic years change very rarely, so we cache them school-wide.
+ */
+const getAcademicYearCached = unstable_cache(
+    async (id: string) => {
+        return await prisma.academicYear.findUnique({
+            where: { id }
+        });
+    },
+    ["academic-year-dates"],
+    { revalidate: 3600, tags: ["academic-year"] }
+);
 
 interface StudentQueryOptions {
     page?: number;
@@ -13,9 +28,10 @@ interface StudentQueryOptions {
     filters?: {
         status?: string;
         class?: string;
+        classroomId?: string; // New efficient filter
         gender?: string;
         academicYearId?: string;
-        excludeStatus?: string; // New filter
+        excludeStatus?: string;
     };
     sort?: {
         field: string;
@@ -26,37 +42,31 @@ interface StudentQueryOptions {
 export async function getStudentsAction(schoolSlug: string, options: StudentQueryOptions = {}) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success) return { success: false, error: auth.error, students: [] };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error, students: [] };
 
-        const { page = 1, limit = 10, search = "", filters = {}, sort } = options;
+        const { page = 1, limit = 50, search = "", filters = {}, sort } = options;
         const skip = (page - 1) * limit;
 
+        const currentUser = auth.user as any;
+        const schoolId = currentUser.schoolId;
+
         const whereClause: any = {
-            school: { slug: schoolSlug }
+            schoolId // Direct ID lookup instead of slug join
         };
 
-        // ... (existing branch/permission logic is fine) ...
-
-        // ---------------------------------------------------------
-        // ACCESS CONTROL ENFORCEMENT & MULTI-BRANCH
-        // ---------------------------------------------------------
-        const currentUser = auth.user;
-
-        const currentBranchId = (currentUser as any).currentBranchId;
-
+        const currentBranchId = currentUser.currentBranchId;
         if (currentBranchId) {
             whereClause.branchId = currentBranchId;
         }
 
         // If user is STAFF (and not generic ADMIN), enforce class scoping
-        if (currentUser && currentUser.role === "STAFF") {
+        if (currentUser.role === "STAFF") {
             const items = await prisma.classAccess.findMany({
                 where: { userId: currentUser.id, canRead: true },
                 select: { classroomId: true }
             });
 
             const allowedClassIds = items.map((i: any) => i.classroomId);
-
             if (allowedClassIds.length > 0) {
                 whereClause.classroomId = { in: allowedClassIds };
             } else {
@@ -67,60 +77,64 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
                 };
             }
         }
-        // ---------------------------------------------------------
 
         if (search) {
-            whereClause.OR = [
-                { firstName: { contains: search } },
-                { lastName: { contains: search } },
-                { admissionNumber: { contains: search } },
-                { parentName: { contains: search } },
-                { parentMobile: { contains: search } },
-                { fatherPhone: { contains: search } },
-                { motherPhone: { contains: search } },
-                { emergencyContactPhone: { contains: search } },
-            ];
+            const cleanSearch = search.trim().replace(/\s+/g, ' ');
+            const searchTerms = cleanSearch.split(' ');
+
+            const termConditions = searchTerms.map(term => {
+                const isNumeric = /^\d+$/.test(term);
+                const OR: any[] = [
+                    { firstName: { contains: term, mode: 'insensitive' as const } },
+                    { lastName: { contains: term, mode: 'insensitive' as const } },
+                    { parentName: { contains: term, mode: 'insensitive' as const } }
+                ];
+
+                if (isNumeric) {
+                    OR.push(
+                        { admissionNumber: { startsWith: term } },
+                        { parentMobile: { contains: term } },
+                        { fatherPhone: { contains: term } },
+                        { motherPhone: { contains: term } }
+                    );
+                } else {
+                    OR.push(
+                        { admissionNumber: { contains: term, mode: 'insensitive' as const } }
+                    );
+                }
+                return { OR };
+            });
+            whereClause.AND = termConditions;
         }
 
         // Status Filtering Logic
         if (filters.status && filters.status !== "all") {
             whereClause.status = filters.status;
         } else if (filters.excludeStatus) {
-            // Only exclude if no specific status is requested
             whereClause.status = { not: filters.excludeStatus };
         }
 
-        if (filters.class && filters.class !== "all") {
+        if (filters.classroomId && filters.classroomId !== "all") {
+            whereClause.classroomId = filters.classroomId;
+        } else if (filters.class && filters.class !== "all") {
             whereClause.classroom = { name: filters.class };
         }
 
         if (filters.gender && filters.gender !== "all") {
-            whereClause.gender = filters.gender;
+            whereClause.gender = { equals: filters.gender, mode: 'insensitive' };
         }
 
-        // Academic Year Filter
+        // Academic Year Filter (CACHED)
         if (filters.academicYearId) {
-            const academicYear = await prisma.academicYear.findUnique({
-                where: { id: filters.academicYearId }
-            });
-
+            const academicYear = await getAcademicYearCached(filters.academicYearId);
             if (academicYear) {
-                // Logic: Student must have joined ON or BEFORE the end of the academic year
-                // AND (Leaving Date is NULL OR Leaving Date >= Start of Academic Year)
-                // This captures students present during the academic year.
-
-                // We use explicit AND to combine with existing filters
                 if (!whereClause.AND) whereClause.AND = [];
-
-                // 1. Joined before/during the year
                 whereClause.AND.push({
                     OR: [
                         { joiningDate: { lte: academicYear.endDate } },
-                        { joiningDate: null } // Handle missing joining date (assume joined long ago)
+                        { joiningDate: null }
                     ]
                 });
-
-                // 2. Left after start of year or active
                 whereClause.AND.push({
                     OR: [
                         { leavingDate: null },
@@ -147,11 +161,27 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
             }
         }
 
-        const [students, totalCount] = await prisma.$transaction([
+        const [students, totalCount] = await Promise.all([
             prisma.student.findMany({
                 where: whereClause,
-                include: {
-                    classroom: true
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    admissionNumber: true,
+                    age: true,
+                    gender: true,
+                    parentName: true,
+                    parentMobile: true,
+                    fatherPhone: true,
+                    motherPhone: true,
+                    joiningDate: true,
+                    status: true,
+                    avatar: true,
+                    createdAt: true,
+                    classroom: {
+                        select: { name: true }
+                    }
                 },
                 orderBy: orderBy,
                 take: limit,

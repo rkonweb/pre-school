@@ -19,7 +19,9 @@ import {
     ChevronUp,
     ChevronDown,
     Calendar,
-    ListFilter
+    ListFilter,
+    Banknote,
+    X
 } from "lucide-react";
 import Link from "next/link";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -31,10 +33,12 @@ import {
     DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
 import { getBillingDashboardAction } from "@/app/actions/billing-dashboard-actions";
+import { recordPaymentAction } from "@/app/actions/fee-actions";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { getCookie } from "@/lib/cookies";
 import { useSidebar } from "@/context/SidebarContext";
+import { reconcileOrphanFeesAction } from "@/app/actions/billing-maintenance-actions";
 
 export default function BillingDashboard() {
     const params = useParams();
@@ -43,6 +47,16 @@ export default function BillingDashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState<any>(null);
     const { currency } = useSidebar();
+
+    // Payment Modal State
+    const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+    const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+    const [paymentAmount, setPaymentAmount] = useState<string>("");
+    const [paymentMethod, setPaymentMethod] = useState("CASH");
+    const [paymentReference, setPaymentReference] = useState("");
+    const [paymentDate, setPaymentDate] = useState<string>(
+        new Date().toISOString().split('T')[0]
+    );
 
     // Query State
     const [searchTerm, setSearchTerm] = useState("");
@@ -116,6 +130,37 @@ export default function BillingDashboard() {
         return `${currency}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
+    const handleRecordPayment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedInvoice) return;
+
+        const amt = parseFloat(paymentAmount);
+        if (isNaN(amt) || amt <= 0) {
+            toast.error("Please enter a valid amount.");
+            return;
+        }
+
+        setIsSubmittingPayment(true);
+        const res = await recordPaymentAction(
+            slug,
+            selectedInvoice.id,
+            amt,
+            paymentMethod,
+            paymentReference || "Manual Payment",
+            new Date(paymentDate)
+        );
+
+        if (res.success) {
+            toast.success("Payment recorded successfully!");
+            setSelectedInvoice(null);
+            setPaymentReference("");
+            loadData(); // Refresh the grid
+        } else {
+            toast.error(res.error || "Failed to record payment");
+        }
+        setIsSubmittingPayment(false);
+    }
+
     const hasNextPage = data?.pagination?.page < data?.pagination?.totalPages;
     const hasPrevPage = data?.pagination?.page > 1;
 
@@ -128,7 +173,108 @@ export default function BillingDashboard() {
     }
 
     return (
-        <div className="flex flex-col gap-8 pb-20">
+        <div className="flex flex-col gap-8 pb-20 relative">
+            {/* Payment Modal */}
+            {selectedInvoice && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-0">
+                    <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/50">
+                            <h2 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
+                                <Banknote className="h-5 w-5 text-brand" />
+                                Record Payment
+                            </h2>
+                            <button
+                                onClick={() => setSelectedInvoice(null)}
+                                className="p-2 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleRecordPayment} className="p-6 space-y-5">
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Amount Received</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-medium">
+                                        {currency}
+                                    </span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        max={selectedInvoice.amount - (selectedInvoice.paid || 0)}
+                                        value={paymentAmount}
+                                        onChange={(e) => setPaymentAmount(e.target.value)}
+                                        className="w-full pl-8 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900 transition-shadow"
+                                        required
+                                    />
+                                </div>
+                                <p className="text-xs text-zinc-400 text-right mt-1">Remaining balance: {formatCurrency(selectedInvoice.amount - (selectedInvoice.paid || 0))}</p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Payment Method</label>
+                                <select
+                                    value={paymentMethod}
+                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                    className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900 transition-shadow"
+                                    required
+                                >
+                                    <option value="CASH">Cash</option>
+                                    <option value="BANK_TRANSFER">Bank Transfer / NEFT</option>
+                                    <option value="CARD">Credit / Debit Card</option>
+                                    <option value="UPI">UPI / Mobile Payment</option>
+                                    <option value="CHEQUE">Cheque</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Reference / Notes</label>
+                                <input
+                                    type="text"
+                                    value={paymentReference}
+                                    onChange={(e) => setPaymentReference(e.target.value)}
+                                    placeholder="e.g. Transaction ID, UTR"
+                                    className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900 transition-shadow"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Payment Date</label>
+                                <input
+                                    type="date"
+                                    value={paymentDate}
+                                    onChange={(e) => setPaymentDate(e.target.value)}
+                                    className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900 transition-shadow"
+                                    required
+                                />
+                            </div>
+
+                            <div className="pt-2 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedInvoice(null)}
+                                    className="px-5 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-600 font-bold text-sm hover:bg-zinc-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingPayment}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-zinc-900 font-bold text-sm hover:brightness-110 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isSubmittingPayment ? (
+                                        <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>
+                                    ) : (
+                                        "Confirm Payment"
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -169,6 +315,22 @@ export default function BillingDashboard() {
                                     <CreditCard className="h-4 w-4" />
                                     Transactions
                                 </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={async () => {
+                                    const academicYearId = getCookie(`academic_year_${slug}`) || undefined;
+                                    const res = await reconcileOrphanFeesAction(slug, academicYearId);
+                                    if (res.success) {
+                                        toast.success(res.message);
+                                        loadData();
+                                    } else {
+                                        toast.error(res.error);
+                                    }
+                                }}
+                                className="flex items-center gap-2 text-amber-600 focus:text-amber-700 cursor-pointer"
+                            >
+                                <AlertCircle className="h-4 w-4" />
+                                Reconcile Invoices
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -233,29 +395,30 @@ export default function BillingDashboard() {
                                 className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950"
                             />
                         </div>
-
-                        <div className="flex gap-2">
-                            <div className="relative">
-                                <ListFilter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                                <select
-                                    value={statusFilter}
-                                    onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                                    className="appearance-none rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-8 text-sm font-medium focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 min-w-[140px]"
-                                    title="Filter by Status"
-                                >
-                                    <option value="ALL">All Status</option>
-                                    <option value="PAID">Paid</option>
-                                    <option value="PENDING">Pending</option>
-                                    <option value="PARTIAL">Partial</option>
-                                    <option value="OVERDUE">Overdue</option>
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 pointer-events-none" />
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950 flex flex-col">
+                {/* Tabs */}
+                <div className="flex overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar">
+                    <div className="flex bg-zinc-100/50 p-1 rounded-xl border border-zinc-200/50 dark:bg-zinc-900/50 dark:border-zinc-800/50 w-max">
+                        {['ALL', 'PENDING', 'PARTIAL', 'PAID', 'OVERDUE'].map((status) => (
+                            <button
+                                key={status}
+                                onClick={() => { setStatusFilter(status); setPage(1); }}
+                                className={cn(
+                                    "px-4 py-2 text-sm font-bold rounded-lg transition-all capitalize whitespace-nowrap",
+                                    statusFilter === status
+                                        ? "bg-white text-brand shadow-sm ring-1 ring-zinc-900/5 dark:bg-zinc-800 dark:text-brand"
+                                        : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/50 dark:text-zinc-400 dark:hover:text-zinc-100"
+                                )}
+                            >
+                                {status.toLowerCase()}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950 flex flex-col overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
@@ -339,6 +502,18 @@ export default function BillingDashboard() {
                                                         </button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent className="w-40">
+                                                        {(inv.amount - (inv.paid || 0)) > 0 && (
+                                                            <DropdownMenuItem
+                                                                onClick={() => {
+                                                                    setSelectedInvoice(inv);
+                                                                    setPaymentAmount((inv.amount - (inv.paid || 0)).toString());
+                                                                }}
+                                                                className="flex items-center gap-2 cursor-pointer text-brand focus:text-brand"
+                                                            >
+                                                                <Banknote className="h-4 w-4" />
+                                                                Record Payment
+                                                            </DropdownMenuItem>
+                                                        )}
                                                         <DropdownMenuItem asChild>
                                                             <Link href={`/s/${slug}/billing/invoice/${inv.id}`} className="flex items-center gap-2 cursor-pointer">
                                                                 <FileText className="h-4 w-4" />

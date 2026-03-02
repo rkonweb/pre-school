@@ -26,10 +26,10 @@ export async function sendBulkMessageAction(schoolSlug: string, audience: "EVERY
             // For now, chunk the notifications
             const notificationsToCreate = users.map(user => ({
                 userId: user.id,
+                userType: user.role,
                 title,
                 message,
-                type: 'SYSTEM',
-                schoolId: school.id
+                type: 'SYSTEM'
             }));
 
             // Bulk create
@@ -42,24 +42,45 @@ export async function sendBulkMessageAction(schoolSlug: string, audience: "EVERY
         } else {
             // Assume audience is a classroom ID
             const studentsInClass = await prisma.student.findMany({
-                where: { classroomId: audience, schoolId: school.id },
-                include: { parent: true }
+                where: { classroomId: audience, schoolId: school.id }
             });
 
             const targetUsers = new Set<string>();
+            const phonesToSearch = new Set<string>();
+
+            // Collect student user IDs (if applicable) and parent phones
             studentsInClass.forEach(s => {
-                targetUsers.add(s.userId); // The student
-                if (s.parent) {
-                    targetUsers.add(s.parent.id); // The parent
+                if (s.parentMobile) {
+                    const cleanPhone = String(s.parentMobile).replace(/\D/g, "");
+                    if (cleanPhone.length >= 5) {
+                        phonesToSearch.add(cleanPhone.slice(-5));
+                    }
+                }
+                if (s.emergencyContactPhone) {
+                    const cleanPhone = String(s.emergencyContactPhone).replace(/\D/g, "");
+                    if (cleanPhone.length >= 5) {
+                        phonesToSearch.add(cleanPhone.slice(-5));
+                    }
                 }
             });
 
+            // Find valid parent users based on collected phones
+            if (phonesToSearch.size > 0) {
+                const parentUsers = await prisma.user.findMany({
+                    where: {
+                        role: "PARENT",
+                        OR: Array.from(phonesToSearch).map(p => ({ mobile: { contains: p } }))
+                    }
+                });
+                parentUsers.forEach(pu => targetUsers.add(pu.id));
+            }
+
             const notificationsToCreate = Array.from(targetUsers).map(userId => ({
                 userId,
+                userType: "PARENT",
                 title,
                 message,
-                type: 'SYSTEM',
-                schoolId: school.id
+                type: 'SYSTEM'
             }));
 
             if (notificationsToCreate.length > 0) {
@@ -100,11 +121,7 @@ export async function triggerFeeRemindersAction(schoolSlug: string) {
                 }
             },
             include: {
-                student: {
-                    include: {
-                        parent: true
-                    }
-                }
+                student: true
             }
         });
 
@@ -112,19 +129,38 @@ export async function triggerFeeRemindersAction(schoolSlug: string) {
         const processedParents = new Set<string>(); // Keep track so we don't spam a parent with multiple kids
 
         for (const fee of soonDueFees as any[]) {
-            const parent = fee.student?.parent;
-            if (parent && !processedParents.has(parent.id)) {
-                await prisma.notification.create({
-                    data: {
-                        userId: parent.id,
-                        schoolId: school.id,
-                        title: "Fee Reminder",
-                        message: `Friendly reminder: A fee of ${fee.amount} for ${fee.student.firstName} is due on ${fee.dueDate.toISOString().split('T')[0]}.`,
-                        type: "SYSTEM"
-                    }
-                });
-                processedParents.add(parent.id);
-                generated++;
+            const student = fee.student;
+            if (!student) continue;
+
+            const phones = [student.parentMobile, student.emergencyContactPhone]
+                .filter(Boolean)
+                .map(p => String(p).replace(/\D/g, ""))
+                .filter(p => p.length >= 5)
+                .map(p => p.slice(-5));
+
+            if (phones.length === 0) continue;
+
+            const parents = await prisma.user.findMany({
+                where: {
+                    role: "PARENT",
+                    OR: phones.map(p => ({ mobile: { contains: p } }))
+                }
+            });
+
+            for (const parent of parents) {
+                if (!processedParents.has(parent.id)) {
+                    await prisma.notification.create({
+                        data: {
+                            userId: parent.id,
+                            userType: "PARENT",
+                            title: "Fee Reminder",
+                            message: `Friendly reminder: A fee of ${fee.amount} for ${student.firstName} is due on ${fee.dueDate.toISOString().split('T')[0]}.`,
+                            type: "SYSTEM"
+                        }
+                    });
+                    processedParents.add(parent.id);
+                    generated++;
+                }
             }
         }
 
@@ -132,6 +168,53 @@ export async function triggerFeeRemindersAction(schoolSlug: string) {
 
     } catch (error: any) {
         console.error("Fee Reminder Trigger Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Fetches all conversations across the school for admin monitoring.
+ * Includes messages with moderation details.
+ */
+export async function getChatHistoryAction(schoolSlug: string) {
+    try {
+        const school = await prisma.school.findUnique({
+            where: { slug: schoolSlug }
+        });
+
+        if (!school) return { success: false, error: "School not found" };
+
+        const conversations = await prisma.conversation.findMany({
+            where: {
+                student: { schoolId: school.id }
+            },
+            include: {
+                student: {
+                    select: { id: true, firstName: true, lastName: true, admissionNumber: true, parentMobile: true }
+                },
+                messages: {
+                    orderBy: { createdAt: "asc" },
+                    select: {
+                        id: true,
+                        content: true,
+                        senderType: true,
+                        senderName: true,
+                        deliveryStatus: true,
+                        isFlagged: true,
+                        flaggedReason: true,
+                        createdAt: true
+                    }
+                }
+            },
+            orderBy: { lastMessageAt: "desc" }
+        });
+
+        // Parse/stringify to strip complex Date objects which can cause "unexpected response" Next.js runtime errors
+        const serialized = JSON.parse(JSON.stringify(conversations));
+
+        return { success: true, data: serialized };
+    } catch (error: any) {
+        console.error("Chat History Error:", error);
         return { success: false, error: error.message };
     }
 }

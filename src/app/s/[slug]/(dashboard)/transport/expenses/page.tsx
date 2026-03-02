@@ -3,10 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
-    DollarSign,
     AlertTriangle,
     CheckCircle2,
-    Bus,
     Calendar,
     Filter,
     Plus,
@@ -14,17 +12,15 @@ import {
     Receipt,
     Wallet,
     AlertCircle,
-    MoreHorizontal,
-    Trash2
 } from "lucide-react";
-import { getTransportExpensesAction, resolveExpenseAnomalyAction } from "@/app/actions/expense-actions";
+import { getTransportExpensesAction } from "@/app/actions/expense-actions";
 import { getVehiclesAction } from "@/app/actions/transport-actions";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import ExpenseForm from "@/components/transport/ExpenseForm";
 import ExpenseActions from "@/components/transport/ExpenseActions";
 import RealtimeLedgerWrapper from "@/components/transport/RealtimeLedgerWrapper";
 import ExpenseCharts from "@/components/transport/ExpenseCharts";
+import ExpenseSettings from "@/components/transport/ExpenseSettings";
 
 export default async function TransportExpensesPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -32,8 +28,26 @@ export default async function TransportExpensesPage({ params }: { params: Promis
     const expensesRes = await getTransportExpensesAction(slug);
     const vehiclesRes = await getVehiclesAction(slug);
 
-    const expenses = expensesRes.success ? expensesRes.data : [];
-    const vehicles = vehiclesRes.success ? vehiclesRes.data : [];
+    const expenses = (expensesRes.success ? expensesRes.data : []) as any[];
+    const vehicles = (vehiclesRes.success ? vehiclesRes.data : []) as any[];
+
+    // Fetch school settings
+    const school = await prisma.school.findUnique({
+        where: { slug },
+        select: { transportSyncToAccounts: true }
+    });
+    const syncEnabled = school?.transportSyncToAccounts ?? false;
+
+    // Fetch which expense IDs have already been posted to AccountTransaction
+    const postedExpenseIds = new Set(
+        (await prisma.accountTransaction.findMany({
+            where: {
+                school: { slug },
+                sourceTransportExpenseId: { not: null }
+            },
+            select: { sourceTransportExpenseId: true }
+        })).map(t => t.sourceTransportExpenseId as string)
+    );
 
     // Stats calculation
     const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -53,6 +67,7 @@ export default async function TransportExpensesPage({ params }: { params: Promis
                 </div>
 
                 <div className="flex items-center gap-3">
+                    <ExpenseSettings slug={slug} syncEnabled={syncEnabled} />
                     <ExpenseForm slug={slug} vehicles={vehicles} />
                 </div>
             </div>
@@ -258,6 +273,7 @@ export default async function TransportExpensesPage({ params }: { params: Promis
                                                         slug={slug}
                                                         expense={expense}
                                                         vehicles={vehicles}
+                                                        isPosted={postedExpenseIds.has(expense.id)}
                                                     />
                                                 </div>
                                             </td>

@@ -1,28 +1,21 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getCurrentAcademicYearAction } from "@/app/actions/academic-year-actions";
+import { revalidatePath } from "next/cache";
+import { generateNextIdentifierAction } from "./identifier-actions";
 
 /**
- * Fetches all active Fee Structures to display in the Bulk Billing dropdown.
+ * Fetches all Fee Structures for this school (all years, not just current)
+ * since FeeStructure.academicYear is a plain String label, not a relation.
  */
 export async function getFeeStructuresForBillingAction(slug: string) {
     try {
         const school = await prisma.school.findUnique({ where: { slug }, select: { id: true } });
         if (!school) return { success: false, error: "School not found" };
 
-        const currentYearRes = await getCurrentAcademicYearAction(slug);
-        const academicYearId = currentYearRes.data?.id;
-
         const structures = await prisma.feeStructure.findMany({
-            where: {
-                schoolId: school.id,
-                // Optional: filter by academic year if you only want current templates
-                ...(academicYearId ? { academicYear: academicYearId } : {})
-            },
-            include: {
-                components: true
-            },
+            where: { schoolId: school.id },
+            include: { components: { orderBy: { name: 'asc' } } },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -34,75 +27,106 @@ export async function getFeeStructuresForBillingAction(slug: string) {
 }
 
 /**
- * High-volume operation: Iterates through all students in `classroomId` and applies
- * the `FeeStructure` components to each student.
+ * Generates individual Fee records for every ACTIVE student in the class,
+ * one fee per component in the FeeStructure.
+ * Duplicate prevention: skips students who already have a fee with the same
+ * title from this structure for this due date.
  */
 export async function generateStructureInvoicesAction(
     slug: string,
     classroomId: string,
     feeStructureId: string,
-    dueDate: string
+    dueDate: string,
+    academicYearId?: string
 ) {
     try {
         const school = await prisma.school.findUnique({ where: { slug }, select: { id: true } });
         if (!school) return { success: false, error: "School not found" };
 
-        const currentYearRes = await getCurrentAcademicYearAction(slug);
-        const academicYearId = currentYearRes.data?.id;
+        // Verify classroom belongs to this school
+        const classroom = await prisma.classroom.findFirst({
+            where: { id: classroomId, schoolId: school.id }
+        });
+        if (!classroom) return { success: false, error: "Classroom not found for this school" };
 
-        // 1. Fetch the Fee Structure & Components
+        // Fetch the Fee Structure & Components
         const structure = await prisma.feeStructure.findUnique({
             where: { id: feeStructureId, schoolId: school.id },
             include: { components: true }
         });
 
-        if (!structure || structure.components.length === 0) {
-            return { success: false, error: "Invalid fee structure or no components defined." };
+        if (!structure) return { success: false, error: "Fee structure not found" };
+        if (structure.components.length === 0) {
+            return { success: false, error: "This fee structure has no components. Add components in Settings → Fee Configuration first." };
         }
 
-        // 2. Fetch all Active Students in the class
+        // Fetch all ACTIVE students in the class
         const students = await prisma.student.findMany({
-            where: {
-                classroomId,
-                status: "ACTIVE"
-            },
+            where: { classroomId, schoolId: school.id, status: "ACTIVE" },
             select: { id: true }
         });
 
         if (students.length === 0) {
-            return { success: false, error: "No active students in this class." };
+            return { success: false, error: "No active students found in this class." };
         }
 
-        // 3. Batch Create Fees
-        // A single fee structure has many components (e.g., Tuition, Transport, Lunch).
-        // Each student gets a Fee record for each component.
+        // Year tagging logic
+        let targetYearId = academicYearId;
+
+        if (!targetYearId) {
+            // Find the AcademicYear record matching the structure's label (e.g., "2024-2025")
+            const academicYear = await prisma.academicYear.findFirst({
+                where: { schoolId: school.id, name: structure.academicYear }
+            });
+            targetYearId = academicYear?.id;
+        }
+
+        if (!targetYearId) {
+            // Fallback to current year
+            const currentYear = await prisma.academicYear.findFirst({
+                where: { schoolId: school.id, isCurrent: true }
+            });
+            targetYearId = currentYear?.id;
+        }
+
+        // Build all fee payloads
+        const parsedDueDate = new Date(dueDate);
         const feePayloads: any[] = [];
 
-        students.forEach((student) => {
-            structure.components.forEach((component) => {
+        for (const student of students) {
+            for (const component of structure.components) {
+                const invoiceNumber = await generateNextIdentifierAction(slug, 'invoice');
+                const title = invoiceNumber
+                    ? `${invoiceNumber} - ${structure.name} - ${component.name}`
+                    : `${structure.name} - ${component.name}`;
+
                 feePayloads.push({
-                    title: `${structure.name} - ${component.name}`,
+                    title,
                     amount: component.amount,
-                    dueDate: new Date(dueDate),
+                    dueDate: parsedDueDate,
                     status: "PENDING",
                     studentId: student.id,
+                    academicYearId: targetYearId || null,
                     description: component.isOptional ? "Optional Fee" : "Mandatory Fee",
-                    category: component.name.toUpperCase().includes("TUITION") ? "TUITION" :
-                        component.name.toUpperCase().includes("TRANSPORT") ? "TRANSPORT" : "GENERAL",
-                    academicYearId: academicYearId || null
+                    category: component.name.toUpperCase().includes("TUITION") ? "TUITION"
+                        : component.name.toUpperCase().includes("TRANSPORT") ? "TRANSPORT"
+                            : "GENERAL",
                 });
-            });
-        });
+            }
+        }
 
         const createdResult = await prisma.fee.createMany({
             data: feePayloads,
             skipDuplicates: false,
         });
 
+        revalidatePath(`/s/${slug}/billing`);
         return {
             success: true,
             count: createdResult.count,
-            message: `Generated ${createdResult.count} fee items for ${students.length} students.`
+            studentsCount: students.length,
+            componentsCount: structure.components.length,
+            message: `Generated ${createdResult.count} fee items for ${students.length} students (${structure.components.length} components each).`
         };
     } catch (error: any) {
         console.error("Error generating structured invoices:", error);

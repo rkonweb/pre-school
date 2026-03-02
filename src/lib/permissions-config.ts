@@ -1,4 +1,4 @@
-export type PermissionType = "view" | "create" | "edit" | "delete" | "manage" | "export" | "mark" | "send" | "review" | "approve" | "manage_own" | "manage_selected";
+export type PermissionType = "view" | "create" | "edit" | "delete" | "manage" | "export" | "mark" | "send" | "review" | "approve" | "publish" | "reply" | "manage_own" | "manage_selected";
 
 export interface ModuleDefinition {
     key: string;
@@ -13,7 +13,27 @@ export const MODULES: ModuleDefinition[] = [
         key: "dashboard",
         label: "Dashboard",
         description: "Overview and insights",
-        permissions: ["view"]
+        permissions: ["view"],
+        subModules: [
+            {
+                key: "dashboard.academic_metrics",
+                label: "Academic Metrics",
+                description: "Student performance & attendance stats",
+                permissions: ["view"]
+            },
+            {
+                key: "dashboard.financial_metrics",
+                label: "Financial Metrics",
+                description: "Revenue & collection stats",
+                permissions: ["view"]
+            },
+            {
+                key: "dashboard.staff_metrics",
+                label: "Staff Metrics",
+                description: "Staff attendance & payroll stats",
+                permissions: ["view"]
+            }
+        ]
     },
     {
         key: "admissions",
@@ -32,6 +52,18 @@ export const MODULES: ModuleDefinition[] = [
                 label: "Applications",
                 description: "Formal applications",
                 permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "admissions.follow_ups",
+                label: "Follow-ups & CRM",
+                description: "Manage communication with leads",
+                permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "admissions.reports",
+                label: "Reports",
+                description: "Conversion & admission stats",
+                permissions: ["view", "export"]
             }
         ]
     },
@@ -78,6 +110,24 @@ export const MODULES: ModuleDefinition[] = [
                 label: "Reports",
                 description: "Academic reports and cards",
                 permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "students.behavior",
+                label: "Behavior & Discipline",
+                description: "Disciplinary records",
+                permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "students.achievements",
+                label: "Achievements",
+                description: "Awards and recognitions",
+                permissions: ["view", "create", "edit"]
+            },
+            {
+                key: "students.leave_requests",
+                label: "Leave Requests",
+                description: "Student leave applications",
+                permissions: ["view", "approve", "review"]
             }
         ]
     },
@@ -104,6 +154,24 @@ export const MODULES: ModuleDefinition[] = [
                 label: "Curriculum",
                 description: "Syllabus and lesson plans",
                 permissions: ["view", "create", "edit"]
+            },
+            {
+                key: "academics.assignments",
+                label: "Assignments",
+                description: "Class assignments and tasks",
+                permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "academics.examinations",
+                label: "Examinations",
+                description: "Exam schedules and setup",
+                permissions: ["view", "create", "edit", "manage"]
+            },
+            {
+                key: "academics.grading",
+                label: "Grading",
+                description: "Grade entry and publishing",
+                permissions: ["view", "mark", "edit", "publish"]
             }
         ]
     },
@@ -156,6 +224,18 @@ export const MODULES: ModuleDefinition[] = [
                 label: "Payroll",
                 description: "Salary and slips",
                 permissions: ["view", "manage", "export"]
+            },
+            {
+                key: "staff.leave_management",
+                label: "Leave Management",
+                description: "Review and approve staff leaves",
+                permissions: ["view", "create", "approve"]
+            },
+            {
+                key: "staff.performance",
+                label: "Performance",
+                description: "Appraisals and reviews",
+                permissions: ["view", "edit", "manage"]
             }
         ]
     },
@@ -182,6 +262,24 @@ export const MODULES: ModuleDefinition[] = [
                 label: "Fee Structure",
                 description: "Fee heads & plans",
                 permissions: ["view", "manage"]
+            },
+            {
+                key: "billing.discounts",
+                label: "Discounts & Waivers",
+                description: "Configure scholarship/discounts",
+                permissions: ["view", "create", "manage"]
+            },
+            {
+                key: "billing.payroll_processing",
+                label: "Payroll Processing",
+                description: "Finance-side payroll link",
+                permissions: ["view", "manage", "approve"]
+            },
+            {
+                key: "billing.reports",
+                label: "Reports",
+                description: "Financial reports & ledger",
+                permissions: ["view", "export"]
             }
         ]
     },
@@ -189,11 +287,31 @@ export const MODULES: ModuleDefinition[] = [
         key: "communication",
         label: "Communication",
         description: "Broadcasts and messaging",
-        permissions: ["view", "send"]
+        permissions: ["view", "send"],
+        subModules: [
+            {
+                key: "communication.announcements",
+                label: "Announcements",
+                description: "Notice board & circulars",
+                permissions: ["view", "create", "edit", "delete", "send"]
+            },
+            {
+                key: "communication.sms_email",
+                label: "SMS & Email",
+                description: "Direct broadcasts",
+                permissions: ["view", "create", "send"]
+            },
+            {
+                key: "communication.parent_messages",
+                label: "Parent Messages",
+                description: "Direct messaging with parents",
+                permissions: ["view", "review", "reply"]
+            }
+        ]
     },
     {
         key: "inventory",
-        label: "Inventory",
+        label: "School Inventory",
         description: "Manage assets and stocks",
         permissions: ["view", "manage"]
     },
@@ -209,6 +327,24 @@ export const MODULES: ModuleDefinition[] = [
         description: "Routes, vehicles and tracking",
         permissions: ["view", "manage", "create", "edit", "delete"],
         subModules: [
+            {
+                key: "transport.routes",
+                label: "Routes",
+                description: "Bus routes and stops",
+                permissions: ["view", "manage", "create", "edit"]
+            },
+            {
+                key: "transport.vehicles",
+                label: "Vehicles",
+                description: "Vehicle directory and tracking",
+                permissions: ["view", "manage", "create", "edit"]
+            },
+            {
+                key: "transport.allocations",
+                label: "Allocations",
+                description: "Student passenger lists",
+                permissions: ["view", "manage"]
+            },
             {
                 key: "transport.expenses",
                 label: "Expense Management",

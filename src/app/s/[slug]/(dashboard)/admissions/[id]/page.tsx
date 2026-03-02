@@ -495,6 +495,10 @@ export default function AdmissionDetailPage() {
                         <SectionTitle icon={User} title="Student Information" />
                         <div className="grid md:grid-cols-2 gap-8 mt-8">
                             <InputField label="Full Legal Name" value={formData.studentName} readOnly={isReadOnly} onChange={(v: any) => setFormData({ ...formData, studentName: v })} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <InputField label="Inquiry #" value={formData.inquiryNumber} readOnly={true} />
+                                <InputField label="Admission #" value={formData.admissionNumber} readOnly={isReadOnly} onChange={(v: any) => setFormData({ ...formData, admissionNumber: v })} />
+                            </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Gender</label>
                                 <div className="flex p-1 bg-zinc-50 rounded-2xl">

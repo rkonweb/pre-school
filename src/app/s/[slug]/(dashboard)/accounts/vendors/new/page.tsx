@@ -4,6 +4,7 @@ import { useState, use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Building2, User, Mail, Phone, MapPin, FileText, Landmark, Globe, Tag, CreditCard, Building } from 'lucide-react';
 import { getSchoolIdBySlug, createAccountVendor } from '@/app/actions/account-actions';
+import { PhoneInput } from '@/components/ui/PhoneInput';
 import { toast } from 'sonner';
 
 const VENDOR_CATEGORIES = ['Utilities', 'Stationery & Supplies', 'Catering & Food', 'Maintenance', 'IT & Technology', 'Transport', 'Security', 'Furniture & Equipment', 'Printing & Media', 'Consultancy', 'Other'];
@@ -107,7 +108,7 @@ export default function NewVendorPage({ params }: { params: Promise<{ slug: stri
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8" suppressHydrationWarning>
 
                 {/* Main Form Fields (Left Column) */}
                 <div className="lg:col-span-2 space-y-8">
@@ -200,16 +201,11 @@ export default function NewVendorPage({ params }: { params: Promise<{ slug: stri
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-2">Phone Number</label>
-                                    <div className="relative">
-                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                        <input
-                                            type="tel" value={form.phone} onChange={e => setField('phone', e.target.value)}
-                                            placeholder="+91 98765 43210"
-                                            data-lpignore="true" suppressHydrationWarning
-                                            className="w-full bg-zinc-50/50 border border-zinc-200 rounded-xl pl-11 pr-4 py-3 text-sm font-bold text-zinc-900 placeholder:font-medium placeholder:text-zinc-400 outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all"
-                                        />
-                                    </div>
+                                    <PhoneInput
+                                        label="Phone Number"
+                                        value={form.phone}
+                                        onChange={val => setField('phone', val)}
+                                    />
                                 </div>
                             </div>
                             <div>

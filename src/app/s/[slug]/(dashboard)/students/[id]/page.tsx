@@ -199,16 +199,6 @@ export default function ProfileTab() {
 
     return (
         <Fragment>
-            <div className="flex justify-end mb-8">
-                <StandardActionButton
-                    onClick={() => setMode(mode === "view" ? "edit" : "view")}
-                    variant={mode === "view" ? "primary" : "ghost"}
-                    icon={mode === "view" ? Edit3 : X}
-                    label={mode === "view" ? "Edit Profile" : "Cancel"}
-                    permission={{ module: 'students.profiles', action: 'edit' }}
-                />
-            </div>
-
             <form id="student-profile-form" onSubmit={handleUpdate} className="grid lg:grid-cols-12 gap-10 pb-28">
                 <div className="lg:col-span-8 space-y-10">
                     {/* Identity Section */}
@@ -306,6 +296,7 @@ export default function ProfileTab() {
                             </div>
                             <div className="grid gap-6">
                                 <InputField label="Admission #" value={student.admissionNumber} readOnly={isReadOnly} light onChange={(v: any) => setStudent({ ...student, admissionNumber: v })} />
+                                <InputField label="Enrollment #" value={student.enrollmentNumber} readOnly={isReadOnly} light onChange={(v: any) => setStudent({ ...student, enrollmentNumber: v })} />
                                 <InputField label="Roll #" value={student.rollNumber} readOnly={isReadOnly} light onChange={(v: any) => setStudent({ ...student, rollNumber: v })} />
                             </div>
                         </div>
@@ -357,28 +348,39 @@ export default function ProfileTab() {
             </form>
 
             {/* Fixed bottom action bar */}
-            {!isReadOnly && (
-                <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200 bg-white/90 px-8 py-4 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90 shadow-2xl">
-                    <div className="flex items-center justify-end gap-4 max-w-screen-xl mx-auto">
-                        <button
-                            type="button"
-                            onClick={() => setMode("view")}
-                            className="rounded-2xl border border-zinc-200 px-8 py-3 text-sm font-bold text-zinc-600 hover:bg-zinc-50 transition-all"
-                        >
-                            Cancel
-                        </button>
+            <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200 bg-white/90 px-8 py-4 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+                <div className="flex items-center justify-end gap-4 max-w-screen-xl mx-auto">
+                    {isReadOnly ? (
                         <StandardActionButton
-                            type="submit"
-                            form="student-profile-form"
-                            loading={isSaving}
+                            onClick={() => setMode("edit")}
                             variant="primary"
-                            icon={CheckCircle2}
-                            label="Save Profile changes"
+                            icon={Edit3}
+                            label="Edit Profile"
                             className="h-12 px-10 rounded-2xl"
+                            permission={{ module: 'students.profiles', action: 'edit' }}
                         />
-                    </div>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => setMode("view")}
+                                className="rounded-2xl border border-zinc-200 px-8 py-3 text-sm font-bold text-zinc-600 hover:bg-zinc-50 transition-all shadow-sm"
+                            >
+                                Cancel
+                            </button>
+                            <StandardActionButton
+                                type="submit"
+                                form="student-profile-form"
+                                loading={isSaving}
+                                variant="primary"
+                                icon={CheckCircle2}
+                                label="Save Profile changes"
+                                className="h-12 px-10 rounded-2xl shadow-sm"
+                            />
+                        </>
+                    )}
                 </div>
-            )}
+            </div>
 
             {isConnectSiblingOpen && (
                 <ConnectSiblingDialog

@@ -2069,3 +2069,2952 @@ VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmlu
 Development Mode: Skipped subscription redirect.
  GET /s/bodhi-board/admissions 200 in 1601ms
  GET /icon-192.png 404 in 577ms
+[SMS SERVICE] OTP for +912323232323 is 123456
+ POST /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fadmissions 200 in 1059ms
+ ○ Compiling /school-login/verify-otp ...
+ ✓ Compiled /school-login/verify-otp in 5.2s (3627 modules)
+ GET /school-login/verify-otp?callbackUrl=%2Fs%2Fbodhi-board%2Fadmissions 200 in 5558ms
+ ○ Compiling /[slug] ...
+ ✓ Compiled /[slug] in 1043ms (3658 modules)
+ GET /icon-192.png 404 in 3064ms
+ POST /school-login/verify-otp?callbackUrl=%2Fs%2Fbodhi-board%2Fadmissions 200 in 505ms
+[AUDIT] [LOGIN_SUCCESS] User logged in {
+  userId: 'cmluomivo00023ik4y7zolqmk',
+  schoolId: 'cmluomiqb00003ik4nf6rigri',
+  role: 'ADMIN',
+  timestamp: '2026-02-27T19:12:39.769Z'
+}
+ POST /school-login/verify-otp?callbackUrl=%2Fs%2Fbodhi-board%2Fadmissions 200 in 567ms
+ GET /icon-192.png 404 in 395ms
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/admissions 200 in 1883ms
+ GET /icon-192.png 404 in 965ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 2120ms
+ POST /s/bodhi-board/admissions 200 in 689ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 1730ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 1540ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 964ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 1606ms
+ POST /s/bodhi-board/admissions 200 in 646ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 1653ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 1517ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 952ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 2253ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 2249ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 2199ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 2235ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 2243ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 2192ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 2189ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+Development Mode: Skipped subscription redirect.
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 3461ms
+ POST /s/bodhi-board/admissions 200 in 2059ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 1581ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 732ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+Development Mode: Skipped subscription redirect.
+ POST /s/bodhi-board/admissions 200 in 1009ms
+ POST /s/bodhi-board/admissions 200 in 1998ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 1082ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions 200 in 952ms
+ GET /icon-192.png 404 in 420ms
+ ○ Compiling /s/[slug]/admissions/inquiry ...
+ ✓ Compiled /s/[slug]/admissions/inquiry in 10.3s (5113 modules)
+ GET /s/bodhi-board/admissions/inquiry 200 in 11612ms
+ GET /s/bodhi-board/admissions/inquiry 200 in 66ms
+ GET /s/bodhi-board/admissions/inquiry 200 in 82ms
+ GET /icon-192.png 404 in 491ms
+ POST /s/bodhi-board/admissions/inquiry 200 in 2178ms
+ POST /s/bodhi-board/admissions/inquiry 200 in 706ms
+ POST /s/bodhi-board/admissions/inquiry 200 in 880ms
+ POST /s/bodhi-board/admissions/inquiry 200 in 741ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.2s (3674 modules)
+ GET /s/bodhi-board?callbackUrl=%2Fs%2Fy%2Fadmissions%2Finquiry%2Fcmm59ovvv0003w6ooj7k3p4vv 404 in 2292ms
+ GET /s/bodhi-board?callbackUrl=%2Fs%2Fy%2Fadmissions%2Finquiry%2Fcmm59ovvv0003w6ooj7k3p4vv 404 in 145ms
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/admissions/inquiry 200 in 2122ms
+ GET /icon-192.png 404 in 554ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/admissions/inquiry 200 in 1569ms
+ POST /s/bodhi-board/admissions/inquiry 200 in 949ms
+ POST /s/bodhi-board/admissions/inquiry 200 in 762ms
+ ○ Compiling /s/[slug]/store ...
+ ✓ Compiled /s/[slug]/store in 5.4s (5072 modules)
+ GET /s/bodhi-board/store 200 in 6419ms
+Error fetching sales summary: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreSalesSummaryAction (src/app/actions/store-actions.ts:771:57)
+  769 |         if (academicYearId) where.academicYearId = academicYearId;
+  770 |
+> 771 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  772 |             where,
+  773 |             include: { orderItems: { include: { item: { select: { type: true } } } } },
+  774 |         });
+ ○ Compiling /[slug] ...
+ POST /s/bodhi-board/store 200 in 1299ms
+ ✓ Compiled /[slug] in 889ms (3661 modules)
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store 200 in 2033ms
+ GET /icon-192.png 404 in 3446ms
+Error fetching inventory: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreInventoryAction (src/app/actions/store-actions.ts:285:66)
+  283 |     try {
+  284 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 285 |         const inventories = await (prisma as any).storeInventory.findMany({
+      |                                                                  ^
+  286 |             where: { schoolId },
+  287 |             include: { item: true },
+  288 |             orderBy: { updatedAt: "desc" },
+ POST /s/bodhi-board/store 200 in 519ms
+Error fetching sales summary: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreSalesSummaryAction (src/app/actions/store-actions.ts:771:57)
+  769 |         if (academicYearId) where.academicYearId = academicYearId;
+  770 |
+> 771 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  772 |             where,
+  773 |             include: { orderItems: { include: { item: { select: { type: true } } } } },
+  774 |         });
+ POST /s/bodhi-board/store 200 in 486ms
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store 200 in 489ms
+Error fetching inventory: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreInventoryAction (src/app/actions/store-actions.ts:285:66)
+  283 |     try {
+  284 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 285 |         const inventories = await (prisma as any).storeInventory.findMany({
+      |                                                                  ^
+  286 |             where: { schoolId },
+  287 |             include: { item: true },
+  288 |             orderBy: { updatedAt: "desc" },
+ POST /s/bodhi-board/store 200 in 531ms
+ POST /s/bodhi-board/admissions 200 in 234ms
+ ○ Compiling /school-login ...
+ ✓ Compiled /school-login in 4.3s (3650 modules)
+ GET /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fadmissions 200 in 4485ms
+ ○ Compiling /[slug] ...
+ ✓ Compiled /[slug] in 1123ms (3681 modules)
+ GET /icon-192.png 404 in 2484ms
+ ○ Compiling /s/[slug]/store/packages ...
+ ✓ Compiled /s/[slug]/store/packages in 3.4s (3985 modules)
+ GET /s/bodhi-board/store/packages 200 in 4196ms
+Error fetching packages: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStorePackagesAction (src/app/actions/store-actions.ts:335:61)
+  333 |     try {
+  334 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 335 |         const packages = await (prisma as any).storePackage.findMany({
+      |                                                             ^
+  336 |             where: { schoolId, isActive: true, ...(academicYearId && { academicYearId }) },
+  337 |             include: {
+  338 |                 items: { include: { item: { include: { inventories: true } } } },
+ POST /s/bodhi-board/store/packages 200 in 822ms
+Error fetching packages: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStorePackagesAction (src/app/actions/store-actions.ts:335:61)
+  333 |     try {
+  334 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 335 |         const packages = await (prisma as any).storePackage.findMany({
+      |                                                             ^
+  336 |             where: { schoolId, isActive: true, ...(academicYearId && { academicYearId }) },
+  337 |             include: {
+  338 |                 items: { include: { item: { include: { inventories: true } } } },
+ POST /s/bodhi-board/store/packages 200 in 408ms
+ GET /icon-192.png 404 in 1338ms
+ ○ Compiling /s/[slug]/store/inventory ...
+ ⚠ ./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+ GET /s/bodhi-board/store/inventory 200 in 2102ms
+ GET /icon-192.png 404 in 343ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/store/inventory 200 in 1171ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/store/inventory 200 in 910ms
+Error fetching store catalog: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreCatalogAction (src/app/actions/store-actions.ts:28:55)
+  26 |     try {
+  27 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 28 |         const items = await (prisma as any).storeItem.findMany({
+     |                                                       ^
+  29 |             where: { schoolId, isActive: true, ...(type && { type }) },
+  30 |             include: { inventories: true },
+  31 |             orderBy: [{ type: "asc" }, { name: "asc" }],
+ POST /s/bodhi-board/store/inventory 200 in 665ms
+Error fetching store catalog: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreCatalogAction (src/app/actions/store-actions.ts:28:55)
+  26 |     try {
+  27 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 28 |         const items = await (prisma as any).storeItem.findMany({
+     |                                                       ^
+  29 |             where: { schoolId, isActive: true, ...(type && { type }) },
+  30 |             include: { inventories: true },
+  31 |             orderBy: [{ type: "asc" }, { name: "asc" }],
+ POST /s/bodhi-board/store/inventory 200 in 535ms
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store/inventory 200 in 1191ms
+ GET /icon-192.png 404 in 429ms
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+ ⚠ ./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+ ⚠ ./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+ ⚠ ./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+ ⚠ ./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+ GET /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fadmissions 200 in 2418ms
+ GET /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fadmissions 200 in 146ms
+ ⚠ ./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+ ⚠ ./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Attempted import error: 'updateStoreInventoryAction' is not exported from '@/app/actions/store-actions' (imported as 'updateStoreInventoryAction').
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/store/inventory/page.tsx
+Development Mode: Skipped subscription redirect.
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store/inventory 200 in 6186ms
+ GET /s/bodhi-board/store/inventory 200 in 8484ms
+ GET /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fadmissions 200 in 343ms
+ GET /icon-192.png 404 in 5742ms
+ GET /icon-192.png 404 in 384ms
+ ⚠ Server is approaching the used memory threshold, restarting...
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.6:3000
+   - Environments: .env
+   - Experiments (use with caution):
+     · serverActions
+
+ ✓ Starting...
+ ✓ Ready in 1700ms
+ ✓ Compiled /middleware in 186ms (226 modules)
+ ○ Compiling /school-login ...
+
+warn - The class `duration-[2s]` is ambiguous and matches multiple utilities.
+warn - If this is content and not a class, replace it with `duration-&lsqb;2s&rsqb;` to silence this warning.
+ ✓ Compiled /school-login in 4.6s (1861 modules)
+ ✓ Compiled in 994ms (674 modules)
+ GET /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 5646ms
+[SMS SERVICE] OTP for +912323232323 is 123456
+ POST /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 3591ms
+ ○ Compiling /school-login/verify-otp ...
+ ✓ Compiled /school-login/verify-otp in 9.9s (1862 modules)
+ GET /school-login/verify-otp?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 22344ms
+[SMS SERVICE] OTP for +912323232323 is 123456
+ GET /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 2742ms
+ POST /school-login/verify-otp?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 10036ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /[slug] in 5.8s (1213 modules)
+ ✓ Compiled in 38.3s (679 modules)
+ GET /favicon.ico 200 in 64246ms
+ GET /icon-192.png 200 in 68903ms
+ GET /school-login/verify-otp?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 71437ms
+ GET /school-login 200 in 73361ms
+ POST /school-login 200 in 4424ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.3s (2006 modules)
+ GET / 200 in 2763ms
+ GET /school-login 200 in 127ms
+ GET /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 84ms
+[SMS SERVICE] OTP for +912323232323 is 123456
+ POST /school-login?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 945ms
+ ✓ Compiled /school-login/verify-otp in 184ms (1280 modules)
+ GET /school-login/verify-otp?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 291ms
+ ✓ Compiled /[slug] in 254ms (1307 modules)
+ GET /icon-192.png 404 in 747ms
+ POST /school-login/verify-otp?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 475ms
+[AUDIT] [LOGIN_SUCCESS] User logged in {
+  userId: 'cmluomivo00023ik4y7zolqmk',
+  schoolId: 'cmluomiqb00003ik4nf6rigri',
+  role: 'ADMIN',
+  timestamp: '2026-02-28T02:56:15.924Z'
+}
+ POST /school-login/verify-otp?callbackUrl=%2Fs%2Fbodhi-board%2Fstore 200 in 553ms
+ GET /icon-192.png 404 in 323ms
+ ○ Compiling /s/[slug]/store ...
+ ✓ Compiled /s/[slug]/store in 1627ms (2773 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 3748ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ GET /icon-192.png 404 in 1152ms
+ POST /s/bodhi-board/store 200 in 1519ms
+Error fetching sales summary: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreSalesSummaryAction (src/app/actions/store-actions.ts:771:57)
+  769 |         if (academicYearId) where.academicYearId = academicYearId;
+  770 |
+> 771 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  772 |             where,
+  773 |             include: { orderItems: { include: { item: { select: { type: true } } } } },
+  774 |         });
+ POST /s/bodhi-board/store 200 in 537ms
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store 200 in 656ms
+Error fetching inventory: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreInventoryAction (src/app/actions/store-actions.ts:285:66)
+  283 |     try {
+  284 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 285 |         const inventories = await (prisma as any).storeInventory.findMany({
+      |                                                                  ^
+  286 |             where: { schoolId },
+  287 |             include: { item: true },
+  288 |             orderBy: { updatedAt: "desc" },
+ POST /s/bodhi-board/store 200 in 471ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/store 200 in 1092ms
+Error fetching sales summary: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreSalesSummaryAction (src/app/actions/store-actions.ts:771:57)
+  769 |         if (academicYearId) where.academicYearId = academicYearId;
+  770 |
+> 771 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  772 |             where,
+  773 |             include: { orderItems: { include: { item: { select: { type: true } } } } },
+  774 |         });
+ POST /s/bodhi-board/store 200 in 425ms
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store 200 in 414ms
+Error fetching inventory: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreInventoryAction (src/app/actions/store-actions.ts:285:66)
+  283 |     try {
+  284 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 285 |         const inventories = await (prisma as any).storeInventory.findMany({
+      |                                                                  ^
+  286 |             where: { schoolId },
+  287 |             include: { item: true },
+  288 |             orderBy: { updatedAt: "desc" },
+ POST /s/bodhi-board/store 200 in 417ms
+ ○ Compiling /s/[slug]/store/vendors ...
+ ✓ Compiled /s/[slug]/store/vendors in 949ms (2790 modules)
+Error: Route "/s/[slug]/store/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/store/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+ GET /s/bodhi-board/store/vendors 200 in 2465ms
+ GET /icon-192.png 404 in 347ms
+Error: Route "/s/[slug]/store/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/store/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+Development Mode: Skipped subscription redirect.
+ POST /s/bodhi-board/store/vendors 200 in 2131ms
+ GET /icon-192.png 404 in 300ms
+ ○ Compiling /s/[slug]/store/vendors/[id] ...
+ ✓ Compiled /s/[slug]/store/vendors/[id] in 1716ms (2804 modules)
+Error: Route "/s/[slug]/store/vendors/[id]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorProfilePage (src/app/s/[slug]/(dashboard)/store/vendors/[id]/page.tsx:6:13)
+  4 |
+  5 | export default async function VendorProfilePage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |             ^
+  7 |
+  8 |     const vendorRes = await getVendorAction(slug, id);
+  9 |     if (!vendorRes.success || !vendorRes.data) {
+Error: Route "/s/[slug]/store/vendors/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorProfilePage (src/app/s/[slug]/(dashboard)/store/vendors/[id]/page.tsx:6:19)
+  4 |
+  5 | export default async function VendorProfilePage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |                   ^
+  7 |
+  8 |     const vendorRes = await getVendorAction(slug, id);
+  9 |     if (!vendorRes.success || !vendorRes.data) {
+ GET /s/bodhi-board/store/vendors/cmm5qgpyz0003rdyhe7i3fd0j 200 in 3415ms
+ GET /icon-192.png 404 in 343ms
+Error: Route "/s/[slug]/store/vendors/[id]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorProfilePage (src/app/s/[slug]/(dashboard)/store/vendors/[id]/page.tsx:6:13)
+  4 |
+  5 | export default async function VendorProfilePage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |             ^
+  7 |
+  8 |     const vendorRes = await getVendorAction(slug, id);
+  9 |     if (!vendorRes.success || !vendorRes.data) {
+Error: Route "/s/[slug]/store/vendors/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorProfilePage (src/app/s/[slug]/(dashboard)/store/vendors/[id]/page.tsx:6:19)
+  4 |
+  5 | export default async function VendorProfilePage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |                   ^
+  7 |
+  8 |     const vendorRes = await getVendorAction(slug, id);
+  9 |     if (!vendorRes.success || !vendorRes.data) {
+Development Mode: Skipped subscription redirect.
+ POST /s/bodhi-board/store/vendors/cmm5qgpyz0003rdyhe7i3fd0j 200 in 4146ms
+ GET /icon-192.png 404 in 479ms
+ ○ Compiling /s/[slug]/store/purchase-orders/new ...
+ ✓ Compiled /s/[slug]/store/purchase-orders/new in 1939ms (2806 modules)
+Error: Route "/s/[slug]/store/purchase-orders/new" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at CreatePOPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/new/page.tsx:5:13)
+  3 |
+  4 | export default async function CreatePOPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all active vendors
+  8 |     const vendorRes = await getVendorsAction(slug);
+ GET /s/bodhi-board/store/purchase-orders/new?vendorId=cmm5qgpyz0003rdyhe7i3fd0j 200 in 6405ms
+ GET /icon-192.png 404 in 438ms
+Error: Route "/s/[slug]/store/purchase-orders/new" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at CreatePOPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/new/page.tsx:5:13)
+  3 |
+  4 | export default async function CreatePOPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all active vendors
+  8 |     const vendorRes = await getVendorsAction(slug);
+ ○ Compiling /s/[slug]/store/purchase-orders/[id] ...
+Development Mode: Skipped subscription redirect.
+ ✓ Compiled /s/[slug]/store/purchase-orders/[id] in 1238ms (2750 modules)
+ POST /s/bodhi-board/store/purchase-orders/new?vendorId=cmm5qgpyz0003rdyhe7i3fd0j 200 in 3426ms
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:13)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |             ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:19)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |                   ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+ GET /s/bodhi-board/store/purchase-orders/cmm5qo16a0007rdyhybjmagbe 200 in 2798ms
+ ✓ Compiled /[slug] in 459ms (1945 modules)
+ GET /icon-192.png 404 in 953ms
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:13)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |             ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:19)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |                   ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store/purchase-orders/cmm5qo16a0007rdyhybjmagbe 200 in 1555ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 1194ms (1930 modules)
+ GET /favicon.ico 200 in 1693ms
+ GET /icon-192.png 404 in 2572ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/store/purchase-orders/cmm5qo16a0007rdyhybjmagbe 200 in 3045ms
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:13)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |             ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:19)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |                   ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Development Mode: Skipped subscription redirect.
+ POST /s/bodhi-board/store/purchase-orders/cmm5qo16a0007rdyhybjmagbe 200 in 9069ms
+ GET /icon-192.png 404 in 437ms
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:13)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |             ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:19)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |                   ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Development Mode: Skipped subscription redirect.
+ POST /s/bodhi-board/store/purchase-orders/cmm5qo16a0007rdyhybjmagbe 200 in 4787ms
+ GET /icon-192.png 404 in 831ms
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:13)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |             ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:19)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |                   ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Development Mode: Skipped subscription redirect.
+ POST /s/bodhi-board/store/purchase-orders/cmm5qo16a0007rdyhybjmagbe 200 in 6124ms
+ GET /icon-192.png 404 in 403ms
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:13)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |             ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Error: Route "/s/[slug]/store/purchase-orders/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrderDetailsPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/[id]/page.tsx:6:19)
+  4 |
+  5 | export default async function PurchaseOrderDetailsPage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |                   ^
+  7 |
+  8 |     const poRes = await getPurchaseOrderAction(slug, id);
+  9 |     if (!poRes.success || !poRes.data) {
+Development Mode: Skipped subscription redirect.
+ POST /s/bodhi-board/store/purchase-orders/cmm5qo16a0007rdyhybjmagbe 200 in 8738ms
+ GET /icon-192.png 404 in 395ms
+ ○ Compiling /s/[slug]/store/purchase-orders ...
+ ✓ Compiled /s/[slug]/store/purchase-orders in 1706ms (2726 modules)
+Error: Route "/s/[slug]/store/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+ GET /s/bodhi-board/store/purchase-orders 200 in 3270ms
+ ✓ Compiled /[slug] in 349ms (1920 modules)
+ GET /icon-192.png 404 in 816ms
+ GET /icon-192.png 404 in 665ms
+Error: Route "/s/[slug]/store/purchase-orders/new" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at CreatePOPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/new/page.tsx:5:13)
+  3 |
+  4 | export default async function CreatePOPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all active vendors
+  8 |     const vendorRes = await getVendorsAction(slug);
+ GET /s/bodhi-board/store/purchase-orders/new?vendorId=cmm5qgpyz0003rdyhe7i3fd0j 200 in 522ms
+ GET /icon-192.png 404 in 598ms
+Error: Route "/s/[slug]/store/vendors/[id]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorProfilePage (src/app/s/[slug]/(dashboard)/store/vendors/[id]/page.tsx:6:13)
+  4 |
+  5 | export default async function VendorProfilePage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |             ^
+  7 |
+  8 |     const vendorRes = await getVendorAction(slug, id);
+  9 |     if (!vendorRes.success || !vendorRes.data) {
+Error: Route "/s/[slug]/store/vendors/[id]" used `params.id`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorProfilePage (src/app/s/[slug]/(dashboard)/store/vendors/[id]/page.tsx:6:19)
+  4 |
+  5 | export default async function VendorProfilePage({ params }: { params: { slug: string; id: string } }) {
+> 6 |     const { slug, id } = params;
+    |                   ^
+  7 |
+  8 |     const vendorRes = await getVendorAction(slug, id);
+  9 |     if (!vendorRes.success || !vendorRes.data) {
+ GET /icon-192.png 404 in 302ms
+ GET /s/bodhi-board/store/vendors/cmm5qgpyz0003rdyhe7i3fd0j 200 in 665ms
+Error: Route "/s/[slug]/store/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/store/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+ GET /icon-192.png 404 in 315ms
+ GET /s/bodhi-board/store/vendors 200 in 559ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 3.3s (2727 modules)
+Error: Route "/s/[slug]/store/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/store/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+Development Mode: Skipped subscription redirect.
+ ⨯ ReferenceError: Brain is not defined
+    at Sidebar (src/components/dashboard/Sidebar.tsx:136:87)
+  134 |                 { name: "Health Records", href: `/s/${slug}/students/health`, icon: Activity },
+  135 |                 { name: "Progress Reports", href: `/s/${slug}/students/reports`, icon: FileSpreadsheet },
+> 136 |                 { name: "Development", href: `/s/${slug}/students/development`, icon: Brain },
+      |                                                                                       ^
+  137 |                 { name: "ID Cards", href: `/s/${slug}/students/id-cards`, icon: CreditCard },
+  138 |             ]
+  139 |         }, {
+  digest: '3888841869'
+}
+ GET /s/bodhi-board/store/vendors 500 in 2823ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 755ms (1902 modules)
+ GET /favicon.ico 200 in 895ms
+ GET /favicon.ico 200 in 26ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 2.4s (2742 modules)
+Error: Route "/s/[slug]/store/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/store/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+Development Mode: Skipped subscription redirect.
+ ⨯ ReferenceError: Wallet is not defined
+    at Sidebar (src/components/dashboard/Sidebar.tsx:186:87)
+  184 |                 { name: "Dashboard & AI", href: `/s/${slug}/canteen`, icon: LayoutDashboard },
+  185 |                 { name: "Point of Sale", href: `/s/${slug}/canteen/pos`, icon: CreditCard },
+> 186 |                 { name: "Accounts Ledger", href: `/s/${slug}/canteen/accounts`, icon: Wallet },
+      |                                                                                       ^
+  187 |                 { name: "Menu & Timetable", href: `/s/${slug}/canteen/menu`, icon: CalendarDays },
+  188 |                 { name: "Meal Packages", href: `/s/${slug}/canteen/packages`, icon: Package },
+  189 |                 { name: "Subscriptions", href: `/s/${slug}/canteen/billing`, icon: Banknote }, {
+  digest: '3701292702'
+}
+ GET /s/bodhi-board/store/vendors 500 in 3558ms
+ GET /favicon.ico 200 in 81ms
+ GET /favicon.ico 200 in 28ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 1662ms (2746 modules)
+Error: Route "/s/[slug]/store/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/store/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store/vendors 200 in 2283ms
+ GET /favicon.ico 200 in 47ms
+ ○ Compiling /[slug] ...
+ ✓ Compiled /[slug] in 1676ms (1926 modules)
+ GET /icon-192.png 404 in 3108ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/store/vendors 200 in 3969ms
+ ○ Compiling /s/[slug]/store/orders ...
+ ✓ Compiled /s/[slug]/store/orders in 2.6s (2743 modules)
+ GET /s/bodhi-board/store/orders 200 in 3629ms
+ GET /s/bodhi-board/store/orders 200 in 37ms
+ GET /s/bodhi-board/store/orders 200 in 57ms
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ ○ Compiling /[slug] ...
+ POST /s/bodhi-board/store/orders 200 in 1007ms
+ ✓ Compiled /[slug] in 570ms (1920 modules)
+ GET /icon-192.png 404 in 1459ms
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store/orders 200 in 1222ms
+ ✓ Compiled in 3s (2736 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store/orders 200 in 1915ms
+ ✓ Compiled /[slug] in 403ms (1913 modules)
+ GET /icon-192.png 404 in 870ms
+ ○ Compiling /s/[slug]/store/vendors ...
+ ✓ Compiled /s/[slug]/store/vendors in 900ms (1897 modules)
+Error: Route "/s/[slug]/store/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/store/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+ GET /s/bodhi-board/store/vendors 200 in 1616ms
+ ✓ Compiled /[slug] in 367ms (1920 modules)
+ GET /icon-192.png 404 in 959ms
+Error: Route "/s/[slug]/store/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/store/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+ GET /s/bodhi-board/store/purchase-orders 200 in 694ms
+ GET /icon-192.png 404 in 299ms
+ ○ Compiling /s/[slug]/store/quotations ...
+ ✓ Compiled /s/[slug]/store/quotations in 1791ms (2762 modules)
+Error: Route "/s/[slug]/store/quotations" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at QuotationsPage (src/app/s/[slug]/(dashboard)/store/quotations/page.tsx:5:13)
+  3 |
+  4 | export default async function QuotationsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all quotes across all vendors
+  8 |     const quoteRes = await getQuotationsAction(slug);
+ GET /s/bodhi-board/store/quotations 200 in 2984ms
+ GET /icon-192.png 404 in 342ms
+ ○ Compiling /s/[slug]/store ...
+ ✓ Compiled /s/[slug]/store in 1090ms (1918 modules)
+ GET /s/bodhi-board/store 200 in 1321ms
+Error fetching sales summary: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreSalesSummaryAction (src/app/actions/store-actions.ts:771:57)
+  769 |         if (academicYearId) where.academicYearId = academicYearId;
+  770 |
+> 771 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  772 |             where,
+  773 |             include: { orderItems: { include: { item: { select: { type: true } } } } },
+  774 |         });
+ POST /s/bodhi-board/store 200 in 1145ms
+ GET /icon-192.png 404 in 1294ms
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store 200 in 413ms
+Error fetching inventory: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreInventoryAction (src/app/actions/store-actions.ts:285:66)
+  283 |     try {
+  284 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 285 |         const inventories = await (prisma as any).storeInventory.findMany({
+      |                                                                  ^
+  286 |             where: { schoolId },
+  287 |             include: { item: true },
+  288 |             orderBy: { updatedAt: "desc" },
+ POST /s/bodhi-board/store 200 in 400ms
+Error: Route "/s/[slug]/store/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/store/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+Error fetching sales summary: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreSalesSummaryAction (src/app/actions/store-actions.ts:771:57)
+  769 |         if (academicYearId) where.academicYearId = academicYearId;
+  770 |
+> 771 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  772 |             where,
+  773 |             include: { orderItems: { include: { item: { select: { type: true } } } } },
+  774 |         });
+ POST /s/bodhi-board/store 200 in 434ms
+ POST /s/bodhi-board/store/vendors 200 in 288ms
+ POST /s/bodhi-board/store/vendors 200 in 66ms
+Error: Route "/s/[slug]/store/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/store/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+ GET /s/bodhi-board/store/vendors 200 in 600ms
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store/vendors 200 in 1547ms
+ GET /icon-192.png 404 in 330ms
+ GET /s/bodhi-board/store 200 in 62ms
+Error fetching sales summary: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreSalesSummaryAction (src/app/actions/store-actions.ts:771:57)
+  769 |         if (academicYearId) where.academicYearId = academicYearId;
+  770 |
+> 771 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  772 |             where,
+  773 |             include: { orderItems: { include: { item: { select: { type: true } } } } },
+  774 |         });
+ POST /s/bodhi-board/store 200 in 817ms
+ GET /icon-192.png 404 in 1088ms
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store 200 in 598ms
+Error fetching inventory: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreInventoryAction (src/app/actions/store-actions.ts:285:66)
+  283 |     try {
+  284 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 285 |         const inventories = await (prisma as any).storeInventory.findMany({
+      |                                                                  ^
+  286 |             where: { schoolId },
+  287 |             include: { item: true },
+  288 |             orderBy: { updatedAt: "desc" },
+ POST /s/bodhi-board/store 200 in 426ms
+Error fetching sales summary: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreSalesSummaryAction (src/app/actions/store-actions.ts:771:57)
+  769 |         if (academicYearId) where.academicYearId = academicYearId;
+  770 |
+> 771 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  772 |             where,
+  773 |             include: { orderItems: { include: { item: { select: { type: true } } } } },
+  774 |         });
+ POST /s/bodhi-board/store 200 in 402ms
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store 200 in 396ms
+Error fetching inventory: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreInventoryAction (src/app/actions/store-actions.ts:285:66)
+  283 |     try {
+  284 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 285 |         const inventories = await (prisma as any).storeInventory.findMany({
+      |                                                                  ^
+  286 |             where: { schoolId },
+  287 |             include: { item: true },
+  288 |             orderBy: { updatedAt: "desc" },
+ POST /s/bodhi-board/store 200 in 402ms
+ ✓ Compiled in 1430ms (849 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 1538ms
+ GET /icon-192.png 404 in 321ms
+ ✓ Compiled in 2.1s (2706 modules)
+Development Mode: Skipped subscription redirect.
+Development Mode: Skipped subscription redirect.
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 3853ms
+ GET /s/bodhi-board/store 200 in 1946ms
+ GET /s/bodhi-board/store 200 in 1996ms
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 2299ms
+Development Mode: Skipped subscription redirect.
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 2478ms
+ GET /s/bodhi-board/store 200 in 2792ms
+Development Mode: Skipped subscription redirect.
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 1303ms
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 1242ms
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 1587ms
+ GET /s/bodhi-board/store 200 in 1201ms
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 1153ms
+Development Mode: Skipped subscription redirect.
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 1135ms
+ GET /s/bodhi-board/store 200 in 1609ms
+ GET /icon-192.png 404 in 583ms
+ ✓ Compiled in 1046ms (825 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 1522ms
+ GET /icon-192.png 404 in 392ms
+ ✓ Compiled in 747ms (825 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 1707ms
+ GET /icon-192.png 404 in 692ms
+ ✓ Compiled in 714ms (825 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 1803ms
+ GET /icon-192.png 404 in 365ms
+ ✓ Compiled in 2.2s (2706 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/store 200 in 2178ms
+ GET /icon-192.png 404 in 534ms
+ ○ Compiling /s/[slug]/store/packages ...
+ ✓ Compiled /s/[slug]/store/packages in 1834ms (2707 modules)
+ GET /s/bodhi-board/store/packages 200 in 2654ms
+Error fetching packages: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStorePackagesAction (src/app/actions/store-actions.ts:335:61)
+  333 |     try {
+  334 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 335 |         const packages = await (prisma as any).storePackage.findMany({
+      |                                                             ^
+  336 |             where: { schoolId, isActive: true, ...(academicYearId && { academicYearId }) },
+  337 |             include: {
+  338 |                 items: { include: { item: { include: { inventories: true } } } },
+ POST /s/bodhi-board/store/packages 200 in 1184ms
+ GET /icon-192.png 404 in 583ms
+Error fetching packages: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStorePackagesAction (src/app/actions/store-actions.ts:335:61)
+  333 |     try {
+  334 |         const schoolId = await getSchoolIdFromSlug(slug);
+> 335 |         const packages = await (prisma as any).storePackage.findMany({
+      |                                                             ^
+  336 |             where: { schoolId, isActive: true, ...(academicYearId && { academicYearId }) },
+  337 |             include: {
+  338 |                 items: { include: { item: { include: { inventories: true } } } },
+ POST /s/bodhi-board/store/packages 200 in 445ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/store/packages 200 in 1002ms
+VALIDATE SCHOOL: TargetSlug=bodhi-board, UserSchoolSlug=bodhi-board, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/bodhi-board/store/packages 200 in 988ms
+ ○ Compiling /s/[slug]/vendor/vendors ...
+ ✓ Compiled /s/[slug]/vendor/vendors in 2s (2723 modules)
+Error: Route "/s/[slug]/vendor/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/vendor/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+Error: Route "/s/[slug]/vendor/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/vendor/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+ GET /icon-192.png 404 in 391ms
+ GET /s/bodhi-board/vendor/vendors 200 in 3355ms
+ GET /s/bodhi-board/vendor/vendors 200 in 683ms
+ ✓ Compiled in 3.1s (2730 modules)
+Error: Route "/s/[slug]/vendor/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/vendor/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+ ○ Compiling /s/[slug]/vendor/purchase-orders ...
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/vendor/vendors 200 in 3307ms
+ ✓ Compiled /s/[slug]/vendor/purchase-orders in 3.6s (2728 modules)
+Error: Route "/s/[slug]/vendor/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+Error: Route "/s/[slug]/vendor/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+ GET /s/bodhi-board/vendor/purchase-orders 200 in 5448ms
+Development Mode: Skipped subscription redirect.
+ GET /icon-192.png 404 in 489ms
+ GET /s/bodhi-board/vendor/purchase-orders 200 in 1776ms
+ ○ Compiling /s/[slug]/store/orders ...
+ ✓ Compiled /s/[slug]/store/orders in 2.3s (1910 modules)
+ GET /s/bodhi-board/store/orders 200 in 3035ms
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store/orders 200 in 1582ms
+ ✓ Compiled in 2.4s (1910 modules)
+Error fetching orders: TypeError: Cannot read properties of undefined (reading 'findMany')
+    at getStoreOrdersAction (src/app/actions/store-actions.ts:558:57)
+  556 |         if (filters?.academicYearId) where.academicYearId = filters.academicYearId;
+  557 |
+> 558 |         const orders = await (prisma as any).storeOrder.findMany({
+      |                                                         ^
+  559 |             where,
+  560 |             include: {
+  561 |                 student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, grade: true } },
+ POST /s/bodhi-board/store/orders 200 in 3348ms
+ GET /icon-192.png 404 in 4543ms
+Error: Route "/s/[slug]/vendor/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/vendor/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+ GET /s/bodhi-board/vendor/vendors 200 in 733ms
+ GET /icon-192.png 404 in 475ms
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/store/orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js:2:15761)
+    at Object.<anonymous> (.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js:2:15901) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 4.9s (3059 modules)
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 6727ms
+Error: Route "/s/[slug]/vendor/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+Error: Route "/s/[slug]/vendor/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+Error: Route "/s/[slug]/vendor/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+ ⨯ Failed to generate static paths for /s/[slug]/vendor/purchase-orders:
+[Error: Cannot find module './vendor-chunks/@vercel.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Failed to generate static paths for /s/[slug]/vendor/purchase-orders:
+[Error: Cannot find module './vendor-chunks/@vercel.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Failed to generate static paths for /s/[slug]/vendor/purchase-orders:
+[Error: Cannot find module './vendor-chunks/@vercel.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 200 in 1263ms
+Development Mode: Skipped subscription redirect.
+Development Mode: Skipped subscription redirect.
+ ○ Compiling /[slug] ...
+ ✓ Compiled /[slug] in 671ms (2105 modules)
+ ⨯ Failed to generate static paths for /[slug]:
+[Error: Cannot find module './vendor-chunks/motion-dom.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/(marketing)/[slug]/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 200 in 2242ms
+ GET /s/bodhi-board/vendor/purchase-orders 200 in 2313ms
+ GET /icon-192.png 404 in 1381ms
+ ○ Compiling /s/[slug]/vendor/quotations ...
+ ✓ Compiled /s/[slug]/vendor/quotations in 6.6s (3092 modules)
+ ⨯ [Error: Cannot find module './vendor-chunks/@vercel.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 5857ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@vercel.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 483ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@vercel.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 553ms
+ ✓ Compiled in 833ms (994 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ [Error: Cannot find module './vendor-chunks/@vercel.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 580ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 826ms (2129 modules)
+ GET /favicon.ico 200 in 976ms
+ ✓ Compiled in 639ms (2129 modules)
+ ✓ Compiled in 1253ms (2129 modules)
+ ⨯ [Error: Cannot find module './vendor-chunks/@opentelemetry.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 905ms
+Error: Route "/s/[slug]/vendor/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '379817392'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1003060954'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1003060954'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1003060954'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '379817392'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '379817392'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '379817392'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '379817392'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '496268630'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 5263ms
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 91ms
+Development Mode: Skipped subscription redirect.
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '2171862246'
+}
+Error: Route "/s/[slug]/vendor/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '2973755884'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '2973755884'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '2973755884'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '496268630'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 2680ms
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 43ms
+Development Mode: Skipped subscription redirect.
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '2171862246'
+}
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 84ms
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 43ms
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/s/[slug]/(dashboard)/store/page.js:2:15664)
+    at Object.<anonymous> (.next/server/app/s/[slug]/(dashboard)/store/page.js:2:15799) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/store'
+}
+ GET /s/bodhi-board/store 500 in 262ms
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 52ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.5s (2162 modules)
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '2973755884'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '2973755884'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '2973755884'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '496268630'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/(marketing)/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET / 500 in 6505ms
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/(marketing)/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 66ms
+Error: Route "/s/[slug]/vendor/purchase-orders" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PurchaseOrdersPage (src/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.tsx:5:13)
+  3 |
+  4 | export default async function PurchaseOrdersPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |
+  7 |     // Fetch all POs for tracking
+  8 |     const poRes = await getPurchaseOrdersAction(slug);
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '2973755884'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '2973755884'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '2973755884'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '496268630'
+}
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3495908806'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ⨯ Failed to generate static paths for /s/[slug]/vendor/purchase-orders:
+[Error: Cannot find module './vendor-chunks/next.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/(marketing)/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 2360ms
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/(marketing)/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 141ms
+Development Mode: Skipped subscription redirect.
+ ⨯ Error: Could not find the module "/Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '2171862246'
+}
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ○ Compiling /s/[slug]/vendor/quotations ...
+ ✓ Compiled /s/[slug]/vendor/quotations in 5.2s (3076 modules)
+ ✓ Compiled (3083 modules)
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 2506ms
+ GET /s/bodhi-board/vendor/quotations 500 in 2506ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 945ms (2106 modules)
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 1873ms
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 46ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 1864ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 101ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 345ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 87ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 320ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 74ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 315ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 69ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 312ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 72ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 323ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 86ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 355ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 167ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 440ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 99ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 367ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 71ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 328ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 118ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/purchase-orders/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/purchase-orders'
+}
+ ⨯ Error: Cannot find module './5611.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:384)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:432) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /s/bodhi-board/vendor/purchase-orders 500 in 327ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ Error: Cannot find module './5873.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/options.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/swc/index.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/config.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/next.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:43080)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:43133) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 74ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages-manifest.json'
+}
+[Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/quotations/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/quotations'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/routes-manifest.json'
+}
+ GET /s/bodhi-board/vendor/quotations 500 in 353ms
+ GET /s/bodhi-board/vendor/quotations 500 in 40ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/app-paths-manifest.json',
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 48ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.9s (3103 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /s/bodhi-board/vendor/vendors 404 in 5469ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js',
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 54ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3.2s (2165 modules)
+ GET / 200 in 3751ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js',
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 57ms
+ ○ Compiling /school-login ...
+ ✓ Compiled /school-login in 1557ms (2200 modules)
+ GET /school-login 200 in 1962ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js',
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 47ms
+Error: Route "/s/[slug]/vendor/vendors" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at VendorsPage (src/app/s/[slug]/(dashboard)/vendor/vendors/page.tsx:5:13)
+  3 |
+  4 | export default async function VendorsPage({ params }: { params: { slug: string } }) {
+> 5 |     const { slug } = params;
+    |             ^
+  6 |     const vendorsRes = await getVendorsAction(slug);
+  7 |     const vendors = vendorsRes.success ? vendorsRes.data : [];
+  8 |
+ ⨯ Failed to generate static paths for /s/[slug]/vendor/vendors:
+[Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/vendors/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+Development Mode: Skipped subscription redirect.
+ GET /s/bodhi-board/vendor/vendors 200 in 3757ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js',
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 114ms
+ ○ Compiling /[slug] ...
+ ✓ Compiled /[slug] in 789ms (2203 modules)
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/(marketing)/[slug]/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/icon-192.png'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/(marketing)/[slug]/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/icon-192.png'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ GET /icon-192.png 500 in 1268ms
+ GET /icon-192.png 500 in 34ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/vendors/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/vendors'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/vendors/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/vendors'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ GET /s/bodhi-board/vendor/vendors 500 in 623ms
+ GET /s/bodhi-board/vendor/vendors 500 in 33ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js',
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 44ms
+ GET /s/bodhi-board/vendor/vendors 200 in 174ms
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/vendors/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/vendors'
+}
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/vendors/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/vendors'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+ GET /s/bodhi-board/vendor/vendors 500 in 156ms
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/vendors/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/vendors'
+}
+[Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/vendors/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/vendors'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/vendors/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/vendors'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[Error: Cannot find module './vendor-chunks/@swc.js'
+Require stack:
+- /Users/rk/Bodhi-Board/pre-school/.next/server/webpack-runtime.js
+- /Users/rk/Bodhi-Board/pre-school/.next/server/app/s/[slug]/(dashboard)/vendor/vendors/page.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/require.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/load-components.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/build/utils.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/server/dev/static-paths-worker.js
+- /Users/rk/Bodhi-Board/pre-school/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/s/bodhi-board/vendor/vendors'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/pages/_document.js'
+}
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading '/_app')]
+[TypeError: Cannot read properties of undefined (reading '/_app')]
+ GET /s/bodhi-board/vendor/vendors 500 in 299ms
+ GET /s/bodhi-board/vendor/vendors 500 in 24ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/rk/Bodhi-Board/pre-school/.next/server/app/favicon.ico/route.js',
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 42ms

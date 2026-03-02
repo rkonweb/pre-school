@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Filter, ArrowUpDown, Edit3, Trash2, Loader2, ChevronUp, ChevronDown, Phone, Settings2, Check, User as UserIcon } from "lucide-react";
+import { Plus, Filter, ArrowUpDown, Edit3, Trash2, Loader2, ChevronUp, ChevronDown, Phone, Settings2, Check, User as UserIcon, GripVertical } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
@@ -63,7 +64,7 @@ export default function StudentsPage() {
         setVisibleColumns(prev => ({ ...prev, [column]: !prev[column] }));
     };
 
-    const columns = [
+    const [columns, setColumns] = useState([
         { id: 'admissionNumber', label: 'Adm No' },
         { id: 'name', label: 'Student Name' },
         { id: 'class', label: 'Class' },
@@ -72,7 +73,15 @@ export default function StudentsPage() {
         { id: 'motherContact', label: 'Mother Contact' },
         { id: 'joiningDate', label: 'Joined' },
         { id: 'status', label: 'Status' },
-    ];
+    ]);
+
+    const handleDragEnd = (result: DropResult) => {
+        if (!result.destination) return;
+        const newColumns = Array.from(columns);
+        const [reorderedItem] = newColumns.splice(result.source.index, 1);
+        newColumns.splice(result.destination.index, 0, reorderedItem);
+        setColumns(newColumns);
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -89,9 +98,16 @@ export default function StudentsPage() {
         };
 
         if (searchTerm && searchTerm.length >= 2) {
+            // Instantly show loading state the moment they type to mask the 800ms network latency to Neon DB
+            setIsLoading(true);
             const timer = setTimeout(() => { if (!cancelled) run(); }, 400);
             return () => { cancelled = true; clearTimeout(timer); };
+        } else if (searchTerm && searchTerm.length < 2 && searchTerm.length > 0) {
+            // Don't search on just 1 char, but don't reset to all yet
+            return;
         } else {
+            // Empty search or just filters changed
+            setIsLoading(true);
             run();
             return () => { cancelled = true; };
         }
@@ -105,8 +121,6 @@ export default function StudentsPage() {
     };
 
     const loadData = async () => {
-        setIsLoading(true);
-
         try {
             const filters: any = {};
 
@@ -122,7 +136,10 @@ export default function StudentsPage() {
                 }
             }
 
-            if (classFilter !== "all") filters.class = classFilter;
+            if (classFilter !== "all") {
+                // Find the ID relative to the name if needed, but we'll change classFilter to store ID directly
+                filters.classroomId = classFilter;
+            }
             if (genderFilter !== "all") filters.gender = genderFilter;
 
             // Add Academic Year filter
@@ -131,49 +148,19 @@ export default function StudentsPage() {
                 filters.academicYearId = academicYearId;
             }
 
-            let res;
-            if (searchTerm && searchTerm.length >= 2) {
-                res = await searchStudentsElasticAction(slug, searchTerm, filters);
-                if (res.success) {
-                    setStudents(res.students || []);
-                    setPaginationInfo({
-                        page: 1,
-                        limit: 50,
-                        total: res.total,
-                        totalPages: Math.ceil((res.total || 0) / 50)
-                    });
-                } else {
-                    // Elastic failed — silently fall back to DB search
-                    console.warn("Elastic search failed, falling back to DB:", res.error);
-                    res = await getStudentsAction(slug, {
-                        page: 1,
-                        limit: 50,
-                        search: searchTerm,
-                        filters,
-                        sort: sortConfig
-                    });
-                    if (res.success) {
-                        setStudents(res.students || []);
-                        setPaginationInfo(res.pagination);
-                    } else {
-                        toast.error(res.error || "Search failed");
-                    }
-                }
-            } else {
-                res = await getStudentsAction(slug, {
-                    page,
-                    limit: 10,
-                    search: searchTerm,
-                    filters,
-                    sort: sortConfig
-                });
+            const res = await getStudentsAction(slug, {
+                page,
+                limit: 50, // Increase limit for search/normal load since we removed elastic
+                search: searchTerm,
+                filters,
+                sort: sortConfig
+            });
 
-                if (res.success) {
-                    setStudents(res.students || []);
-                    setPaginationInfo(res.pagination);
-                } else {
-                    toast.error(res.error || "Failed to load students");
-                }
+            if (res.success) {
+                setStudents(res.students || []);
+                setPaginationInfo(res.pagination);
+            } else {
+                toast.error(res.error || "Failed to load students");
             }
 
         } catch (error) {
@@ -308,6 +295,7 @@ export default function StudentsPage() {
                                     setStatusFilter(e.target.value);
                                     setPage(1);
                                 }}
+                                title="Filter by Status"
                                 className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                             >
                                 <option value="all">All Status</option>
@@ -324,11 +312,12 @@ export default function StudentsPage() {
                             setClassFilter(e.target.value);
                             setPage(1);
                         }}
+                        title="Filter by Class"
                         className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                     >
                         <option value="all">All Classes</option>
                         {classrooms.map(c => (
-                            <option key={c.id} value={c.name}>{c.name}</option>
+                            <option key={c.id} value={c.id}>{c.name}</option>
                         ))}
                     </select>
 
@@ -366,20 +355,54 @@ export default function StudentsPage() {
                                     <div className="mb-2 px-2 py-1 text-xs font-bold uppercase tracking-wider text-zinc-400">
                                         Visible Columns
                                     </div>
-                                    <div className="space-y-1">
-                                        {columns.map(col => (
-                                            <button
-                                                key={col.id}
-                                                onClick={() => toggleColumn(col.id)}
-                                                className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                                            >
-                                                <span className={visibleColumns[col.id] ? "text-zinc-900 dark:text-zinc-100 font-medium" : "text-zinc-400"}>
-                                                    {col.label}
-                                                </span>
-                                                {visibleColumns[col.id] && <Check className="h-4 w-4 text-brand" />}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    <DragDropContext onDragEnd={handleDragEnd}>
+                                        <Droppable droppableId="columns" direction="vertical">
+                                            {(provided) => (
+                                                <div
+                                                    className="space-y-1"
+                                                    {...provided.droppableProps}
+                                                    ref={provided.innerRef}
+                                                >
+                                                    {columns.map((col, index) => (
+                                                        <Draggable key={col.id} draggableId={col.id} index={index}>
+                                                            {(provided, snapshot) => (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    className={cn(
+                                                                        "flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800",
+                                                                        snapshot.isDragging && "bg-zinc-50 dark:bg-zinc-800 shadow-lg ring-1 ring-zinc-200 dark:ring-zinc-700 z-50"
+                                                                    )}
+                                                                >
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div
+                                                                            {...provided.dragHandleProps}
+                                                                            className="cursor-grab hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 -ml-1 flex-shrink-0"
+                                                                        >
+                                                                            <GripVertical className="h-4 w-4" />
+                                                                        </div>
+                                                                        <button
+                                                                            className="flex-1 text-left"
+                                                                            onClick={() => toggleColumn(col.id)}
+                                                                        >
+                                                                            <span className={visibleColumns[col.id] ? "text-zinc-900 dark:text-zinc-100 font-medium" : "text-zinc-400"}>
+                                                                                {col.label}
+                                                                            </span>
+                                                                        </button>
+                                                                    </div>
+
+                                                                    <button onClick={() => toggleColumn(col.id)} className="flex-shrink-0 ml-2">
+                                                                        {visibleColumns[col.id] && <Check className="h-4 w-4 text-brand" />}
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                </div>
+                                            )}
+                                        </Droppable>
+                                    </DragDropContext>
                                 </div>
                             </>
                         )}
@@ -388,7 +411,7 @@ export default function StudentsPage() {
             </div>
 
             {/* Table */}
-            <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 overflow-hidden">
                 {isLoading ? (
                     <div className="flex h-64 items-center justify-center">
                         <div className="flex flex-col items-center gap-3">
@@ -402,45 +425,46 @@ export default function StudentsPage() {
                             <table className="w-full text-left text-sm">
                                 <thead>
                                     <tr className="bg-zinc-50 text-zinc-500 dark:bg-zinc-800/50 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
-                                        {visibleColumns.admissionNumber && (
-                                            <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('admissionNumber')}>
-                                                <div className="flex items-center gap-1">Adm No <SortIcon field="admissionNumber" /></div>
-                                            </th>
-                                        )}
-                                        {visibleColumns.name && (
-                                            <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('name')}>
-                                                <div className="flex items-center gap-1">Student Name <SortIcon field="name" /></div>
-                                            </th>
-                                        )}
-                                        {visibleColumns.class && (
-                                            <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('class')}>
-                                                <div className="flex items-center gap-1">Class <SortIcon field="class" /></div>
-                                            </th>
-                                        )}
-                                        {visibleColumns.gender && (
-                                            <th className="px-6 py-4 font-medium">Gender</th>
-                                        )}
-                                        {visibleColumns.fatherContact && (
-                                            <th className="px-6 py-4 font-medium">
-                                                Father Contact
-                                            </th>
-                                        )}
-                                        {visibleColumns.motherContact && (
-                                            <th className="px-6 py-4 font-medium">
-                                                Mother Contact
-                                            </th>
-                                        )}
-                                        {visibleColumns.joiningDate && (
-                                            <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('joiningDate')}>
-                                                <div className="flex items-center gap-1">Joined <SortIcon field="joiningDate" /></div>
-                                            </th>
-                                        )}
-                                        {visibleColumns.status && (
-                                            <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('status')}>
-                                                <div className="flex items-center gap-1">Status <SortIcon field="status" /></div>
-                                            </th>
-                                        )}
-                                        <th className="px-6 py-4 text-right font-medium">Action</th>
+                                        <th className="px-6 py-4 text-left font-medium sticky left-0 bg-zinc-50 dark:bg-zinc-800/50 shadow-[4px_0_15px_-5px_rgba(0,0,0,0.05)] z-10 before:content-[''] before:absolute before:inset-0 before:border-r before:border-zinc-200 dark:before:border-zinc-800">Action</th>
+                                        {columns.map(col => {
+                                            if (!visibleColumns[col.id]) return null;
+
+                                            if (col.id === 'admissionNumber') return (
+                                                <th key={col.id} className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('admissionNumber')}>
+                                                    <div className="flex items-center gap-1">Adm No <SortIcon field="admissionNumber" /></div>
+                                                </th>
+                                            );
+                                            if (col.id === 'name') return (
+                                                <th key={col.id} className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('name')}>
+                                                    <div className="flex items-center gap-1">Student Name <SortIcon field="name" /></div>
+                                                </th>
+                                            );
+                                            if (col.id === 'class') return (
+                                                <th key={col.id} className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('class')}>
+                                                    <div className="flex items-center gap-1">Class <SortIcon field="class" /></div>
+                                                </th>
+                                            );
+                                            if (col.id === 'gender') return (
+                                                <th key={col.id} className="px-6 py-4 font-medium">Gender</th>
+                                            );
+                                            if (col.id === 'fatherContact') return (
+                                                <th key={col.id} className="px-6 py-4 font-medium">Father Contact</th>
+                                            );
+                                            if (col.id === 'motherContact') return (
+                                                <th key={col.id} className="px-6 py-4 font-medium">Mother Contact</th>
+                                            );
+                                            if (col.id === 'joiningDate') return (
+                                                <th key={col.id} className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('joiningDate')}>
+                                                    <div className="flex items-center gap-1">Joined <SortIcon field="joiningDate" /></div>
+                                                </th>
+                                            );
+                                            if (col.id === 'status') return (
+                                                <th key={col.id} className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" onClick={() => handleSort('status')}>
+                                                    <div className="flex items-center gap-1">Status <SortIcon field="status" /></div>
+                                                </th>
+                                            );
+                                            return null;
+                                        })}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -450,96 +474,8 @@ export default function StudentsPage() {
                                                 key={student.id}
                                                 className="group transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                                             >
-                                                {visibleColumns.admissionNumber && (
-                                                    <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                                                        {student.admissionNumber || "-"}
-                                                    </td>
-                                                )}
-                                                {visibleColumns.name && (
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <StudentAvatar
-                                                                src={student.avatar}
-                                                                name={student.name}
-                                                            />
-                                                            <div className="flex flex-col min-w-0">
-                                                                <Link
-                                                                    href={`/s/${slug}/students/${student.id}`}
-                                                                    className="font-medium text-zinc-900 transition-colors dark:text-zinc-50 hover:text-brand truncate max-w-[150px]"
-                                                                    title={student.name}
-                                                                >
-                                                                    {cleanName(student.name)}
-                                                                </Link>
-                                                                <span className="text-xs text-zinc-500">
-                                                                    {student.id.slice(-6).toUpperCase()}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                )}
-                                                {visibleColumns.class && (
-                                                    <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                                                        {student.class}
-                                                    </td>
-                                                )}
-                                                {visibleColumns.gender && (
-                                                    <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-xs whitespace-nowrap">
-                                                        {student.gender}
-                                                    </td>
-                                                )}
-                                                {visibleColumns.fatherContact && (
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        {student.fatherPhone ? (
-                                                            <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
-                                                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                                                                    F
-                                                                </div>
-                                                                <Phone className="h-3 w-3 text-zinc-400" />
-                                                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{student.fatherPhone}</span>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-zinc-400">-</span>
-                                                        )}
-                                                    </td>
-                                                )}
-                                                {visibleColumns.motherContact && (
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        {student.motherPhone ? (
-                                                            <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
-                                                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-pink-50 text-[10px] font-bold text-pink-600 dark:bg-pink-900/30 dark:text-pink-400">
-                                                                    M
-                                                                </div>
-                                                                <Phone className="h-3 w-3 text-zinc-400" />
-                                                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{student.motherPhone}</span>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-zinc-400">-</span>
-                                                        )}
-                                                    </td>
-                                                )}
-                                                {visibleColumns.joiningDate && (
-                                                    <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-xs whitespace-nowrap">
-                                                        {student.joiningDate ? format(new Date(student.joiningDate), 'MMM d, yyyy') : '-'}
-                                                    </td>
-                                                )}
-                                                {visibleColumns.status && (
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span
-                                                            className={cn(
-                                                                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                                                                (student.status === "Active" || student.status === "ACTIVE")
-                                                                    ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400"
-                                                                    : (student.status === "Absent" || student.status === "ABSENT")
-                                                                        ? "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                                                                        : "bg-zinc-100 text-zinc-700 dark:bg-zinc-500/10 dark:text-zinc-400"
-                                                            )}
-                                                        >
-                                                            {student.status}
-                                                        </span>
-                                                    </td>
-                                                )}
-                                                <td className="px-6 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
+                                                <td className="px-6 py-4 text-left sticky left-0 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800/50 transition-colors shadow-[4px_0_15px_-5px_rgba(0,0,0,0.05)] z-10 before:content-[''] before:absolute before:inset-0 before:border-r before:border-zinc-200 dark:before:border-zinc-800">
+                                                    <div className="flex items-center justify-start gap-2 relative z-20">
                                                         <StandardActionButton
                                                             asChild
                                                             variant="view"
@@ -558,6 +494,100 @@ export default function StudentsPage() {
                                                         />
                                                     </div>
                                                 </td>
+                                                {columns.map(col => {
+                                                    if (!visibleColumns[col.id]) return null;
+
+                                                    if (col.id === 'admissionNumber') return (
+                                                        <td key={col.id} className="px-6 py-4 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                                                            {student.admissionNumber || "-"}
+                                                        </td>
+                                                    );
+                                                    if (col.id === 'name') return (
+                                                        <td key={col.id} className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <StudentAvatar
+                                                                    src={student.avatar}
+                                                                    name={student.name}
+                                                                />
+                                                                <div className="flex flex-col min-w-0">
+                                                                    <Link
+                                                                        href={`/s/${slug}/students/${student.id}`}
+                                                                        className="font-medium text-zinc-900 transition-colors dark:text-zinc-50 hover:text-brand truncate max-w-[150px]"
+                                                                        title={student.name}
+                                                                    >
+                                                                        {cleanName(student.name)}
+                                                                    </Link>
+                                                                    <span className="text-xs text-zinc-500">
+                                                                        {student.id.slice(-6).toUpperCase()}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    );
+                                                    if (col.id === 'class') return (
+                                                        <td key={col.id} className="px-6 py-4 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                                                            {student.class}
+                                                        </td>
+                                                    );
+                                                    if (col.id === 'gender') return (
+                                                        <td key={col.id} className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-xs whitespace-nowrap">
+                                                            {student.gender}
+                                                        </td>
+                                                    );
+                                                    if (col.id === 'fatherContact') return (
+                                                        <td key={col.id} className="px-6 py-4 whitespace-nowrap">
+                                                            {student.fatherPhone ? (
+                                                                <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+                                                                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                                                        F
+                                                                    </div>
+                                                                    <Phone className="h-3 w-3 text-zinc-400" />
+                                                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{student.fatherPhone}</span>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-zinc-400">-</span>
+                                                            )}
+                                                        </td>
+                                                    );
+                                                    if (col.id === 'motherContact') return (
+                                                        <td key={col.id} className="px-6 py-4 whitespace-nowrap">
+                                                            {student.motherPhone ? (
+                                                                <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+                                                                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-pink-50 text-[10px] font-bold text-pink-600 dark:bg-pink-900/30 dark:text-pink-400">
+                                                                        M
+                                                                    </div>
+                                                                    <Phone className="h-3 w-3 text-zinc-400" />
+                                                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{student.motherPhone}</span>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-zinc-400">-</span>
+                                                            )}
+                                                        </td>
+                                                    );
+                                                    if (col.id === 'joiningDate') return (
+                                                        <td key={col.id} className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-xs whitespace-nowrap">
+                                                            {student.joiningDate ? format(new Date(student.joiningDate), 'MMM d, yyyy') : '-'}
+                                                        </td>
+                                                    );
+                                                    if (col.id === 'status') return (
+                                                        <td key={col.id} className="px-6 py-4 whitespace-nowrap">
+                                                            <span
+                                                                className={cn(
+                                                                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                                                                    (student.status === "Active" || student.status === "ACTIVE")
+                                                                        ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                                                                        : (student.status === "Absent" || student.status === "ABSENT")
+                                                                            ? "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                                                                            : "bg-zinc-100 text-zinc-700 dark:bg-zinc-500/10 dark:text-zinc-400"
+                                                                )}
+                                                            >
+                                                                {student.status}
+                                                            </span>
+                                                        </td>
+                                                    );
+
+                                                    return null;
+                                                })}
                                             </tr>
                                         ))
                                     ) : (

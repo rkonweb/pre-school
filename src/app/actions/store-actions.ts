@@ -925,18 +925,85 @@ async function deductInventoryAndRecord(
     await (tx as any).accountTransaction.create({
         data: {
             schoolId,
-            title: `Store Sale — ${studentName}`,
-            type: "INCOME",
+            transactionNo: genTransactionNo("STR"),
+            description: `Store Sale — ${studentName}`,
+            type: "CREDIT",
             amount: order.totalAmount,
             date: new Date(),
-            description: order.notes || `Store order ${order.id.slice(-6).toUpperCase()}`,
-            paymentMethod,
-            referenceNo,
+            reference: referenceNo || paymentMethod,
+            notes: order.notes || `Store order payment. Method: ${paymentMethod}`,
             categoryId: storeCategory.id,
             financialYearId: financialYear.id,
-            transactionNo: genTransactionNo("STR"),
-            storeOrderId: order.id,
             status: "COMPLETED",
         },
     });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PARENT / STUDENT PACKAGE ORDERING
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function createStoreOrderAction(studentId: string, slug: string, packageId: string) {
+    try {
+        const schoolId = await getSchoolIdFromSlug(slug);
+
+        const pkg = await (prisma as any).storePackage.findUnique({
+            where: { id: packageId },
+            include: { items: { include: { item: true } } },
+        });
+        if (!pkg) return { success: false, error: "Package not found" };
+
+        const student = await (prisma as any).student.findUnique({ where: { id: studentId } });
+        if (!student) return { success: false, error: "Student not found" };
+
+        const effectivePrice = pkg.discountedPrice ?? pkg.totalPrice;
+
+        const newOrder = await prisma.$transaction(async (tx) => {
+            // Create fee
+            const fee = await (tx as any).fee.create({
+                data: {
+                    title: `${pkg.name} — Academic Package`,
+                    amount: effectivePrice,
+                    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+                    status: "PENDING",
+                    studentId,
+                    schoolId,
+                    academicYearId: pkg.academicYearId,
+                    category: "STORE",
+                    description: `Requested Academic Package`,
+                },
+            });
+
+            // Create order
+            return await (tx as any).storeOrder.create({
+                data: {
+                    studentId,
+                    schoolId,
+                    packageId,
+                    academicYearId: pkg.academicYearId,
+                    sourceType: "PACKAGE",
+                    status: "PENDING",
+                    paymentStatus: "UNPAID",
+                    totalAmount: effectivePrice,
+                    taxAmount: 0,
+                    feeId: fee.id,
+                    notes: `Parent requested package`,
+                    orderItems: {
+                        create: pkg.items.map((pi: any) => ({
+                            itemId: pi.itemId,
+                            quantity: pi.quantity,
+                            unitPrice: pi.item.price,
+                            taxAmount: pi.item.price * pi.quantity * ((pi.item.taxPercentage || 0) / 100),
+                        })),
+                    },
+                },
+            });
+        });
+
+        revalidatePath(`/s/[slug]/store/orders`, "page");
+        return { success: true, data: newOrder };
+    } catch (error) {
+        console.error("Error creating package order:", error);
+        return { success: false, error: "Failed to order package" };
+    }
 }

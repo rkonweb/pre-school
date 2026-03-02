@@ -164,7 +164,8 @@ exports.Prisma.SchoolScalarFieldEnum = {
   academicYearStartMonth: 'academicYearStartMonth',
   integrationsConfig: 'integrationsConfig',
   maxBranches: 'maxBranches',
-  printableLogo: 'printableLogo'
+  printableLogo: 'printableLogo',
+  transportSyncToAccounts: 'transportSyncToAccounts'
 };
 
 exports.Prisma.AcademicYearScalarFieldEnum = {
@@ -231,7 +232,9 @@ exports.Prisma.AdmissionScalarFieldEnum = {
   score: 'score',
   seatAvailability: 'seatAvailability',
   timingConcern: 'timingConcern',
-  tourStatus: 'tourStatus'
+  tourStatus: 'tourStatus',
+  inquiryNumber: 'inquiryNumber',
+  admissionNumber: 'admissionNumber'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -420,7 +423,8 @@ exports.Prisma.StudentScalarFieldEnum = {
   fatherOccupation: 'fatherOccupation',
   fatherEmail: 'fatherEmail',
   motherOccupation: 'motherOccupation',
-  motherEmail: 'motherEmail'
+  motherEmail: 'motherEmail',
+  enrollmentNumber: 'enrollmentNumber'
 };
 
 exports.Prisma.TransferCertificateScalarFieldEnum = {
@@ -787,7 +791,10 @@ exports.Prisma.MessageScalarFieldEnum = {
   conversationId: 'conversationId',
   isRead: 'isRead',
   readAt: 'readAt',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  deliveryStatus: 'deliveryStatus',
+  flaggedReason: 'flaggedReason',
+  isFlagged: 'isFlagged'
 };
 
 exports.Prisma.DiaryEntryScalarFieldEnum = {
@@ -1703,6 +1710,122 @@ exports.Prisma.DevelopmentReportScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.StoreVendorScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  contactPerson: 'contactPerson',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  categories: 'categories',
+  taxId: 'taxId',
+  paymentTerms: 'paymentTerms',
+  status: 'status',
+  tenantId: 'tenantId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StorePurchaseOrderScalarFieldEnum = {
+  id: 'id',
+  poNumber: 'poNumber',
+  vendorId: 'vendorId',
+  orderDate: 'orderDate',
+  expectedDelivery: 'expectedDelivery',
+  status: 'status',
+  approvedById: 'approvedById',
+  approvalDate: 'approvalDate',
+  totalAmount: 'totalAmount',
+  notes: 'notes',
+  tenantId: 'tenantId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StorePurchaseOrderItemScalarFieldEnum = {
+  id: 'id',
+  poId: 'poId',
+  itemId: 'itemId',
+  customItemName: 'customItemName',
+  quantity: 'quantity',
+  unitRate: 'unitRate',
+  total: 'total',
+  receivedQuantity: 'receivedQuantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StoreQuotationScalarFieldEnum = {
+  id: 'id',
+  vendorId: 'vendorId',
+  title: 'title',
+  documentUrl: 'documentUrl',
+  validUntil: 'validUntil',
+  status: 'status',
+  tenantId: 'tenantId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccountFinancialYearScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  isActive: 'isActive',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccountCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  description: 'description',
+  isSystem: 'isSystem',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccountVendorScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  bankDetails: 'bankDetails',
+  category: 'category',
+  contactName: 'contactName',
+  notes: 'notes',
+  status: 'status',
+  taxId: 'taxId'
+};
+
+exports.Prisma.AccountTransactionScalarFieldEnum = {
+  id: 'id',
+  transactionNo: 'transactionNo',
+  description: 'description',
+  amount: 'amount',
+  type: 'type',
+  status: 'status',
+  date: 'date',
+  reference: 'reference',
+  notes: 'notes',
+  schoolId: 'schoolId',
+  financialYearId: 'financialYearId',
+  categoryId: 'categoryId',
+  vendorId: 'vendorId',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  sourceTransportExpenseId: 'sourceTransportExpenseId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1822,7 +1945,15 @@ exports.Prisma.ModelName = {
   SkillItem: 'SkillItem',
   SkillAssessment: 'SkillAssessment',
   PortfolioEntry: 'PortfolioEntry',
-  DevelopmentReport: 'DevelopmentReport'
+  DevelopmentReport: 'DevelopmentReport',
+  StoreVendor: 'StoreVendor',
+  StorePurchaseOrder: 'StorePurchaseOrder',
+  StorePurchaseOrderItem: 'StorePurchaseOrderItem',
+  StoreQuotation: 'StoreQuotation',
+  AccountFinancialYear: 'AccountFinancialYear',
+  AccountCategory: 'AccountCategory',
+  AccountVendor: 'AccountVendor',
+  AccountTransaction: 'AccountTransaction'
 };
 
 /**

@@ -37,6 +37,8 @@ export interface AccountVendorInput {
   address?: string;
   taxId?: string;
   bankDetails?: string;
+  notes?: string;
+  category?: string;
   status?: VendorStatus;
 }
 

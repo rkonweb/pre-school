@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getDiaryEntriesForStudentAction } from "./diary-actions";
 import { validateUserSchoolAction } from "./session-actions";
+import { moderateMessage } from "@/lib/chat-moderator";
 import { randomInt } from "crypto";
 import { getStudentAttendanceAction as getStaffAttendanceActionRaw } from "./attendance-actions";
 
@@ -1075,16 +1076,21 @@ export async function getMessagesAction(conversationId: string) {
     }
 }
 
-export async function sendMessageAction(conversationId: string, content: string, senderName: string, senderId: string) {
+export async function sendMessageAction(conversationId: string, content: string, senderName: string, senderId: string, senderType: string = "PARENT") {
     try {
+        const moderationResult = moderateMessage(content);
+
         const message = await (prisma as any).message.create({
             data: {
                 conversationId,
                 content,
-                senderType: "PARENT",
+                senderType,
                 senderName,
                 senderId,
-                isRead: false
+                isRead: false,
+                deliveryStatus: moderationResult.isApproved ? "DELIVERED" : "BLOCKED",
+                isFlagged: !moderationResult.isApproved,
+                flaggedReason: moderationResult.reason || null
             }
         });
 

@@ -30,21 +30,22 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
                 <div className="fixed top-4 right-4 z-[10001] flex items-center gap-2">
                     <Button
                         variant="secondary"
-                        size="sm"
+                        size="icon"
                         onClick={() => setIsOpen(true)}
-                        className="shadow-lg border border-zinc-200"
+                        className="shadow-lg border border-zinc-200 h-10 w-10 rounded-xl"
+                        title="Open Menu"
                     >
-                        <Menu className="h-4 w-4 mr-2" />
-                        Menu
+                        <Menu className="h-5 w-5 text-zinc-700" />
                     </Button>
+
                     <Button
                         variant="secondary"
-                        size="sm"
+                        size="icon"
                         onClick={toggleFullscreen}
-                        className="shadow-lg border border-zinc-200"
+                        className="shadow-lg border border-zinc-200 h-10 w-10 rounded-xl"
+                        title={isAppFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
                     >
-                        <Minimize className="h-4 w-4 mr-2" />
-                        Exit Fullscreen
+                        {isAppFullscreen ? <Minimize className="h-5 w-5 text-zinc-700" /> : <Maximize className="h-5 w-5 text-zinc-700" />}
                     </Button>
                 </div>
             )}

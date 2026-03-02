@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { validateUserSchoolAction, hasPermissionAction } from "./session-actions";
 import { randomBytes } from "crypto";
 import { calculateLeadScore } from "./lead-scoring";
+import { generateNextIdentifierAction } from "./identifier-actions";
 
 export async function getAdmissionsAction(slug: string) {
     try {
@@ -121,9 +122,12 @@ export async function createInquiryAction(slug: string, data: any) {
             if (main) branchId = main.id;
         }
 
+        const inquiryNumber = await generateNextIdentifierAction(slug, 'enquiry');
+
         const admission = await (prisma as any).admission.create({
             data: {
                 ...data,
+                inquiryNumber: inquiryNumber,
                 dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
                 schoolId: school.id,
                 branchId: branchId,
@@ -516,11 +520,14 @@ export async function approveAdmissionAction(slug: string, id: string, classroom
 
         return await prisma.$transaction(async (tx) => {
             // 1. Update Admission Stage & Persist Enrollment Choice
+            const admissionNumber = await generateNextIdentifierAction(slug, 'admission');
+
             await (tx as any).admission.update({
                 where: { id },
                 data: {
                     stage: "ENROLLED",
-                    enrolledGrade: grade
+                    enrolledGrade: grade,
+                    admissionNumber: admissionNumber
                 }
             });
 
@@ -529,11 +536,15 @@ export async function approveAdmissionAction(slug: string, id: string, classroom
             const firstName = nameParts[0];
             const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Unknown";
 
+            const enrollmentNumber = await generateNextIdentifierAction(slug, 'enrollment');
+
             // 3. Create Student record
             const student = await (tx as any).student.create({
                 data: {
                     firstName,
                     lastName,
+                    admissionNumber: admissionNumber,
+                    enrollmentNumber: enrollmentNumber,
                     age: admission.studentAge,
                     gender: admission.studentGender,
                     dateOfBirth: admission.dateOfBirth,

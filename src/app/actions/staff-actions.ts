@@ -534,8 +534,8 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
 
         // Revalidate both the staff list and the edit page
         if (staff.school?.slug) {
-            revalidatePath(`/s/${staff.school.slug}/staff`);
-            revalidatePath(`/s/${staff.school.slug}/staff/${id}/edit`);
+            revalidatePath(`/s/${staff.school.slug}/hr/directory`);
+            revalidatePath(`/s/${staff.school.slug}/hr/directory/${id}/edit`);
         }
 
         return { success: true, id: staff.id };
@@ -567,8 +567,8 @@ export async function updateStaffBasicInfoAction(schoolSlug: string, id: string,
             data
         });
         await syncStaff(id);
-        revalidatePath(`/s/${schoolSlug}/staff`);
-        revalidatePath(`/s/${schoolSlug}/staff/${id}`);
+        revalidatePath(`/s/${schoolSlug}/hr/directory`);
+        revalidatePath(`/s/${schoolSlug}/hr/directory/${id}`);
         return { success: true, data: updated };
     } catch (error: any) {
         console.error("Update Staff Field Error:", error);
@@ -601,7 +601,7 @@ export async function deleteStaffAction(schoolSlug: string, id: string) {
             where: { id, school: { slug: schoolSlug } }
         });
         await removeStaffFromIndex(id);
-        revalidatePath(`/s/${schoolSlug}/staff`);
+        revalidatePath(`/s/${schoolSlug}/hr/directory`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -688,10 +688,13 @@ export async function deleteSalaryRevisionAction(schoolSlug: string, id: string)
 export async function getStaffClassAccessAction(schoolSlug: string, userId: string) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
         const access = await prisma.classAccess.findMany({
-            where: { userId, user: { school: { slug: schoolSlug } } },
+            where: {
+                userId,
+                user: { schoolId: auth.user.schoolId }
+            },
             select: { classroomId: true, canRead: true }
         });
         return { success: true, access };
@@ -703,7 +706,9 @@ export async function getStaffClassAccessAction(schoolSlug: string, userId: stri
 export async function updateStaffClassAccessBulkAction(schoolSlug: string, userId: string, accessMap: Record<string, boolean>) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success) return { success: false, error: auth.error };
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const schoolId = auth.user.schoolId;
 
         const activeClassIds = Object.entries(accessMap)
             .filter(([_, isActive]) => isActive)
@@ -714,7 +719,7 @@ export async function updateStaffClassAccessBulkAction(schoolSlug: string, userI
             await tx.classAccess.deleteMany({
                 where: {
                     userId,
-                    user: { school: { slug: schoolSlug } },
+                    user: { schoolId },
                     classroomId: { notIn: activeClassIds }
                 }
             });
@@ -722,7 +727,7 @@ export async function updateStaffClassAccessBulkAction(schoolSlug: string, userI
             // 2. Ensure active list exists
             for (const classId of activeClassIds) {
                 const existing = await tx.classAccess.findFirst({
-                    where: { userId, classroomId: classId, user: { school: { slug: schoolSlug } } }
+                    where: { userId, classroomId: classId, user: { schoolId } }
                 });
 
                 if (!existing) {

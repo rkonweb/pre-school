@@ -11,11 +11,13 @@ import {
     AlertCircle,
     BellRing,
     Calendar,
-    CheckCircle2
+    CheckCircle2,
+    ShieldAlert
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSidebar } from "@/context/SidebarContext";
+import Link from "next/link";
 
 // Actions
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
@@ -116,6 +118,14 @@ export default function CommunicationPage() {
                     >
                         Automations
                     </button>
+                    <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-2 self-center"></div>
+                    <Link
+                        href={`/s/${slug}/communication/chat-history`}
+                        className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-zinc-500 hover:text-rose-500 dark:hover:text-rose-400 flex items-center gap-2"
+                    >
+                        <ShieldAlert className="h-3.5 w-3.5" />
+                        Chat History
+                    </Link>
                 </div>
             </div>
 

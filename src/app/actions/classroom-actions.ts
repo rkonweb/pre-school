@@ -1,47 +1,24 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { getCurrentUserAction, validateUserSchoolAction } from "./session-actions";
 
-export async function getClassroomsAction(schoolSlug: string) {
-    try {
-        const whereClause: any = {
-            school: {
-                slug: schoolSlug
-            }
-        };
+import { unstable_cache } from "next/cache";
 
-        // ---------------------------------------------------------
-        // ACCESS CONTROL
-        // ---------------------------------------------------------
-        const userRes = await getCurrentUserAction();
-        if (userRes.success && userRes.data) {
-            const currentUser = userRes.data;
-
-            if (currentUser.role === "STAFF") {
-                const accessItems = await prisma.classAccess.findMany({
-                    where: { userId: currentUser.id, canRead: true },
-                    select: { classroomId: true }
-                });
-
-                const allowedIds = accessItems.map((i: any) => i.classroomId);
-
-                if (allowedIds.length > 0) {
-                    whereClause.id = { in: allowedIds };
-                } else {
-                    // No access -> return empty immediately
-                    return { success: true, data: [] };
-                }
-            }
-        }
-        // ---------------------------------------------------------
-
-        const classrooms = await prisma.classroom.findMany({
+/**
+ * Cached Classroom Fetcher
+ */
+const getClassroomsCached = unstable_cache(
+    async (whereClause: any) => {
+        return await prisma.classroom.findMany({
             where: whereClause,
-            include: {
-                teacher: true,
+            select: {
+                id: true,
+                name: true,
+                timetable: true,
+                timetableStructureId: true,
                 _count: {
                     select: { students: true }
                 }
@@ -50,6 +27,37 @@ export async function getClassroomsAction(schoolSlug: string) {
                 name: "asc"
             }
         });
+    },
+    ["school-classrooms"],
+    { revalidate: 3600, tags: ["classrooms"] }
+);
+
+export async function getClassroomsAction(schoolSlug: string) {
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const currentUser = auth.user as any;
+        const whereClause: any = {
+            schoolId: currentUser.schoolId
+        };
+
+        // STAFF Access Check
+        if (currentUser.role === "STAFF") {
+            const accessItems = await prisma.classAccess.findMany({
+                where: { userId: currentUser.id, canRead: true },
+                select: { classroomId: true }
+            });
+
+            const allowedIds = accessItems.map((i: any) => i.classroomId);
+            if (allowedIds.length > 0) {
+                whereClause.id = { in: allowedIds };
+            } else {
+                return { success: true, data: [] };
+            }
+        }
+
+        const classrooms = await getClassroomsCached(whereClause);
         return { success: true, data: classrooms };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -93,6 +101,7 @@ export async function createClassroomAction(schoolSlug: string, name: string, te
     });
 
     revalidatePath(`/s/${schoolSlug}/academics/classes`);
+    revalidateTag("classrooms");
     return { success: true, data: classroom };
 }
 
@@ -111,6 +120,7 @@ export async function updateClassroomAction(schoolSlug: string, id: string, data
             data: updateData
         });
         revalidatePath(`/s/${schoolSlug}/academics/classes`);
+        revalidateTag("classrooms");
         return { success: true, classroom };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -126,6 +136,7 @@ export async function deleteClassroomAction(schoolSlug: string, id: string) {
             where: { id, school: { slug: schoolSlug } }
         });
         revalidatePath(`/s/${schoolSlug}/academics/classes`);
+        revalidateTag("classrooms");
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };

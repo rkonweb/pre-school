@@ -16,7 +16,7 @@ export const ALL_MODULES: ModuleDefinition[] = [
     { id: "admissions", label: "Admissions", description: "Inquiry to enrollment workflow", category: "administrative" },
     { id: "attendance", label: "Attendance", description: "Student and staff attendance tracking", category: "administrative" },
     { id: "billing", label: "Billing & Finance", description: "Fee collection and invoice generation", category: "administrative" },
-    { id: "inventory", label: "Inventory", description: "Asset and resource management", category: "administrative" },
+    { id: "inventory", label: "School Inventory", description: "Asset and resource management", category: "administrative" },
     { id: "transport", label: "Transport", description: "Route planning and vehicle tracking", category: "administrative" },
     { id: "library", label: "Library", description: "Book cataloging and circulation", category: "administrative" },
     { id: "training", label: "Training Center", description: "Staff development resources", category: "administrative" },

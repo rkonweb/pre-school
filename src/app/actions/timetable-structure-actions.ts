@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { validateUserSchoolAction } from "./session-actions";
 
 export async function getTimetableStructuresAction(schoolSlug: string) {
@@ -106,6 +106,7 @@ export async function assignTimetableStructureAction(schoolSlug: string, classro
         });
 
         revalidatePath(`/s/${schoolSlug}/academics/timetable`);
+        revalidateTag("classrooms");
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };

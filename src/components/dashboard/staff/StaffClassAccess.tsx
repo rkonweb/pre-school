@@ -10,34 +10,20 @@ interface StaffClassAccessProps {
     staffId: string;
     schoolSlug: string;
     classrooms: any[]; // Assuming standard shape
+    initialAccess?: any[];
 }
 
-export function StaffClassAccess({ staffId, schoolSlug, classrooms }: StaffClassAccessProps) {
-    const [isLoading, setIsLoading] = useState(true);
+export function StaffClassAccess({ staffId, schoolSlug, classrooms, initialAccess = [] }: StaffClassAccessProps) {
     const [isSaving, setIsSaving] = useState(false);
-    const [accessMap, setAccessMap] = useState<Record<string, boolean>>({});
+    const [accessMap, setAccessMap] = useState<Record<string, boolean>>(() => {
+        const map: Record<string, boolean> = {};
+        initialAccess.forEach((a: any) => {
+            map[a.classroomId] = true;
+        });
+        return map;
+    });
 
-    useEffect(() => {
-        loadAccess();
-    }, [staffId]);
-
-    async function loadAccess() {
-        try {
-            const res = await getStaffClassAccessAction(schoolSlug, staffId);
-            if (res.success && res.access) {
-                const map: Record<string, boolean> = {};
-                res.access.forEach((a: any) => {
-                    map[a.classroomId] = true;
-                });
-                setAccessMap(map);
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to load class access");
-        } finally {
-            setIsLoading(false);
-        }
-    }
+    // Remove useEffect and loadAccess as data is now provided via props
 
     const toggleAccess = (classId: string) => {
         setAccessMap(prev => ({
@@ -77,62 +63,58 @@ export function StaffClassAccess({ staffId, schoolSlug, classrooms }: StaffClass
 
                 <button
                     onClick={handleSave}
-                    disabled={isLoading || isSaving}
+                    disabled={isSaving}
                     className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
                 >
                     {isSaving ? "Saving..." : "Save Changes"}
                 </button>
             </div>
 
-            {isLoading ? (
-                <div className="py-8 text-center text-sm text-zinc-500">Loading access permissions...</div>
-            ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {classrooms.map((classroom) => {
-                        const hasAccess = accessMap[classroom.id] || false;
-                        return (
-                            <div
-                                key={classroom.id}
-                                onClick={() => toggleAccess(classroom.id)}
-                                className={cn(
-                                    "cursor-pointer rounded-lg border p-3 py-4 transition-all flex items-center justify-between",
-                                    hasAccess
-                                        ? "border-brand/20 bg-brand/5 dark:border-brand/30 dark:bg-brand/10"
-                                        : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
-                                )}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className={cn(
-                                        "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
-                                        hasAccess ? "bg-brand/10 text-brand" : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
-                                    )}>
-                                        {hasAccess ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                                    </div>
-                                    <div>
-                                        <p className={cn("text-sm font-medium", hasAccess ? "text-brand" : "text-zinc-700 dark:text-zinc-300")}>
-                                            {classroom.name}
-                                        </p>
-                                        <p className="text-xs text-zinc-500">
-                                            {classroom._count?.students || 0} Students
-                                        </p>
-                                    </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {classrooms.map((classroom) => {
+                    const hasAccess = accessMap[classroom.id] || false;
+                    return (
+                        <div
+                            key={classroom.id}
+                            onClick={() => toggleAccess(classroom.id)}
+                            className={cn(
+                                "cursor-pointer rounded-lg border p-3 py-4 transition-all flex items-center justify-between",
+                                hasAccess
+                                    ? "border-brand/20 bg-brand/5 dark:border-brand/30 dark:bg-brand/10"
+                                    : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
+                            )}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={cn(
+                                    "flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+                                    hasAccess ? "bg-brand/10 text-brand" : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+                                )}>
+                                    {hasAccess ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                                 </div>
-                                {hasAccess && (
-                                    <div className="text-brand">
-                                        <Check className="h-5 w-5" />
-                                    </div>
-                                )}
+                                <div>
+                                    <p className={cn("text-sm font-medium", hasAccess ? "text-brand" : "text-zinc-700 dark:text-zinc-300")}>
+                                        {classroom.name}
+                                    </p>
+                                    <p className="text-xs text-zinc-500">
+                                        {classroom._count?.students || 0} Students
+                                    </p>
+                                </div>
                             </div>
-                        );
-                    })}
-
-                    {classrooms.length === 0 && (
-                        <div className="col-span-full py-8 text-center text-sm text-zinc-500">
-                            No classes available to assign.
+                            {hasAccess && (
+                                <div className="text-brand">
+                                    <Check className="h-5 w-5" />
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
-            )}
+                    );
+                })}
+
+                {classrooms.length === 0 && (
+                    <div className="col-span-full py-8 text-center text-sm text-zinc-500">
+                        No classes available to assign.
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

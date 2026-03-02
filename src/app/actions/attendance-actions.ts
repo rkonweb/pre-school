@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { validateUserSchoolAction } from "./session-actions";
-import { getSchoolToday, getSchoolNow } from "@/lib/date-utils";
+import { getSchoolToday, getSchoolNow, formatInTimeZone } from "@/lib/date-utils";
 
 async function getSchoolTimezone(schoolSlug: string) {
     const school = await prisma.school.findUnique({
@@ -13,14 +13,24 @@ async function getSchoolTimezone(schoolSlug: string) {
     return school?.timezone || "Asia/Kolkata";
 }
 
+/**
+ * Normalizes a date to UTC 00:00:00 for attendance records.
+ * Handles string, Date, or empty input.
+ */
+function normalizeAttendanceDate(date?: string | Date, timezone: string = "Asia/Kolkata"): Date {
+    const d = date ? new Date(date) : getSchoolNow(timezone);
+    if (isNaN(d.getTime())) return getSchoolNow(timezone);
+    d.setUTCHours(0, 0, 0, 0);
+    return d;
+}
+
 export async function getStaffAttendanceAction(schoolSlug: string, date?: string) {
     try {
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
         const timezone = await getSchoolTimezone(schoolSlug);
-        const targetDate = date ? new Date(date) : getSchoolToday(timezone);
-        targetDate.setHours(0, 0, 0, 0);
+        const targetDate = normalizeAttendanceDate(date, timezone);
 
         let whereClause: any = {
             date: targetDate,
@@ -242,8 +252,7 @@ export async function togglePunchAction(schoolSlug: string, userId: string, date
         }
 
         const timezone = await getSchoolTimezone(schoolSlug);
-        const targetDate = new Date(date);
-        targetDate.setHours(0, 0, 0, 0);
+        const targetDate = normalizeAttendanceDate(date, timezone);
 
         const today = getSchoolToday(timezone);
         if (targetDate > today) {
@@ -356,7 +365,7 @@ export async function togglePunchAction(schoolSlug: string, userId: string, date
             }
         });
 
-        revalidatePath(`/s/${schoolSlug}/staff/attendance`);
+        revalidatePath(`/s/${schoolSlug}/hr/attendance`);
         return { success: true };
     } catch (error: any) {
         console.error("Toggle Punch Error:", error);
@@ -379,8 +388,8 @@ export async function markStaffAttendanceAction(schoolSlug: string, data: { user
         if (!hasPermission) throw new Error("Unauthorized to manage this staff's attendance");
 
         const timezone = await getSchoolTimezone(schoolSlug);
-        const targetDate = new Date(data.date);
-        const targetDateStr = data.date;
+        const targetDate = normalizeAttendanceDate(data.date, timezone);
+        const targetDateStr = formatInTimeZone(targetDate, timezone, "YYYY-MM-DD");
 
         const schoolNow = getSchoolNow(timezone);
         const todayStr = `${schoolNow.getFullYear()}-${String(schoolNow.getMonth() + 1).padStart(2, '0')}-${String(schoolNow.getDate()).padStart(2, '0')}`;
@@ -400,7 +409,7 @@ export async function markStaffAttendanceAction(schoolSlug: string, data: { user
             }
         });
 
-        revalidatePath(`/s/${schoolSlug}/staff/attendance`);
+        revalidatePath(`/s/${schoolSlug}/hr/attendance`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -492,7 +501,7 @@ export async function createLeaveRequestAction(schoolSlug: string, data: { userI
                 reason: data.reason
             }
         });
-        revalidatePath(`/s/${schoolSlug}/staff/attendance`);
+        revalidatePath(`/s/${schoolSlug}/hr/attendance`);
         return { success: true, data: request };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -720,19 +729,35 @@ export async function getStaffLeaveHistoryAction(schoolSlug: string, userId: str
 // CUSTOM STUDENT ATTENDANCE ACTIONS
 // ----------------------------------------------------------------------
 
-export async function getAttendanceDataAction(schoolSlug: string, classroomId: string, dateStr: string, academicYearId?: string) {
+export async function getAttendanceDataAction(schoolSlug: string, classroomId: string, dateStr: string, academicYearId?: string, authenticatedUser?: any) {
     try {
-        const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        let currentUser = authenticatedUser;
 
-        const targetDate = new Date(dateStr);
-        targetDate.setHours(0, 0, 0, 0);
+        if (!currentUser) {
+            const auth = await validateUserSchoolAction(schoolSlug);
+            if (!auth.success || !auth.user) return { success: false, error: auth.error };
+            currentUser = auth.user;
+        }
 
-        // ... (students fetch)
+        const targetDate = normalizeAttendanceDate(dateStr);
+
+        // Fetch using schoolId directly for performance (optimized earlier)
+        const schoolId = currentUser.schoolId;
+
+        // Automatically resolve current academic year if not provided
+        let effectiveAcademicYearId = academicYearId;
+        if (!effectiveAcademicYearId) {
+            const currentYear = await prisma.academicYear.findFirst({
+                where: { schoolId: schoolId, isCurrent: true },
+                select: { id: true }
+            });
+            effectiveAcademicYearId = currentYear?.id || undefined;
+        }
+
         const students = await prisma.student.findMany({
             where: {
                 classroomId: classroomId,
-                school: { slug: schoolSlug },
+                schoolId: schoolId,
                 status: "ACTIVE"
             },
             select: {
@@ -740,7 +765,8 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
                 firstName: true,
                 lastName: true,
                 avatar: true,
-                grade: true,
+                admissionNumber: true,
+                enrollmentNumber: true,
             },
             orderBy: { firstName: "asc" }
         });
@@ -750,7 +776,7 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
             where: {
                 studentId: { in: studentIds },
                 date: targetDate,
-                academicYearId: academicYearId || undefined,
+                academicYearId: effectiveAcademicYearId || null,
                 student: { school: { slug: schoolSlug } }
             }
         });
@@ -762,7 +788,7 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
                 id: student.id,
                 name: `${student.firstName} ${student.lastName}`,
                 avatar: student.avatar,
-                rollNo: "—", // Field not in schema yet, relying on UI to handle missing
+                rollNo: student.admissionNumber || student.enrollmentNumber || "—",
                 status: record ? record.status : null,
                 notes: record ? record.notes : null
             };
@@ -775,27 +801,43 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
     }
 }
 
-export async function markAttendanceAction(schoolSlug: string, studentId: string, date: string | Date, status: string, notes?: string, academicYearId?: string) {
+export async function markAttendanceAction(schoolSlug: string, studentId: string, date: string | Date, status: string, notes?: string, academicYearId?: string, authenticatedUser?: any) {
     try {
-        const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        let currentUser = authenticatedUser;
+        if (!currentUser) {
+            const auth = await validateUserSchoolAction(schoolSlug);
+            if (!auth.success || !auth.user) return { success: false, error: auth.error };
+            currentUser = auth.user;
+        }
 
         const student = await prisma.student.findUnique({
-            where: { id: studentId, school: { slug: schoolSlug } },
+            where: { id: studentId, schoolId: currentUser.schoolId },
             include: { school: { select: { timezone: true } } }
         });
 
         if (!student) return { success: false, error: "Student not found in this school" };
 
+        const schoolId = currentUser.schoolId;
+
+        // Automatically resolve current academic year if not provided
+        let effectiveAcademicYearId = academicYearId;
+        if (!effectiveAcademicYearId) {
+            const currentYear = await prisma.academicYear.findFirst({
+                where: { schoolId: schoolId, isCurrent: true },
+                select: { id: true }
+            });
+            effectiveAcademicYearId = currentYear?.id || undefined;
+        }
+
         const timezone = student.school?.timezone || "Asia/Kolkata";
-        const targetDate = new Date(date);
-        const targetDateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+        const targetDate = normalizeAttendanceDate(date, timezone);
+        const targetDateStr = formatInTimeZone(targetDate, timezone, "YYYY-MM-DD");
 
         const schoolNow = getSchoolNow(timezone);
         const todayStr = `${schoolNow.getFullYear()}-${String(schoolNow.getMonth() + 1).padStart(2, '0')}-${String(schoolNow.getDate()).padStart(2, '0')}`;
 
         // Role-Based Validation
-        const role = auth.user.role;
+        const role = currentUser.role;
         const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
 
         if (targetDateStr > todayStr) {
@@ -819,10 +861,11 @@ export async function markAttendanceAction(schoolSlug: string, studentId: string
                 date: targetDate,
                 status,
                 notes,
-                academicYearId
+                academicYearId: effectiveAcademicYearId
             }
         });
 
+        revalidatePath(`/s/${schoolSlug}/students/attendance`);
         return { success: true };
     } catch (error: any) {
         console.error("Mark Student Attendance Error:", error);
@@ -830,10 +873,14 @@ export async function markAttendanceAction(schoolSlug: string, studentId: string
     }
 }
 
-export async function getStudentAttendanceAction(schoolSlug: string, studentId: string, academicYearId?: string) {
+export async function getStudentAttendanceAction(schoolSlug: string, studentId: string, academicYearId?: string, authenticatedUser?: any) {
     try {
-        const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        let currentUser = authenticatedUser;
+        if (!currentUser) {
+            const auth = await validateUserSchoolAction(schoolSlug);
+            if (!auth.success || !auth.user) return { success: false, error: auth.error };
+            currentUser = auth.user;
+        }
 
         const query: any = { studentId };
         if (academicYearId) {
@@ -841,7 +888,7 @@ export async function getStudentAttendanceAction(schoolSlug: string, studentId: 
         }
 
         const attendance = await prisma.attendance.findMany({
-            where: { ...query, student: { school: { slug: schoolSlug } } },
+            where: { ...query, schoolId: currentUser.schoolId },
             orderBy: { date: 'desc' }
         });
         return { success: true, data: attendance };

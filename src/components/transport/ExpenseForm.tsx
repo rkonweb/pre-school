@@ -64,6 +64,7 @@ export default function ExpenseForm({ slug, vehicles, initialData, trigger, onSu
 
             if (res.success) {
                 setSuccess(true);
+                router.refresh();
                 setTimeout(() => {
                     setIsOpen(false);
                     setSuccess(false);
@@ -103,8 +104,8 @@ export default function ExpenseForm({ slug, vehicles, initialData, trigger, onSu
             </div>
 
             {isOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="fixed inset-0 z-[200] flex items-start justify-center p-4 pt-8 bg-zinc-900/60 backdrop-blur-sm overflow-y-auto">
+                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 my-auto">
                         <div className="p-6 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
                             <div>
                                 <h2 className="text-xl font-black text-zinc-900 tracking-tight">
@@ -122,7 +123,7 @@ export default function ExpenseForm({ slug, vehicles, initialData, trigger, onSu
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
                             {success ? (
                                 <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
                                     <div className="p-4 bg-green-100 rounded-full text-green-600 animate-bounce">

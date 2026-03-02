@@ -9,81 +9,86 @@ datasource db {
 }
 
 model School {
-  id                     String                  @id @default(cuid())
-  name                   String
-  slug                   String                  @unique
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  address                String?
-  email                  String?                 @unique
-  phone                  String?                 @unique
-  brandColor             String?                 @default("#AE7B64")
-  city                   String?
-  country                String?
-  currency               String?                 @default("USD")
-  dateFormat             String?                 @default("MM/DD/YYYY")
-  facebook               String?
-  foundingYear           String?
-  instagram              String?
-  latitude               String?
-  linkedin               String?
-  logo                   String?
-  longitude              String?
-  motto                  String?
-  state                  String?
-  timezone               String?                 @default("UTC")
-  twitter                String?
-  website                String?
-  youtube                String?
-  zip                    String?
-  googleMapsApiKey       String?
-  academicYearEnd        DateTime?
-  academicYearStart      DateTime?
-  primaryColor           String?                 @default("#AE7B64")
-  schoolTimings          String?                 @default("9:00 AM - 3:00 PM")
-  secondaryColor         String?
-  workingDays            String?
-  timetableConfig        String?                 @default("{}")
-  customDomain           String?                 @unique
-  modulesConfig          String?                 @default("[]")
-  addonsConfig           String?                 @default("[]")
-  academicYearStartMonth Int?                    @default(4)
-  integrationsConfig     String?                 @default("{}")
-  maxBranches            Int                     @default(1)
-  printableLogo          String?
-  aiSettings             AISettings?
-  academicYears          AcademicYear[]
-  admissions             Admission[]
-  biometricLogs          BiometricLog[]
-  branches               Branch[]
-  classrooms             Classroom[]
-  developmentDomains     DevelopmentDomain[]
-  diaryEntries           DiaryEntry[]
-  exams                  Exam[]
-  feeStructures          FeeStructure[]
-  idCardSettings         IDCardSettings?
-  idCardTemplates        IDCardTemplate[]
-  leads                  Lead[]
-  leadAutomationRules    LeadAutomationRule[]
-  leavePolicies          LeavePolicy[]
-  libraryBooks           LibraryBook[]
-  librarySettings        LibrarySettings?
-  libraryTransactions    LibraryTransaction[]
-  payrolls               Payroll[]
-  payrollSettings        PayrollSettings?
-  roles                  Role[]
-  marketingDesigns       SchoolMarketingDesign[]
-  students               Student[]
-  subscription           Subscription?
-  timetableStructures    TimetableStructure[]
-  transportDailyLogs     TransportDailyLog[]
-  transportDrivers       TransportDriver[]
-  transportDriverReviews TransportDriverReview[]
-  transportExpenses      TransportExpense[]
-  transportRoutes        TransportRoute[]
-  transportVehicles      TransportVehicle[]
-  users                  User[]
-  whatsappTemplates      WhatsAppTemplate[]
+  id                      String                  @id @default(cuid())
+  name                    String
+  slug                    String                  @unique
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  address                 String?
+  email                   String?                 @unique
+  phone                   String?                 @unique
+  brandColor              String?                 @default("#AE7B64")
+  city                    String?
+  country                 String?
+  currency                String?                 @default("USD")
+  dateFormat              String?                 @default("MM/DD/YYYY")
+  facebook                String?
+  foundingYear            String?
+  instagram               String?
+  latitude                String?
+  linkedin                String?
+  logo                    String?
+  longitude               String?
+  motto                   String?
+  state                   String?
+  timezone                String?                 @default("UTC")
+  twitter                 String?
+  website                 String?
+  youtube                 String?
+  zip                     String?
+  googleMapsApiKey        String?
+  academicYearEnd         DateTime?
+  academicYearStart       DateTime?
+  primaryColor            String?                 @default("#AE7B64")
+  schoolTimings           String?                 @default("9:00 AM - 3:00 PM")
+  secondaryColor          String?
+  workingDays             String?
+  timetableConfig         String?                 @default("{}")
+  customDomain            String?                 @unique
+  modulesConfig           String?                 @default("[]")
+  addonsConfig            String?                 @default("[]")
+  academicYearStartMonth  Int?                    @default(4)
+  integrationsConfig      String?                 @default("{}")
+  maxBranches             Int                     @default(1)
+  printableLogo           String?
+  transportSyncToAccounts Boolean                 @default(false)
+  aiSettings              AISettings?
+  academicYears           AcademicYear[]
+  accountCategories       AccountCategory[]
+  accountFinancialYears   AccountFinancialYear[]
+  accountTransactions     AccountTransaction[]
+  accountVendors          AccountVendor[]
+  admissions              Admission[]
+  biometricLogs           BiometricLog[]
+  branches                Branch[]
+  classrooms              Classroom[]
+  developmentDomains      DevelopmentDomain[]
+  diaryEntries            DiaryEntry[]
+  exams                   Exam[]
+  feeStructures           FeeStructure[]
+  idCardSettings          IDCardSettings?
+  idCardTemplates         IDCardTemplate[]
+  leads                   Lead[]
+  leadAutomationRules     LeadAutomationRule[]
+  leavePolicies           LeavePolicy[]
+  libraryBooks            LibraryBook[]
+  librarySettings         LibrarySettings?
+  libraryTransactions     LibraryTransaction[]
+  payrolls                Payroll[]
+  payrollSettings         PayrollSettings?
+  roles                   Role[]
+  marketingDesigns        SchoolMarketingDesign[]
+  students                Student[]
+  subscription            Subscription?
+  timetableStructures     TimetableStructure[]
+  transportDailyLogs      TransportDailyLog[]
+  transportDrivers        TransportDriver[]
+  transportDriverReviews  TransportDriverReview[]
+  transportExpenses       TransportExpense[]
+  transportRoutes         TransportRoute[]
+  transportVehicles       TransportVehicle[]
+  users                   User[]
+  whatsappTemplates       WhatsAppTemplate[]
 }
 
 model AcademicYear {
@@ -167,6 +172,8 @@ model Admission {
   seatAvailability       String            @default("AVAILABLE")
   timingConcern          Boolean           @default(false)
   tourStatus             String            @default("NONE")
+  inquiryNumber          String?           @unique
+  admissionNumber        String?           @unique
   branch                 Branch?           @relation(fields: [branchId], references: [id])
   counsellor             User?             @relation("AdmissionCounsellor", fields: [counsellorId], references: [id])
   school                 School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
@@ -424,6 +431,7 @@ model Student {
   fatherEmail           String?
   motherOccupation      String?
   motherEmail           String?
+  enrollmentNumber      String?                  @unique
   attendance            Attendance[]
   conversations         Conversation[]
   developmentReports    DevelopmentReport[]
@@ -444,13 +452,21 @@ model Student {
   leaveRequests         StudentLeaveRequest[]
   transportProfile      StudentTransportProfile?
   transferCertificate   TransferCertificate?
-  transportReviewsGiven TransportDriverReview[]
   boardingLogs          TransportBoardingLog[]
+  transportReviewsGiven TransportDriverReview[]
 
   @@index([schoolId])
   @@index([classroomId])
   @@index([promotedToClassroomId])
   @@index([status])
+  @@index([firstName, lastName])
+  @@index([joiningDate])
+  @@index([leavingDate])
+  @@index([admissionNumber])
+  @@index([parentMobile])
+  @@index([fatherPhone])
+  @@index([motherPhone])
+  @@index([parentName])
 }
 
 model TransferCertificate {
@@ -885,6 +901,9 @@ model Message {
   isRead         Boolean      @default(false)
   readAt         DateTime?
   createdAt      DateTime     @default(now())
+  deliveryStatus String       @default("DELIVERED")
+  flaggedReason  String?
+  isFlagged      Boolean      @default(false)
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
@@ -1119,6 +1138,7 @@ model TransportVehicle {
   lastMaintenanceMileage     Float?
   maintenanceIntervalDays    Int                    @default(180)
   maintenanceIntervalMileage Float                  @default(5000)
+  TransportBoardingLog       TransportBoardingLog[]
   dailyLogs                  TransportDailyLog[]
   expenses                   TransportExpense[]
   maintenanceLogs            TransportMaintenance[]
@@ -1127,7 +1147,6 @@ model TransportVehicle {
   branch                     Branch?                @relation(fields: [branchId], references: [id])
   school                     School                 @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   VehicleTelemetry           VehicleTelemetry[]
-  TransportBoardingLog       TransportBoardingLog[]
 
   @@unique([schoolId, registrationNumber])
   @@index([schoolId])
@@ -1185,13 +1204,13 @@ model TransportRoute {
   dropVehicleId   String?
   pickupVehicleId String?
   students        StudentTransportProfile[]
+  boardingLogs    TransportBoardingLog[]
   branch          Branch?                   @relation(fields: [branchId], references: [id])
   driver          TransportDriver?          @relation(fields: [driverId], references: [id])
   dropVehicle     TransportVehicle?         @relation("VehicleDrop", fields: [dropVehicleId], references: [id])
   pickupVehicle   TransportVehicle?         @relation("VehiclePickup", fields: [pickupVehicleId], references: [id])
   school          School                    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   stops           TransportStop[]
-  boardingLogs    TransportBoardingLog[]
 
   @@index([schoolId])
   @@index([branchId])
@@ -1242,21 +1261,20 @@ model StudentTransportProfile {
 }
 
 model TransportBoardingLog {
-  id         String   @id @default(cuid())
-  studentId  String
-  vehicleId  String
-  routeId    String
-  status     String // "IN", "OUT", "ABSENT"
-  type       String // "PICKUP", "DROP"
-  timestamp  DateTime @default(now())
-  notes      String?
-  recordedBy String? // ID of driver/attendant who marked it
-
-  student             Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  vehicle             TransportVehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  route               TransportRoute     @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  TransportDailyLog   TransportDailyLog? @relation(fields: [transportDailyLogId], references: [id])
+  id                  String             @id @default(cuid())
+  studentId           String
+  vehicleId           String
+  routeId             String
+  status              String
+  type                String
+  timestamp           DateTime           @default(now())
+  notes               String?
+  recordedBy          String?
   transportDailyLogId String?
+  route               TransportRoute     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  student             Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  TransportDailyLog   TransportDailyLog? @relation(fields: [transportDailyLogId], references: [id])
+  vehicle             TransportVehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([vehicleId])
@@ -1884,10 +1902,10 @@ model TransportDailyLog {
   schoolId        String
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
+  boardingLogs    TransportBoardingLog[]
   school          School                 @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   vehicle         TransportVehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   stopLogs        TransportStopLog[]
-  boardingLogs    TransportBoardingLog[]
 
   @@unique([vehicleId, date])
   @@index([schoolId])
@@ -2104,4 +2122,155 @@ model DevelopmentReport {
   @@unique([studentId, term, academicYearId])
   @@index([studentId])
   @@index([academicYearId])
+}
+
+model StoreVendor {
+  id             String               @id @default(cuid())
+  name           String
+  contactPerson  String?
+  email          String?
+  phone          String?
+  address        String?
+  categories     String[]
+  taxId          String?
+  paymentTerms   String?
+  status         String               @default("ACTIVE")
+  tenantId       String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  purchaseOrders StorePurchaseOrder[]
+  quotations     StoreQuotation[]
+
+  @@index([tenantId])
+}
+
+model StorePurchaseOrder {
+  id               String                   @id @default(cuid())
+  poNumber         String                   @unique
+  vendorId         String
+  orderDate        DateTime                 @default(now())
+  expectedDelivery DateTime?
+  status           String                   @default("DRAFT")
+  approvedById     String?
+  approvalDate     DateTime?
+  totalAmount      Float                    @default(0)
+  notes            String?
+  tenantId         String
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  vendor           StoreVendor              @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  items            StorePurchaseOrderItem[]
+
+  @@index([tenantId])
+  @@index([vendorId])
+}
+
+model StorePurchaseOrderItem {
+  id               String             @id @default(cuid())
+  poId             String
+  itemId           String?
+  customItemName   String?
+  quantity         Int
+  unitRate         Float
+  total            Float
+  receivedQuantity Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  purchaseOrder    StorePurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+
+  @@index([poId])
+}
+
+model StoreQuotation {
+  id          String      @id @default(cuid())
+  vendorId    String
+  title       String
+  documentUrl String?
+  validUntil  DateTime?
+  status      String      @default("REVIEW")
+  tenantId    String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  vendor      StoreVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([vendorId])
+}
+
+model AccountFinancialYear {
+  id           String               @id @default(cuid())
+  name         String
+  startDate    DateTime
+  endDate      DateTime
+  isActive     Boolean              @default(true)
+  schoolId     String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  school       School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  transactions AccountTransaction[]
+
+  @@index([schoolId])
+}
+
+model AccountCategory {
+  id           String               @id @default(cuid())
+  name         String
+  type         String
+  description  String?
+  isSystem     Boolean              @default(false)
+  schoolId     String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  school       School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  transactions AccountTransaction[]
+
+  @@index([schoolId])
+}
+
+model AccountVendor {
+  id           String               @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  address      String?
+  schoolId     String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  bankDetails  String?
+  category     String?
+  contactName  String?
+  notes        String?
+  status       String               @default("ACTIVE")
+  taxId        String?
+  transactions AccountTransaction[]
+  school       School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId])
+}
+
+model AccountTransaction {
+  id                       String               @id @default(cuid())
+  transactionNo            String
+  description              String
+  amount                   Float
+  type                     String
+  status                   String               @default("COMPLETED")
+  date                     DateTime
+  reference                String?
+  notes                    String?
+  schoolId                 String
+  financialYearId          String
+  categoryId               String?
+  vendorId                 String?
+  createdById              String?
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+  sourceTransportExpenseId String?
+  category                 AccountCategory?     @relation(fields: [categoryId], references: [id])
+  financialYear            AccountFinancialYear @relation(fields: [financialYearId], references: [id])
+  school                   School               @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  vendor                   AccountVendor?       @relation(fields: [vendorId], references: [id])
+
+  @@index([schoolId])
+  @@index([financialYearId])
 }

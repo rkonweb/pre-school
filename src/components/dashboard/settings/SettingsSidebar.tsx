@@ -11,7 +11,8 @@ import {
     CreditCard,
     Coins,
     Fingerprint,
-    Sparkles
+    Sparkles,
+    Binary
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -30,7 +31,7 @@ export function SettingsSidebar() {
         },
         {
             label: "Biometric",
-            href: `/s/${slug}/settings/biometric`,
+            href: `/s/${slug}/hr/configuration/biometric`,
             icon: Fingerprint,
             desc: "Devices & Logs"
         },
@@ -42,7 +43,7 @@ export function SettingsSidebar() {
         },
         {
             label: "Leaves",
-            href: `/s/${slug}/settings/leaves`,
+            href: `/s/${slug}/hr/configuration/leaves`,
             icon: Palmtree,
             desc: "Policy & Quotas"
         },
@@ -59,6 +60,12 @@ export function SettingsSidebar() {
             desc: "Regional Settings"
         },
         {
+            label: "Identifiers",
+            href: `/s/${slug}/settings/identifiers`,
+            icon: Binary,
+            desc: "Custom Numbering"
+        },
+        {
             label: "Fees",
             href: `/s/${slug}/settings/fees`,
             icon: CreditCard,
@@ -66,7 +73,7 @@ export function SettingsSidebar() {
         },
         {
             label: "Payroll",
-            href: `/s/${slug}/settings/payroll`,
+            href: `/s/${slug}/hr/configuration/payroll`,
             icon: Coins,
             desc: "Automated Rules"
         },

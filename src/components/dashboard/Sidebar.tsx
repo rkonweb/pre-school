@@ -43,9 +43,14 @@ import {
     CalendarDays,
     Wallet,
     Building,
-    Brain,
     Utensils,
-    ShoppingBag
+    ShoppingBag,
+    Receipt,
+    Store,
+    Brain,
+    ShieldAlert,
+    MessageSquare,
+    Binary
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
@@ -103,26 +108,10 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
     }
 
     const rawNavigation: NavItem[] = [
+        // ── P0: Always Visible ──
         { name: "Dashboard", href: dashboardHref, icon: LayoutDashboard },
-        {
-            name: "Admissions",
-            href: `/s/${slug}/admissions`,
-            icon: FileText,
-            children: [
-                { name: "AI Dashboard", href: `/s/${slug}/admissions/dashboard`, icon: Sparkles },
-                { name: "Application Pipeline", href: `/s/${slug}/admissions`, icon: Layers },
-                { name: "Inquiry Dashboard", href: `/s/${slug}/admissions/inquiry`, icon: LayoutDashboard },
-                { name: "Leads (Pipeline)", href: `/s/${slug}/admissions/inquiry/pipeline`, icon: MessageCircle },
-                { name: "Lead List", href: `/s/${slug}/admissions/inquiry/list`, icon: Users },
-                { name: "Follow-ups", href: `/s/${slug}/admissions/inquiry/followups`, icon: Clock },
-                { name: "School Tours", href: `/s/${slug}/admissions/inquiry/tours`, icon: MapPin },
-                { name: "WhatsApp Automation", href: `/s/${slug}/admissions/inquiry/automation`, icon: MessageCircle },
-                { name: "Template Library", href: `/s/${slug}/admissions/inquiry/templates`, icon: BookOpen },
-                { name: "Reports", href: `/s/${slug}/admissions/inquiry/reports`, icon: TrendingUp },
-                { name: "Inquiry Settings", href: `/s/${slug}/admissions/inquiry/settings`, icon: Settings },
-                { name: "AI Configuration", href: `/s/${slug}/admissions/settings/ai`, icon: Sparkles },
-            ]
-        },
+
+        // ── P1: Core Daily Operations ──
         {
             name: "Students",
             href: `/s/${slug}/students`,
@@ -130,28 +119,129 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
             children: [
                 { name: "All Students", href: `/s/${slug}/students`, icon: Users },
                 { name: "Attendance", href: `/s/${slug}/students/attendance`, icon: Clock },
-                { name: "Health Records", href: `/s/${slug}/students/health`, icon: Activity },
                 { name: "Progress Reports", href: `/s/${slug}/students/reports`, icon: FileSpreadsheet },
                 { name: "Development", href: `/s/${slug}/students/development`, icon: Brain },
+                { name: "Health Records", href: `/s/${slug}/students/health`, icon: Activity },
+                { name: "Promote Students", href: `/s/${slug}/students/promote`, icon: TrendingUp },
                 { name: "ID Cards", href: `/s/${slug}/students/id-cards`, icon: CreditCard },
             ]
         },
         { name: "Classes", href: `/s/${slug}/academics/classes`, icon: Layers },
         { name: "Timetable", href: `/s/${slug}/academics/timetable`, icon: Clock },
         { name: "Diary", href: `/s/${slug}/diary`, icon: NotebookPen },
-        { name: "Curriculum", href: `/s/${slug}/curriculum`, icon: FileText },
+
+        // ── P2: People & HR ──
         {
-            name: "Staff",
-            href: `/s/${slug}/staff`,
+            name: "Human Resources",
+            href: `/s/${slug}/hr`,
             icon: Briefcase,
             children: [
-                { name: "Staff Directory", href: `/s/${slug}/staff`, icon: Users },
-                { name: "Attendance", href: `/s/${slug}/staff/attendance`, icon: Clock },
-                { name: "Payroll", href: `/s/${slug}/staff/payroll`, icon: Banknote },
+                { name: "HR Dashboard", href: `/s/${slug}/hr`, icon: LayoutDashboard },
+                { name: "Staff Directory", href: `/s/${slug}/hr/directory`, icon: Users },
+                { name: "Attendance", href: `/s/${slug}/hr/attendance`, icon: Clock },
+                { name: "Payroll Dashboard", href: `/s/${slug}/hr/payroll`, icon: Banknote },
+                { name: "Recruitment (ATS)", href: `/s/${slug}/hr/recruitment`, icon: Sparkles },
+                { name: "Roles & Permissions", href: `/s/${slug}/hr/roles`, icon: Shield },
             ]
         },
-        { name: "Billing", href: `/s/${slug}/billing`, icon: CreditCard },
-        { name: "Inventory", href: `/s/${slug}/inventory`, icon: Package },
+
+        // ── P3: Intake & CRM ──
+        {
+            name: "Admissions CRM",
+            href: `/s/${slug}/admissions`,
+            icon: FileText,
+            children: [
+                { name: "Application Pipeline", href: `/s/${slug}/admissions`, icon: Layers },
+                { name: "Leads (Pipeline)", href: `/s/${slug}/admissions/inquiry/pipeline`, icon: MessageCircle },
+                { name: "Lead List", href: `/s/${slug}/admissions/inquiry/list`, icon: Users },
+                { name: "Follow-ups", href: `/s/${slug}/admissions/inquiry/followups`, icon: Clock },
+                { name: "Inquiry Dashboard", href: `/s/${slug}/admissions/inquiry`, icon: LayoutDashboard },
+                { name: "School Tours", href: `/s/${slug}/admissions/inquiry/tours`, icon: MapPin },
+                { name: "AI Dashboard", href: `/s/${slug}/admissions/dashboard`, icon: Sparkles },
+                { name: "WhatsApp Automation", href: `/s/${slug}/admissions/inquiry/automation`, icon: MessageCircle },
+                { name: "Template Library", href: `/s/${slug}/admissions/inquiry/templates`, icon: BookOpen },
+                { name: "Reports", href: `/s/${slug}/admissions/inquiry/reports`, icon: TrendingUp },
+                { name: "Inquiry Settings", href: `/s/${slug}/admissions/inquiry/settings`, icon: Settings },
+                { name: "AI Configuration", href: `/s/${slug}/admissions/settings/ai`, icon: Sparkles },
+            ]
+        },
+
+        // ── P4: Finance ──
+        {
+            name: "Accounts",
+            href: `/s/${slug}/accounts`,
+            icon: Wallet,
+            children: [
+                { name: "Financial Dashboard", href: `/s/${slug}/accounts`, icon: LayoutDashboard },
+                { name: "Fee Management", href: `/s/${slug}/billing`, icon: CreditCard },
+                { name: "Transactions", href: `/s/${slug}/accounts/transactions`, icon: FileSpreadsheet },
+                { name: "Vendors & Payees", href: `/s/${slug}/accounts/vendors`, icon: Users },
+                { name: "Bulk Fee Actions", href: `/s/${slug}/billing/bulk`, icon: Layers },
+                { name: "Purchase Orders", href: `/s/${slug}/vendor/purchase-orders`, icon: Receipt },
+                { name: "Quotations", href: `/s/${slug}/vendor/quotations`, icon: FileText },
+                { name: "AI Insights", href: `/s/${slug}/accounts/insights`, icon: Sparkles },
+                { name: "Account Settings", href: `/s/${slug}/accounts/settings`, icon: Settings },
+            ]
+        },
+
+        // ── P5: Communication ──
+        {
+            name: "Communication",
+            href: `/s/${slug}/communication`,
+            icon: MessageCircle,
+            children: [
+                { name: "Communication Center", href: `/s/${slug}/communication`, icon: MessageSquare },
+                { name: "Chat History", href: `/s/${slug}/communication/chat-history`, icon: ShieldAlert },
+            ]
+        },
+
+        // ── P6: Operations ──
+        {
+            name: "Transport",
+            href: `/s/${slug}/transport`,
+            icon: Bus,
+            children: [
+                { name: "Transport Dashboard", href: `/s/${slug}/transport`, icon: LayoutDashboard },
+                { name: "Routes", href: `/s/${slug}/transport/route/routes`, icon: MapPin },
+                { name: "Student List", href: `/s/${slug}/transport/students`, icon: GraduationCap },
+                { name: "Fleet – Vehicles", href: `/s/${slug}/transport/fleet/vehicles`, icon: Bus },
+                { name: "Fleet – Drivers", href: `/s/${slug}/transport/fleet/drivers`, icon: Users },
+                { name: "Fleet – Assignments", href: `/s/${slug}/transport/fleet/assignments`, icon: Layers },
+                { name: "GPS Tracking", href: `/s/${slug}/transport/fleet/tracking`, icon: Activity },
+                { name: "Applications", href: `/s/${slug}/transport/application/apply`, icon: FileText },
+                { name: "Transport Fees", href: `/s/${slug}/transport/fees`, icon: Banknote },
+                { name: "Daily Reports", href: `/s/${slug}/transport/reports/daily`, icon: TrendingUp },
+                { name: "Monthly Reports", href: `/s/${slug}/transport/reports/monthly`, icon: FileSpreadsheet },
+                { name: "Expense Tracking", href: `/s/${slug}/transport/expenses`, icon: Banknote },
+                { name: "Application Requests", href: `/s/${slug}/transport/application/requests`, icon: Receipt },
+                { name: "Application Status", href: `/s/${slug}/transport/application/status`, icon: Clock },
+                { name: "Fee Generation", href: `/s/${slug}/transport/application/fees`, icon: Wallet },
+            ]
+        },
+        {
+            name: "Library",
+            href: `/s/${slug}/library`,
+            icon: BookOpen,
+            children: [
+                { name: "Library Dashboard", href: `/s/${slug}/library`, icon: LayoutDashboard },
+                { name: "Issue & Return", href: `/s/${slug}/library/issue`, icon: Receipt },
+                { name: "Book Inventory", href: `/s/${slug}/library/inventory`, icon: Package },
+                { name: "Transactions", href: `/s/${slug}/library/transactions`, icon: FileSpreadsheet },
+            ]
+        },
+        {
+            name: "Canteen",
+            href: `/s/${slug}/canteen`,
+            icon: Utensils,
+            children: [
+                { name: "Dashboard & AI", href: `/s/${slug}/canteen`, icon: LayoutDashboard },
+                { name: "Point of Sale", href: `/s/${slug}/canteen/pos`, icon: CreditCard },
+                { name: "Menu & Timetable", href: `/s/${slug}/canteen/menu`, icon: CalendarDays },
+                { name: "Meal Packages", href: `/s/${slug}/canteen/packages`, icon: Package },
+                { name: "Subscriptions", href: `/s/${slug}/canteen/billing`, icon: Banknote },
+                { name: "Accounts Ledger", href: `/s/${slug}/canteen/accounts`, icon: Wallet },
+            ]
+        },
         {
             name: "Hostel Management",
             href: `/s/${slug}/hostel/allocation`,
@@ -162,78 +252,43 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
                 { name: "Hostel Settings", href: `/s/${slug}/hostel/settings`, icon: Settings },
             ]
         },
+
+        // ── P7: Secondary / Support ──
+        { name: "Curriculum", href: `/s/${slug}/curriculum`, icon: FileText },
         {
-            name: "Store & Inventory",
+            name: "School Store",
             href: `/s/${slug}/store`,
-            icon: Package,
+            icon: ShoppingBag,
             children: [
                 { name: "Store Dashboard", href: `/s/${slug}/store`, icon: LayoutDashboard },
+                { name: "Orders", href: `/s/${slug}/store/orders`, icon: ShoppingBag },
                 { name: "Academic Packages", href: `/s/${slug}/store/packages`, icon: Layers },
                 { name: "Catalog", href: `/s/${slug}/store/catalog`, icon: BookOpen },
-                { name: "Inventory", href: `/s/${slug}/store/inventory`, icon: Activity },
-                { name: "Orders", href: `/s/${slug}/store/orders`, icon: ShoppingBag },
+                { name: "Store Inventory", href: `/s/${slug}/store/inventory`, icon: Activity },
             ]
         },
-        {
-            name: "Canteen",
-            href: `/s/${slug}/canteen`,
-            icon: Utensils,
-            children: [
-                { name: "Dashboard & AI", href: `/s/${slug}/canteen`, icon: LayoutDashboard },
-                { name: "Point of Sale", href: `/s/${slug}/canteen/pos`, icon: CreditCard },
-                { name: "Accounts Ledger", href: `/s/${slug}/canteen/accounts`, icon: Wallet },
-                { name: "Menu & Timetable", href: `/s/${slug}/canteen/menu`, icon: CalendarDays },
-                { name: "Meal Packages", href: `/s/${slug}/canteen/packages`, icon: Package },
-                { name: "Subscriptions", href: `/s/${slug}/canteen/billing`, icon: Banknote },
-            ]
-        },
-        {
-            name: "Accounts",
-            href: `/s/${slug}/accounts`,
-            icon: Wallet,
-            children: [
-                { name: "Financial Dashboard", href: `/s/${slug}/accounts`, icon: LayoutDashboard },
-                { name: "Transactions", href: `/s/${slug}/accounts/transactions`, icon: FileSpreadsheet },
-                { name: "Vendors & Payees", href: `/s/${slug}/accounts/vendors`, icon: Users },
-                { name: "AI Insights", href: `/s/${slug}/accounts/insights`, icon: Sparkles },
-                { name: "Account Settings", href: `/s/${slug}/accounts/settings`, icon: Settings },
-            ]
-        },
-        {
-            name: "Transport",
-            href: `/s/${slug}/transport`,
-            icon: Bus,
-            children: [
-                { name: "Transport Dashboard", href: `/s/${slug}/transport`, icon: LayoutDashboard },
-                { name: "Route", href: `/s/${slug}/transport/route/routes`, icon: MapPin },
-                { name: "Application", href: `/s/${slug}/transport/application/apply`, icon: FileText },
-                { name: "Fleet", href: `/s/${slug}/transport/fleet/vehicles`, icon: Bus },
-                { name: "Analytics & Reports", href: `/s/${slug}/transport/reports/daily`, icon: TrendingUp },
-                { name: "Expense Tracking", href: `/s/${slug}/transport/expenses`, icon: Banknote },
-            ]
-        },
-        { name: "Library", href: `/s/${slug}/library`, icon: BookOpen },
+        { name: "School Inventory", href: `/s/${slug}/inventory`, icon: Package },
         { name: "Training Center", href: `/s/${slug}/training`, icon: School },
         { name: "Documents", href: `/s/${slug}/documents`, icon: Folder },
-        { name: "Communication", href: `/s/${slug}/communication`, icon: MessageCircle },
         { name: "Marketing Tools", href: `/s/${slug}/marketing`, icon: Layers },
-        { name: "Roles & Permissions", href: `/s/${slug}/roles`, icon: Shield },
+
+        // ── P8: Config ──
         {
             name: "Settings", href: `/s/${slug}/settings`, icon: Settings, children: [
                 { name: "Institutional Identity", href: `/s/${slug}/settings/identity`, icon: Building2 },
                 { name: "Academic Years", href: `/s/${slug}/settings/academic-years`, icon: CalendarDays },
-                { name: "Branch Management", href: `/s/${slug}/settings/branches`, icon: Building },
-                { name: "Location & Physicality", href: `/s/${slug}/settings/location`, icon: MapPin },
                 { name: "Fee Configuration", href: `/s/${slug}/settings/fees`, icon: Wallet },
                 { name: "System Access Control", href: `/s/${slug}/settings/admin`, icon: ShieldCheck },
-                { name: "Biometric Integration", href: `/s/${slug}/settings/biometric`, icon: Fingerprint },
-                { name: "Attendance & Leaves", href: `/s/${slug}/settings/leaves`, icon: Palmtree },
-                { name: "Payroll & Disbursement", href: `/s/${slug}/settings/payroll`, icon: Banknote },
-                { name: "Regional Operations", href: `/s/${slug}/settings/config`, icon: Settings },
+                { name: "Branch Management", href: `/s/${slug}/settings/branches`, icon: Building },
+                { name: "Identifiers", href: `/s/${slug}/settings/identifiers`, icon: Binary },
+                { name: "Attendance & Leaves", href: `/s/${slug}/hr/configuration/leaves`, icon: Palmtree },
+                { name: "Payroll & Disbursement", href: `/s/${slug}/hr/configuration/payroll`, icon: Banknote },
+                { name: "Biometric Integration", href: `/s/${slug}/hr/configuration/biometric`, icon: Fingerprint },
+                { name: "Location & Physicality", href: `/s/${slug}/settings/location`, icon: MapPin },
                 { name: "Connectors & APIs", href: `/s/${slug}/settings/integrations`, icon: Zap },
                 { name: "Subscription & Plan", href: `/s/${slug}/settings/subscription`, icon: CreditCard },
                 { name: "ID Card Templates", href: `/s/${slug}/settings/id-cards`, icon: CreditCard },
-
+                { name: "Regional Operations", href: `/s/${slug}/settings/config`, icon: Settings },
                 { name: "Development Settings", href: `/s/${slug}/settings/development`, icon: Brain },
                 { name: "UI Kit / Design System", href: `/s/${slug}/settings/ui-kit`, icon: Sparkles },
             ]
@@ -243,7 +298,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
     // Permission map
     const navPermissionMap: Record<string, string> = {
         "Dashboard": "dashboard",
-        "Admissions": "admissions",
+        "Admissions CRM": "admissions",
         "AI Dashboard": "admissions.dashboard",
         "Application Pipeline": "admissions.pipeline",
         "Inquiry Dashboard": "admissions.inquiry.dashboard",
@@ -270,7 +325,16 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         "Staff Attendance": "staff.attendance",
         "Payroll": "staff.payroll",
         "Billing": "billing",
-        "Inventory": "inventory",
+        "School Inventory": "inventory",
+        "Store & Inventory": "inventory",
+        "Store Dashboard": "inventory",
+        "Academic Packages": "inventory",
+        "Catalog": "inventory",
+        "Orders": "inventory",
+        "Vendor Management": "vendor",
+        "Vendors Directory": "vendor.vendors",
+        "Purchase Orders": "vendor.purchaseorders",
+        "Quotations": "vendor.quotations",
         "Hostel Management": "hostel",
         "Room Allocation": "hostel.allocation",
         "Hostel Billing": "hostel.billing",
@@ -310,6 +374,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: { schoo
         "Payroll & Disbursement": "settings.payroll",
         "Regional Operations": "settings.config",
         "Connectors & APIs": "settings.integrations",
+        "Identifiers": "settings",
         "Academic Years": "settings.academicyears",
         "Fee Configuration": "settings.fees",
         "Branch Management": "settings.branches",
