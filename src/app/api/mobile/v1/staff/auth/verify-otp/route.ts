@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { SignJWT } from "jose";
+import { signToken } from "@/lib/auth-mobile";
 
 export async function POST(req: Request) {
     try {
@@ -22,18 +22,13 @@ export async function POST(req: Request) {
             });
             const devSchool = devUser?.school ?? await (prisma as any).school.findFirst({ orderBy: { createdAt: 'asc' } });
 
-            const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "fallback-secret-for-dev-123");
-            const token = await new SignJWT({
+            const token = await signToken({
                 sub: devUser?.id ?? "usr_mock_123",
                 role: devUser?.role ?? "ADMIN",
                 schoolId: devUser?.schoolId ?? devSchool?.id ?? "scl_mock_123",
                 firstName: devUser?.firstName ?? "System",
                 lastName: devUser?.lastName ?? "Admin"
-            })
-                .setProtectedHeader({ alg: 'HS256' })
-                .setIssuedAt()
-                .setExpirationTime('30d')
-                .sign(secret);
+            });
 
             return NextResponse.json({
                 success: true,
@@ -94,20 +89,14 @@ export async function POST(req: Request) {
 
 
         // 3. Generate JWT Token
-        const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "fallback-secret-for-dev-123");
-
-        const token = await new SignJWT({
+        const token = await signToken({
             sub: user.id,
             role: user.role,
             schoolId: user.schoolId,
             branchId: user.branchId,
             firstName: user.firstName,
             lastName: user.lastName
-        })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setIssuedAt()
-            .setExpirationTime('30d') // Sessions last 30 days on mobile
-            .sign(secret);
+        });
 
         return NextResponse.json({
             success: true,

@@ -27,6 +27,7 @@ export async function getCurrentUserAction() {
             select: {
                 id: true,
                 role: true,
+                mobile: true,
                 branchId: true,
                 schoolId: true,
                 school: {

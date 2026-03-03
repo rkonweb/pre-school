@@ -9,6 +9,8 @@ class DiaryState {
   final List<Map<String, dynamic>> classrooms;
   final String? selectedClassroomId;
   final String? selectedType; // e.g., 'ALL', 'HOMEWORK', 'NOTICE', etc.
+  final DateTime selectedDate;
+  final bool onlyMine;
 
   DiaryState({
     this.isLoading = false,
@@ -17,7 +19,9 @@ class DiaryState {
     this.classrooms = const [],
     this.selectedClassroomId,
     this.selectedType,
-  });
+    DateTime? selectedDate,
+    this.onlyMine = true, // Default to true as per "Staff Dairy" request
+  }) : selectedDate = selectedDate ?? DateTime.now();
 
   DiaryState copyWith({
     bool? isLoading,
@@ -26,6 +30,8 @@ class DiaryState {
     List<Map<String, dynamic>>? classrooms,
     String? selectedClassroomId,
     String? Function()? selectedType,
+    DateTime? selectedDate,
+    bool? onlyMine,
   }) {
     return DiaryState(
       isLoading: isLoading ?? this.isLoading,
@@ -34,6 +40,8 @@ class DiaryState {
       classrooms: classrooms ?? this.classrooms,
       selectedClassroomId: selectedClassroomId ?? this.selectedClassroomId,
       selectedType: selectedType != null ? selectedType() : this.selectedType,
+      selectedDate: selectedDate ?? this.selectedDate,
+      onlyMine: onlyMine ?? this.onlyMine,
     );
   }
 }
@@ -50,14 +58,9 @@ class DiaryProvider extends StateNotifier<DiaryState> {
     try {
       final classrooms = await _service.getClassrooms();
       
-      String? defaultClassroomId;
-      if (classrooms.isNotEmpty) {
-        defaultClassroomId = classrooms.first['id'] as String;
-      }
-      
       state = state.copyWith(
         classrooms: classrooms,
-        selectedClassroomId: defaultClassroomId,
+        selectedClassroomId: null, // Default to All Classes
       );
 
       await loadEntries();
@@ -69,9 +72,12 @@ class DiaryProvider extends StateNotifier<DiaryState> {
   Future<void> loadEntries() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
+      final dateStr = "${state.selectedDate.year}-${state.selectedDate.month.toString().padLeft(2, '0')}-${state.selectedDate.day.toString().padLeft(2, '0')}";
       final entries = await _service.getEntries(
         classroomId: state.selectedClassroomId,
+        date: dateStr,
         type: state.selectedType == 'ALL' ? null : state.selectedType,
+        onlyMine: state.onlyMine,
       );
       state = state.copyWith(isLoading: false, entries: entries);
     } catch (e) {
@@ -87,11 +93,22 @@ class DiaryProvider extends StateNotifier<DiaryState> {
     loadEntries();
   }
 
+  void setDate(DateTime date) {
+    state = state.copyWith(selectedDate: date);
+    loadEntries();
+  }
+
+  void toggleOnlyMine(bool value) {
+    state = state.copyWith(onlyMine: value);
+    loadEntries();
+  }
+
   Future<bool> createEntry(Map<String, dynamic> data) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       await _service.createEntry(data);
-      await loadEntries(); // Reload lists
+      state = state.copyWith(selectedDate: DateTime.now());
+      await loadEntries(); // Reload lists for today
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -103,7 +120,8 @@ class DiaryProvider extends StateNotifier<DiaryState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       await _service.updateEntry(id, data);
-      await loadEntries(); // Reload lists
+      state = state.copyWith(selectedDate: DateTime.now());
+      await loadEntries(); // Reload lists for today
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

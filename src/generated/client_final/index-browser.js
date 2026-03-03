@@ -753,6 +753,17 @@ exports.Prisma.PushSubscriptionScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DeviceTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  userType: 'userType',
+  token: 'token',
+  deviceType: 'deviceType',
+  lastUsed: 'lastUsed',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.NotificationScheduleScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -776,6 +787,7 @@ exports.Prisma.ConversationScalarFieldEnum = {
   id: 'id',
   studentId: 'studentId',
   type: 'type',
+  participantType: 'participantType',
   title: 'title',
   lastMessageAt: 'lastMessageAt',
   createdAt: 'createdAt',
@@ -785,16 +797,51 @@ exports.Prisma.ConversationScalarFieldEnum = {
 exports.Prisma.MessageScalarFieldEnum = {
   id: 'id',
   content: 'content',
+  type: 'type',
   senderType: 'senderType',
   senderId: 'senderId',
   senderName: 'senderName',
   conversationId: 'conversationId',
+  pollId: 'pollId',
   isRead: 'isRead',
   readAt: 'readAt',
-  createdAt: 'createdAt',
-  deliveryStatus: 'deliveryStatus',
+  status: 'status',
+  isFlagged: 'isFlagged',
   flaggedReason: 'flaggedReason',
-  isFlagged: 'isFlagged'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deliveryStatus: 'deliveryStatus'
+};
+
+exports.Prisma.PollScalarFieldEnum = {
+  id: 'id',
+  question: 'question',
+  options: 'options',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PollResponseScalarFieldEnum = {
+  id: 'id',
+  pollId: 'pollId',
+  userId: 'userId',
+  optionId: 'optionId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.BroadcastScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  content: 'content',
+  status: 'status',
+  schoolId: 'schoolId',
+  authorId: 'authorId',
+  approvedById: 'approvedById',
+  isFlagged: 'isFlagged',
+  flaggedReason: 'flaggedReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.DiaryEntryScalarFieldEnum = {
@@ -1878,9 +1925,13 @@ exports.Prisma.ModelName = {
   HomeworkTemplate: 'HomeworkTemplate',
   Notification: 'Notification',
   PushSubscription: 'PushSubscription',
+  DeviceToken: 'DeviceToken',
   NotificationSchedule: 'NotificationSchedule',
   Conversation: 'Conversation',
   Message: 'Message',
+  Poll: 'Poll',
+  PollResponse: 'PollResponse',
+  Broadcast: 'Broadcast',
   DiaryEntry: 'DiaryEntry',
   DiaryRecipient: 'DiaryRecipient',
   Role: 'Role',

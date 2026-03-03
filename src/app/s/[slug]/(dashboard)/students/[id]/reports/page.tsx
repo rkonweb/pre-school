@@ -16,6 +16,7 @@ import { getStudentSmartAnalyticsAction } from "@/app/actions/analytics-actions"
 import { getStudentAction } from "@/app/actions/student-actions";
 import { StandardActionButton } from "@/components/ui/StandardActionButton";
 import { toast } from "sonner";
+import { ReportsSkeleton } from "@/components/ui/SkeletonCard";
 import dynamic from "next/dynamic";
 
 const PrintableReport = dynamic(() => import("@/components/reports/PrintableReport"), { ssr: false });
@@ -63,11 +64,7 @@ export default function ReportsTab() {
     }
 
     if (isLoading || !student) {
-        return (
-            <div className="flex items-center justify-center p-20">
-                <Loader2 className="h-8 w-8 animate-spin text-zinc-300" />
-            </div>
-        );
+        return <ReportsSkeleton />;
     }
 
     return (

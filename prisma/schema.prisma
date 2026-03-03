@@ -89,6 +89,7 @@ model School {
   transportVehicles       TransportVehicle[]
   users                   User[]
   whatsappTemplates       WhatsAppTemplate[]
+  broadcasts              Broadcast[]
 }
 
 model AcademicYear {
@@ -259,6 +260,8 @@ model User {
   branch                   Branch?                 @relation(fields: [branchId], references: [id])
   customRole               Role?                   @relation(fields: [customRoleId], references: [id])
   school                   School?                 @relation(fields: [schoolId], references: [id])
+  authoredBroadcasts       Broadcast[]             @relation("BroadcastAuthor")
+  approvedBroadcasts       Broadcast[]             @relation("BroadcastApprover")
 
   @@index([role])
   @@index([status])
@@ -856,6 +859,19 @@ model PushSubscription {
   @@index([userId])
 }
 
+model DeviceToken {
+  id         String   @id @default(cuid())
+  userId     String
+  userType   String   // PARENT, STAFF, ADMIN
+  token      String   @unique
+  deviceType String?  // ios, android
+  lastUsed   DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+}
+
 model NotificationSchedule {
   id             String    @id @default(cuid())
   type           String
@@ -878,35 +894,82 @@ model NotificationSchedule {
 }
 
 model Conversation {
-  id            String    @id @default(cuid())
-  studentId     String
-  type          String    @default("GENERAL")
-  title         String?
-  lastMessageAt DateTime  @default(now())
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  messages      Message[]
+  id              String    @id @default(cuid())
+  studentId       String
+  type            String    @default("GENERAL")
+  participantType String    @default("BOTH")    // MOTHER, FATHER, BOTH
+  title           String?
+  lastMessageAt   DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  student         Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  messages        Message[]
 
-  @@unique([studentId, type])
+  @@unique([studentId, type, participantType])
 }
 
 model Message {
   id             String       @id @default(cuid())
   content        String
+  type           String       @default("TEXT") // TEXT, POLL, IMAGE, FILE, BROADCAST
   senderType     String
   senderId       String?
   senderName     String
   conversationId String
+  pollId         String?
   isRead         Boolean      @default(false)
   readAt         DateTime?
-  createdAt      DateTime     @default(now())
-  deliveryStatus String       @default("DELIVERED")
-  flaggedReason  String?
+  status         String       @default("SENT") // SENT, FLAGGED, REJECTED
   isFlagged      Boolean      @default(false)
+  flaggedReason  String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
+  deliveryStatus String       @default("DELIVERED")
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  poll           Poll?        @relation(fields: [pollId], references: [id])
 
   @@index([conversationId, createdAt])
+}
+
+model Poll {
+  id        String         @id @default(cuid())
+  question  String
+  options   String         @default("[]") // JSON string of options [{id, text}]
+  expiresAt DateTime?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  messages  Message[]
+  responses PollResponse[]
+}
+
+model PollResponse {
+  id        String   @id @default(cuid())
+  pollId    String
+  userId    String   // User ID (Parent)
+  optionId  String
+  createdAt DateTime @default(now())
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
+}
+
+model Broadcast {
+  id           String    @id @default(cuid())
+  title        String
+  content      String
+  status       String    @default("PENDING") // PENDING, APPROVED, REJECTED, SENT
+  schoolId     String
+  authorId     String
+  approvedById String?
+  isFlagged      Boolean   @default(false)
+  flaggedReason  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  school       School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  author       User      @relation("BroadcastAuthor", fields: [authorId], references: [id])
+  approvedBy   User?     @relation("BroadcastApprover", fields: [approvedById], references: [id])
+
+  @@index([schoolId])
 }
 
 model DiaryEntry {

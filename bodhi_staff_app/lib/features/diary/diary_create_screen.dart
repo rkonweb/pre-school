@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/global_header.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
@@ -87,7 +88,7 @@ class _DiaryCreateScreenState extends ConsumerState<DiaryCreateScreen> {
       } else {
         final error = ref.read(diaryProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error ?? 'Operation failed'), backgroundColor: AppTheme.error),
+          SnackBar(content: Text(error ?? 'Operation failed'), backgroundColor: AppTheme.danger),
         );
       }
     }
@@ -117,12 +118,12 @@ class _DiaryCreateScreenState extends ConsumerState<DiaryCreateScreen> {
                 } else {
                    final error = ref.read(diaryProvider).error;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(error ?? 'Failed to delete'), backgroundColor: AppTheme.error),
+                      SnackBar(content: Text(error ?? 'Failed to delete'), backgroundColor: AppTheme.danger),
                     );
                 }
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger),
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -136,12 +137,13 @@ class _DiaryCreateScreenState extends ConsumerState<DiaryCreateScreen> {
     final todayStr = DateFormat('MMM dd, yyyy').format(DateTime.now());
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.existingEntry == null ? 'New Diary Entry' : 'Edit Entry'),
+      appBar: GlobalHeader(
+        title: widget.existingEntry == null ? 'New Diary Entry' : 'Edit Entry',
+        showBackButton: true,
         actions: [
           if (widget.existingEntry != null)
             IconButton(
-              icon: const Icon(Icons.delete, color: AppTheme.error),
+              icon: const Icon(Icons.delete, color: AppTheme.danger),
               onPressed: _confirmDelete,
             ),
         ],
@@ -155,7 +157,7 @@ class _DiaryCreateScreenState extends ConsumerState<DiaryCreateScreen> {
             children: [
               // Date Indicator (Read Only)
               Container(
-                padding: const EdgeInsets.all(AppTheme.s12),
+                padding: const EdgeInsets.all(AppTheme.s16),
                 decoration: BoxDecoration(
                   color: AppTheme.surface,
                   border: Border.all(color: AppTheme.border),

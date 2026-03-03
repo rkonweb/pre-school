@@ -21,9 +21,19 @@ import Link from "next/link";
 
 // Actions
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
-import { sendBulkMessageAction, triggerFeeRemindersAction } from "@/app/actions/communication-actions";
+import {
+    sendBulkMessageAction,
+    triggerFeeRemindersAction,
+    getPendingBroadcastsAction,
+    updateBroadcastStatusAction
+} from "@/app/actions/communication-actions";
+import {
+    getFlaggedMessagesAction,
+    updateMessageModerationStatusAction
+} from "@/app/actions/moderation-actions";
+import { format } from "date-fns";
 
-type ViewState = "BLASTER" | "AUTOMATION";
+type ViewState = "BLASTER" | "AUTOMATION" | "BROADCASTS" | "MODERATION";
 
 export default function CommunicationPage() {
     const params = useParams();
@@ -39,6 +49,14 @@ export default function CommunicationPage() {
     const [messageTitle, setMessageTitle] = useState("");
     const [messageBody, setMessageBody] = useState("");
 
+    // Broadcasts State
+    const [pendingBroadcasts, setPendingBroadcasts] = useState<any[]>([]);
+    const [isActioning, setIsActioning] = useState<string | null>(null);
+
+    // Moderation State
+    const [flaggedMessages, setFlaggedMessages] = useState<any[]>([]);
+    const [isModerating, setIsModerating] = useState<string | null>(null);
+
     // Automation State
     const [isFeeTriggering, setIsFeeTriggering] = useState(false);
 
@@ -46,11 +64,58 @@ export default function CommunicationPage() {
         loadData();
     }, [slug]);
 
+    useEffect(() => {
+        if (view === "BROADCASTS") {
+            loadPendingBroadcasts();
+        }
+        if (view === "MODERATION") {
+            loadFlaggedMessages();
+        }
+    }, [view]);
+
     async function loadData() {
         setIsLoading(true);
         const res = await getClassroomsAction(slug);
-        if (res.success) setClasses(res.data);
+        if (res.success) setClasses(res.data || []);
         setIsLoading(false);
+    }
+
+    async function loadPendingBroadcasts() {
+        const res = await getPendingBroadcastsAction(slug);
+        if (res.success) {
+            setPendingBroadcasts(res.broadcasts || []);
+        }
+    }
+
+    async function loadFlaggedMessages() {
+        const res = await getFlaggedMessagesAction();
+        if (res.success) {
+            setFlaggedMessages(res.messages || []);
+        }
+    }
+
+    async function handleUpdateBroadcast(id: string, status: "APPROVED" | "REJECTED") {
+        setIsActioning(id);
+        const res = await updateBroadcastStatusAction(slug, id, status);
+        if (res.success) {
+            toast.success(`Broadcast ${status.toLowerCase()} successfully`);
+            loadPendingBroadcasts();
+        } else {
+            toast.error(res.error || `Failed to ${status.toLowerCase()} broadcast`);
+        }
+        setIsActioning(null);
+    }
+
+    async function handleModerationAction(messageId: string, status: "SENT" | "REJECTED") {
+        setIsModerating(messageId);
+        const res = await updateMessageModerationStatusAction(messageId, status);
+        if (res.success) {
+            toast.success(`Message ${status === "SENT" ? "approved" : "rejected"} successfully`);
+            loadFlaggedMessages();
+        } else {
+            toast.error(res.error || "Failed to update moderation status");
+        }
+        setIsModerating(null);
     }
 
     async function handleSendBlast() {
@@ -95,11 +160,11 @@ export default function CommunicationPage() {
                     <p className="text-zinc-500 font-medium mt-1">Unified messaging and automated workflow triggers.</p>
                 </div>
 
-                <div className="flex bg-zinc-100/50 dark:bg-zinc-900/50 p-1.5 rounded-2xl backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50">
+                <div className="flex bg-zinc-100/50 dark:bg-zinc-900/50 p-1.5 rounded-2xl backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 overflow-x-auto no-scrollbar">
                     <button
                         onClick={() => setView("BLASTER")}
                         className={cn(
-                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
                             view === "BLASTER"
                                 ? "bg-white dark:bg-zinc-800 text-rose-500 shadow-sm"
                                 : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
@@ -108,9 +173,47 @@ export default function CommunicationPage() {
                         Blast Tool
                     </button>
                     <button
+                        onClick={() => setView("BROADCASTS")}
+                        className={cn(
+                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap relative",
+                            view === "BROADCASTS"
+                                ? "bg-white dark:bg-zinc-800 text-rose-500 shadow-sm"
+                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                        )}
+                    >
+                        Broadcasts
+                        {pendingBroadcasts.length > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-4 w-4 bg-rose-500 text-[8px] items-center justify-center text-white font-bold">
+                                    {pendingBroadcasts.length}
+                                </span>
+                            </span>
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setView("MODERATION")}
+                        className={cn(
+                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap relative",
+                            view === "MODERATION"
+                                ? "bg-white dark:bg-zinc-800 text-rose-500 shadow-sm"
+                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                        )}
+                    >
+                        Moderation
+                        {flaggedMessages.length > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-4 w-4 bg-orange-500 text-[8px] items-center justify-center text-white font-bold">
+                                    {flaggedMessages.length}
+                                </span>
+                            </span>
+                        )}
+                    </button>
+                    <button
                         onClick={() => setView("AUTOMATION")}
                         className={cn(
-                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
                             view === "AUTOMATION"
                                 ? "bg-white dark:bg-zinc-800 text-indigo-500 shadow-sm"
                                 : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
@@ -118,10 +221,10 @@ export default function CommunicationPage() {
                     >
                         Automations
                     </button>
-                    <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-2 self-center"></div>
+                    <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-2 self-center shrink-0"></div>
                     <Link
                         href={`/s/${slug}/communication/chat-history`}
-                        className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-zinc-500 hover:text-rose-500 dark:hover:text-rose-400 flex items-center gap-2"
+                        className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-zinc-500 hover:text-rose-500 dark:hover:text-rose-400 flex items-center gap-2 whitespace-nowrap"
                     >
                         <ShieldAlert className="h-3.5 w-3.5" />
                         Chat History
@@ -194,6 +297,135 @@ export default function CommunicationPage() {
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    ) : view === "BROADCASTS" ? (
+                        <div className="space-y-6 animate-in slide-in-from-right-8 duration-500">
+                            <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-4 flex items-center gap-3">
+                                Review <span className="text-rose-500">Queue</span>
+                            </h2>
+                            {pendingBroadcasts.length === 0 ? (
+                                <div className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 p-20 flex flex-col items-center justify-center text-center">
+                                    <div className="w-24 h-24 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center text-4xl mb-6">📭</div>
+                                    <h3 className="text-xl font-black text-zinc-900 dark:text-zinc-50 uppercase italic">Inbox Empty</h3>
+                                    <p className="text-zinc-500 text-sm mt-2 max-w-xs">There are no pending broadcasts requiring administrative attention at this time.</p>
+                                </div>
+                            ) : (
+                                pendingBroadcasts.map((bc) => (
+                                    <div key={bc.id} className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 p-8 shadow-sm group hover:border-rose-200 dark:hover:border-rose-900 transition-all">
+                                        <div className="flex flex-col md:flex-row gap-8">
+                                            <div className="flex-1 space-y-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-500 font-bold uppercase overflow-hidden">
+                                                        {bc.author?.avatar ? (
+                                                            <img src={bc.author.avatar} alt="Author" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            bc.author?.firstName?.[0] || 'S'
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-black text-zinc-900 dark:text-zinc-50 uppercase italic tracking-tighter">
+                                                            {bc.author?.firstName} {bc.author?.lastName}
+                                                        </p>
+                                                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+                                                            Teacher • {format(new Date(bc.createdAt), "MMM d, h:mm a")}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                                                    <h4 className="text-md font-bold text-zinc-800 dark:text-zinc-100 mb-2 italic">"{bc.title}"</h4>
+                                                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed font-medium">{bc.content}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex md:flex-col gap-3 justify-center md:border-l border-zinc-100 dark:border-zinc-800 md:pl-8">
+                                                <button
+                                                    onClick={() => handleUpdateBroadcast(bc.id, "APPROVED")}
+                                                    disabled={isActioning === bc.id}
+                                                    className="flex-1 md:flex-none h-14 w-full md:w-32 bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-emerald-500/20"
+                                                >
+                                                    Approve
+                                                </button>
+                                                <button
+                                                    onClick={() => handleUpdateBroadcast(bc.id, "REJECTED")}
+                                                    disabled={isActioning === bc.id}
+                                                    className="flex-1 md:flex-none h-14 w-full md:w-32 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-rose-500 hover:text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center transition-all active:scale-95"
+                                                >
+                                                    Deny
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    ) : view === "MODERATION" ? (
+                        <div className="space-y-6 animate-in slide-in-from-right-8 duration-500">
+                            <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-4 flex items-center gap-3">
+                                Moderation <span className="text-orange-500">Queue</span>
+                            </h2>
+                            {flaggedMessages.length === 0 ? (
+                                <div className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 p-20 flex flex-col items-center justify-center text-center">
+                                    <div className="w-24 h-24 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center text-4xl mb-6">✅</div>
+                                    <h3 className="text-xl font-black text-zinc-900 dark:text-zinc-50 uppercase italic">All Clean</h3>
+                                    <p className="text-zinc-500 text-sm mt-2 max-w-xs">There are no flagged messages requiring review.</p>
+                                </div>
+                            ) : (
+                                flaggedMessages.map((msg) => (
+                                    <div key={msg.id} className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 p-8 shadow-sm group hover:border-orange-200 dark:hover:border-orange-900 transition-all">
+                                        <div className="flex flex-col md:flex-row gap-8">
+                                            <div className="flex-1 space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold uppercase overflow-hidden">
+                                                            {msg.senderName?.[0] || 'U'}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-black text-zinc-900 dark:text-zinc-50 uppercase italic tracking-tighter">
+                                                                {msg.senderName} ({msg.senderType})
+                                                            </p>
+                                                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+                                                                To: {msg.conversation?.student?.firstName} • {format(new Date(msg.createdAt), "MMM d, h:mm a")}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[9px] font-black uppercase px-3 py-1 rounded-full tracking-widest flex items-center gap-1.5">
+                                                        <ShieldAlert className="h-3 w-3" />
+                                                        AI Flagged
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                                                    <p className="text-sm text-zinc-800 dark:text-zinc-100 leading-relaxed font-bold mb-3 italic">
+                                                        "{msg.content}"
+                                                    </p>
+                                                    <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                                                        <p className="text-[10px] text-orange-600 dark:text-orange-400 font-black uppercase tracking-widest mb-1">AI Reasoning:</p>
+                                                        <p className="text-xs text-zinc-500 font-medium">{msg.flaggedReason || "No reasoning provided."}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex md:flex-col gap-3 justify-center md:border-l border-zinc-100 dark:border-zinc-800 md:pl-8">
+                                                <button
+                                                    onClick={() => handleModerationAction(msg.id, "SENT")}
+                                                    disabled={isModerating === msg.id}
+                                                    className="flex-1 md:flex-none h-14 w-full md:w-32 bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-emerald-500/20"
+                                                >
+                                                    Release
+                                                </button>
+                                                <button
+                                                    onClick={() => handleModerationAction(msg.id, "REJECTED")}
+                                                    disabled={isModerating === msg.id}
+                                                    className="flex-1 md:flex-none h-14 w-full md:w-32 bg-rose-500 hover:bg-rose-400 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center transition-all active:scale-95"
+                                                >
+                                                    Block
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-6 animate-in slide-in-from-bottom-4">

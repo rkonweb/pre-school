@@ -3,7 +3,7 @@
 import { Plus, Filter, ArrowUpDown, Edit3, Trash2, Loader2, ChevronUp, ChevronDown, Phone, Settings2, Check, User as UserIcon, GripVertical } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { useParams, useRouter } from "next/navigation";
 import { SearchInput } from "@/components/ui/SearchInput";
@@ -38,9 +38,13 @@ export default function StudentsPage() {
         direction: "desc"
     });
 
-    // Pagination
+    // Progressive loading state
     const [page, setPage] = useState(1);
-    const [paginationInfo, setPaginationInfo] = useState<any>(null);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const sentinelRef = useRef<HTMLDivElement>(null);
+    const isLoadingMoreRef = useRef(false);
+    const hasMoreRef = useRef(true);
 
     const [students, setStudents] = useState<any[]>([]);
     const [classrooms, setClassrooms] = useState<any[]>([]);
@@ -88,30 +92,53 @@ export default function StudentsPage() {
         loadClassrooms();
     }, [slug]);
 
-    // Single unified effect — debounce search, immediate for filters
+    // Reset list when filters/search/tab change — do a fresh page-1 load
+    useEffect(() => {
+        setPage(1);
+        setStudents([]);
+        setHasMore(true);
+        hasMoreRef.current = true;
+    }, [slug, statusFilter, classFilter, genderFilter, sortConfig, activeTab, searchTerm]);
+
+    // Trigger load whenever page changes
     useEffect(() => {
         let cancelled = false;
 
         const run = async () => {
             if (cancelled) return;
-            await loadData();
+            // Skip 1-char search mid-type
+            if (searchTerm && searchTerm.length === 1) return;
+            await loadData(page, cancelled);
         };
 
         if (searchTerm && searchTerm.length >= 2) {
-            // Instantly show loading state the moment they type to mask the 800ms network latency to Neon DB
-            setIsLoading(true);
+            setIsLoading(page === 1);
+            if (page === 1) setIsLoadingMore(false);
             const timer = setTimeout(() => { if (!cancelled) run(); }, 400);
             return () => { cancelled = true; clearTimeout(timer); };
-        } else if (searchTerm && searchTerm.length < 2 && searchTerm.length > 0) {
-            // Don't search on just 1 char, but don't reset to all yet
-            return;
         } else {
-            // Empty search or just filters changed
-            setIsLoading(true);
+            if (page === 1) setIsLoading(true);
             run();
             return () => { cancelled = true; };
         }
-    }, [slug, page, statusFilter, classFilter, genderFilter, sortConfig, activeTab, searchTerm]);
+    }, [page, slug, statusFilter, classFilter, genderFilter, sortConfig, activeTab, searchTerm]);
+
+    // Intersection Observer — triggers loading next page when sentinel is visible
+    useEffect(() => {
+        const sentinel = sentinelRef.current;
+        if (!sentinel) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !isLoadingMoreRef.current && hasMoreRef.current) {
+                    setPage(prev => prev + 1);
+                }
+            },
+            { rootMargin: "200px" }
+        );
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [mounted]);
 
     const loadClassrooms = async () => {
         const res = await getClassroomsAction(slug);
@@ -120,15 +147,17 @@ export default function StudentsPage() {
         }
     };
 
-    const loadData = async () => {
+    const loadData = async (currentPage: number, cancelled?: boolean) => {
+        if (currentPage > 1) {
+            isLoadingMoreRef.current = true;
+            setIsLoadingMore(true);
+        }
         try {
             const filters: any = {};
 
-            // Status Logic based on Tab
             if (activeTab === "alumni") {
                 filters.status = "ALUMNI";
             } else {
-                // Active Tab
                 if (statusFilter !== "all") {
                     filters.status = statusFilter;
                 } else {
@@ -136,38 +165,41 @@ export default function StudentsPage() {
                 }
             }
 
-            if (classFilter !== "all") {
-                // Find the ID relative to the name if needed, but we'll change classFilter to store ID directly
-                filters.classroomId = classFilter;
-            }
+            if (classFilter !== "all") filters.classroomId = classFilter;
             if (genderFilter !== "all") filters.gender = genderFilter;
 
-            // Add Academic Year filter
             const academicYearId = getCookie(`academic_year_${slug}`);
-            if (academicYearId) {
-                filters.academicYearId = academicYearId;
-            }
+            if (academicYearId) filters.academicYearId = academicYearId;
 
             const res = await getStudentsAction(slug, {
-                page,
-                limit: 50, // Increase limit for search/normal load since we removed elastic
+                page: currentPage,
+                limit: 30,
                 search: searchTerm,
                 filters,
                 sort: sortConfig
             });
 
+            if (cancelled) return;
+
             if (res.success) {
-                setStudents(res.students || []);
-                setPaginationInfo(res.pagination);
+                const newStudents = res.students || [];
+                setStudents(prev => currentPage === 1 ? newStudents : [...prev, ...newStudents]);
+                const pagination = res.pagination;
+                const moreAvailable = pagination?.page < pagination?.totalPages;
+                setHasMore(moreAvailable);
+                hasMoreRef.current = moreAvailable;
             } else {
                 toast.error(res.error || "Failed to load students");
             }
-
         } catch (error) {
             console.error("Critical Load Error", error);
             toast.error("Failed to load data");
         } finally {
-            setIsLoading(false);
+            if (!cancelled) {
+                setIsLoading(false);
+                setIsLoadingMore(false);
+                isLoadingMoreRef.current = false;
+            }
         }
     };
 
@@ -205,11 +237,7 @@ export default function StudentsPage() {
 
     if (!mounted || isPermsLoading) return null;
 
-    const hasNextPage = paginationInfo?.page < paginationInfo?.totalPages;
-    const hasPrevPage = paginationInfo?.page > 1;
-
-    // Check module permission (using 'students.profiles' based on config structure)
-    // If user has NO 'view' access, technically Sidebar handles it, but good to check here too.
+    // Check module permission
     const canCreate = can('students.profiles', 'create');
     const canEdit = can('students.profiles', 'edit');
     const canDelete = can('students.profiles', 'delete');
@@ -600,29 +628,21 @@ export default function StudentsPage() {
                                 </tbody>
                             </table>
                         </div>
-                        {/* Pagination */}
-                        <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-                            <div className="flex items-center justify-between text-sm text-zinc-500">
-                                <span>
-                                    Page <span className="font-bold text-zinc-900">{paginationInfo?.page || 1}</span> of <span className="font-medium">{paginationInfo?.totalPages || 1}</span> ({paginationInfo?.total || 0} students)
-                                </span>
-                                <div className="flex gap-2">
-                                    <StandardActionButton
-                                        variant="outline"
-                                        label="Previous"
-                                        onClick={() => setPage(p => p - 1)}
-                                        disabled={!hasPrevPage}
-                                        className="h-9 px-3 text-xs"
-                                    />
-                                    <StandardActionButton
-                                        variant="outline"
-                                        label="Next"
-                                        onClick={() => setPage(p => p + 1)}
-                                        disabled={!hasNextPage}
-                                        className="h-9 px-3 text-xs"
-                                    />
+                        {/* Progressive load sentinel + status */}
+                        <div className="border-t border-zinc-200 dark:border-zinc-800">
+                            {isLoadingMore && (
+                                <div className="flex items-center justify-center gap-2 py-4 text-sm text-zinc-400">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Loading more students...</span>
                                 </div>
-                            </div>
+                            )}
+                            {!hasMore && students.length > 0 && !isLoadingMore && (
+                                <p className="py-4 text-center text-xs text-zinc-400">
+                                    All {students.length} students loaded
+                                </p>
+                            )}
+                            {/* Invisible sentinel — IntersectionObserver watches this */}
+                            <div ref={sentinelRef} className="h-1" />
                         </div>
                     </>
                 )}

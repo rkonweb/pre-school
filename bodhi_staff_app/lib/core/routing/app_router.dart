@@ -9,12 +9,16 @@ import '../../features/auth/splash_screen.dart';
 import '../../features/auth/login_screen.dart';
 import 'role_navigator_shell.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/attendance/attendance_dashboard_screen.dart';
 import '../../features/attendance/attendance_screen.dart';
+import '../../features/attendance/student_monthly_report_screen.dart';
 import '../../features/timetable/timetable_screen.dart';
 import '../../features/progress/progress_screen.dart';
 import '../../features/health/health_screen.dart';
 import '../../features/communication/communication_screen.dart';
 import '../../features/chat/chat_screen.dart';
+import '../../features/chat/message_screen.dart';
+import '../../features/chat/models/chat_models.dart';
 import '../../features/development/development_screen.dart';
 import '../../features/diary/diary_create_screen.dart';
 import '../../features/diary/diary_list_screen.dart';
@@ -86,7 +90,7 @@ class AppRouter {
               context,
               state,
               Scaffold(
-                drawer: const AppDrawer(),
+                
                 appBar: const GlobalHeader(title: 'Inbox'),
                 body: const Center(child: Text('Inbox / Notifications')),
               ),
@@ -100,7 +104,7 @@ class AppRouter {
               context,
               state,
               Scaffold(
-                drawer: const AppDrawer(),
+                
                 appBar: const GlobalHeader(title: 'My Profile'),
                 body: const Center(child: Text('Staff Profile Detail Form')),
               ),
@@ -121,8 +125,28 @@ class AppRouter {
             name: 'attendance',
             pageBuilder: (context, state) =>
                 TransitionRegistry.sharedAxisHorizontal(
+              context, state, const AttendanceDashboardScreen(),
+            ),
+          ),
+          GoRoute(
+            path: '/attendance/mark',
+            name: 'attendance_mark',
+            pageBuilder: (context, state) =>
+                TransitionRegistry.sharedAxisHorizontal(
               context, state, const AttendanceScreen(),
             ),
+          ),
+          GoRoute(
+            path: '/attendance/monthly/:studentId',
+            name: 'attendance_monthly',
+            pageBuilder: (context, state) {
+              final studentId = state.pathParameters['studentId']!;
+              return TransitionRegistry.sharedAxisHorizontal(
+                context,
+                state,
+                StudentMonthlyReportScreen(studentId: studentId),
+              );
+            },
           ),
           GoRoute(
             path: '/diary',
@@ -192,6 +216,19 @@ class AppRouter {
               context, state, const ChatScreen(),
             ),
           ),
+          GoRoute(
+            path: '/chat/messages/:id',
+            name: 'chat_messages',
+            pageBuilder: (context, state) {
+              final id = state.pathParameters['id']!;
+              final conversation = state.extra as ChatConversation?;
+              return TransitionRegistry.sharedAxisHorizontal(
+                context,
+                state,
+                MessageScreen(conversationId: id, conversation: conversation),
+              );
+            },
+          ),
 
           // ── Management / Transport / Admin ──
           GoRoute(
@@ -199,7 +236,7 @@ class AppRouter {
             name: 'approvals',
             pageBuilder: (context, state) =>
                 TransitionRegistry.sharedAxisHorizontal(
-              context, state, const ApprovalsScreen(),
+              context, state, const ApprovalsScreen(pendingApprovals: []),
             ),
           ),
           GoRoute(
@@ -207,7 +244,7 @@ class AppRouter {
             name: 'transport',
             pageBuilder: (context, state) =>
                 TransitionRegistry.sharedAxisHorizontal(
-              context, state, const DriverRouteScreen(),
+              context, state, const DriverRouteScreen(stops: []),
             ),
           ),
 
@@ -221,7 +258,7 @@ class AppRouter {
                 context,
                 state,
                 Scaffold(
-                  appBar: const GlobalHeader(title: 'Student Profile'),
+                  appBar: const GlobalHeader(title: 'Student Profile', showBackButton: true),
                   body: Center(child: Text('Student Profile: $id')),
                 ),
               );

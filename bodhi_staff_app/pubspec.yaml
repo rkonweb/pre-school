@@ -54,6 +54,9 @@ dependencies:
   flutter_svg: ^2.0.10+1
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.4
+  intl: ^0.18.1
+  shimmer: ^3.0.0
+  uuid: ^4.3.3
   
 dev_dependencies:
   flutter_test:

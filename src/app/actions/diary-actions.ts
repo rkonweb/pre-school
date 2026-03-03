@@ -20,12 +20,15 @@ export async function createDiaryEntryAction(data: {
     priority?: string;
     requiresAck?: boolean;
     academicYearId?: string;
-}) {
+}, authenticatedUser?: any) {
     try {
         // PERMISSION CHECK
-        const auth = await validateUserSchoolAction(data.schoolSlug);
-        if (!auth.success || !auth.user) return { success: false, error: auth.error };
-        const currentUser = auth.user;
+        let currentUser = authenticatedUser;
+        if (!currentUser) {
+            const auth = await validateUserSchoolAction(data.schoolSlug);
+            if (!auth.success || !auth.user) return { success: false, error: auth.error };
+            currentUser = auth.user;
+        }
 
         // PERMISSION CHECK
         if (data.classroomId) {
@@ -126,12 +129,17 @@ export async function getDiaryEntriesAction(schoolSlug: string, filters?: {
     type?: string;
     status?: string;
     month?: string; // YYYY-MM format
+    date?: string;  // YYYY-MM-DD format
+    authorId?: string;
     academicYearId?: string;
-}) {
+}, authenticatedUser?: any) {
     try {
-        const auth = await validateUserSchoolAction(schoolSlug);
-        if (!auth.success || !auth.user) return { success: false, error: auth.error };
-        const currentUser = auth.user;
+        let currentUser = authenticatedUser;
+        if (!currentUser) {
+            const auth = await validateUserSchoolAction(schoolSlug);
+            if (!auth.success || !auth.user) return { success: false, error: auth.error };
+            currentUser = auth.user;
+        }
 
         const schoolId = currentUser.schoolId;
         if (!schoolId) return { success: false, error: "User has no assigned school" };
@@ -212,6 +220,36 @@ export async function getDiaryEntriesAction(schoolSlug: string, filters?: {
                     }
                 }
             ];
+        }
+
+        if (filters?.date) {
+            const startDate = new Date(`${filters.date}T00:00:00.000Z`);
+            const endDate = new Date(`${filters.date}T23:59:59.999Z`);
+
+            where.OR = [
+                {
+                    scheduledFor: {
+                        gte: startDate,
+                        lte: endDate
+                    }
+                },
+                {
+                    publishedAt: {
+                        gte: startDate,
+                        lte: endDate
+                    }
+                },
+                {
+                    createdAt: {
+                        gte: startDate,
+                        lte: endDate
+                    }
+                }
+            ];
+        }
+
+        if (filters?.authorId) {
+            where.authorId = filters.authorId;
         }
 
         const entries = await prisma.diaryEntry.findMany({
@@ -370,10 +408,14 @@ export async function updateDiaryEntryAction(slug: string, id: string, data: {
     priority?: string;
     requiresAck?: boolean;
     status?: string;
-}) {
+}, authenticatedUser?: any) {
     try {
-        const auth = await validateUserSchoolAction(slug);
-        if (!auth.success) return { success: false, error: auth.error };
+        let currentUser = authenticatedUser;
+        if (!currentUser) {
+            const auth = await validateUserSchoolAction(slug);
+            if (!auth.success || !auth.user) return { success: false, error: auth.error };
+            currentUser = auth.user;
+        }
 
         const updateData: any = {};
 
@@ -413,10 +455,14 @@ export async function updateDiaryEntryAction(slug: string, id: string, data: {
 // DELETE DIARY ENTRY
 // ============================================
 
-export async function deleteDiaryEntryAction(slug: string, id: string) {
+export async function deleteDiaryEntryAction(slug: string, id: string, authenticatedUser?: any) {
     try {
-        const auth = await validateUserSchoolAction(slug);
-        if (!auth.success) return { success: false, error: auth.error };
+        let currentUser = authenticatedUser;
+        if (!currentUser) {
+            const auth = await validateUserSchoolAction(slug);
+            if (!auth.success || !auth.user) return { success: false, error: auth.error };
+            currentUser = auth.user;
+        }
 
         const entry = await prisma.diaryEntry.findUnique({
             where: { id },
@@ -485,26 +531,6 @@ export async function acknowledgeDiaryEntryAction(recipientId: string, acknowled
         return { success: true };
     } catch (error: any) {
         console.error("Acknowledge Diary Entry Error:", error);
-        return { success: false, error: error.message };
-    }
-}
-// ============================================
-// TOGGLE COMPLETION (Parent View)
-// ============================================
-
-export async function toggleDiaryCompletionAction(recipientId: string, isCompleted: boolean) {
-    try {
-        const entry = await prisma.diaryRecipient.update({
-            where: { id: recipientId },
-            data: {
-                isCompleted,
-                completedAt: isCompleted ? new Date() : null
-            }
-        });
-
-        return { success: true, data: entry };
-    } catch (error: any) {
-        console.error("Toggle Diary Completion Error:", error);
         return { success: false, error: error.message };
     }
 }

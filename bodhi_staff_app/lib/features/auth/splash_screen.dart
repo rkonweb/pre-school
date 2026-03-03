@@ -21,6 +21,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _bootstrapApp() async {
+    try {
+      await _bootstrapAppInternal().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          // Safety net: if everything takes too long, go to login
+          if (mounted) context.go('/login');
+        },
+      );
+    } catch (_) {
+      if (mounted) context.go('/login');
+    }
+  }
+
+  Future<void> _bootstrapAppInternal() async {
     // 1. Minimum display time for premium feel
     await Future.delayed(const Duration(milliseconds: 1500));
 
@@ -34,10 +48,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // 3. Restore saved brand colors immediately (fast, from SharedPreferences)
       await ref.read(schoolBrandProvider.notifier).restoreFromStorage();
 
-      // 4. Fetch fresh branding from /me API (updates logo + colors without re-login)
-      final brandData = await authService.fetchBranding();
-      if (brandData != null && mounted) {
-        await ref.read(schoolBrandProvider.notifier).applyFromAuthResponse(brandData);
+      // 4. Fetch fresh branding (with 5s timeout — don't block splash if server is slow)
+      try {
+        final brandData = await authService.fetchBranding().timeout(
+          const Duration(seconds: 5),
+        );
+        if (brandData != null && mounted) {
+          await ref.read(schoolBrandProvider.notifier).applyFromAuthResponse(brandData);
+        }
+      } catch (_) {
+        // Timeout or error — proceed with cached brand colors
       }
 
       // 5. Initialize RBAC

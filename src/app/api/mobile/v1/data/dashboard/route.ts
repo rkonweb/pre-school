@@ -29,7 +29,8 @@ export async function GET(req: Request) {
             profile: result.profile,
             students: result.students,
             unreadMessages: result.unreadMessages,
-            conversations: result.conversations
+            conversations: result.conversations,
+            activities: result.activities
         });
     } catch (error: any) {
         console.error("Mobile Dashboard API Error:", error);

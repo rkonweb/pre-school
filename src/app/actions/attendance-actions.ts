@@ -888,7 +888,7 @@ export async function getStudentAttendanceAction(schoolSlug: string, studentId: 
         }
 
         const attendance = await prisma.attendance.findMany({
-            where: { ...query, schoolId: currentUser.schoolId },
+            where: { ...query, student: { schoolId: currentUser.schoolId } },
             orderBy: { date: 'desc' }
         });
         return { success: true, data: attendance };

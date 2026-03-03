@@ -78,7 +78,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     return Scaffold(
       
       
-      drawer: const AppDrawer(),
+      
       appBar: GlobalHeader(title: 'Pending Approvals'),
       body: _approvals.isEmpty
           ? const Center(

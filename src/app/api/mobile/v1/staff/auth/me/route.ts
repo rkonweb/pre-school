@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { jwtVerify } from "jose";
+import { verifyToken } from "@/lib/auth-mobile";
 
 export async function GET(req: Request) {
     try {
@@ -13,12 +13,8 @@ export async function GET(req: Request) {
         }
 
         // Verify JWT
-        const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "fallback-secret-for-dev-123");
-        let payload: any;
-        try {
-            const { payload: p } = await jwtVerify(token, secret);
-            payload = p;
-        } catch {
+        const payload = await verifyToken(token);
+        if (!payload) {
             return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 });
         }
 

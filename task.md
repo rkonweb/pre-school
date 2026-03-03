@@ -1,4 +1,5 @@
 - [ ] **Document Management System (DMS)**
+- [x] **Document Management System (DMS)**
     - [x] **Database Seeding**: Create script to seed "School Resources" category, module, and sample data.
     - [x] **Sidebar Update**: Add "Documents" link to School Dashboard (`Sidebar.tsx`) for Admins/Staff.
     - [x] **School Portal UI**: Create `/s/[slug]/(dashboard)/documents` page to view/download resources.
@@ -13,7 +14,7 @@
     - [x] **Cleanup**: Remove API settings from main Settings page.
     - [x] **Navigation**: Update Sidebar.
 
-- [ ] **Marketing Tools**
+- [x] **Marketing Tools**
     - [x] **Database**: Create `MarketingTemplate` and `MarketingAttribute` models.
     - [x] **Admin UI**: Create full-width `MarketingAdminPage` with dynamic attribute management.
     - [x] **Designer**: Implement `MarketingDesigner` with drag-and-drop zones.

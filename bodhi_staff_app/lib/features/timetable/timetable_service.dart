@@ -1,35 +1,27 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../auth/auth_service.dart';
+import '../../core/network/dio_client.dart';
 
 final timetableServiceProvider = Provider<TimetableService>((ref) {
-  return TimetableService(ref.read(authServiceProvider));
+  return TimetableService();
 });
 
 class TimetableService {
-  final AuthService _auth;
-  final Dio _dio = Dio();
-  final String _baseUrl = 'http://localhost:3000/api/mobile/v1/staff/timetable';
-
-  TimetableService(this._auth);
-
-  Future<Options> _getOptions() async {
-    final token = await _auth.getToken();
-    return Options(headers: {'Authorization': 'Bearer $token'});
-  }
+  final Dio _dio = DioClient.instance;
 
   Future<Map<String, dynamic>> getTimetableData() async {
     try {
-      final response = await _dio.get(
-        _baseUrl,
-        options: await _getOptions(),
-      );
-      if (response.data['success'] == true) {
+      final response = await _dio.get('timetable');
+      if (response.data is Map && response.data['success'] == true) {
         return response.data['data'];
       }
-      throw Exception(response.data['error'] ?? 'Failed to fetch timetable');
+      throw Exception((response.data is Map ? response.data['error'] : null) ?? 'Failed to fetch timetable');
     } catch (e) {
-      rethrow;
+      if (e is DioException && e.response != null) {
+        final data = e.response?.data;
+        throw Exception((data is Map ? data['error'] : null) ?? 'Network error');
+      }
+       throw Exception('Network error: $e');
     }
   }
 }

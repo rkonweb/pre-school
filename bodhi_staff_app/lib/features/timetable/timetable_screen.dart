@@ -1,11 +1,11 @@
-import 'package:bodhi_staff_app/ui/components/app_drawer.dart';
-import 'package:bodhi_staff_app/ui/components/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import 'timetable_provider.dart';
-
+import 'package:intl/intl.dart';
 import '../../core/widgets/global_header.dart';
+import '../../core/widgets/horizontal_date_strip.dart';
+import '../../core/theme/school_brand_provider.dart';
 
 class TimetableScreen extends ConsumerStatefulWidget {
   const TimetableScreen({Key? key}) : super(key: key);
@@ -16,72 +16,49 @@ class TimetableScreen extends ConsumerStatefulWidget {
 
 class _TimetableScreenState extends ConsumerState<TimetableScreen> {
   final List<String> _days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  DateTime _selectedDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(timetableProvider);
     final notifier = ref.read(timetableProvider.notifier);
+    final brand = ref.watch(schoolBrandProvider);
 
     return Scaffold(
       
       backgroundColor: AppTheme.background,
       
-      drawer: const AppDrawer(),
+      
       appBar: GlobalHeader(
         title: 'Timetable',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: AppTheme.primary),
-            onPressed: () => notifier.loadTimetable(),
-          ),
-        ],
+        actions: const [],
       ),
       body: Column(
         children: [
-          _buildDaySelector(state, notifier),
+          HorizontalDateStrip(
+            selectedDate: _selectedDate,
+            onDateSelected: (date) {
+              setState(() => _selectedDate = date);
+              notifier.selectDay(DateFormat('EEEE').format(date));
+            },
+          ),
           _buildViewSelector(state, notifier),
           Expanded(
-            child: state.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : state.error != null
-                    ? _buildErrorState(state.error!)
-                    : _buildPeriodList(state.currentPeriods),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDaySelector(TimetableState state, TimetableNotifier notifier) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: AppTheme.border)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.calendar_today, size: 20, color: AppTheme.textMuted),
-          const SizedBox(width: 8),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: state.selectedDay,
-                isExpanded: true,
-                items: _days.map((day) => DropdownMenuItem(
-                      value: day,
-                      child: Text(day),
-                    )).toList(),
-                onChanged: (value) {
-                  if (value != null) notifier.selectDay(value);
-                },
-              ),
+            child: RefreshIndicator(
+              onRefresh: () => notifier.loadTimetable(),
+              child: state.isLoading && state.currentPeriods.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : state.error != null
+                      ? _buildErrorState(state.error!)
+                      : _buildPeriodList(state.currentPeriods, brand),
             ),
           ),
         ],
       ),
     );
   }
+
+
 
   Widget _buildViewSelector(TimetableState state, TimetableNotifier notifier) {
     return Container(
@@ -117,26 +94,28 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     );
   }
 
-  Widget _buildPeriodList(List<TimetablePeriod> periods) {
+  Widget _buildPeriodList(List<TimetablePeriod> periods, SchoolBrandState brand) {
     if (periods.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.event_busy, size: 64, color: AppTheme.textMuted.withOpacity(0.3)),
-            const SizedBox(height: 16),
-            const Text('No classes scheduled for today', style: TextStyle(color: AppTheme.textMuted)),
-          ],
-        ),
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.event_busy, size: 64, color: AppTheme.textMuted.withOpacity(0.3)),
+                const SizedBox(height: 16),
+                const Text('No classes scheduled for today', style: TextStyle(color: AppTheme.textMuted)),
+              ],
+            ),
+          ),
+        ],
       );
     }
 
     final now = DateTime.now();
-    final days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    final todayStr = days[now.weekday - 1];
-    
-    // Find if we are viewing today
-    final isToday = _days.contains(todayStr) && _days.indexOf(todayStr) == 0; // Wait, selected day is passed via State.
+    // Let's just use the fact that periods are inherently ordered by time.
     // Let's get selected day from outside or just assume we have it. I need to pass selectedDay to this method or get it from provider.
     // Wait, _buildPeriodList doesn't have `state` passed to it. Let's pass `state` to it in build().
     // Since I can't easily change the method signature without replacing `build` too, I will just re-fetch the state or pass it.
@@ -154,8 +133,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
         bool isPast = false;
         Color cardColor = Colors.white;
         Color borderColor = AppTheme.border;
-        Color iconBgColor = AppTheme.primary.withOpacity(0.1);
-        Color iconTextColor = AppTheme.primary;
+        Color iconBgColor = brand.primaryColor.withOpacity(0.1);
+        Color iconTextColor = brand.secondaryColor;
 
         if (period.type == 'BREAK') {
           cardColor = Colors.grey.shade50;
@@ -188,22 +167,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
            } catch (e) {}
         }
         
-        bool isNext = false;
         if (isUpcoming && !isCurrent) {
-          if (index == 0) {
-            isNext = true;
-          } else {
-            try {
-              final prevP = periods[index - 1];
-              // If previous period was not upcoming, then this is the first upcoming
-              if (prevP.endTime.isNotEmpty) {
-                 final prevParts = prevP.endTime.split(':');
-                 final prevEndMin = int.parse(prevParts[0]) * 60 + int.parse(prevParts[1]);
-                 final nowMinTotal = now.hour * 60 + now.minute;
-                 if (nowMinTotal >= prevEndMin) isNext = true;
-              }
-            } catch (e) {}
-          }
+          // logic for showing indicator/status if needed
         }
         
         if (period.type != 'BREAK') {

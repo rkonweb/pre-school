@@ -49,6 +49,7 @@ class AttendanceState {
   final DateTime selectedDate;
   final bool isLoading;
   final String? error;
+  final String? selectedFilter;
 
   AttendanceState({
     this.students = const [],
@@ -57,6 +58,7 @@ class AttendanceState {
     required this.selectedDate,
     this.isLoading = false,
     this.error,
+    this.selectedFilter = 'UNMARKED',
   });
 
   AttendanceState copyWith({
@@ -66,6 +68,7 @@ class AttendanceState {
     DateTime? selectedDate,
     bool? isLoading,
     String? error,
+    String? selectedFilter,
   }) {
     return AttendanceState(
       students: students ?? this.students,
@@ -74,6 +77,7 @@ class AttendanceState {
       selectedDate: selectedDate ?? this.selectedDate,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      selectedFilter: selectedFilter ?? this.selectedFilter,
     );
   }
 }
@@ -126,12 +130,12 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   }
 
   void selectClassroom(String id) {
-    state = state.copyWith(selectedClassroomId: id);
+    state = state.copyWith(selectedClassroomId: id, selectedFilter: 'UNMARKED');
     loadStudents();
   }
 
   void selectDate(DateTime date) {
-    state = state.copyWith(selectedDate: date);
+    state = state.copyWith(selectedDate: date, selectedFilter: 'UNMARKED');
     loadStudents();
   }
 
@@ -166,6 +170,10 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       final errorMsg = e.toString().replaceAll('Exception: ', '');
       state = state.copyWith(students: oldStudents, error: errorMsg);
     }
+  }
+
+  void setFilter(String filter) {
+    state = state.copyWith(selectedFilter: filter);
   }
 }
 

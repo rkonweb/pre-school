@@ -33,6 +33,7 @@ import { getStudentAttendanceAction } from "@/app/actions/attendance-actions";
 import { StandardActionButton } from "@/components/ui/StandardActionButton";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { toast } from "sonner";
+import { TabSkeleton } from "@/components/ui/SkeletonCard";
 import dynamic from "next/dynamic";
 
 const AttendanceDialog = dynamic(() => import("@/components/dashboard/students/AttendanceDialog").then(m => m.AttendanceDialog), { ssr: false });
@@ -67,11 +68,7 @@ export default function AttendanceTab() {
     }
 
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center p-20">
-                <Loader2 className="h-8 w-8 animate-spin text-zinc-300" />
-            </div>
-        );
+        return <TabSkeleton />;
     }
 
     return (
@@ -86,6 +83,7 @@ export default function AttendanceTab() {
                     <div className="flex items-center bg-white rounded-2xl border border-zinc-200 p-1 shadow-sm">
                         <button
                             onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                            title="Previous month"
                             className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-zinc-50 text-zinc-500 transition-colors"
                         >
                             <ChevronLeft className="h-5 w-5" />
@@ -95,6 +93,7 @@ export default function AttendanceTab() {
                         </div>
                         <button
                             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                            title="Next month"
                             className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-zinc-50 text-zinc-500 transition-colors"
                         >
                             <ChevronRight className="h-5 w-5" />

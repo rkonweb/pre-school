@@ -1,7 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/student_avatar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/theme/school_brand_provider.dart';
 
-class AttendanceStudentCard extends StatefulWidget {
+class AttendanceStudentCard extends ConsumerStatefulWidget {
+  final String studentId;
   final String studentName;
   final String rollNumber;
   final String? avatarUrl;
@@ -10,6 +16,7 @@ class AttendanceStudentCard extends StatefulWidget {
 
   const AttendanceStudentCard({
     Key? key,
+    required this.studentId,
     required this.studentName,
     required this.rollNumber,
     required this.onMarked,
@@ -18,18 +25,16 @@ class AttendanceStudentCard extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<AttendanceStudentCard> createState() => _AttendanceStudentCardState();
+  ConsumerState<AttendanceStudentCard> createState() => _AttendanceStudentCardState();
 }
 
-class _AttendanceStudentCardState extends State<AttendanceStudentCard> {
+class _AttendanceStudentCardState extends ConsumerState<AttendanceStudentCard> {
   bool _showSavedAnimation = false;
 
   void _handleMarking(String status) {
     setState(() {
       _showSavedAnimation = true;
     });
-
-    // Simulate animation playing before fully committing UX change
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) {
         setState(() {
@@ -37,86 +42,113 @@ class _AttendanceStudentCardState extends State<AttendanceStudentCard> {
         });
       }
     });
-
     widget.onMarked(status);
   }
 
   @override
   Widget build(BuildContext context) {
+    final brand = ref.watch(schoolBrandProvider);
     return Dismissible(
       key: Key(widget.rollNumber),
-      // Swipe Right = Present, Swipe Left = Absent
       background: _buildSwipeBackground(true),
       secondaryBackground: _buildSwipeBackground(false),
       onDismissed: (direction) {
         _handleMarking(direction == DismissDirection.startToEnd ? 'PRESENT' : 'ABSENT');
       },
       child: Container(
-        padding: const EdgeInsets.all(AppTheme.s16),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          border: Border(bottom: BorderSide(color: AppTheme.border)),
-        ),
-        child: Row(
-          children: [
-            // Avatar
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: AppTheme.background,
-              child: ClipOval(
-                child: widget.avatarUrl != null
-                    ? Image.network(
-                        widget.avatarUrl!.startsWith('http')
-                            ? widget.avatarUrl!
-                            : 'http://localhost:3000${widget.avatarUrl!.startsWith('/') ? '' : '/'}${widget.avatarUrl}',
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Center(
-                          child: Text(widget.studentName[0].toUpperCase(),
-                              style:
-                                  const TextStyle(color: AppTheme.primaryDark)),
-                        ),
-                      )
-                    : Center(
-                        child: Text(widget.studentName[0].toUpperCase(),
-                            style:
-                                const TextStyle(color: AppTheme.primaryDark)),
-                      ),
-              ),
-            ),
-            const SizedBox(width: AppTheme.s16),
-
-            // Name / Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.studentName,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 16),
+        margin: const EdgeInsets.only(bottom: 12.0),
+        child: ClipRRect(
+          borderRadius: AppTheme.radiusMedium,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: AppTheme.radiusMedium,
+                border: Border.all(color: brand.primaryColor.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
                   ),
-                  Text(
-                    'Roll: ' + widget.rollNumber,
-                    style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  StudentAvatar(
+                    name: widget.studentName,
+                    avatarUrl: widget.avatarUrl,
+                    radius: 22,
+                    backgroundColor: brand.primaryColor.withOpacity(0.12),
+                    textColor: brand.primaryColor,
+                  ),
+                  const SizedBox(width: 12.0),
+                  // Right side: Name on line 1, buttons on line 2
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Line 1: Student Name + Monthly Report icon
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                widget.studentName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 13,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => context.push(
+                                  '/attendance/monthly/${widget.studentId}'),
+                              child: Tooltip(
+                                message: 'Monthly Report',
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF3F4F6),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.calendar_month_rounded,
+                                    size: 15,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        // Line 2: P A L Buttons
+                        Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            _buildActionButton('P', AppTheme.success, widget.status == 'PRESENT', () => _handleMarking('PRESENT')),
+                            const SizedBox(width: 10),
+                            _buildActionButton('A', AppTheme.danger, widget.status == 'ABSENT', () => _handleMarking('ABSENT')),
+                            const SizedBox(width: 10),
+                            _buildActionButton('L', AppTheme.warning, widget.status == 'LATE', () => _handleMarking('LATE')),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-
-            // Marking Buttons (Explicit)
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildActionButton('P', AppTheme.success, widget.status == 'PRESENT', () => _handleMarking('PRESENT')),
-                const SizedBox(width: 8),
-                _buildActionButton('A', AppTheme.danger, widget.status == 'ABSENT', () => _handleMarking('ABSENT')),
-                const SizedBox(width: 8),
-                _buildActionButton('L', AppTheme.warning, widget.status == 'LATE', () => _handleMarking('LATE')),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -125,21 +157,34 @@ class _AttendanceStudentCardState extends State<AttendanceStudentCard> {
   Widget _buildActionButton(String label, Color color, bool isActive, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutBack,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: isActive ? color : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isActive ? color : AppTheme.border),
+          color: isActive ? color : color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isActive ? color : color.withOpacity(0.1),
+            width: isActive ? 1.5 : 1,
+          ),
+          boxShadow: [
+              BoxShadow(
+                color: isActive ? color.withOpacity(0.3) : Colors.transparent,
+                blurRadius: isActive ? 8 : 0,
+                offset: const Offset(0, 4),
+              ),
+            ],
         ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
-              color: isActive ? Colors.white : color.withOpacity(0.7),
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
+              color: isActive ? Colors.white : color.withOpacity(0.8),
+              fontWeight: FontWeight.w900,
+              fontSize: 15,
+              letterSpacing: 0.5,
             ),
           ),
         ),
@@ -151,7 +196,7 @@ class _AttendanceStudentCardState extends State<AttendanceStudentCard> {
     return Container(
       color: isPresent ? AppTheme.success : AppTheme.danger,
       alignment: isPresent ? Alignment.centerLeft : Alignment.centerRight,
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s24),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -162,9 +207,8 @@ class _AttendanceStudentCardState extends State<AttendanceStudentCard> {
           ),
           Text(
             isPresent ? 'Present' : 'Absent',
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold),
-          )
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );

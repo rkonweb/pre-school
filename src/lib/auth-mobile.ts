@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 
 const SECRET = new TextEncoder().encode(
-    process.env.MOBILE_JWT_SECRET || "bodhi-board-mobile-secret-2026-wow"
+    process.env.NEXTAUTH_SECRET || "fallback-secret-for-dev-123"
 );
 
 export async function signToken(payload: any) {

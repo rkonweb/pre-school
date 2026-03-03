@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/school_brand_provider.dart';
 import '../../core/routing/rbac.dart';
 import '../../features/auth/auth_service.dart';
+import 'package:bodhi_staff_app/core/routing/navigation_tab_model.dart';
 
 /// Branded side navigation drawer.
 /// Shown when the hamburger menu icon is tapped.
@@ -206,7 +207,7 @@ class AppDrawer extends ConsumerWidget {
     final currentLocation = GoRouterState.of(context).uri.path;
     final isActive = currentLocation == route || currentLocation.startsWith('$route/');
 
-    return Padding(
+    final tile = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: ListTile(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -229,6 +230,53 @@ class AppDrawer extends ConsumerWidget {
           context.go(route);
         },
       ),
+    );
+
+    return LongPressDraggable<NavigationTabModel>(
+      data: NavigationTabModel(
+        label: label,
+        icon: icon,
+        route: route,
+      ),
+      onDragStarted: () {
+        if (Navigator.canPop(context)) {
+          Navigator.of(context).pop();
+        }
+      },
+      feedback: Material(
+        color: Colors.transparent,
+        child: Opacity(
+          opacity: 0.9,
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.7,
+            decoration: BoxDecoration(
+              color: brand.primaryColor.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 10, offset: Offset(0, 4))],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.white, size: 24),
+                const SizedBox(width: 16),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      childWhenDragging: Opacity(
+        opacity: 0.3,
+        child: tile,
+      ),
+      child: tile,
     );
   }
 

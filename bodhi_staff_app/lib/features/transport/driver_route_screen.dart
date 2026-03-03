@@ -1,8 +1,7 @@
-import 'package:bodhi_staff_app/ui/components/app_drawer.dart';
-import 'package:bodhi_staff_app/ui/components/app_drawer.dart';
 import 'package:flutter/material.dart';
 import '../../core/widgets/global_header.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/widgets/student_avatar.dart';
+import 'package:bodhi_staff_app/core/theme/app_theme.dart';
 
 class RouteStop {
   final String id;
@@ -77,7 +76,7 @@ class _DriverRouteScreenState extends State<DriverRouteScreen> {
     return Scaffold(
       
       
-      drawer: const AppDrawer(),
+      
       appBar: GlobalHeader(
         title: 'Route 42 - Morning',
         actions: [
@@ -178,9 +177,11 @@ class _DriverRouteScreenState extends State<DriverRouteScreen> {
                         horizontal: AppTheme.s16, vertical: 8.0),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                            backgroundColor: AppTheme.border,
-                            child: Text(student.name[0])),
+                        StudentAvatar(
+                          name: student.name,
+                          avatarUrl: student.photoUrl,
+                          radius: 22,
+                        ),
                         const SizedBox(width: AppTheme.s16),
                         Expanded(
                             child: Text(student.name,

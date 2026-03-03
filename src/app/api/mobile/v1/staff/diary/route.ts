@@ -38,10 +38,18 @@ export async function GET(req: Request) {
         const url = new URL(req.url);
         const classroomId = url.searchParams.get("classroomId") || undefined;
         const month = url.searchParams.get("month") || undefined; // YYYY-MM
+        const date = url.searchParams.get("date") || undefined; // YYYY-MM-DD
         const type = url.searchParams.get("type") || undefined;
+        const onlyMine = url.searchParams.get("onlyMine") === "true";
 
         // Use the action to respect scope
-        const result = await getDiaryEntriesAction(school.slug, { classroomId, month, type });
+        const result = await getDiaryEntriesAction(school.slug, {
+            classroomId,
+            month,
+            date,
+            type,
+            authorId: onlyMine ? userId : undefined
+        }, user);
 
         if (!result.success) {
             return NextResponse.json({ success: false, error: result.error }, { status: 400 });
@@ -73,7 +81,7 @@ export async function POST(req: Request) {
         const userId = payload.sub;
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { id: true, role: true, schoolId: true }
+            select: { id: true, role: true, schoolId: true, school: { select: { slug: true } } }
         });
 
         if (!user || !user.schoolId) return NextResponse.json({ success: false, error: "User or School not found" }, { status: 401 });
@@ -123,7 +131,7 @@ export async function POST(req: Request) {
             priority: priority || "NORMAL",
             requiresAck: requiresAck || false,
             // scheduledFor parameter not strictly passed from mobile, we assume it's "now"
-        });
+        }, user);
 
         if (!result.success) {
             return NextResponse.json({ success: false, error: result.error }, { status: 400 });

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +9,7 @@ import '../../core/theme/school_brand_provider.dart';
 import '../../core/routing/rbac.dart';
 import '../../ui/components/today_timeline_card.dart';
 import '../../ui/components/quick_action_tile.dart';
-import '../../ui/components/app_drawer.dart';
+import '../../core/routing/drawer_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -28,14 +29,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppTheme.background,
-      drawer: const AppDrawer(),
+      
       body: Stack(
         children: [
+          // ───── Stunning Graphical Background ─────
+          Positioned.fill(child: _buildStunningBackground(brand)),
+
           // ───── Scrollable Content ─────
           Positioned.fill(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(
-                top: 260,
+                top: 190,
                 left: AppTheme.s24,
                 right: AppTheme.s24,
                 bottom: AppTheme.s24,
@@ -44,25 +48,43 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Upcoming Events card
-                  Container(
-                    padding: const EdgeInsets.all(AppTheme.s16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surface,
-                      borderRadius: AppTheme.radiusLarge,
-                      boxShadow: AppTheme.softShadow,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: brand.secondaryColor.withOpacity(0.15),
-                            borderRadius: AppTheme.radiusMedium,
-                          ),
-                          child: Icon(Icons.menu_book,
-                              size: 40, color: brand.primaryColor),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppTheme.s24),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.35),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              spreadRadius: -2,
+                            )
+                          ],
                         ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.8),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 2),
+                                  )
+                                ],
+                              ),
+                              child: Icon(Icons.menu_book_rounded,
+                                  size: 28, color: brand.primaryColor),
+                            ),
                         const SizedBox(width: AppTheme.s16),
                         Expanded(
                           child: Column(
@@ -98,6 +120,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         )
                       ],
                     ),
+                  ),
+                  ),
                   ),
                   const SizedBox(height: AppTheme.s24),
 
@@ -141,7 +165,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             top: 0,
             left: 0,
             right: 0,
-            height: 250,
+            height: 180,
             child: Container(
               decoration: BoxDecoration(
                 color: brand.primaryColor,
@@ -151,7 +175,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
               ),
               padding: const EdgeInsets.only(
-                  top: 56, left: AppTheme.s24, right: AppTheme.s24),
+                  top: 48, left: AppTheme.s24, right: AppTheme.s24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -160,9 +184,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Hamburger — opens drawer
-                      GestureDetector(
-                        onTap: () => _scaffoldKey.currentState?.openDrawer(),
-                        child: Icon(Icons.menu, color: brand.secondaryColor),
+                      IconButton(
+                        onPressed: () => ref.read(shellScaffoldKeyProvider).currentState?.openDrawer(),
+                        icon: Icon(Icons.menu, color: brand.secondaryColor),
+                        splashRadius: 24,
                       ),
                       // School logo
                       Expanded(
@@ -175,10 +200,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                          ),
                       ),
                       // Notifications — goes to inbox
-                      GestureDetector(
-                        onTap: () => context.go('/inbox'),
-                        child: Icon(Icons.notifications_none,
-                            color: brand.secondaryColor),
+                      IconButton(
+                        onPressed: () => context.go('/inbox'),
+                        icon: Icon(Icons.notifications_none, color: brand.secondaryColor),
+                        splashRadius: 24,
                       ),
                     ],
                   ),
@@ -279,6 +304,55 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: tiles,
+    );
+  }
+
+  Widget _buildStunningBackground(SchoolBrandState brand) {
+    return Stack(
+      children: [
+        Positioned(
+          top: 100,
+          left: -50,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: brand.primaryColor.withOpacity(0.4),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 400,
+          right: -100,
+          child: Container(
+            width: 350,
+            height: 350,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF90DBE4).withOpacity(0.4),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -50,
+          left: 50,
+          child: Container(
+            width: 250,
+            height: 250,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFFFB5A7).withOpacity(0.4),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+            child: Container(color: Colors.transparent),
+          ),
+        ),
+      ],
     );
   }
 }

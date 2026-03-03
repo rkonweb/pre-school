@@ -11,37 +11,64 @@ import {
     CheckCheck,
     Loader2,
     ShieldAlert,
-    Info
+    Info,
+    Check
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
+interface PollOption {
+    id: string;
+    text: string;
+}
+
+interface PollResponse {
+    id: string;
+    userId: string;
+    optionId: string;
+}
+
+interface Poll {
+    id: string;
+    question: string;
+    options: string; // JSON string in DB
+    responses: PollResponse[];
+}
+
 interface Message {
     id: string;
     content: string;
+    type?: "TEXT" | "POLL" | "IMAGE" | "FILE" | "BROADCAST";
     senderType: "PARENT" | "STAFF";
+    senderId?: string | null;
     senderName: string;
     createdAt: string | Date;
     isRead: boolean;
+    status: "SENT" | "FLAGGED" | "REJECTED";
     isFlagged?: boolean;
     deliveryStatus?: string;
     flaggedReason?: string | null;
+    poll?: Poll | null;
 }
 
 interface ChatViewProps {
     conversationId: string;
+    userId?: string;
     title: string;
     subtitle: string;
     messages: Message[];
     onSendMessage: (content: string) => Promise<void>;
+    onVote?: (pollId: string, optionId: string) => Promise<void>;
     onBack: () => void;
 }
 
 export const ChatView: React.FC<ChatViewProps> = ({
+    userId,
     title,
     subtitle,
     messages,
     onSendMessage,
+    onVote,
     onBack
 }) => {
     const [newMessage, setNewMessage] = useState("");
@@ -62,9 +89,66 @@ export const ChatView: React.FC<ChatViewProps> = ({
         try {
             await onSendMessage(newMessage.trim());
             setNewMessage("");
+            // Reset height of textarea
+            const textarea = document.getElementById('chat-input') as HTMLTextAreaElement;
+            if (textarea) textarea.style.height = 'auto';
         } finally {
             setIsSending(false);
         }
+    };
+
+    const renderPoll = (poll: Poll) => {
+        const options: PollOption[] = JSON.parse(poll.options);
+        const totalVotes = poll.responses.length;
+        const userVote = poll.responses.find(r => r.userId === userId);
+
+        return (
+            <div className="mt-2 space-y-3 bg-white/50 dark:bg-zinc-800/50 p-4 rounded-2xl border border-zinc-200/50 dark:border-zinc-700/50">
+                <h3 className="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter italic">Poll Question</h3>
+                <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">{poll.question}</p>
+                <div className="space-y-2 mt-2">
+                    {options.map((opt) => {
+                        const votes = poll.responses.filter(r => r.optionId === opt.id).length;
+                        const percent = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
+                        const isSelected = userVote?.optionId === opt.id;
+
+                        return (
+                            <button
+                                key={opt.id}
+                                onClick={() => onVote?.(poll.id, opt.id)}
+                                className={cn(
+                                    "w-full text-left relative overflow-hidden rounded-xl border transition-all h-10 group",
+                                    isSelected
+                                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
+                                        : "border-zinc-200 dark:border-zinc-700 hover:border-indigo-300 dark:hover:border-indigo-700 bg-white/30 dark:bg-zinc-900/30"
+                                )}
+                            >
+                                <div
+                                    className={cn(
+                                        "absolute inset-y-0 left-0 transition-all duration-1000",
+                                        isSelected ? "bg-indigo-500/20" : "bg-zinc-200/20 dark:bg-zinc-700/20"
+                                    )}
+                                    style={{ width: `${percent}%` }}
+                                />
+                                <div className="absolute inset-0 px-3 flex items-center justify-between">
+                                    <span className={cn(
+                                        "text-[11px] font-bold truncate pr-8",
+                                        isSelected ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-600 dark:text-zinc-400"
+                                    )}>
+                                        {opt.text}
+                                    </span>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        {isSelected && <Check className="w-3 h-3 text-indigo-500" />}
+                                        <span className="text-[10px] font-black text-zinc-400">{Math.round(percent)}%</span>
+                                    </div>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+                <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mt-2">{totalVotes} Total Votes</p>
+            </div>
+        );
     };
 
     return (
@@ -107,14 +191,6 @@ export const ChatView: React.FC<ChatViewProps> = ({
                     messages.map((msg, idx) => {
                         const isMe = msg.senderType === "PARENT";
 
-                        // If it's flagged and I'm the parent, I shouldn't see it (if from teacher) or I should see a warning (if from me)
-                        // Actually, let's render it as a completely blurred/masked block if !isMe so they know a message was attempted but blocked.
-                        // Or if we want to completely hide it, we can return null as before. The prompt asks to "Mask the chats from the parents and Teachers chat box".
-                        // So let's render a masked placeholder instead of returning null.
-                        // if (msg.isFlagged && !isMe) {
-                        //     return null; 
-                        // }
-
                         return (
                             <motion.div
                                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -127,33 +203,46 @@ export const ChatView: React.FC<ChatViewProps> = ({
                             >
                                 <div className={cn(
                                     "max-w-[85%] px-5 py-3.5 rounded-[24px] shadow-sm relative group backdrop-blur-md transition-all",
-                                    msg.isFlagged
-                                        ? "bg-rose-50/80 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-100" // Flagged Me Styling
-                                        : isMe
-                                            ? "bg-indigo-500 text-white rounded-tr-sm"
-                                            : "bg-white/80 dark:bg-zinc-900/80 text-zinc-800 dark:text-zinc-100 rounded-tl-sm border border-zinc-200/50 dark:border-zinc-800/50"
+                                    msg.status === "REJECTED"
+                                        ? "bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-500 italic"
+                                        : msg.status === "FLAGGED"
+                                            ? "bg-rose-50/80 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-100"
+                                            : isMe
+                                                ? "bg-indigo-500 text-white rounded-tr-sm"
+                                                : "bg-white/80 dark:bg-zinc-900/80 text-zinc-800 dark:text-zinc-100 rounded-tl-sm border border-zinc-200/50 dark:border-zinc-800/50"
                                 )}>
-                                    {msg.isFlagged && (
+                                    {msg.status === "FLAGGED" && (
                                         <div className="flex items-center gap-2 mb-2 text-rose-600 dark:text-rose-400">
                                             <ShieldAlert className="h-4 w-4" />
                                             <span className="text-[9px] font-black uppercase tracking-widest">
-                                                {isMe ? "Message Blocked" : "Message Censored"}
+                                                {isMe ? "Sent - Flagged for Review" : "Policy Violation"}
                                             </span>
                                         </div>
                                     )}
 
-                                    {/* Content Masking Logic */}
-                                    {msg.isFlagged && !isMe ? (
-                                        <div className="text-[14px] leading-relaxed font-medium text-rose-900/40 dark:text-rose-100/40 italic flex items-center gap-2">
-                                            <span className="blur-sm select-none">This message was blocked</span>
+                                    {msg.status === "REJECTED" && (
+                                        <div className="flex items-center gap-2 mb-2 text-zinc-400">
+                                            <ShieldAlert className="h-4 w-4" />
+                                            <span className="text-[9px] font-black uppercase tracking-widest">Blocked</span>
                                         </div>
-                                    ) : (
-                                        <p className="text-[14px] leading-relaxed font-medium">{msg.content}</p>
                                     )}
 
-                                    {msg.isFlagged && msg.flaggedReason && isMe && (
+                                    <div className="space-y-2">
+                                        {msg.type === "POLL" && msg.poll ? (
+                                            renderPoll(msg.poll)
+                                        ) : (
+                                            <p className={cn(
+                                                "text-[14px] leading-relaxed font-medium",
+                                                (msg.status === "FLAGGED" && !isMe) || msg.status === "REJECTED" ? "opacity-60 italic" : ""
+                                            )}>
+                                                {msg.content}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {msg.status === "FLAGGED" && msg.flaggedReason && isMe && (
                                         <p className="mt-2 text-[10px] text-rose-600/80 dark:text-rose-400/80 border-t border-rose-200/50 dark:border-rose-800/50 pt-2 font-medium">
-                                            {msg.flaggedReason}
+                                            AI Alert: {msg.flaggedReason}
                                         </p>
                                     )}
 
@@ -163,11 +252,11 @@ export const ChatView: React.FC<ChatViewProps> = ({
                                     )}>
                                         <span className={cn(
                                             "text-[9px] font-bold uppercase tracking-wider",
-                                            msg.isFlagged ? "text-rose-500/60" : isMe ? "text-white/60" : "text-zinc-400"
+                                            msg.status === "FLAGGED" ? "text-rose-500/60" : isMe ? "text-white/60" : "text-zinc-400"
                                         )}>
                                             {format(new Date(msg.createdAt), "h:mm a")}
                                         </span>
-                                        {isMe && !msg.isFlagged && (
+                                        {isMe && msg.status === "SENT" && (
                                             msg.isRead ? (
                                                 <CheckCheck className="w-3.5 h-3.5 text-white/80" />
                                             ) : (
@@ -196,6 +285,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                         <Paperclip className="w-5 h-5" />
                     </button>
                     <textarea
+                        id="chat-input"
                         rows={1}
                         value={newMessage}
                         onChange={(e) => {
@@ -210,7 +300,6 @@ export const ChatView: React.FC<ChatViewProps> = ({
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
                                 handleSend();
-                                e.currentTarget.style.height = 'auto'; // reset height
                             }
                         }}
                     />

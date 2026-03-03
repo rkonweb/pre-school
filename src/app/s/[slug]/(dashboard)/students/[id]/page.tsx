@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/contexts/ConfirmContext";
 import { Loader2 } from "lucide-react";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { ProfileSkeleton } from "@/components/ui/SkeletonCard";
 import dynamic from "next/dynamic";
 
 const ConnectSiblingDialog = dynamic(() => import("@/components/dashboard/students/ConnectSiblingDialog").then(m => m.ConnectSiblingDialog), { ssr: false });
@@ -188,11 +189,7 @@ export default function ProfileTab() {
     };
 
     if (isLoading || !student) {
-        return (
-            <div className="flex items-center justify-center p-20">
-                <Loader2 className="h-8 w-8 animate-spin text-zinc-300" />
-            </div>
-        );
+        return <ProfileSkeleton />;
     }
 
     const isReadOnly = mode === "view";

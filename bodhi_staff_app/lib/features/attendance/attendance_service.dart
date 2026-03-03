@@ -1,35 +1,27 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../auth/auth_service.dart';
+import '../../core/network/dio_client.dart';
 
 final attendanceServiceProvider = Provider<AttendanceService>((ref) {
-  return AttendanceService(ref.read(authServiceProvider));
+  return AttendanceService();
 });
 
 class AttendanceService {
-  final AuthService _auth;
-  final Dio _dio = Dio();
-  final String _baseUrl = 'http://localhost:3000/api/mobile/v1/staff/attendance';
-
-  AttendanceService(this._auth);
-
-  Future<Options> _getOptions() async {
-    final token = await _auth.getToken();
-    return Options(headers: {'Authorization': 'Bearer $token'});
-  }
+  final Dio _dio = DioClient.instance;
 
   Future<List<Map<String, dynamic>>> getClassrooms() async {
     try {
-      final response = await _dio.get(
-        '$_baseUrl/classrooms',
-        options: await _getOptions(),
-      );
-      if (response.data['success'] == true) {
+      final response = await _dio.get('attendance/classrooms');
+      if (response.data is Map && response.data['success'] == true) {
         return List<Map<String, dynamic>>.from(response.data['classrooms']);
       }
-      throw Exception(response.data['error'] ?? 'Failed to fetch classrooms');
+      throw Exception((response.data is Map ? response.data['error'] : null) ?? 'Failed to fetch classrooms');
     } catch (e) {
-      rethrow;
+      if (e is DioException && e.response != null) {
+        final data = e.response?.data;
+        throw Exception((data is Map ? data['error'] : null) ?? 'Network error');
+      }
+      throw Exception('Network error: $e');
     }
   }
 
@@ -37,20 +29,23 @@ class AttendanceService {
       String slug, String classroomId, String date) async {
     try {
       final response = await _dio.get(
-        '$_baseUrl/students',
+        'attendance/students',
         queryParameters: {
           'slug': slug,
           'classroomId': classroomId,
           'date': date,
         },
-        options: await _getOptions(),
       );
-      if (response.data['success'] == true) {
+      if (response.data is Map && response.data['success'] == true) {
         return List<Map<String, dynamic>>.from(response.data['students']);
       }
-      throw Exception(response.data['error'] ?? 'Failed to fetch students');
+      throw Exception((response.data is Map ? response.data['error'] : null) ?? 'Failed to fetch students');
     } catch (e) {
-      rethrow;
+      if (e is DioException && e.response != null) {
+        final data = e.response?.data;
+        throw Exception((data is Map ? data['error'] : null) ?? 'Network error');
+      }
+      throw Exception('Network error: $e');
     }
   }
 
@@ -64,7 +59,7 @@ class AttendanceService {
   }) async {
     try {
       final response = await _dio.post(
-        '$_baseUrl/mark',
+        'attendance/mark',
         data: {
           'slug': slug,
           'studentId': studentId,
@@ -73,11 +68,49 @@ class AttendanceService {
           'notes': notes,
           'academicYearId': academicYearId,
         },
-        options: await _getOptions(),
       );
-      return response.data['success'] == true;
+      return response.data is Map && response.data['success'] == true;
     } catch (e) {
-      rethrow;
+       if (e is DioException && e.response != null) {
+        final data = e.response?.data;
+        throw Exception((data is Map ? data['error'] : null) ?? 'Network error');
+      }
+      throw Exception('Network error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getDashboardStats() async {
+    try {
+      final response = await _dio.get('attendance/dashboard');
+      if (response.data is Map && response.data['success'] == true) {
+        return Map<String, dynamic>.from(response.data);
+      }
+      throw Exception((response.data is Map ? response.data['error'] : null) ?? 'Failed to load dashboard');
+    } catch (e) {
+      if (e is DioException && e.response != null) {
+        final data = e.response?.data;
+        throw Exception((data is Map ? data['error'] : null) ?? 'Network error');
+      }
+      throw Exception('Network error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getStudentMonthlyReport(String studentId, String month) async {
+    try {
+      final response = await _dio.get(
+        'attendance/monthly',
+        queryParameters: {'studentId': studentId, 'month': month},
+      );
+      if (response.data is Map && response.data['success'] == true) {
+        return Map<String, dynamic>.from(response.data);
+      }
+      throw Exception((response.data is Map ? response.data['error'] : null) ?? 'Failed to load report');
+    } catch (e) {
+      if (e is DioException && e.response != null) {
+        final data = e.response?.data;
+        throw Exception((data is Map ? data['error'] : null) ?? 'Network error');
+      }
+      throw Exception('Network error: $e');
     }
   }
 }

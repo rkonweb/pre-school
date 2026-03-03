@@ -1,32 +1,41 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/global_header.dart';
+import '../../core/widgets/horizontal_date_strip.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:bodhi_staff_app/core/theme/app_theme.dart';
 import 'diary_provider.dart';
 import 'models/diary_entry.dart';
 import 'package:intl/intl.dart';
 
-class DiaryListScreen extends ConsumerWidget {
+import 'package:bodhi_staff_app/core/theme/school_brand_provider.dart';
+
+class DiaryListScreen extends ConsumerStatefulWidget {
   const DiaryListScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DiaryListScreen> createState() => _DiaryListScreenState();
+}
+
+class _DiaryListScreenState extends ConsumerState<DiaryListScreen> {
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(diaryProvider);
     final notifier = ref.read(diaryProvider.notifier);
+    final brand = ref.watch(schoolBrandProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Diary Entries'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => notifier.init(),
-          ),
-        ],
+      appBar: GlobalHeader(
+        title: 'Diary',
+        actions: const [], // Removed Calendar and Refresh from Header
       ),
       body: Column(
         children: [
-          _buildFilterBar(context, state, notifier),
+          HorizontalDateStrip(
+            selectedDate: state.selectedDate,
+            onDateSelected: (date) => notifier.setDate(date),
+          ),
+          _buildFilterBar(context, state, notifier, brand),
           Expanded(
             child: state.isLoading && state.entries.isEmpty
                 ? const Center(child: CircularProgressIndicator())
@@ -34,15 +43,14 @@ class DiaryListScreen extends ConsumerWidget {
                     ? Center(
                         child: Text(
                           state.error!,
-                          style: const TextStyle(color: AppTheme.error),
+                          style: const TextStyle(color: AppTheme.danger),
                         ))
-                    : state.entries.isEmpty
-                        ? const Center(
-                            child: Text(
-                              "No diary entries found.",
-                              style: TextStyle(color: AppTheme.textMuted),
-                            ))
-                        : _buildEntriesList(context, state.entries, ref),
+                    : RefreshIndicator(
+                        onRefresh: () => ref.read(diaryProvider.notifier).loadEntries(),
+                        child: state.entries.isEmpty
+                            ? _buildEmptyState(state)
+                            : _buildEntriesList(context, state.entries, ref),
+                      ),
           ),
         ],
       ),
@@ -50,161 +58,243 @@ class DiaryListScreen extends ConsumerWidget {
         onPressed: () => context.push('/diary/create'),
         icon: const Icon(Icons.add),
         label: const Text('New Entry'),
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: brand.secondaryColor,
+        foregroundColor: brand.primaryColor,
       ),
     );
   }
 
-  Widget _buildFilterBar(BuildContext context, DiaryState state, DiaryProvider notifier) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16, vertical: AppTheme.s12),
-      decoration: const BoxDecoration(
-        color: AppTheme.surface,
-        border: Border(bottom: BorderSide(color: AppTheme.border)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.s12, vertical: AppTheme.s8),
-                border: OutlineInputBorder(),
-                hintText: 'Select Class',
+  Widget _buildEmptyState(DiaryState state) {
+    return ListView(
+      children: [
+        const SizedBox(height: 100),
+        Center(
+          child: Column(
+            children: [
+              Icon(Icons.edit_note, size: 80, color: AppTheme.textMuted.withOpacity(0.3)),
+              const SizedBox(height: AppTheme.s16),
+              Text(
+                "No diary entries for ${DateFormat('MMM dd').format(state.selectedDate)}",
+                style: const TextStyle(color: AppTheme.textMuted, fontSize: 16),
               ),
-              value: state.selectedClassroomId,
-              items: [
-                const DropdownMenuItem(value: null, child: Text("All Classes")),
-                ...state.classrooms.map((c) => DropdownMenuItem(
-                      value: c['id'] as String,
-                      child: Text(c['name'] as String, overflow: TextOverflow.ellipsis),
-                    ))
+              if (state.onlyMine)
+                TextButton(
+                  onPressed: () => {}, // Handled by segmented button
+                  child: const Text("Try switching to 'All Teachers'"),
+                )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+  Widget _buildFilterBar(BuildContext context, DiaryState state, DiaryProvider notifier, SchoolBrandState brand) {
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.s16),
+      child: Column(
+        children: [
+          // Mine vs All Toggle
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: AppTheme.border.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildToggleButton(
+                    label: "Only Mine",
+                    isSelected: state.onlyMine,
+                    brand: brand,
+                    onTap: () => notifier.toggleOnlyMine(true),
+                  ),
+                ),
+                Expanded(
+                  child: _buildToggleButton(
+                    label: "All Teachers",
+                    isSelected: !state.onlyMine,
+                    brand: brand,
+                    onTap: () => notifier.toggleOnlyMine(false),
+                  ),
+                ),
               ],
-              onChanged: (val) => notifier.setFilter(classroomId: val),
             ),
           ),
-          const SizedBox(width: AppTheme.s8),
-          Expanded(
-            child: DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: AppTheme.s12, vertical: AppTheme.s8),
-                border: OutlineInputBorder(),
-                hintText: 'Type',
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                    border: OutlineInputBorder(),
+                    hintText: 'Select Class',
+                  ),
+                  value: state.selectedClassroomId,
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text("All Classes")),
+                    ...state.classrooms.map((c) => DropdownMenuItem(
+                          value: c['id'] as String,
+                          child: Text(c['name'] as String, overflow: TextOverflow.ellipsis),
+                        ))
+                  ],
+                  onChanged: (val) => notifier.setFilter(classroomId: val),
+                ),
               ),
-              value: state.selectedType,
-              items: const [
-                DropdownMenuItem(value: null, child: Text("All Types")),
-                DropdownMenuItem(value: 'HOMEWORK', child: Text("Homework")),
-                DropdownMenuItem(value: 'NOTICE', child: Text("Notice")),
-                DropdownMenuItem(value: 'APPRECIATION', child: Text("Appreciation")),
-                DropdownMenuItem(value: 'ANNOUNCEMENT', child: Text("Announcement")),
-                DropdownMenuItem(value: 'COMPLAINT', child: Text("Complaint")),
-              ],
-              onChanged: (val) => notifier.setFilter(type: val),
-            ),
+              const SizedBox(width: AppTheme.s8),
+              IconButton(
+                icon: const Icon(Icons.tune),
+                onPressed: () {
+                    // Show type filter in a bottom sheet or another way? For now keep it simple.
+                },
+              )
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEntriesList(BuildContext context, List<DiaryEntry> entries, WidgetRef ref) {
-    return RefreshIndicator(
-      onRefresh: () => ref.read(diaryProvider.notifier).loadEntries(),
-      child: ListView.separated(
-        padding: const EdgeInsets.all(AppTheme.s16),
-        itemCount: entries.length,
-        separatorBuilder: (_, __) => const SizedBox(height: AppTheme.s12),
-        itemBuilder: (context, index) {
-          final entry = entries[index];
-          return _buildEntryCard(context, entry);
-        },
+  Widget _buildToggleButton({required String label, required bool isSelected, required SchoolBrandState brand, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.surface : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected ? [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))
+          ] : null,
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? brand.secondaryColor : AppTheme.textMuted,
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildEntriesList(BuildContext context, List<DiaryEntry> entries, WidgetRef ref) {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16, vertical: AppTheme.s8),
+      itemCount: entries.length,
+      separatorBuilder: (_, __) => const SizedBox(height: AppTheme.s16),
+      itemBuilder: (context, index) {
+        final entry = entries[index];
+        return _buildEntryCard(context, entry);
+      },
     );
   }
 
   Widget _buildEntryCard(BuildContext context, DiaryEntry entry) {
     final entryDate = entry.scheduledFor ?? entry.publishedAt ?? entry.createdAt;
-    final isToday = _isToday(entryDate);
+    // ignore: unused_local_variable
+    final isToday = _isToday(DateTime.now()); // Logic for editing today's posts
+    final now = DateTime.now();
+    final canEdit = entryDate.year == now.year && entryDate.month == now.month && entryDate.day == now.day;
+    
     final classroomName = entry.classroom?['name'] ?? 'Direct Message';
-    final dateFormatted = DateFormat('MMM dd, yyyy h:mm a').format(entryDate);
+    final dateFormatted = DateFormat('h:mm a').format(entryDate);
+    final authorName = "${entry.author?['firstName'] ?? ''} ${entry.author?['lastName'] ?? ''}".trim();
 
-    Color typeColor = AppTheme.primary;
-    if (entry.type == 'NOTICE' || entry.type == 'ANNOUNCEMENT') typeColor = AppTheme.info;
-    if (entry.type == 'COMPLAINT') typeColor = AppTheme.error;
+    // brand is available from build or we can just use ref.read(schoolBrandProvider) here, 
+    // but it's better to stay consistent. Let's just use ref.read for helper logic if needed, 
+    // but it's already watched in build, so the whole widget rebuilds.
+    final brand = ref.read(schoolBrandProvider);
+
+    Color typeColor = brand.secondaryColor;
+    if (entry.type == 'NOTICE' || entry.type == 'ANNOUNCEMENT') typeColor = brand.secondaryColor.withOpacity(0.8);
+    if (entry.type == 'COMPLAINT') typeColor = AppTheme.danger;
     if (entry.type == 'APPRECIATION') typeColor = AppTheme.success;
 
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: AppTheme.radiusMedium),
-      child: Padding(
-        padding: const EdgeInsets.all(AppTheme.s16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.s8, vertical: AppTheme.s4),
-                  decoration: BoxDecoration(
-                    color: typeColor.withOpacity(0.1),
-                    borderRadius: AppTheme.radiusSmall,
+      child: InkWell(
+        onTap: () {
+            // maybe show full detail
+        },
+        borderRadius: AppTheme.radiusMedium,
+        child: Padding(
+          padding: const EdgeInsets.all(AppTheme.s16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                   CircleAvatar(
+                    radius: 12,
+                    backgroundColor: brand.primaryColor.withOpacity(0.1),
+                    child: Text(
+                        authorName.isNotEmpty ? authorName[0].toUpperCase() : '?',
+                        style: TextStyle(fontSize: 10, color: brand.secondaryColor, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                  child: Text(
-                    entry.type,
-                    style: TextStyle(color: typeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  const SizedBox(width: AppTheme.s8),
+                  Text(
+                    authorName.isNotEmpty ? authorName : 'Unknown Teacher',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                   ),
-                ),
-                Text(dateFormatted, style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
-              ],
-            ),
-            const SizedBox(height: AppTheme.s12),
-            Text(
-              entry.title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-            ),
-            if (entry.content != null && entry.content!.isNotEmpty) ...[
-              const SizedBox(height: AppTheme.s8),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: typeColor.withOpacity(0.1),
+                      borderRadius: AppTheme.radiusSmall,
+                    ),
+                    child: Text(
+                      entry.type,
+                      style: TextStyle(color: typeColor, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               Text(
-                entry.content!,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                entry.title,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+              ),
+              if (entry.content != null && entry.content!.isNotEmpty) ...[
+                const SizedBox(height: AppTheme.s8),
+                Text(
+                  entry.content!,
+                  style: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                ),
+              ],
+              const SizedBox(height: AppTheme.s16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.class_outlined, size: 14),
+                      const SizedBox(width: 4),
+                      Text(classroomName, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.access_time, size: 14),
+                      const SizedBox(width: 4),
+                      Text(dateFormatted, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                    ],
+                  ),
+                  if (canEdit)
+                    IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 20, color: AppTheme.primary),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () => context.push('/diary/edit', extra: entry),
+                    )
+                ],
               ),
             ],
-            const SizedBox(height: AppTheme.s12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.class_, size: 16, color: AppTheme.textMuted),
-                    const SizedBox(width: AppTheme.s4),
-                    Text(
-                      classroomName,
-                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
-                    ),
-                  ],
-                ),
-                if (isToday)
-                  TextButton.icon(
-                    onPressed: () {
-                      context.push('/diary/edit', extra: entry);
-                    },
-                    icon: const Icon(Icons.edit, size: 16),
-                    label: const Text('Edit'),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.s8),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  )
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -15,6 +15,7 @@ import { getStudentAction } from "@/app/actions/student-actions";
 import { StandardActionButton } from "@/components/ui/StandardActionButton";
 import { toast } from "sonner";
 import { useConfirm } from "@/contexts/ConfirmContext";
+import { FeesSkeleton } from "@/components/ui/SkeletonCard";
 import dynamic from "next/dynamic";
 
 const PayFeeDialog = dynamic(() => import("@/components/dashboard/students/PayFeeDialog").then(m => m.PayFeeDialog), { ssr: false });
@@ -61,11 +62,7 @@ export default function FeesTab() {
     };
 
     if (isLoading || !student) {
-        return (
-            <div className="flex items-center justify-center p-20">
-                <Loader2 className="h-8 w-8 animate-spin text-zinc-300" />
-            </div>
-        );
+        return <FeesSkeleton />;
     }
 
     const stats = {

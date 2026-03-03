@@ -24,7 +24,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { id: true, schoolId: true }
+            select: { id: true, role: true, schoolId: true, school: { select: { slug: true } } }
         });
 
         if (!user || !user.schoolId) return NextResponse.json({ success: false, error: "User or School not found" }, { status: 401 });
@@ -72,7 +72,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             content: body.content,
             type: body.type,
             scheduledFor: body.scheduledFor,
-        });
+        }, user);
 
         if (!result.success) {
             return NextResponse.json({ success: false, error: result.error }, { status: 400 });
@@ -107,7 +107,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { id: true, schoolId: true }
+            select: { id: true, role: true, schoolId: true, school: { select: { slug: true } } }
         });
 
         if (!user || !user.schoolId) return NextResponse.json({ success: false, error: "User or School not found" }, { status: 401 });
@@ -139,7 +139,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
             return NextResponse.json({ success: false, error: "You can only delete entries created today" }, { status: 400 });
         }
 
-        const result = await deleteDiaryEntryAction(school.slug, entryId);
+        const result = await deleteDiaryEntryAction(school.slug, entryId, user);
 
         if (!result.success) {
             return NextResponse.json({ success: false, error: result.error }, { status: 400 });

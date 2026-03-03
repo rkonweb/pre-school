@@ -218,3 +218,63 @@ export async function getChatHistoryAction(schoolSlug: string) {
         return { success: false, error: error.message };
     }
 }
+/**
+ * Fetches all PENDING broadcasts for a school to show in admin approval queue.
+ */
+export async function getPendingBroadcastsAction(schoolSlug: string) {
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
+        if (!school) return { success: false, error: "School not found" };
+
+        const broadcasts = await prisma.broadcast.findMany({
+            where: {
+                schoolId: school.id,
+                status: "PENDING"
+            },
+            include: {
+                author: {
+                    select: { firstName: true, lastName: true, avatar: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return { success: true, broadcasts };
+    } catch (error: any) {
+        console.error("getPendingBroadcastsAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Admin action to approve or reject a broadcast.
+ */
+export async function updateBroadcastStatusAction(schoolSlug: string, broadcastId: string, status: "APPROVED" | "REJECTED") {
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        if (auth.user.role !== 'ADMIN' && auth.user.role !== 'SUPER_ADMIN') {
+            return { success: false, error: "Unauthorized. Admin permissions required." };
+        }
+
+        const broadcast = await prisma.broadcast.update({
+            where: { id: broadcastId },
+            data: {
+                status,
+                approvedById: auth.user.id,
+                approvedAt: status === "APPROVED" ? new Date() : null
+            }
+        });
+
+        // Revalidate paths if necessary
+        revalidatePath(`/s/${schoolSlug}/communication`);
+
+        return { success: true, broadcast };
+    } catch (error: any) {
+        console.error("updateBroadcastStatusAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
