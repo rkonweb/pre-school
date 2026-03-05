@@ -1,9 +1,9 @@
 "use client";
 
 import { AddStaffForm } from "@/components/dashboard/staff/AddStaffForm";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { ErpCard, Btn, SectionHeader } from "@/components/ui/erp-ui";
 
 interface AddStaffPageClientProps {
     slug: string;
@@ -22,24 +22,22 @@ export function AddStaffPageClient({ slug, designations, departments, employment
 
     return (
         <div className="mx-auto max-w-4xl p-8">
-            <div className="mb-8 flex items-center gap-4">
-                <Link
-                    href={`/s/${slug}/hr/directory`}
-                    className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white p-2 text-zinc-500 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                </Link>
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                        Add Staff Member
-                    </h1>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Create a new staff profile with personal details, role, and documents.
-                    </p>
-                </div>
+            <div className="mb-6 flex items-center gap-4">
+                <Btn
+                    variant="outline"
+                    icon={ArrowLeft}
+                    onClick={() => router.push(`/s/${slug}/hr/directory`)}
+                    title="Back to Directory"
+                />
             </div>
 
-            <div className="rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-950">
+            <SectionHeader
+                title="Add Staff Member"
+                subtitle="Create a new staff profile with personal details, role, and documents."
+                icon={UserPlus}
+            />
+
+            <ErpCard className="mt-6 p-8">
                 <AddStaffForm
                     schoolSlug={slug}
                     designations={designations}
@@ -53,7 +51,7 @@ export function AddStaffPageClient({ slug, designations, departments, employment
                     onCancel={() => router.push(`/s/${slug}/hr/directory`)}
                     onSuccess={() => router.push(`/s/${slug}/hr/directory`)}
                 />
-            </div>
+            </ErpCard>
         </div>
     );
 }

@@ -2,173 +2,54 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
-import { getEnforcedScope, verifyClassAccess, verifyParentAccess } from "@/lib/access-control";
 import { validateUserSchoolAction } from "./session-actions";
+import { getEnforcedScope, verifyClassAccess } from "@/lib/access-control";
+import { uploadToGoogleDriveNested } from "@/lib/google-drive-upload";
 
-// ... existing code ...
-
-export async function createHomeworkAction(slug: string, data: {
-    // ... args ...
-    title: string;
-    description?: string;
-    instructions?: string;
-    videoUrl?: string;
-    voiceNoteUrl?: string;
-    worksheetUrl?: string;
-    attachments?: string;
-    assignedTo: "CLASS" | "GROUP" | "INDIVIDUAL";
-    targetIds: string[];
-    scheduledFor?: Date;
-    dueDate?: Date;
-    schoolId: string;
-    createdById: string;
-    classroomId?: string;
-    fromTemplate?: boolean;
-    templateId?: string;
-    academicYearId?: string;
-}) {
-    try {
-        // PERMISSION CHECK
-        const auth = await validateUserSchoolAction(slug);
-        if (!auth.success || !auth.user) return { success: false, error: auth.error };
-        const currentUser = auth.user;
-
-        if (data.assignedTo === "CLASS" && data.classroomId) {
-            const hasAccess = await verifyClassAccess(currentUser.id, currentUser.role, data.classroomId);
-            if (!hasAccess) {
-                return { success: false, error: "You do not have permission to assign homework to this class." };
-            }
-        }
-
-        const id = Math.random().toString(36).substr(2, 9);
-        const targetIdsJson = JSON.stringify(data.targetIds);
-
-        await prisma.$executeRawUnsafe(
-            `INSERT INTO Homework (
-                id, title, description, instructions, videoUrl, voiceNoteUrl, worksheetUrl, attachments,
-                assignedTo, targetIds, scheduledFor, dueDate, isPublished, fromTemplate, templateId,
-                schoolId, createdById, classroomId, academicYearId, createdAt, updatedAt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-            id, data.title, data.description || null, data.instructions || null,
-            data.videoUrl || null, data.voiceNoteUrl || null, data.worksheetUrl || null,
-            data.attachments || null, data.assignedTo, targetIdsJson,
-            data.scheduledFor?.toISOString() || null, data.dueDate?.toISOString() || null,
-            false, data.fromTemplate ? 1 : 0, data.templateId || null,
-            data.schoolId, data.createdById, data.classroomId || null, data.academicYearId || null
-        );
-
-        // ... scope continue ...
-
-        // Create submission records for all target students
-        if (data.assignedTo === "CLASS" && data.classroomId) {
-            const students: any[] = await prisma.$queryRawUnsafe(
-                `SELECT id, firstName, lastName FROM Student WHERE classroomId = ?`,
-                data.classroomId
-            );
-
-            for (const student of students) {
-                const submissionId = Math.random().toString(36).substr(2, 9);
-                await prisma.$executeRawUnsafe(
-                    `INSERT INTO HomeworkSubmission (id, studentId, studentName, homeworkId, createdAt, updatedAt)
-                     VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))`,
-                    submissionId, student.id, `${student.firstName} ${student.lastName}`, id
-                );
-            }
-        } else if (data.assignedTo === "INDIVIDUAL") {
-            // ... existing individual logic ...
-            for (const studentId of data.targetIds) {
-                const students: any[] = await prisma.$queryRawUnsafe(
-                    `SELECT id, firstName, lastName FROM Student WHERE id = ?`,
-                    studentId
-                );
-                if (students.length > 0) {
-                    const student = students[0];
-                    const submissionId = Math.random().toString(36).substr(2, 9);
-                    await prisma.$executeRawUnsafe(
-                        `INSERT INTO HomeworkSubmission (id, studentId, studentName, homeworkId, createdAt, updatedAt)
-                         VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))`,
-                        submissionId, student.id, `${student.firstName} ${student.lastName}`, id
-                    );
-                }
-            }
-        }
-
-        revalidatePath("/s/[slug]/homework");
-        return { success: true, data: { id } };
-    } catch (error: any) {
-        console.error("createHomeworkAction Error:", error);
-        return { success: false, error: error.message };
-    }
-}
-
-// ... publishHomeworkAction ...
-
-export async function getSchoolHomeworkAction(slug: string, classroomId?: string, academicYearId?: string) {
+// ============================================
+// GET HOMEWORK LIST (ADMIN / TEACHER VIEW)
+// ============================================
+export async function getSchoolHomeworkAction(slug: string, classroomId?: string) {
     try {
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
         const currentUser = auth.user;
 
-        const schoolId = currentUser.schoolId;
-        if (!schoolId) return { success: false, error: "User has no assigned school" };
-
-        let query = `SELECT * FROM Homework WHERE schoolId = ?`;
-        const params: any[] = [schoolId];
-
-        if (academicYearId) {
-            query += ` AND academicYearId = ?`;
-            params.push(academicYearId);
-        }
+        if (!currentUser.schoolId) return { success: false, error: "No school assigned" };
 
         const scope = await getEnforcedScope(currentUser.id, currentUser.role);
-        if (scope.restriction) {
-            if (classroomId) {
-                if (!scope.allowedIds.includes(classroomId)) {
-                    return { success: true, data: [] };
-                }
-            } else {
-                if (scope.allowedIds.length > 0) {
-                    const list = scope.allowedIds.map(id => `'${id}'`).join(", ");
-                    query += ` AND (classroomId IN (${list}) OR classroomId IS NULL)`;
-                } else {
-                    return { success: true, data: [] };
-                }
-            }
-        }
-        // ---------------------------------------------------------
+
+        const whereClause: any = {
+            schoolId: currentUser.schoolId,
+        };
 
         if (classroomId) {
-            query += ` AND classroomId = ?`;
-            params.push(classroomId);
-        } else if (currentUser.role === 'STAFF') {
-            // Apply the list filter here if invalid check? 
-            // Actually we modified Query string above, but `params` are separate.
-            // If we appended string with literals above, we are good.
-            // But let's be cleaner.
-            const scope = await getEnforcedScope(currentUser.id, currentUser.role);
-            if (scope.restriction && !classroomId && scope.allowedIds.length > 0) {
-                const list = scope.allowedIds.map(id => `'${id}'`).join(", ");
-                query += ` AND classroomId IN (${list})`;
-            }
+            whereClause.classroomId = classroomId;
+        } else if (scope.restriction && scope.allowedIds.length > 0) {
+            whereClause.classroomId = { in: scope.allowedIds };
+        } else if (scope.restriction && scope.allowedIds.length === 0) {
+            return { success: true, data: [] };
         }
 
-        query += ` ORDER BY createdAt DESC`;
-
-        const homework: any[] = await prisma.$queryRawUnsafe(query, ...params);
+        const homework = await prisma.homework.findMany({
+            where: whereClause,
+            include: {
+                submissions: {
+                    select: { id: true, isSubmitted: true, isReviewed: true }
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
 
         return {
             success: true,
             data: homework.map(hw => ({
                 ...hw,
-                targetIds: JSON.parse(hw.targetIds || '[]'),
+                targetIds: JSON.parse(hw.targetIds || "[]"),
                 attachments: hw.attachments ? JSON.parse(hw.attachments) : [],
-                scheduledFor: hw.scheduledFor ? new Date(hw.scheduledFor) : null,
-                dueDate: hw.dueDate ? new Date(hw.dueDate) : null,
-                isPublished: Boolean(hw.isPublished),
-                fromTemplate: Boolean(hw.fromTemplate),
-                createdAt: new Date(hw.createdAt),
-                updatedAt: new Date(hw.updatedAt),
+                submissionCount: hw.submissions.length,
+                submittedCount: hw.submissions.filter(s => s.isSubmitted).length,
+                reviewedCount: hw.submissions.filter(s => s.isReviewed).length,
             }))
         };
     } catch (error: any) {
@@ -178,189 +59,302 @@ export async function getSchoolHomeworkAction(slug: string, classroomId?: string
 }
 
 // ============================================
-// SUBMISSIONS & PARENT INTERACTION
+// GET SINGLE HOMEWORK
 // ============================================
-
-// ... existing imports ...
-
-// ============================================
-// STUDENT / PARENT ACTIONS
-// ============================================
-
-export async function getStudentHomeworkAction(slug: string, studentId: string, academicYearId?: string) {
+export async function getHomeworkByIdAction(slug: string, id: string) {
     try {
-        // PERMISSION CHECK
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
-        const currentUser = auth.user;
 
-        if (currentUser.role === "PARENT") {
-            const hasAccess = await verifyParentAccess(currentUser.mobile, studentId);
-            if (!hasAccess) return { success: false, error: "Access denied" };
-        } else if (currentUser.role === "STAFF") {
-            // Check if staff handles this student's class
-            const student = await prisma.student.findUnique({ where: { id: studentId }, select: { classroomId: true } });
-            if (student?.classroomId) {
-                const hasAccess = await verifyClassAccess(currentUser.id, currentUser.role, student.classroomId);
-                if (!hasAccess) return { success: false, error: "Access denied" };
-            }
-        }
-
-        // Fetch Student to get Classroom ID
-        const student = await prisma.student.findUnique({
-            where: { id: studentId },
-            select: { id: true, classroomId: true }
+        const homework = await prisma.homework.findUnique({
+            where: { id },
+            include: {
+                submissions: {
+                    orderBy: { studentName: "asc" },
+                },
+            },
         });
 
-        if (!student) return { success: false, error: "Student not found" };
-
-        // Query Homework
-        // 1. Class-wide homework
-        // 2. Individual homework targeting this student
-        const tasks: any[] = await prisma.$queryRawUnsafe(`
-            SELECT h.*, s.isSubmitted, s.isReviewed, s.stickerType, s.id as submissionId 
-            FROM Homework h
-            LEFT JOIN HomeworkSubmission s ON h.id = s.homeworkId AND s.studentId = ?
-            WHERE 
-                ((h.assignedTo = 'CLASS' AND h.classroomId = ?)
-                OR 
-                (h.assignedTo = 'INDIVIDUAL' AND h.targetIds LIKE ?))
-                ${academicYearId ? `AND h.academicYearId = '${academicYearId}'` : ""}
-            ORDER BY h.createdAt DESC
-        `, studentId, student.classroomId, `%"${studentId}"%`);
-        // Note: LIKE %"id"% is a rough JSON check. Ideally we parse or normalize. 
-        // Given IDs are random strings, false positives are rare but possible if one ID is substring of another.
-        // For strictness we can filter in JS.
-
-        const processed = tasks.map(t => ({
-            ...t,
-            targetIds: t.targetIds ? JSON.parse(t.targetIds) : [],
-            attachments: t.attachments ? JSON.parse(t.attachments) : [],
-            submission: {
-                isSubmitted: Boolean(t.isSubmitted),
-                isReviewed: Boolean(t.isReviewed),
-                stickerType: t.stickerType,
-                id: t.submissionId
-            }
-        }));
-
-        // Filter strict for Individual
-        const final = processed.filter(t => {
-            if (t.assignedTo === 'INDIVIDUAL') {
-                return t.targetIds.includes(studentId);
-            }
-            return true;
-        });
-
-        return { success: true, data: final };
-    } catch (error: any) {
-        console.error("getStudentHomeworkAction Error:", error);
-        return { success: false, error: error.message };
-    }
-}
-
-export async function submitHomeworkAction(slug: string, data: {
-    homeworkId: string;
-    studentId: string;
-    mediaType?: "PHOTO" | "VIDEO" | "NONE";
-    mediaUrl?: string;
-    parentNotes?: string;
-    parentFeedback?: "ENJOYED" | "DIFFICULT" | "NEUTRAL";
-}) {
-    try {
-        // PERMISSION CHECK
-        const auth = await validateUserSchoolAction(slug);
-        if (!auth.success || !auth.user) return { success: false, error: auth.error };
-        const currentUser = auth.user;
-
-        // If Parent, verify they own this student
-        if (currentUser.role === "PARENT") {
-            const hasAccess = await verifyParentAccess(currentUser.mobile, data.studentId);
-            if (!hasAccess) return { success: false, error: "You cannot submit for this student." };
-        }
-
-        // Check if submission record exists
-        const existing = await prisma.$queryRawUnsafe(
-            `SELECT id FROM HomeworkSubmission WHERE homeworkId = ? AND studentId = ?`,
-            data.homeworkId, data.studentId
-        );
-
-        if ((existing as any[]).length === 0) {
-            // Create if missing (lazy creation)
-            const submissionId = Math.random().toString(36).substr(2, 9);
-            await prisma.$executeRawUnsafe(
-                `INSERT INTO HomeworkSubmission (id, studentId, studentName, homeworkId, createdAt, updatedAt)
-                 VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))`,
-                submissionId, data.studentId, "Student", data.homeworkId
-            );
-        }
-
-        await prisma.$executeRawUnsafe(
-            `UPDATE HomeworkSubmission SET 
-                mediaType = ?, mediaUrl = ?, parentNotes = ?, parentFeedback = ?,
-                isSubmitted = 1, submittedAt = datetime('now'), updatedAt = datetime('now')
-             WHERE homeworkId = ? AND studentId = ?`,
-            data.mediaType || null, data.mediaUrl || null, data.parentNotes || null,
-            data.parentFeedback || null, data.homeworkId, data.studentId
-        );
-
-        revalidatePath("/parent");
-        return { success: true };
-    } catch (error: any) {
-        console.error("submitHomeworkAction Error:", error);
-        return { success: false, error: error.message };
-    }
-}
-
-export async function recordReadReceiptAction(data: {
-    homeworkId: string;
-    parentId: string;
-    studentId: string;
-}) {
-    try {
-        const id = Math.random().toString(36).substr(2, 9);
-
-        // Check if already exists
-        const existing: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id FROM HomeworkReadReceipt WHERE homeworkId = ? AND parentId = ? AND studentId = ?`,
-            data.homeworkId, data.parentId, data.studentId
-        );
-
-        if (existing.length === 0) {
-            await prisma.$executeRawUnsafe(
-                `INSERT INTO HomeworkReadReceipt (id, homeworkId, parentId, studentId, viewedAt)
-                 VALUES (?, ?, ?, ?, datetime('now'))`,
-                id, data.homeworkId, data.parentId, data.studentId
-            );
-        }
-
-        return { success: true };
-    } catch (error: any) {
-        console.error("recordReadReceiptAction Error:", error);
-        return { success: false, error: error.message };
-    }
-}
-
-export async function getHomeworkSubmissionsAction(homeworkId: string) {
-    try {
-        const submissions: any[] = await prisma.$queryRawUnsafe(
-            `SELECT * FROM HomeworkSubmission WHERE homeworkId = ? ORDER BY submittedAt DESC`,
-            homeworkId
-        );
+        if (!homework) return { success: false, error: "Homework not found" };
 
         return {
             success: true,
-            data: submissions.map(sub => ({
-                ...sub,
-                isSubmitted: Boolean(sub.isSubmitted),
-                isReviewed: Boolean(sub.isReviewed),
-                addedToPortfolio: Boolean(sub.addedToPortfolio),
-                submittedAt: sub.submittedAt ? new Date(sub.submittedAt) : null,
-                reviewedAt: sub.reviewedAt ? new Date(sub.reviewedAt) : null,
-                createdAt: new Date(sub.createdAt),
-                updatedAt: new Date(sub.updatedAt),
-            }))
+            data: {
+                ...homework,
+                targetIds: JSON.parse(homework.targetIds || "[]"),
+                attachments: homework.attachments ? JSON.parse(homework.attachments) : [],
+            }
         };
+    } catch (error: any) {
+        console.error("getHomeworkByIdAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// CREATE HOMEWORK
+// ============================================
+export async function createHomeworkAction(slug: string, data: {
+    title: string;
+    description?: string;
+    instructions?: string;
+    videoUrl?: string;
+    voiceNoteUrl?: string;
+    worksheetUrl?: string;
+    attachments?: { name: string; url: string; type: string; size?: number }[];
+    assignedTo: "CLASS" | "GROUP" | "INDIVIDUAL";
+    targetIds: string[];
+    scheduledFor?: Date;
+    dueDate?: Date;
+    classroomId?: string;
+    academicYearId?: string;
+    isPublished?: boolean;
+}) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+        const currentUser = auth.user;
+        if (!currentUser.schoolId) return { success: false, error: "No school assigned" };
+
+        if (data.assignedTo === "CLASS" && data.classroomId) {
+            const hasAccess = await verifyClassAccess(currentUser.id, currentUser.role, data.classroomId);
+            if (!hasAccess) return { success: false, error: "No permission for this class." };
+        }
+
+        const homework = await prisma.homework.create({
+            data: {
+                title: data.title,
+                description: data.description,
+                instructions: data.instructions,
+                videoUrl: data.videoUrl,
+                voiceNoteUrl: data.voiceNoteUrl,
+                worksheetUrl: data.worksheetUrl,
+                attachments: JSON.stringify(data.attachments || []),
+                assignedTo: data.assignedTo,
+                targetIds: JSON.stringify(data.targetIds),
+                scheduledFor: data.scheduledFor,
+                dueDate: data.dueDate,
+                isPublished: data.isPublished ?? false,
+                schoolId: currentUser.schoolId,
+                createdById: currentUser.id,
+                classroomId: data.classroomId,
+                academicYearId: data.academicYearId,
+            }
+        });
+
+        // Auto-create submission rows for class-level homework
+        if (data.assignedTo === "CLASS" && data.classroomId) {
+            const students = await prisma.student.findMany({
+                where: { classroomId: data.classroomId, status: "ACTIVE" },
+                select: { id: true, firstName: true, lastName: true }
+            });
+
+            if (students.length > 0) {
+                await prisma.homeworkSubmission.createMany({
+                    data: students.map(s => ({
+                        studentId: s.id,
+                        studentName: `${s.firstName} ${s.lastName}`,
+                        homeworkId: homework.id,
+                    })),
+                    skipDuplicates: true,
+                });
+            }
+        } else if (data.assignedTo === "INDIVIDUAL" && data.targetIds.length > 0) {
+            const students = await prisma.student.findMany({
+                where: { id: { in: data.targetIds }, status: "ACTIVE" },
+                select: { id: true, firstName: true, lastName: true }
+            });
+
+            if (students.length > 0) {
+                await prisma.homeworkSubmission.createMany({
+                    data: students.map(s => ({
+                        studentId: s.id,
+                        studentName: `${s.firstName} ${s.lastName}`,
+                        homeworkId: homework.id,
+                    })),
+                    skipDuplicates: true,
+                });
+            }
+        }
+
+        revalidatePath(`/s/${slug}/homework`);
+        return { success: true, data: { id: homework.id } };
+    } catch (error: any) {
+        console.error("createHomeworkAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// UPDATE HOMEWORK
+// ============================================
+export async function updateHomeworkAction(slug: string, id: string, data: {
+    title?: string;
+    description?: string;
+    instructions?: string;
+    videoUrl?: string;
+    voiceNoteUrl?: string;
+    worksheetUrl?: string;
+    attachments?: { name: string; url: string; type: string; size?: number }[];
+    scheduledFor?: Date | null;
+    dueDate?: Date | null;
+    classroomId?: string;
+    isPublished?: boolean;
+    assignedTo?: 'CLASS' | 'INDIVIDUAL';
+    targetIds?: string[];
+}) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const updateData: any = {};
+        if (data.title !== undefined) updateData.title = data.title;
+        if (data.description !== undefined) updateData.description = data.description;
+        if (data.instructions !== undefined) updateData.instructions = data.instructions;
+        if (data.videoUrl !== undefined) updateData.videoUrl = data.videoUrl;
+        if (data.voiceNoteUrl !== undefined) updateData.voiceNoteUrl = data.voiceNoteUrl;
+        if (data.worksheetUrl !== undefined) updateData.worksheetUrl = data.worksheetUrl;
+        if (data.attachments !== undefined) updateData.attachments = JSON.stringify(data.attachments);
+        if (data.scheduledFor !== undefined) updateData.scheduledFor = data.scheduledFor;
+        if (data.dueDate !== undefined) updateData.dueDate = data.dueDate;
+        if (data.classroomId !== undefined) updateData.classroomId = data.classroomId;
+        if (data.isPublished !== undefined) updateData.isPublished = data.isPublished;
+        if (data.assignedTo !== undefined) updateData.assignedTo = data.assignedTo;
+
+        await prisma.homework.update({ where: { id }, data: updateData });
+
+        if (data.assignedTo !== undefined || data.targetIds !== undefined || data.classroomId !== undefined) {
+            const hw = await prisma.homework.findUnique({ where: { id } });
+            if (hw) {
+                let studentIdsToAssign: string[] = [];
+                if (hw.assignedTo === 'CLASS' && hw.classroomId) {
+                    const classStudents = await prisma.student.findMany({
+                        where: { classroomId: hw.classroomId, status: 'ACTIVE' },
+                        select: { id: true }
+                    });
+                    studentIdsToAssign = classStudents.map(s => s.id);
+                } else if (hw.assignedTo === 'INDIVIDUAL' && data.targetIds) {
+                    studentIdsToAssign = data.targetIds;
+                }
+
+                if (studentIdsToAssign.length > 0) {
+                    const existingSubmissions = await prisma.homeworkSubmission.findMany({
+                        where: { homeworkId: id },
+                        select: { studentId: true }
+                    });
+                    const existingIds = new Set(existingSubmissions.map(s => s.studentId));
+                    const newIds = studentIdsToAssign.filter(sid => !existingIds.has(sid));
+
+                    if (newIds.length > 0) {
+                        const newStudents = await prisma.student.findMany({
+                            where: { id: { in: newIds } },
+                            select: { id: true, firstName: true, lastName: true }
+                        });
+                        await prisma.homeworkSubmission.createMany({
+                            data: newStudents.map(s => ({
+                                studentId: s.id,
+                                studentName: `${s.firstName} ${s.lastName}`,
+                                homeworkId: hw.id,
+                            })),
+                            skipDuplicates: true
+                        });
+                    }
+                }
+            }
+        }
+
+        revalidatePath(`/s/${slug}/homework`);
+        revalidatePath(`/s/${slug}/homework/${id}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("updateHomeworkAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// DELETE HOMEWORK
+// ============================================
+export async function deleteHomeworkAction(slug: string, id: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        await prisma.homework.delete({ where: { id } });
+
+        revalidatePath(`/s/${slug}/homework`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("deleteHomeworkAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// PUBLISH / UNPUBLISH
+// ============================================
+export async function toggleHomeworkPublishAction(slug: string, id: string, publish: boolean) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        await prisma.homework.update({
+            where: { id },
+            data: { isPublished: publish }
+        });
+
+        revalidatePath(`/s/${slug}/homework`);
+        revalidatePath(`/s/${slug}/homework/${id}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error("toggleHomeworkPublishAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// UPLOAD HOMEWORK FILE TO GOOGLE DRIVE
+// ============================================
+export async function uploadHomeworkFileAction(formData: FormData) {
+    try {
+        const slug = formData.get("slug") as string;
+        const classroomName = (formData.get("classroomName") as string) || "General";
+        const dateStr = (formData.get("date") as string) || new Date().toISOString();
+
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: "Unauthorized" };
+
+        const file = formData.get("file") as File;
+        if (!file) return { success: false, error: "No file provided" };
+
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const date = new Date(dateStr);
+        const monthStr = date.toLocaleString("en-US", { month: "long", year: "numeric" }); // "March 2026"
+        const dayStr = `${date.getDate().toString().padStart(2, "0")}-${date.toLocaleString("en-US", { weekday: "short" })}`; // "04-Tue"
+        const safeClassName = classroomName.replace(/[^a-zA-Z0-9 -]/g, "").trim();
+
+        const folderPath = ["Homework", safeClassName, monthStr, dayStr];
+
+        const res = await uploadToGoogleDriveNested(buffer, file.name, file.type, folderPath);
+
+        return res;
+    } catch (error: any) {
+        console.error("uploadHomeworkFileAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================
+// GET SUBMISSIONS
+// ============================================
+export async function getHomeworkSubmissionsAction(homeworkId: string) {
+    try {
+        const submissions = await prisma.homeworkSubmission.findMany({
+            where: { homeworkId },
+            orderBy: { studentName: "asc" },
+        });
+
+        return { success: true, data: submissions };
     } catch (error: any) {
         console.error("getHomeworkSubmissionsAction Error:", error);
         return { success: false, error: error.message };
@@ -368,28 +362,32 @@ export async function getHomeworkSubmissionsAction(homeworkId: string) {
 }
 
 // ============================================
-// TEACHER EVALUATION
+// GRADE SUBMISSION
 // ============================================
-
-export async function gradeSubmissionAction(data: {
+export async function gradeSubmissionAction(slug: string, data: {
     submissionId: string;
     stickerType: "EXCELLENT" | "CREATIVE" | "KEEP_IT_UP" | "STAR" | "MEDAL";
     teacherComment?: string;
-    reviewedById: string;
     addToPortfolio?: boolean;
     milestoneType?: "SOCIAL" | "COGNITIVE" | "PHYSICAL" | "CREATIVE";
 }) {
     try {
-        await prisma.$executeRawUnsafe(
-            `UPDATE HomeworkSubmission SET 
-                stickerType = ?, teacherComment = ?, isReviewed = 1, reviewedAt = datetime('now'),
-                reviewedById = ?, addedToPortfolio = ?, milestoneType = ?, updatedAt = datetime('now')
-             WHERE id = ?`,
-            data.stickerType, data.teacherComment || null, data.reviewedById,
-            data.addToPortfolio ? 1 : 0, data.milestoneType || null, data.submissionId
-        );
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
-        revalidatePath("/s/[slug]/homework");
+        await prisma.homeworkSubmission.update({
+            where: { id: data.submissionId },
+            data: {
+                stickerType: data.stickerType,
+                teacherComment: data.teacherComment,
+                isReviewed: true,
+                reviewedAt: new Date(),
+                reviewedById: auth.user.id,
+                addedToPortfolio: data.addToPortfolio ?? false,
+                milestoneType: data.milestoneType,
+            }
+        });
+
         return { success: true };
     } catch (error: any) {
         console.error("gradeSubmissionAction Error:", error);
@@ -398,71 +396,51 @@ export async function gradeSubmissionAction(data: {
 }
 
 // ============================================
-// TEMPLATES
+// LEGACY COMPAT
 // ============================================
-
-export async function getHomeworkTemplatesAction(category?: string, ageGroup?: string) {
+export async function getStudentHomeworkAction(slug: string, studentId: string) {
     try {
-        let query = `SELECT * FROM HomeworkTemplate WHERE 1=1`;
-        const params: any[] = [];
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
 
-        if (category) {
-            query += ` AND category = ?`;
-            params.push(category);
-        }
+        const student = await prisma.student.findUnique({
+            where: { id: studentId },
+            select: { classroomId: true }
+        });
 
-        if (ageGroup) {
-            query += ` AND ageGroup = ?`;
-            params.push(ageGroup);
-        }
+        if (!student) return { success: false, error: "Student not found" };
 
-        query += ` ORDER BY createdAt DESC`;
-
-        const templates: any[] = await prisma.$queryRawUnsafe(query, ...params);
+        const homework = await prisma.homework.findMany({
+            where: {
+                OR: [
+                    { assignedTo: "CLASS", classroomId: student.classroomId ?? undefined },
+                    {
+                        assignedTo: "INDIVIDUAL",
+                        targetIds: { contains: studentId }
+                    }
+                ],
+                isPublished: true,
+            },
+            include: {
+                submissions: {
+                    where: { studentId },
+                    take: 1,
+                }
+            },
+            orderBy: { createdAt: "desc" },
+        });
 
         return {
             success: true,
-            data: templates.map(t => ({
-                ...t,
-                attachments: t.attachments ? JSON.parse(t.attachments) : [],
-                isPremium: Boolean(t.isPremium),
-                createdAt: new Date(t.createdAt),
-                updatedAt: new Date(t.updatedAt),
+            data: homework.map(hw => ({
+                ...hw,
+                targetIds: JSON.parse(hw.targetIds || "[]"),
+                attachments: hw.attachments ? JSON.parse(hw.attachments) : [],
+                submission: hw.submissions[0] ?? null,
             }))
         };
     } catch (error: any) {
-        console.error("getHomeworkTemplatesAction Error:", error);
-        return { success: false, error: error.message };
-    }
-}
-
-export async function createHomeworkTemplateAction(data: {
-    title: string;
-    description?: string;
-    category: string;
-    instructions?: string;
-    videoUrl?: string;
-    worksheetUrl?: string;
-    attachments?: string;
-    isPremium?: boolean;
-    ageGroup?: string;
-}) {
-    try {
-        const id = Math.random().toString(36).substr(2, 9);
-
-        await prisma.$executeRawUnsafe(
-            `INSERT INTO HomeworkTemplate (
-                id, title, description, category, instructions, videoUrl, worksheetUrl,
-                attachments, isPremium, ageGroup, createdAt, updatedAt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-            id, data.title, data.description || null, data.category, data.instructions || null,
-            data.videoUrl || null, data.worksheetUrl || null, data.attachments || null,
-            data.isPremium ? 1 : 0, data.ageGroup || null
-        );
-
-        return { success: true, data: { id } };
-    } catch (error: any) {
-        console.error("createHomeworkTemplateAction Error:", error);
+        console.error("getStudentHomeworkAction Error:", error);
         return { success: false, error: error.message };
     }
 }

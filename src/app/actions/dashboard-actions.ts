@@ -381,3 +381,128 @@ export async function getDashboardStatsAction(slug: string, staffId?: string, ac
         return { success: false, error: error.message || "Failed to fetch dashboard data" };
     }
 }
+
+export async function getAnalyticsDataAction(slug: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const school = await prisma.school.findUnique({
+            where: { slug },
+            select: { id: true, timezone: true }
+        });
+        if (!school) return { success: false, error: "School not found" };
+
+        const timezone = school.timezone || "Asia/Kolkata";
+        const now = getSchoolNow(timezone);
+
+        // --- 1. Enrollment Trend (Last 6 Months) ---
+        const enrollmentTrend = await Promise.all(
+            Array.from({ length: 6 }).map(async (_, i) => {
+                const date = new Date(now);
+                date.setMonth(now.getMonth() - (5 - i));
+                const monthName = date.toLocaleString('default', { month: 'short' });
+                const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+                const count = await prisma.student.count({
+                    where: {
+                        schoolId: school.id,
+                        status: "ACTIVE",
+                        createdAt: { lte: endOfMonth }
+                    }
+                });
+                return { name: monthName, students: count };
+            })
+        );
+
+        // --- 2. Revenue Trend (Last 6 Months) ---
+        const revenueTrend = await Promise.all(
+            Array.from({ length: 6 }).map(async (_, i) => {
+                const date = new Date(now);
+                date.setMonth(now.getMonth() - (5 - i));
+                const monthName = date.toLocaleString('default', { month: 'short' });
+                const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+                const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+                const sum = await prisma.feePayment.aggregate({
+                    _sum: { amount: true },
+                    where: {
+                        fee: { student: { schoolId: school.id } },
+                        date: { gte: startOfMonth, lte: endOfMonth }
+                    }
+                });
+                return { name: monthName, revenue: sum._sum.amount || 0 };
+            })
+        );
+
+        // --- 3. Academic Heatmap (Avg Score per Class) ---
+        const classrooms = await prisma.classroom.findMany({
+            where: { schoolId: school.id },
+            select: {
+                id: true,
+                name: true,
+                students: {
+                    select: {
+                        examResults: {
+                            select: { marks: true, exam: { select: { maxMarks: true } } }
+                        }
+                    }
+                }
+            }
+        });
+
+        const academicHeatmap = classrooms.map(cls => {
+            let totalMarks = 0;
+            let totalMaxMarks = 0;
+            cls.students.forEach(stu => {
+                stu.examResults.forEach(res => {
+                    if (res.marks !== null && res.exam.maxMarks > 0) {
+                        totalMarks += res.marks;
+                        totalMaxMarks += res.exam.maxMarks;
+                    }
+                });
+            });
+            const avg = totalMaxMarks > 0 ? Math.round((totalMarks / totalMaxMarks) * 100) : 0;
+            return { name: cls.name, score: avg };
+        }).filter(item => item.score > 0).slice(0, 6);
+
+        // --- 4. Attendance Pulse (Weekly Avg Last 4 Weeks) ---
+        const attendancePulse = await Promise.all(
+            Array.from({ length: 4 }).map(async (_, i) => {
+                const startOfWeek = new Date(now);
+                startOfWeek.setDate(now.getDate() - ((3 - i) * 7 + now.getDay()));
+                startOfWeek.setHours(0, 0, 0, 0);
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                endOfWeek.setHours(23, 59, 59, 999);
+
+                const present = await prisma.attendance.count({
+                    where: {
+                        student: { schoolId: school.id },
+                        date: { gte: startOfWeek, lte: endOfWeek },
+                        status: "PRESENT"
+                    }
+                });
+                const total = await prisma.attendance.count({
+                    where: {
+                        student: { schoolId: school.id },
+                        date: { gte: startOfWeek, lte: endOfWeek }
+                    }
+                });
+                const percent = total > 0 ? Math.round((present / total) * 100) : 0;
+                return { name: `Week ${i + 1}`, attendance: percent };
+            })
+        );
+
+        return {
+            success: true,
+            enrollmentTrend,
+            revenueTrend,
+            academicHeatmap,
+            attendancePulse
+        };
+    } catch (error: any) {
+        console.error("Analytics Data Error", error);
+        return { success: false, error: error.message || "Failed to fetch analytics data" };
+    }
+}

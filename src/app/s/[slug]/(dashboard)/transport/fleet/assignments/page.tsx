@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { SectionHeader } from "@/components/ui/erp-ui";
 import { useSidebar } from "@/context/SidebarContext";
 
 export default function TransportAssignmentsPage() {
@@ -157,27 +158,12 @@ export default function TransportAssignmentsPage() {
     }
 
     return (
-        <div className="flex flex-col gap-8 pb-20">
-            {/* Standardized Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div className="flex items-center gap-6">
-                    <button
-                        onClick={() => router.push(`/s/${slug}/transport`)}
-                        className="group flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white transition-all hover:border-zinc-900 active:scale-95 shadow-sm"
-                        title="Back to Transport Dashboard"
-                    >
-                        <ArrowLeft className="h-5 w-5 text-zinc-500 group-hover:text-zinc-900" />
-                    </button>
-                    <div>
-                        <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                            Assign Students
-                        </h1>
-                        <p className="text-sm text-zinc-500 font-medium mt-1">
-                            Assign students to routes and manage their transport details.
-                        </p>
-                    </div>
-                </div>
-            </div>
+        <div className="space-y-6">
+            <SectionHeader
+                title="Assign Students"
+                subtitle="Assign students to routes and manage their transport details."
+                icon={User}
+            />
 
             <div className="grid lg:grid-cols-12 gap-8">
                 {/* Left: Selection Engine */}
@@ -334,6 +320,7 @@ export default function TransportAssignmentsPage() {
                                                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Pickup Point</label>
                                                 <div className="relative">
                                                     <select
+                                                        aria-label="Select Pickup Point"
                                                         className="w-full h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-6 pr-12 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-brand focus:bg-white outline-none transition-all shadow-sm appearance-none dark:bg-zinc-900 dark:border-zinc-800 dark:text-white"
                                                         value={pickupStopId}
                                                         onChange={(e) => setPickupStopId(e.target.value)}
@@ -355,6 +342,7 @@ export default function TransportAssignmentsPage() {
                                                 <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Drop Point</label>
                                                 <div className="relative">
                                                     <select
+                                                        aria-label="Select Drop Point"
                                                         className="w-full h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-6 pr-12 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-brand focus:bg-white outline-none transition-all shadow-sm appearance-none dark:bg-zinc-900 dark:border-zinc-800 dark:text-white"
                                                         value={dropStopId}
                                                         onChange={(e) => setDropStopId(e.target.value)}

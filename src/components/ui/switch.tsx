@@ -1,29 +1,34 @@
 "use client"
-
 import * as React from "react"
-import * as SwitchPrimitives from "@radix-ui/react-switch"
-
+import * as SwitchPrimitive from "@radix-ui/react-switch"
 import { cn } from "@/lib/utils"
 
 const Switch = React.forwardRef<
-  React.ElementRef<typeof SwitchPrimitives.Root>,
-  React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
->(({ className, ...props }, ref) => (
-  <SwitchPrimitives.Root
-    className={cn(
-      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
-      className
-    )}
-    {...props}
+  React.ElementRef<typeof SwitchPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>
+>(({ className, style, ...props }, ref) => (
+  <SwitchPrimitive.Root
     ref={ref}
+    className={cn("peer inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=unchecked]:bg-gray-200", className)}
+    style={{
+      width: 46, height: 26,
+      borderRadius: 13,
+      transition: "all 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+      ...style,
+    }}
+    {...props}
   >
-    <SwitchPrimitives.Thumb
-      className={cn(
-        "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
-      )}
+    <SwitchPrimitive.Thumb
+      className={cn("pointer-events-none block rounded-full bg-white shadow-lg ring-0 transition-transform data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-5")}
+      style={{
+        width: 18, height: 18,
+        background: "white",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+        transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+      }}
     />
-  </SwitchPrimitives.Root>
-))
-Switch.displayName = SwitchPrimitives.Root.displayName
+  </SwitchPrimitive.Root>
+));
+Switch.displayName = SwitchPrimitive.Root.displayName;
 
-export { Switch }
+export { Switch };

@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  google_fonts: 5.1.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -52,6 +53,9 @@ dependencies:
   shared_preferences: ^2.2.2
   firebase_core: ^2.27.0
   firebase_messaging: ^14.7.19
+  flutter_local_notifications: ^17.0.0
+  audioplayers: ^5.0.0
+  wakelock_plus: ^1.1.0
   table_calendar: ^3.1.2
 
 dev_dependencies:
@@ -80,6 +84,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/sounds/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

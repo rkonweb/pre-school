@@ -11,7 +11,7 @@ import {
     getAccountCategories,
     getAccountVendors,
     getFinancialYears,
-    createTransaction,
+    createTransactionAction as createTransaction,
 } from '@/app/actions/account-actions';
 import { getCurrentUserAction } from '@/app/actions/session-actions';
 import { toast } from 'sonner';

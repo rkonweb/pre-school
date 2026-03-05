@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 
 interface StatCardProps {
@@ -15,37 +14,89 @@ interface StatCardProps {
     color?: "blue" | "green" | "purple" | "orange" | "red" | "zinc" | "brand";
 }
 
-const colorStyles = {
-    blue: "bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand border-brand/20 dark:border-brand/30",
-    brand: "bg-brand-soft text-brand dark:bg-brand/20 dark:text-brand border-brand/10 dark:border-brand/30",
-    green: "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 border-green-100 dark:border-green-900/30",
-    purple: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400 border-purple-100 dark:border-purple-900/30",
-    orange: "bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 border-orange-100 dark:border-orange-900/30",
-    red: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 border-red-100 dark:border-red-900/30",
-    zinc: "bg-zinc-50 text-zinc-600 dark:bg-zinc-900/20 dark:text-zinc-400 border-zinc-100 dark:border-zinc-900/30",
+const colorMap: Record<string, { iconBg: string; iconColor: string; shadow: string }> = {
+    brand: { iconBg: "rgba(245,158,11,0.12)", iconColor: "#D97706", shadow: "rgba(245,158,11,0.18)" },
+    blue: { iconBg: "rgba(59,130,246,0.12)", iconColor: "#2563EB", shadow: "rgba(59,130,246,0.18)" },
+    green: { iconBg: "rgba(16,185,129,0.12)", iconColor: "#059669", shadow: "rgba(16,185,129,0.18)" },
+    purple: { iconBg: "rgba(139,92,246,0.12)", iconColor: "#7C3AED", shadow: "rgba(139,92,246,0.18)" },
+    orange: { iconBg: "rgba(249,115,22,0.12)", iconColor: "#EA580C", shadow: "rgba(249,115,22,0.18)" },
+    red: { iconBg: "rgba(239,68,68,0.12)", iconColor: "#DC2626", shadow: "rgba(239,68,68,0.18)" },
+    zinc: { iconBg: "rgba(113,113,122,0.12)", iconColor: "#52525B", shadow: "rgba(113,113,122,0.18)" },
 };
 
-export function StatCard({ title, value, subValue, trend, icon: Icon, color = "blue" }: StatCardProps) {
+export function StatCard({ title, value, subValue, trend, icon: Icon, color = "brand" }: StatCardProps) {
+    const c = colorMap[color] ?? colorMap.brand;
+
     return (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <div className="flex items-center justify-between">
-                <div className={cn("flex h-12 w-12 items-center justify-center rounded-xl border", colorStyles[color])}>
-                    <Icon className="h-6 w-6" />
+        <div
+            className="hover-lift"
+            style={{
+                background: "white",
+                borderRadius: 20,
+                padding: "20px 22px",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
+                border: "1px solid #F3F4F6",
+                cursor: "pointer",
+                position: "relative",
+                overflow: "hidden",
+            }}
+        >
+            {/* Subtle tinted corner glow */}
+            <div style={{
+                position: "absolute", bottom: -16, right: -16,
+                width: 64, height: 64, borderRadius: "50%",
+                background: c.iconBg, filter: "blur(18px)", pointerEvents: "none"
+            }} />
+
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+                {/* Icon */}
+                <div
+                    className="wiggle-hover"
+                    style={{
+                        width: 44, height: 44, borderRadius: 13,
+                        background: c.iconBg,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                >
+                    <Icon style={{ width: 20, height: 20, color: c.iconColor }} />
                 </div>
-                {trend && (
-                    <span className={cn(
-                        "flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full",
-                        trend.isPositive ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                    )}>
-                        {trend.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                        {typeof trend.value === 'number' ? `${trend.value}%` : trend.value}
+
+                {/* Trend Badge */}
+                {trend ? (
+                    <span style={{
+                        fontSize: 11.5, fontWeight: 700,
+                        color: trend.isPositive ? "#059669" : "#DC2626",
+                        background: trend.isPositive ? "#ECFDF5" : "#FEF2F2",
+                        borderRadius: 20, padding: "3px 9px",
+                        display: "flex", alignItems: "center", gap: 3,
+                    }}>
+                        {trend.isPositive
+                            ? <TrendingUp style={{ width: 11, height: 11 }} />
+                            : <TrendingDown style={{ width: 11, height: 11 }} />}
+                        {trend.isPositive ? "+" : ""}{typeof trend.value === "number" ? `${trend.value}%` : trend.value}
                     </span>
-                )}
+                ) : null}
             </div>
-            <div className="mt-4">
-                <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{title}</p>
-                <h3 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">{value}</h3>
-                {subValue && <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">{subValue}</p>}
+
+            {/* Value */}
+            <div
+                className="countUp-anim"
+                style={{
+                    fontFamily: "'Sora', sans-serif",
+                    fontSize: 26, fontWeight: 800,
+                    color: "#1E1B4B",
+                    letterSpacing: -1, marginBottom: 2,
+                }}
+            >
+                {value}
+            </div>
+
+            {/* Label + subvalue */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 12.5, color: "#9CA3AF", fontWeight: 500 }}>{title}</span>
+                {subValue && (
+                    <span style={{ fontSize: 11, color: "#9CA3AF" }}>{subValue}</span>
+                )}
             </div>
         </div>
     );

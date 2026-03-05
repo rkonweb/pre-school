@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { deleteTransactionAction } from "@/app/actions/account-actions";
 import { toast } from "sonner";
+import { tableStyles } from "@/components/ui/erp-ui";
 
 type Source = 'TRANSPORT' | 'FEE' | 'PAYROLL' | 'MANUAL';
 
@@ -74,22 +75,22 @@ export default function TransactionTable({ transactions, currency, slug }: Trans
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[900px]">
-                <thead>
-                    <tr className="border-b border-zinc-100">
-                        <th className="py-4 px-5 text-[10px] font-black uppercase tracking-widest text-zinc-400 w-28">Date</th>
-                        <th className="py-4 px-5 text-[10px] font-black uppercase tracking-widest text-zinc-400">Description</th>
-                        <th className="py-4 px-5 text-[10px] font-black uppercase tracking-widest text-zinc-400 w-32">Source</th>
-                        <th className="py-4 px-5 text-[10px] font-black uppercase tracking-widest text-zinc-400 w-32">Category</th>
-                        <th className="py-4 px-5 text-[10px] font-black uppercase tracking-widest text-zinc-400 w-28">Status</th>
-                        <th className="py-4 px-5 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right w-36">Amount</th>
-                        <th className="py-4 px-5 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right w-36">Balance</th>
-                        <th className="py-4 px-2 w-16"></th>
+        <div style={tableStyles.container}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead style={tableStyles.thead}>
+                    <tr>
+                        <th style={{ ...tableStyles.thNoSort, width: "7rem" }}>Date</th>
+                        <th style={tableStyles.thNoSort}>Description</th>
+                        <th style={{ ...tableStyles.thNoSort, width: "8rem" }}>Source</th>
+                        <th style={{ ...tableStyles.thNoSort, width: "8rem" }}>Category</th>
+                        <th style={{ ...tableStyles.thNoSort, width: "7rem" }}>Status</th>
+                        <th style={{ ...tableStyles.thNoSort, width: "9rem", textAlign: "right" }}>Amount</th>
+                        <th style={{ ...tableStyles.thNoSort, width: "9rem", textAlign: "right" }}>Balance</th>
+                        <th style={{ ...tableStyles.thNoSort, width: "4rem", textAlign: "center" }}>Action</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-50">
-                    {withBalance.map((txn) => {
+                <tbody>
+                    {withBalance.map((txn, i) => {
                         const isCredit = txn.type === 'CREDIT';
                         const source: Source = txn.source as Source || 'MANUAL';
                         const srcConf = SOURCE_CONFIG[source];
@@ -100,11 +101,18 @@ export default function TransactionTable({ transactions, currency, slug }: Trans
                         return (
                             <React.Fragment key={txn.id}>
                                 <tr
-                                    className="group hover:bg-zinc-50/80 transition-colors cursor-pointer"
+                                    className="group cursor-pointer"
+                                    style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
+                                    onMouseEnter={e => {
+                                        (e.currentTarget).style.background = "#FFFBEB";
+                                    }}
+                                    onMouseLeave={e => {
+                                        (e.currentTarget).style.background = i % 2 === 0 ? "white" : "#F9FAFB";
+                                    }}
                                     onClick={() => setExpandedId(isExpanded ? null : txn.id)}
                                 >
                                     {/* Date */}
-                                    <td className="py-4 px-5">
+                                    <td style={tableStyles.td}>
                                         <div>
                                             <p className="text-sm font-bold text-zinc-700">
                                                 {new Date(txn.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
@@ -116,7 +124,7 @@ export default function TransactionTable({ transactions, currency, slug }: Trans
                                     </td>
 
                                     {/* Description */}
-                                    <td className="py-4 px-5">
+                                    <td style={tableStyles.td}>
                                         <div className="flex items-center gap-3">
                                             <div className={cn(
                                                 "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border",
@@ -139,9 +147,9 @@ export default function TransactionTable({ transactions, currency, slug }: Trans
                                     </td>
 
                                     {/* Source badge */}
-                                    <td className="py-4 px-5">
+                                    <td style={tableStyles.td}>
                                         <span className={cn(
-                                            "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider",
+                                            "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider whitespace-nowrap",
                                             srcConf.bg, srcConf.text
                                         )}>
                                             <srcConf.icon className="h-3 w-3" />
@@ -150,16 +158,16 @@ export default function TransactionTable({ transactions, currency, slug }: Trans
                                     </td>
 
                                     {/* Category */}
-                                    <td className="py-4 px-5">
-                                        <span className="px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-600 text-[10px] font-black uppercase tracking-wider">
+                                    <td style={tableStyles.td}>
+                                        <span className="px-2.5 py-1 rounded-lg bg-zinc-100/50 text-zinc-600 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
                                             {txn.category?.name || '—'}
                                         </span>
                                     </td>
 
                                     {/* Status */}
-                                    <td className="py-4 px-5">
+                                    <td style={tableStyles.td}>
                                         <span className={cn(
-                                            "inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
+                                            "inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider whitespace-nowrap",
                                             statusConf.cls
                                         )}>
                                             <statusConf.icon className="h-3 w-3" />
@@ -168,7 +176,7 @@ export default function TransactionTable({ transactions, currency, slug }: Trans
                                     </td>
 
                                     {/* Amount */}
-                                    <td className="py-4 px-5 text-right">
+                                    <td style={{ ...tableStyles.td, textAlign: "right" }}>
                                         <p className={cn(
                                             "text-base font-black tabular-nums",
                                             isCredit ? "text-emerald-600" : "text-zinc-900"
@@ -178,7 +186,7 @@ export default function TransactionTable({ transactions, currency, slug }: Trans
                                     </td>
 
                                     {/* Running Balance */}
-                                    <td className="py-4 px-5 text-right">
+                                    <td style={{ ...tableStyles.td, textAlign: "right" }}>
                                         <p className={cn(
                                             "text-sm font-bold tabular-nums",
                                             txn.runningBalance >= 0 ? "text-zinc-500" : "text-red-500"
@@ -188,22 +196,22 @@ export default function TransactionTable({ transactions, currency, slug }: Trans
                                     </td>
 
                                     {/* Actions */}
-                                    <td className="py-4 px-2" onClick={e => e.stopPropagation()}>
-                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <td style={{ ...tableStyles.td, textAlign: "center" }} onClick={e => e.stopPropagation()}>
+                                        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => handleDelete(txn.id)}
                                                 disabled={isDeleting}
-                                                className="p-1.5 hover:bg-red-50 rounded-lg text-zinc-300 hover:text-red-500 transition-colors"
+                                                className="p-1.5 hover:bg-red-50 rounded-lg text-zinc-400 hover:text-red-500 transition-colors"
                                                 title="Delete transaction"
                                             >
-                                                {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                             </button>
                                             <button
                                                 onClick={() => setExpandedId(isExpanded ? null : txn.id)}
-                                                className="p-1.5 hover:bg-zinc-100 rounded-lg text-zinc-300 hover:text-zinc-600 transition-colors"
+                                                className="p-1.5 hover:bg-zinc-100 rounded-lg text-zinc-400 hover:text-zinc-600 transition-colors"
                                                 title={isExpanded ? "Collapse" : "Expand details"}
                                             >
-                                                {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                                                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                                             </button>
                                         </div>
                                     </td>

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/api/api_client.dart';
@@ -123,6 +124,21 @@ class ConversationData extends _$ConversationData {
       } else {
          throw Exception(response.data['error'] ?? "Server failed");
       }
+    } on DioException catch (e) {
+      String errorMessage = "Failed to send message";
+      if (e.response != null && e.response?.data is Map && e.response?.data['error'] != null) {
+        errorMessage = e.response?.data['error'];
+      } else {
+        errorMessage = e.message ?? "Connection error";
+      }
+      
+      if (state.value != null) {
+        final currentState = state.value!;
+        final currentMessages = List<dynamic>.from(currentState['messages'] ?? []);
+        currentMessages.removeWhere((m) => m['id'] == tempId);
+        state = AsyncValue.data({...currentState, 'messages': currentMessages});
+      }
+      return errorMessage;
     } catch (e) {
       // Remove optimistic message if explicit error
       final errorMessage = e.toString().replaceAll('Exception: ', '');

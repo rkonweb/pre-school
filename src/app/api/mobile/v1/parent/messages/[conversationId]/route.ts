@@ -101,10 +101,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ convers
             : student.motherPhone === phone ? (student.motherName || 'Mother')
                 : 'Guardian';
 
-        // --- AI Content Filtering ---
-        const { moderateContent } = await import('@/lib/ai-moderation');
-        const moderation = await moderateContent(content);
-        const finalContent = moderation.maskedContent;
+        // --- Moderation Checks ---
+        const { moderateMessage } = await import('@/lib/chat-moderator');
+        const blockCheck = moderateMessage(content);
+
+        let isFlagged = false;
+        let flaggedReason = null;
+        let finalContent = content;
+
+        if (!blockCheck.isApproved) {
+            isFlagged = true;
+            flaggedReason = blockCheck.reason;
+        } else {
+            // --- AI Content Filtering ---
+            const { moderateContent } = await import('@/lib/ai-moderation');
+            const moderation = await moderateContent(content);
+            finalContent = moderation.maskedContent;
+            isFlagged = moderation.flagged;
+            flaggedReason = moderation.reason;
+        }
 
         // Create message
         const newMessage = await prisma.message.create({
@@ -113,8 +128,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ convers
                 type: "TEXT",
                 senderType: "PARENT",
                 senderName: parentName,
-                isFlagged: moderation.flagged,
-                flaggedReason: moderation.reason,
+                isFlagged: isFlagged,
+                flaggedReason: flaggedReason,
                 conversationId: conversationId,
                 status: "SENT",
                 isRead: false,
@@ -138,7 +153,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ convers
                 senderName: newMessage.senderName,
                 createdAt: newMessage.createdAt.toISOString(),
                 isRead: newMessage.isRead,
-                deliveryStatus: newMessage.deliveryStatus
+                deliveryStatus: newMessage.deliveryStatus,
+                isFlagged: newMessage.isFlagged
             }
         });
 

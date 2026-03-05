@@ -1,16 +1,22 @@
 import { cn } from "@/lib/utils";
 
-/** Single animated shimmer block */
-export function Skeleton({ className }: { className?: string }) {
+/** Single animated shimmer block — ERP UI Kit v3 shimmer style */
+export function Skeleton({ className, style }: { className?: string; style?: React.CSSProperties }) {
     return (
         <div
-            className={cn(
-                "animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800",
-                className
-            )}
+            className={cn("rounded-xl", className)}
+            style={{
+                background: "linear-gradient(90deg,#F3F4F6 25%,#E9EAEC 50%,#F3F4F6 75%)",
+                backgroundSize: "600px 100%",
+                animation: "shimmer 1.6s infinite",
+                flexShrink: 0,
+                ...style,
+            }}
         />
     );
 }
+
+import React from "react";
 
 /** Full tab skeleton — 4 stat cards + a large content card */
 export function TabSkeleton() {

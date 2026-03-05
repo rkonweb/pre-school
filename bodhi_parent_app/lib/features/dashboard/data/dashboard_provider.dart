@@ -8,7 +8,7 @@ part 'dashboard_provider.g.dart';
 
 @riverpod
 class DashboardData extends _$DashboardData {
-  static const String _cacheKey = 'parent_dashboard_cache';
+  static const String _cacheKey = 'parent_dashboard_cache_v2';
 
   @override
   FutureOr<Map<String, dynamic>> build() async {

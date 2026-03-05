@@ -26,7 +26,7 @@ import { AvatarWithAdjustment } from "@/components/dashboard/staff/AvatarWithAdj
 import { SearchInput } from "@/components/ui/SearchInput";
 import { useConfirm } from "@/contexts/ConfirmContext";
 import { DashboardLoader } from "@/components/ui/DashboardLoader";
-import { StandardActionButton } from "@/components/ui/StandardActionButton";
+import { ErpTabs, SectionHeader, tableStyles, SortIcon, RowActions, StatusChip, Btn } from "@/components/ui/erp-ui";
 
 export default function StaffPage() {
     const params = useParams();
@@ -203,114 +203,110 @@ export default function StaffPage() {
 
     return (
         <div className="flex flex-col gap-6 p-8 min-w-0">
-            {/* Page Header */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                        Staff Management
-                    </h1>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        View and manage your teaching and administrative team.
-                    </p>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                    <Link
-                        href={`/s/${slug}/hr/directory/add`}
-                        className="h-12 px-6 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all outline-none"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Add Staff Member
-                    </Link>
+            <SectionHeader
+                title="Staff Management"
+                subtitle="View and manage your teaching and administrative team."
+                icon={UserIcon}
+                action={
+                    <div className="flex flex-wrap gap-3">
+                        <Btn
+                            variant="primary"
+                            icon={Plus}
+                            onClick={() => router.push(`/s/${slug}/hr/directory/add`)}
+                        >
+                            Add Staff Member
+                        </Btn>
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                className="h-12 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm hover:border-brand/30 hover:text-brand transition-all outline-none"
-                            >
-                                <Settings2 className="h-4 w-4" />
-                                Columns
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl">
-                            <DropdownMenuLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
-                                Customize Columns
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DragDropContext onDragEnd={handleDragEnd}>
-                                <Droppable droppableId="staff-columns">
-                                    {(provided) => (
-                                        <div {...provided.droppableProps} ref={provided.innerRef}>
-                                            {columns.map((col, index) => (
-                                                <Draggable key={col.id} draggableId={col.id} index={index}>
-                                                    {(provided, snapshot) => (
-                                                        <div
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            className={cn(
-                                                                "flex items-center gap-2 rounded-xl px-2 py-1 transition-colors",
-                                                                snapshot.isDragging ? "bg-zinc-100 shadow-sm dark:bg-zinc-800" : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-                                                            )}
-                                                        >
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className="h-12 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm hover:border-brand/30 hover:text-brand transition-all outline-none"
+                                >
+                                    <Settings2 className="h-4 w-4" />
+                                    Columns
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl">
+                                <DropdownMenuLabel className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                                    Customize Columns
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DragDropContext onDragEnd={handleDragEnd}>
+                                    <Droppable droppableId="staff-columns">
+                                        {(provided) => (
+                                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                {columns.map((col, index) => (
+                                                    <Draggable key={col.id} draggableId={col.id} index={index}>
+                                                        {(provided, snapshot) => (
                                                             <div
-                                                                {...provided.dragHandleProps}
-                                                                className="cursor-pointer p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                className={cn(
+                                                                    "flex items-center gap-2 rounded-xl px-2 py-1 transition-colors",
+                                                                    snapshot.isDragging ? "bg-zinc-100 shadow-sm dark:bg-zinc-800" : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                                                                )}
                                                             >
-                                                                <GripVertical className="h-4 w-4" />
+                                                                <div
+                                                                    {...provided.dragHandleProps}
+                                                                    className="cursor-pointer p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                                                                >
+                                                                    <GripVertical className="h-4 w-4" />
+                                                                </div>
+                                                                <DropdownMenuCheckboxItem
+                                                                    className="flex-1 rounded-lg cursor-pointer data-[highlighted]:bg-transparent"
+                                                                    checked={visibleColumns[col.id]}
+                                                                    onCheckedChange={(checked) =>
+                                                                        setVisibleColumns(prev => ({ ...prev, [col.id]: !!checked }))
+                                                                    }
+                                                                    onSelect={(e) => e.preventDefault()}
+                                                                >
+                                                                    {col.label}
+                                                                </DropdownMenuCheckboxItem>
                                                             </div>
-                                                            <DropdownMenuCheckboxItem
-                                                                className="flex-1 rounded-lg cursor-pointer data-[highlighted]:bg-transparent"
-                                                                checked={visibleColumns[col.id]}
-                                                                onCheckedChange={(checked) =>
-                                                                    setVisibleColumns(prev => ({ ...prev, [col.id]: !!checked }))
-                                                                }
-                                                                onSelect={(e) => e.preventDefault()}
-                                                            >
-                                                                {col.label}
-                                                            </DropdownMenuCheckboxItem>
-                                                        </div>
-                                                    )}
-                                                </Draggable>
-                                            ))}
-                                            {provided.placeholder}
-                                        </div>
-                                    )}
-                                </Droppable>
-                            </DragDropContext>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                                        )}
+                                                    </Draggable>
+                                                ))}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                className="h-12 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm transition-all outline-none"
-                                title="More options"
-                            >
-                                <MoreHorizontal className="h-4 w-4" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-52">
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${slug}/hr/roles`} className="flex items-center gap-2">
-                                    <ShieldCheck className="h-4 w-4 text-zinc-400" />
-                                    Custom Roles
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${slug}/hr/attendance`} className="flex items-center gap-2">
-                                    <CalendarCheck className="h-4 w-4 text-zinc-400" />
-                                    Attendance
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${slug}/hr/payroll`} className="flex items-center gap-2">
-                                    <CreditCard className="h-4 w-4 text-zinc-400" />
-                                    Payroll
-                                </Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className="h-12 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-sm transition-all outline-none"
+                                    title="More options"
+                                >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-52">
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${slug}/hr/roles`} className="flex items-center gap-2">
+                                        <ShieldCheck className="h-4 w-4 text-zinc-400" />
+                                        Custom Roles
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${slug}/hr/attendance`} className="flex items-center gap-2">
+                                        <CalendarCheck className="h-4 w-4 text-zinc-400" />
+                                        Attendance
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${slug}/hr/payroll`} className="flex items-center gap-2">
+                                        <CreditCard className="h-4 w-4 text-zinc-400" />
+                                        Payroll
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                }
+            />
 
             {/* Filters & Search */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
@@ -397,43 +393,42 @@ export default function StaffPage() {
             </div>
 
             {/* Staff Table */}
-            <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 overflow-hidden">
-                <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-400">
+            <div style={tableStyles.container}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead style={tableStyles.thead}>
                         <tr>
-                            <th className="px-6 py-4 font-medium sticky left-0 bg-zinc-50 dark:bg-zinc-800/50 shadow-[4px_0_15px_-5px_rgba(0,0,0,0.05)] z-10 before:content-[''] before:absolute before:inset-0 before:border-r before:border-zinc-200 dark:before:border-zinc-800">Action</th>
+                            <th style={{ ...tableStyles.thNoSort, position: "sticky", left: 0, zIndex: 10, background: "linear-gradient(135deg,#1E1B4B,#312E81)" }}>Action</th>
                             {columns.map(col => {
                                 if (!visibleColumns[col.id]) return null;
-                                return <th key={col.id} className="px-6 py-4 font-medium whitespace-nowrap">{col.label}</th>;
+                                return <th key={col.id} style={tableStyles.thNoSort}>{col.label}</th>;
                             })}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    <tbody>
                         {isLoading ? (
                             <tr>
                                 <td colSpan={8} className="p-0">
                                     <DashboardLoader message="Loading staff data..." />
                                 </td>
                             </tr>
-                        ) : filteredAndSortedStaff.map((person) => (
-                            <tr key={person.id} className="group hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-colors">
-                                <td className="px-6 py-4 text-left sticky left-0 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800/50 transition-colors shadow-[4px_0_15px_-5px_rgba(0,0,0,0.05)] z-10 before:content-[''] before:absolute before:inset-0 before:border-r before:border-zinc-200 dark:before:border-zinc-800">
+                        ) : filteredAndSortedStaff.map((person, i) => (
+                            <tr
+                                key={person.id}
+                                style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
+                                onMouseEnter={e => {
+                                    (e.currentTarget).style.background = "#FFFBEB";
+                                    (e.currentTarget).style.transform = "translateX(3px)";
+                                }}
+                                onMouseLeave={e => {
+                                    (e.currentTarget).style.background = i % 2 === 0 ? "white" : "#F9FAFB";
+                                    (e.currentTarget).style.transform = "none";
+                                }}
+                            >
+                                <td style={{ ...tableStyles.td, position: "sticky", left: 0, zIndex: 10, background: "inherit" }}>
                                     <div className="flex items-center justify-start gap-2 relative z-20">
-                                        <StandardActionButton
-                                            asChild
-                                            variant="view"
-                                            icon={Edit2}
-                                            tooltip="Edit Staff"
-                                            permission={{ module: 'hr.directory', action: 'edit' }}
-                                        >
-                                            <Link href={`/s/${slug}/hr/directory/${person.id}/edit`} />
-                                        </StandardActionButton>
-                                        <StandardActionButton
-                                            variant="delete"
-                                            icon={Trash2}
-                                            tooltip="Delete Staff"
-                                            onClick={() => handleDelete(person.id, `${person.firstName} ${person.lastName}`)}
-                                            permission={{ module: 'hr.directory', action: 'delete' }}
+                                        <RowActions
+                                            onEdit={() => router.push(`/s/${slug}/hr/directory/${person.id}/edit`)}
+                                            onDelete={() => handleDelete(person.id, `${person.firstName} ${person.lastName}`)}
                                         />
                                     </div>
                                 </td>
@@ -441,64 +436,53 @@ export default function StaffPage() {
                                     if (!visibleColumns[col.id]) return null;
 
                                     if (col.id === 'name') return (
-                                        <td key={col.id} className="px-6 py-4">
+                                        <td key={col.id} style={tableStyles.td}>
                                             <div className="flex items-center gap-4">
                                                 <AvatarWithAdjustment
                                                     src={person.avatar}
                                                     adjustment={person.avatarAdjustment}
-                                                    className="h-10 w-10 overflow-hidden rounded-full bg-zinc-100 ring-2 ring-white dark:bg-zinc-800 dark:ring-zinc-900 shrink-0"
+                                                    className="h-10 w-10 overflow-hidden rounded-full shrink-0"
                                                 />
-                                                <div className="font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                                                <div className="font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
                                                     {person.firstName} {person.lastName}
                                                 </div>
                                             </div>
                                         </td>
                                     );
                                     if (col.id === 'phone') return (
-                                        <td key={col.id} className="px-6 py-4 text-zinc-600 dark:text-zinc-400 whitespace-nowrap font-medium">
-                                            {person.mobile || "N/A"}
+                                        <td key={col.id} style={tableStyles.td}>
+                                            <span className="font-semibold text-zinc-700">{person.mobile || "N/A"}</span>
                                         </td>
                                     );
                                     if (col.id === 'email') return (
-                                        <td key={col.id} className="px-6 py-4 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                                            {person.email || "N/A"}
+                                        <td key={col.id} style={tableStyles.td}>
+                                            <span className="font-medium text-zinc-600">{person.email || "N/A"}</span>
                                         </td>
                                     );
                                     if (col.id === 'designation') return (
-                                        <td key={col.id} className="px-6 py-4">
-                                            <span
-                                                className="inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold ring-1 ring-inset whitespace-nowrap bg-brand/10 text-brand border-brand/20"
-                                            >
+                                        <td key={col.id} style={tableStyles.td}>
+                                            <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-bold ring-1 ring-inset whitespace-nowrap bg-amber-50 text-amber-600 border-amber-200">
                                                 {person.designation || "-"}
                                             </span>
                                         </td>
                                     );
                                     if (col.id === 'department') return (
-                                        <td key={col.id} className="px-6 py-4">
-                                            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                                        <td key={col.id} style={tableStyles.td}>
+                                            <span className="text-sm font-semibold text-zinc-600 whitespace-nowrap">
                                                 {person.department || "-"}
                                             </span>
                                         </td>
                                     );
                                     if (col.id === 'empType') return (
-                                        <td key={col.id} className="px-6 py-4">
-                                            <span className="inline-flex items-center rounded-md bg-brand/5 px-2 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10 whitespace-nowrap">
+                                        <td key={col.id} style={tableStyles.td}>
+                                            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700 ring-1 ring-inset ring-blue-100 whitespace-nowrap">
                                                 {person.employmentType ? person.employmentType.replace('_', ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase()) : "-"}
                                             </span>
                                         </td>
                                     );
                                     if (col.id === 'status') return (
-                                        <td key={col.id} className="px-6 py-4">
-                                            <span className={cn(
-                                                "inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold border whitespace-nowrap uppercase tracking-wider",
-                                                person.status === "ACTIVE"
-                                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50"
-                                                    : person.status === "INACTIVE"
-                                                        ? "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
-                                                        : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/50"
-                                            )}>
-                                                {person.status || "UNKNOWN"}
-                                            </span>
+                                        <td key={col.id} style={tableStyles.td}>
+                                            <StatusChip label={person.status || "UNKNOWN"} />
                                         </td>
                                     );
 

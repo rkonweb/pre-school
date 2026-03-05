@@ -1,62 +1,79 @@
-"use client"
-
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-// Tabs MOCK
-const TabsContext = React.createContext<any>(null)
+const C = {
+    amber: "#F59E0B", amberD: "#D97706", orange: "#F97316",
+    g100: "#F3F4F6", g500: "#6B7280",
+    spring: "cubic-bezier(0.34,1.56,0.64,1)",
+};
 
-export const Tabs = ({ defaultValue, value, onValueChange, children, className }: any) => {
-    const [active, setActive] = React.useState(defaultValue)
-    const current = value !== undefined ? value : active
-    const change = onValueChange || setActive
-
-    return (
-        <TabsContext.Provider value={{ current, change }}>
-            <div className={cn("", className)}>{children}</div>
-        </TabsContext.Provider>
+const Tabs = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className, ...props }, ref) => (
+        <div ref={ref} className={cn("w-full", className)} {...props} />
     )
-}
+);
+Tabs.displayName = "Tabs";
 
-export const TabsList = ({ className, children }: any) => (
-    <div
-        className={cn(
-            "inline-flex h-10 items-center justify-center rounded-md bg-zinc-100 p-1 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
-            className
-        )}
-    >
-        {children}
-    </div>
-)
+const TabsList = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className, style, ...props }, ref) => (
+        <div
+            ref={ref}
+            className={cn("inline-flex items-center", className)}
+            style={{
+                background: C.g100,
+                borderRadius: 12,
+                padding: 4,
+                gap: 6,
+                marginBottom: 16,
+                flexWrap: "wrap" as const,
+                ...style,
+            }}
+            {...props}
+        />
+    )
+);
+TabsList.displayName = "TabsList";
 
-export const TabsTrigger = ({ value, className, children }: any) => {
-    const { current, change } = React.useContext(TabsContext)
-    const isActive = current === value
+const TabsTrigger = React.forwardRef<
+    HTMLButtonElement,
+    React.ButtonHTMLAttributes<HTMLButtonElement> & { "data-state"?: string }
+>(({ className, style, "data-state": dataState, ...props }, ref) => {
+    const isActive = dataState === "active";
     return (
         <button
-            onClick={() => change(value)}
-            className={cn(
-                "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-                isActive ? "bg-brand text-[var(--secondary-color)] shadow-sm" : "hover:bg-zinc-200/50",
-                className
-            )}
-        >
-            {children}
-        </button>
-    )
-}
+            ref={ref}
+            className={cn("inline-flex items-center justify-center gap-1.5 whitespace-nowrap focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50", className)}
+            style={{
+                padding: "8px 18px",
+                fontSize: 13.5,
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? "white" : C.g500,
+                background: isActive ? `linear-gradient(135deg,${C.amber},${C.orange})` : "transparent",
+                border: "none",
+                cursor: "pointer",
+                borderRadius: 10,
+                boxShadow: isActive ? `0 3px 12px ${C.amber}40` : "none",
+                transform: isActive ? "scale(1.03)" : "scale(1)",
+                transition: `all 0.35s ${C.spring}`,
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                ...style,
+            }}
+            {...props}
+        />
+    );
+});
+TabsTrigger.displayName = "TabsTrigger";
 
-export const TabsContent = ({ value, className, children }: any) => {
-    const { current } = React.useContext(TabsContext)
-    if (current !== value) return null
-    return (
+const TabsContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className, style, ...props }, ref) => (
         <div
-            className={cn(
-                "mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:ring-offset-zinc-950 dark:focus-visible:ring-zinc-300",
-                className
-            )}
-        >
-            {children}
-        </div>
+            ref={ref}
+            className={cn("mt-2 focus-visible:outline-none", className)}
+            style={{ animation: "fadeUp 0.25s ease", ...style }}
+            {...props}
+        />
     )
-}
+);
+TabsContent.displayName = "TabsContent";
+
+export { Tabs, TabsList, TabsTrigger, TabsContent };

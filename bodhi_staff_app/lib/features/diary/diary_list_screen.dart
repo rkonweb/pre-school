@@ -9,6 +9,7 @@ import 'models/diary_entry.dart';
 import 'package:intl/intl.dart';
 
 import 'package:bodhi_staff_app/core/theme/school_brand_provider.dart';
+import '../../core/routing/rbac.dart';
 
 class DiaryListScreen extends ConsumerStatefulWidget {
   const DiaryListScreen({Key? key}) : super(key: key);
@@ -79,8 +80,8 @@ class _DiaryListScreenState extends ConsumerState<DiaryListScreen> {
               ),
               if (state.onlyMine)
                 TextButton(
-                  onPressed: () => {}, // Handled by segmented button
-                  child: const Text("Try switching to 'All Teachers'"),
+                  onPressed: () => ref.read(diaryProvider.notifier).toggleOnlyMine(false), // Instantly switches to ALL TEACHERS
+                  child: const Text("Try switching to 'All Teachers'", style: TextStyle(fontWeight: FontWeight.bold)),
                 )
             ],
           ),
@@ -185,31 +186,26 @@ class _DiaryListScreenState extends ConsumerState<DiaryListScreen> {
   }
 
   Widget _buildEntriesList(BuildContext context, List<DiaryEntry> entries, WidgetRef ref) {
+    final rbac = ref.read(rbacProvider);
+    final bool canEdit = rbac.hasPermission('diary.edit');
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.s16, vertical: AppTheme.s8),
       itemCount: entries.length,
       separatorBuilder: (_, __) => const SizedBox(height: AppTheme.s16),
       itemBuilder: (context, index) {
         final entry = entries[index];
-        return _buildEntryCard(context, entry);
+        return _buildEntryCard(context, entry, canEdit);
       },
     );
   }
 
-  Widget _buildEntryCard(BuildContext context, DiaryEntry entry) {
+  Widget _buildEntryCard(BuildContext context, DiaryEntry entry, bool canEdit) {
     final entryDate = entry.scheduledFor ?? entry.publishedAt ?? entry.createdAt;
-    // ignore: unused_local_variable
-    final isToday = _isToday(DateTime.now()); // Logic for editing today's posts
-    final now = DateTime.now();
-    final canEdit = entryDate.year == now.year && entryDate.month == now.month && entryDate.day == now.day;
     
     final classroomName = entry.classroom?['name'] ?? 'Direct Message';
     final dateFormatted = DateFormat('h:mm a').format(entryDate);
     final authorName = "${entry.author?['firstName'] ?? ''} ${entry.author?['lastName'] ?? ''}".trim();
 
-    // brand is available from build or we can just use ref.read(schoolBrandProvider) here, 
-    // but it's better to stay consistent. Let's just use ref.read for helper logic if needed, 
-    // but it's already watched in build, so the whole widget rebuilds.
     final brand = ref.read(schoolBrandProvider);
 
     Color typeColor = brand.secondaryColor;
@@ -218,9 +214,15 @@ class _DiaryListScreenState extends ConsumerState<DiaryListScreen> {
     if (entry.type == 'APPRECIATION') typeColor = AppTheme.success;
 
     return Card(
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.04),
+      shape: RoundedRectangleBorder(
+         borderRadius: AppTheme.radiusMedium,
+         side: BorderSide(color: AppTheme.border.withOpacity(0.4)),
+      ),
       child: InkWell(
         onTap: () {
-            // maybe show full detail
+            context.push('/diary/create', extra: entry);
         },
         borderRadius: AppTheme.radiusMedium,
         child: Padding(
@@ -229,70 +231,105 @@ class _DiaryListScreenState extends ConsumerState<DiaryListScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   CircleAvatar(
-                    radius: 12,
-                    backgroundColor: brand.primaryColor.withOpacity(0.1),
-                    child: Text(
-                        authorName.isNotEmpty ? authorName[0].toUpperCase() : '?',
-                        style: TextStyle(fontSize: 10, color: brand.secondaryColor, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(width: AppTheme.s8),
-                  Text(
-                    authorName.isNotEmpty ? authorName : 'Unknown Teacher',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                  ),
-                  const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: typeColor.withOpacity(0.1),
-                      borderRadius: AppTheme.radiusSmall,
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       entry.type,
-                      style: TextStyle(color: typeColor, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: typeColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
                     ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.class_outlined, size: 14, color: AppTheme.textMuted),
+                      const SizedBox(width: 4),
+                      Text(
+                        classroomName,
+                        style: const TextStyle(
+                          color: AppTheme.textMuted, 
+                          fontWeight: FontWeight.w600, 
+                          fontSize: 12
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               Text(
                 entry.title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
               ),
               if (entry.content != null && entry.content!.isNotEmpty) ...[
-                const SizedBox(height: AppTheme.s8),
+                const SizedBox(height: 6),
                 Text(
                   entry.content!,
-                  style: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
                 ),
               ],
-              const SizedBox(height: AppTheme.s16),
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.class_outlined, size: 14),
-                      const SizedBox(width: 4),
-                      Text(classroomName, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                      const SizedBox(width: 12),
-                      const Icon(Icons.access_time, size: 14),
-                      const SizedBox(width: 4),
-                      Text(dateFormatted, style: const TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundColor: brand.primaryColor.withOpacity(0.1),
+                        child: Text(
+                          authorName.isNotEmpty ? authorName[0].toUpperCase() : '?',
+                          style: TextStyle(
+                            fontSize: 10, 
+                            color: brand.primaryColor, 
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        authorName.isNotEmpty ? authorName : 'Unknown Teacher', 
+                        style: const TextStyle(
+                          fontSize: 12, 
+                          color: AppTheme.textPrimary, 
+                          fontWeight: FontWeight.w500
+                        ),
+                      ),
                     ],
                   ),
-                  if (canEdit)
-                    IconButton(
-                        icon: const Icon(Icons.edit_outlined, size: 20, color: AppTheme.primary),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () => context.push('/diary/edit', extra: entry),
-                    )
+                  Text(
+                    dateFormatted,
+                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                  ),
                 ],
               ),
+              if (canEdit)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 20, color: AppTheme.primary),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () => context.push('/diary/edit', extra: entry),
+                )
             ],
           ),
         ),

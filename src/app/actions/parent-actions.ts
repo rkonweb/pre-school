@@ -567,3 +567,16 @@ export async function getParentDailySummaryAction(schoolSlug: string, parentPhon
         return { success: false, error: "Failed to generate summary" };
     }
 }
+
+export async function getSchoolBySlugAction(slug: string) {
+    try {
+        const school = await prisma.school.findUnique({
+            where: { slug },
+        });
+        if (!school) return { success: false, error: "School not found" };
+        return { success: true, school };
+    } catch (error: any) {
+        console.error("getSchoolBySlugAction Error:", error);
+        return { success: false, error: "Failed to fetch school data" };
+    }
+}

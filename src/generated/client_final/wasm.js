@@ -787,30 +787,30 @@ exports.Prisma.ConversationScalarFieldEnum = {
   id: 'id',
   studentId: 'studentId',
   type: 'type',
-  participantType: 'participantType',
   title: 'title',
   lastMessageAt: 'lastMessageAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  participantType: 'participantType'
 };
 
 exports.Prisma.MessageScalarFieldEnum = {
   id: 'id',
   content: 'content',
-  type: 'type',
   senderType: 'senderType',
   senderId: 'senderId',
   senderName: 'senderName',
   conversationId: 'conversationId',
-  pollId: 'pollId',
   isRead: 'isRead',
   readAt: 'readAt',
-  status: 'status',
-  isFlagged: 'isFlagged',
-  flaggedReason: 'flaggedReason',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  deliveryStatus: 'deliveryStatus'
+  deliveryStatus: 'deliveryStatus',
+  flaggedReason: 'flaggedReason',
+  isFlagged: 'isFlagged',
+  pollId: 'pollId',
+  type: 'type',
+  status: 'status',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PollScalarFieldEnum = {
@@ -838,10 +838,10 @@ exports.Prisma.BroadcastScalarFieldEnum = {
   schoolId: 'schoolId',
   authorId: 'authorId',
   approvedById: 'approvedById',
-  isFlagged: 'isFlagged',
-  flaggedReason: 'flaggedReason',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  flaggedReason: 'flaggedReason',
+  isFlagged: 'isFlagged'
 };
 
 exports.Prisma.DiaryEntryScalarFieldEnum = {
@@ -1873,6 +1873,183 @@ exports.Prisma.AccountTransactionScalarFieldEnum = {
   sourceTransportExpenseId: 'sourceTransportExpenseId'
 };
 
+exports.Prisma.SchoolEventScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  title: 'title',
+  description: 'description',
+  date: 'date',
+  endDate: 'endDate',
+  type: 'type',
+  classIds: 'classIds',
+  isPublic: 'isPublic',
+  color: 'color',
+  venue: 'venue',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EmergencyAlertScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  title: 'title',
+  message: 'message',
+  type: 'type',
+  priority: 'priority',
+  isActive: 'isActive',
+  sentAt: 'sentAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ParentRequestScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  studentId: 'studentId',
+  parentMobile: 'parentMobile',
+  type: 'type',
+  description: 'description',
+  status: 'status',
+  responseNote: 'responseNote',
+  respondedById: 'respondedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SchoolCircularScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  title: 'title',
+  content: 'content',
+  fileUrl: 'fileUrl',
+  type: 'type',
+  targetClassIds: 'targetClassIds',
+  isPublished: 'isPublished',
+  publishedAt: 'publishedAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PTMSessionScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  title: 'title',
+  description: 'description',
+  date: 'date',
+  slotMinutes: 'slotMinutes',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  classIds: 'classIds',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PTMBookingScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  studentId: 'studentId',
+  parentMobile: 'parentMobile',
+  teacherName: 'teacherName',
+  slotTime: 'slotTime',
+  status: 'status',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ParentStoreItemScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  name: 'name',
+  description: 'description',
+  price: 'price',
+  imageUrl: 'imageUrl',
+  category: 'category',
+  stock: 'stock',
+  isAvailable: 'isAvailable',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ParentStoreOrderScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  studentId: 'studentId',
+  parentMobile: 'parentMobile',
+  status: 'status',
+  totalAmount: 'totalAmount',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ParentStoreOrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  itemId: 'itemId',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice'
+};
+
+exports.Prisma.OnlinePaymentRequestScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  studentId: 'studentId',
+  parentMobile: 'parentMobile',
+  type: 'type',
+  amount: 'amount',
+  description: 'description',
+  status: 'status',
+  feeId: 'feeId',
+  storeOrderId: 'storeOrderId',
+  gatewayOrderId: 'gatewayOrderId',
+  gatewayPaymentId: 'gatewayPaymentId',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.HostelScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  capacity: 'capacity',
+  gender: 'gender',
+  address: 'address',
+  managerName: 'managerName',
+  managerPhone: 'managerPhone',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.HostelRoomScalarFieldEnum = {
+  id: 'id',
+  roomNumber: 'roomNumber',
+  floor: 'floor',
+  capacity: 'capacity',
+  roomType: 'roomType',
+  amenities: 'amenities',
+  baseCost: 'baseCost',
+  hostelId: 'hostelId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.HostelAllocationScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  roomId: 'roomId',
+  monthlyFee: 'monthlyFee',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2004,7 +2181,20 @@ exports.Prisma.ModelName = {
   AccountFinancialYear: 'AccountFinancialYear',
   AccountCategory: 'AccountCategory',
   AccountVendor: 'AccountVendor',
-  AccountTransaction: 'AccountTransaction'
+  AccountTransaction: 'AccountTransaction',
+  SchoolEvent: 'SchoolEvent',
+  EmergencyAlert: 'EmergencyAlert',
+  ParentRequest: 'ParentRequest',
+  SchoolCircular: 'SchoolCircular',
+  PTMSession: 'PTMSession',
+  PTMBooking: 'PTMBooking',
+  ParentStoreItem: 'ParentStoreItem',
+  ParentStoreOrder: 'ParentStoreOrder',
+  ParentStoreOrderItem: 'ParentStoreOrderItem',
+  OnlinePaymentRequest: 'OnlinePaymentRequest',
+  Hostel: 'Hostel',
+  HostelRoom: 'HostelRoom',
+  HostelAllocation: 'HostelAllocation'
 };
 
 /**

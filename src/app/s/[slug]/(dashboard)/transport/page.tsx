@@ -21,6 +21,7 @@ import { getFleetStatusAction } from "@/app/actions/tracking-actions";
 import { cn } from "@/lib/utils";
 import FleetMapPreview from "@/components/transport/FleetMapPreview";
 import { toast } from "sonner";
+import { SectionHeader, ErpCard, Btn } from "@/components/ui/erp-ui";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -54,7 +55,7 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
     const { finances, fleet, drivers } = statsRes.data;
     const initialFleet = fleetRes.success && fleetRes.data ? fleetRes.data : [];
 
-    // Additional data for basic stats
+    // Additional data for basic stats - Reuse auth context in a real app, but for now select only what's needed
     const school = await prisma.school.findUnique({
         where: { slug },
         select: { id: true, googleMapsApiKey: true, currency: true }
@@ -62,68 +63,71 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
 
     const currencySymbol = school?.currency || 'INR';
 
-    const pendingRequests = await prisma.studentTransportProfile.count({
-        where: { student: { schoolId: school?.id }, status: "PENDING" }
-    });
-
-    const activeStudents = await prisma.studentTransportProfile.count({
-        where: { student: { schoolId: school?.id }, status: { in: ["APPROVED", "ACTIVE"] } }
-    });
+    // Optimize: Run these in parallel if possible, or skip if not critical for initial load
+    const [pendingRequests, activeStudents] = await Promise.all([
+        prisma.studentTransportProfile.count({
+            where: { student: { schoolId: school?.id }, status: "PENDING" }
+        }),
+        prisma.studentTransportProfile.count({
+            where: { student: { schoolId: school?.id }, status: { in: ["APPROVED", "ACTIVE"] } }
+        })
+    ]);
 
     return (
         <div className="p-6 space-y-8 w-full">
             {/* Header with SOS Action */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">Intelligent Transport Dashboard</h1>
-                    <p className="text-zinc-500 mt-1 flex items-center gap-2">
+            <SectionHeader
+                title="Intelligent Transport Dashboard"
+                subtitle={
+                    <span className="flex items-center gap-2">
                         <Zap className="h-4 w-4 text-brand fill-brand" />
                         AI-powered monitoring enabled
-                    </p>
-                </div>
+                    </span>
+                }
+                action={
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Btn
+                            href={`/s/${slug}/transport/fleet/tracking`}
+                            icon={Activity}
+                            variant="primary"
+                        >
+                            Live Fleet Map
+                        </Btn>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <Link
-                        href={`/s/${slug}/transport/fleet/tracking`}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-zinc-900 text-white rounded-xl font-bold hover:bg-zinc-800 transition-all"
-                    >
-                        <Activity className="h-5 w-5" />
-                        Live Fleet Map
-                    </Link>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                className="flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-zinc-700 hover:bg-zinc-50 transition-all shadow-sm"
-                                title="More options"
-                            >
-                                <MoreHorizontal className="h-5 w-5" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-48">
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${slug}/transport/route/routes`} className="flex items-center gap-2">
-                                    <Navigation className="h-4 w-4" />
-                                    Manage Routes
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${slug}/settings/fees`} className="flex items-center gap-2">
-                                    <DollarSign className="h-4 w-4" />
-                                    Fee Settings
-                                </Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className="flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-zinc-700 hover:bg-zinc-50 transition-all shadow-sm"
+                                    title="More options"
+                                >
+                                    <MoreHorizontal className="h-5 w-5" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-48">
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${slug}/transport/route/routes`} className="flex items-center gap-2">
+                                        <Navigation className="h-4 w-4" />
+                                        Manage Routes
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${slug}/settings/fees`} className="flex items-center gap-2">
+                                        <DollarSign className="h-4 w-4" />
+                                        Fee Settings
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                }
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Stats and Map */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Core Metrics Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card className="border-none shadow-xl shadow-zinc-200/50 bg-gradient-to-br from-white to-zinc-50 overflow-hidden relative group">
+                        <ErpCard className="border-none bg-gradient-to-br from-white to-zinc-50 relative group">
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
                                 <Bus className="h-20 w-20 text-brand" />
                             </div>
@@ -145,9 +149,9 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
                                 </div>
                                 <p className="text-sm text-zinc-500 font-medium mt-1">Vehicles Active</p>
                             </CardContent>
-                        </Card>
+                        </ErpCard>
 
-                        <Card className="border-none shadow-xl shadow-zinc-200/50 bg-brand text-[var(--secondary-color)] overflow-hidden relative group">
+                        <ErpCard className="border-none bg-brand text-[var(--secondary-color)] relative group">
                             <div className="absolute top-0 right-0 p-4 opacity-20">
                                 <DollarSign className="h-20 w-20 text-[var(--secondary-color)]" />
                             </div>
@@ -165,17 +169,17 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
                                     <div className="mt-4 w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-white transition-all duration-500"
-                                            style={{ width: `${finances.collectionRate}%` } as React.CSSProperties}
+                                            style={{ width: `${Math.min(100, Math.max(0, finances.collectionRate))}%` }}
                                         ></div>
                                     </div>
                                     <p className="text-[10px] font-bold mt-2 uppercase text-[var(--secondary-color)] opacity-80">{finances.collectionRate.toFixed(1)}% Collected</p>
                                 </div>
                             </CardContent>
-                        </Card>
+                        </ErpCard>
                     </div>
 
                     {/* LIVE MAP TRACKING BOX */}
-                    <Card className="border-none shadow-2xl shadow-zinc-300/50 overflow-hidden h-[450px]">
+                    <ErpCard className="border-none h-[450px]">
                         <CardHeader className="p-4 bg-white border-b border-zinc-100 flex flex-row items-center justify-between space-y-0">
                             <div>
                                 <CardTitle className="text-lg font-bold">Live Fleet Mirror</CardTitle>
@@ -188,15 +192,15 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
                                 </div>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-0 h-[calc(450px-73px)]">
+                        <CardContent className="p-0 h-[calc(450px-73px)] relative z-0">
                             <FleetMapPreview schoolSlug={slug} initialVehicles={initialFleet} apiKey={school?.googleMapsApiKey || ""} />
                         </CardContent>
-                    </Card>
+                    </ErpCard>
                 </div>
 
                 {/* Sidebar Operations */}
                 <div className="space-y-6">
-                    <Card className="border-none shadow-xl shadow-zinc-200/50 bg-zinc-900 text-white">
+                    <ErpCard className="border-none bg-zinc-900 text-white">
                         <CardContent className="p-6">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-2 rounded-lg bg-white/10 text-yellow-500">
@@ -231,10 +235,10 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
                                 </div>
                             </div>
                         </CardContent>
-                    </Card>
+                    </ErpCard>
 
-                    <Card className="border-none shadow-xl shadow-zinc-200/50">
-                        <CardHeader className="bg-zinc-50/50 border-b border-zinc-100">
+                    <ErpCard className="border-none">
+                        <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-4">
                             <CardTitle className="text-lg">Operations Center</CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 flex flex-col gap-2">
@@ -251,7 +255,7 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
                                 <Link
                                     key={action.name}
                                     href={action.href}
-                                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-zinc-50 border border-transparent hover:border-zinc-100 transition-all group"
+                                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-zinc-50 border border-transparent hover:border-zinc-100 transition-all group max-sm:p-4 max-sm:bg-zinc-50 max-sm:border-zinc-100 max-sm:mb-2 max-sm:last:mb-0 max-sm:shadow-sm"
                                 >
                                     <div className="p-2.5 rounded-lg bg-zinc-100 group-hover:bg-brand group-hover:text-[var(--secondary-color)] transition-colors">
                                         <action.icon className="h-5 w-5" />
@@ -264,14 +268,14 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
                                 </Link>
                             ))}
                         </CardContent>
-                    </Card>
+                    </ErpCard>
 
-                    <Card className="border-none shadow-xl shadow-zinc-200/50">
-                        <CardHeader className="bg-zinc-50/50 border-b border-zinc-100">
+                    <ErpCard className="border-none">
+                        <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-4">
                             <CardTitle className="text-lg text-emerald-700">Financial Intelligence</CardTitle>
                         </CardHeader>
                         <CardContent className="p-4">
-                            <Link href={`/s/${slug}/transport/fees`} className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-all group">
+                            <Link href={`/s/${slug}/transport/fees`} className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-all group max-sm:p-4 shadow-sm">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-white rounded-lg shadow-sm">
                                         <DollarSign className="h-5 w-5 text-emerald-600" />
@@ -284,7 +288,7 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
                                 <ArrowRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
                             </Link>
                         </CardContent>
-                    </Card>
+                    </ErpCard>
                 </div>
             </div>
         </div>

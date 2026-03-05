@@ -42,10 +42,19 @@ import { CSS } from "@dnd-kit/utilities";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { getDashboardStatsAction } from "@/app/actions/dashboard-actions";
+import { DailyReportGenerator } from "@/components/dashboard/DailyReportGenerator";
+import {
+    getDashboardStatsAction,
+    getAnalyticsDataAction
+} from "@/app/actions/dashboard-actions";
 import { Loader2 } from "lucide-react";
 import { getCookie } from "@/lib/cookies";
-import { DailyReportGenerator } from "@/components/dashboard/DailyReportGenerator";
+import {
+    EnrollmentTrend,
+    RevenueFlow,
+    AcademicHeatmap,
+    AttendancePulse
+} from "./AnalyticsCharts";
 
 
 // --- Types ---
@@ -59,11 +68,13 @@ interface DashboardWidget {
 const DEFAULT_WIDGETS: DashboardWidget[] = [
     { id: "stats-grid", title: "Summary Stats", type: "stats", enabled: true },
     { id: "module-health", title: "Module Health", type: "chart", enabled: true },
+    { id: "enrollment-trend", title: "Enrollment Growth", type: "chart", enabled: true },
+    { id: "revenue-flow", title: "Revenue Flow", type: "chart", enabled: true },
+    { id: "academic-heatmap", title: "Academic Performance", type: "chart", enabled: true },
+    { id: "attendance-pulse", title: "Attendance Consistency", type: "chart", enabled: true },
     { id: "transport-ops", title: "Transport Ops", type: "events", enabled: true },
-    { id: "academic-performance", title: "Academic Insights", type: "chart", enabled: true },
     { id: "recent-activity", title: "Recent Activity", type: "list", enabled: true },
     { id: "upcoming-events", title: "Upcoming Events", type: "events", enabled: true },
-    { id: "revenue-collection", title: "Revenue Breakdown", type: "list", enabled: true },
 ];
 
 // --- Sortable Item Component ---
@@ -86,14 +97,19 @@ function SortableWidget({
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        zIndex: isDragging ? 50 : "auto",
-        opacity: isDragging ? 0.3 : 1,
     };
 
     if (!widget.enabled) return null;
 
     return (
-        <div ref={setNodeRef} style={style} className="relative group">
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={cn(
+                "relative group transition-opacity",
+                isDragging ? "opacity-30 z-50" : "opacity-100 z-auto"
+            )}
+        >
             {/* Drag Handle */}
             <div
                 {...attributes}
@@ -115,6 +131,7 @@ export function DashboardClient() {
     const [widgets, setWidgets] = useState<DashboardWidget[]>(DEFAULT_WIDGETS);
     const [isConfiguring, setIsConfiguring] = useState(false);
     const [statsData, setStatsData] = useState<any>(null);
+    const [analyticsData, setAnalyticsData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const sensors = useSensors(
@@ -147,6 +164,15 @@ export function DashboardClient() {
             if (res.success) {
                 setStatsData(res);
             }
+
+            // Analytics data only for school-wide view
+            if (!staffId) {
+                const analyticsRes = await getAnalyticsDataAction(slug);
+                if (analyticsRes.success) {
+                    setAnalyticsData(analyticsRes);
+                }
+            }
+
             setIsLoading(false);
         }
         loadData();
@@ -184,21 +210,19 @@ export function DashboardClient() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] relative overflow-hidden">
+        <div className="min-h-screen relative overflow-hidden" style={{ background: "linear-gradient(160deg,#F0EFF8 0%,#FAFAFA 60%,#FFF8F0 100%)" }}>
             {/* Ambient Background Graphics */}
             <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand/10 blur-[130px] rounded-full animate-pulse" />
-                <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full" />
-
-                {/* Knowledge Grid SVG Pattern - Light Mode */}
-                <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full" style={{ background: "rgba(245,158,11,0.07)", filter: "blur(120px)" }} />
+                <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] rounded-full" style={{ background: "rgba(139,92,246,0.06)", filter: "blur(110px)" }} />
+                {/* Subtle dot grid */}
+                <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.03 }} xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#2563eb" strokeWidth="0.5" />
-                            <circle cx="0" cy="0" r="1.5" fill="#2563eb" fillOpacity="0.3" />
+                        <pattern id="erp-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <circle cx="1" cy="1" r="1.2" fill="#1E1B4B" />
                         </pattern>
                     </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
+                    <rect width="100%" height="100%" fill="url(#erp-grid)" />
                 </svg>
             </div>
 
@@ -220,30 +244,45 @@ export function DashboardClient() {
 
                 {/* Header Area */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
-                    <div className="space-y-1">
-                        <h1 className="text-4xl font-black tracking-tight text-slate-900">
-                            {staffId ? "Personnel Console" : "Unified Intelligence"}
+                    <div style={{ animation: "fadeUp 0.45s ease 0.1s both" }}>
+                        <h1 style={{ fontFamily: "'Sora', sans-serif", fontSize: 30, fontWeight: 800, color: "#1E1B4B", letterSpacing: -1, marginBottom: 6, lineHeight: 1.15 }}>
+                            {staffId ? "Personnel Console" : (
+                                <>
+                                    School{" "}
+                                    <span style={{ background: "linear-gradient(135deg,#F59E0B,#D97706)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                                        Intelligence
+                                    </span>
+                                </>
+                            )}
                         </h1>
-                        <div className="text-sm text-slate-500 font-bold uppercase tracking-[0.2em] flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                            Active Signal: {slug} {staffId && "(Restricted View)"}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.15em" }}>
+                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#10B981", animation: "erp-pulse 2s ease-in-out infinite" }} />
+                            Live · {slug}{staffId && " · Staff View"}
                         </div>
                     </div>
 
-
-                    <div className="flex items-center gap-3">
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <DailyReportGenerator slug={slug} />
                         <button
                             onClick={() => setIsConfiguring(!isConfiguring)}
-                            className={cn(
-                                "flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-200 active:scale-95 border",
-                                isConfiguring
-                                    ? "bg-brand text-white border-brand shadow-brand/20"
-                                    : "bg-white text-slate-600 border-slate-200 hover:border-brand hover:text-brand"
-                            )}
+                            title={isConfiguring ? "Lock Dashboard Layout" : "Customize Dashboard Layout"}
+                            style={{
+                                display: "flex", alignItems: "center", gap: 8,
+                                padding: "10px 16px",
+                                borderRadius: 12,
+                                fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
+                                border: isConfiguring ? "none" : "1.5px solid #E5E7EB",
+                                background: isConfiguring
+                                    ? "linear-gradient(135deg,#F59E0B,#D97706)"
+                                    : "white",
+                                color: isConfiguring ? "white" : "#4B5563",
+                                boxShadow: isConfiguring ? "0 4px 16px rgba(245,158,11,0.35)" : "0 2px 8px rgba(0,0,0,0.06)",
+                                cursor: "pointer",
+                                transition: "all 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+                            }}
                         >
                             {isConfiguring ? <Check className="h-4 w-4" /> : <Settings2 className="h-4 w-4" />}
-                            {isConfiguring ? "Lock Manifest" : "Customize Matrix"}
+                            {isConfiguring ? "Lock Layout" : "Customise"}
                         </button>
                     </div>
                 </div>
@@ -251,36 +290,52 @@ export function DashboardClient() {
                 {/* Config Overlay / Modal */}
                 <AnimatePresence>
                     {isConfiguring && (
-                        <div
-                            className="bg-white border border-zinc-200 text-zinc-900 p-6 rounded-[32px] shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-4 duration-300"
-                        >
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-lg font-black flex items-center gap-2">
-                                    <LayoutGrid className="h-5 w-5 text-brand" />
-                                    Toggle Dashboard Widgets
-                                </h2>
-                                <button onClick={() => setIsConfiguring(false)} className="text-zinc-400 hover:text-zinc-900">
-                                    <X className="h-5 w-5" />
+                        <div style={{
+                            background: "white",
+                            border: "1.5px solid #F3F4F6",
+                            borderRadius: 24,
+                            padding: 24,
+                            boxShadow: "0 8px 40px rgba(0,0,0,0.12)",
+                            animation: "fadeUp 0.3s ease both",
+                        }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: 9, background: "#FFFBEB", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <LayoutGrid style={{ width: 15, height: 15, color: "#D97706" }} />
+                                    </div>
+                                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: 15, fontWeight: 800, color: "#1E1B4B" }}>Widget Configuration</span>
+                                </div>
+                                <button onClick={() => setIsConfiguring(false)} title="Close Configuration"
+                                    style={{ padding: 6, borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", color: "#9CA3AF" }}>
+                                    <X style={{ width: 16, height: 16 }} />
                                 </button>
                             </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 10 }}>
                                 {widgets.map(w => (
                                     <button
                                         key={w.id}
                                         onClick={() => toggleWidget(w.id)}
-                                        className={cn(
-                                            "px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-between gap-2 border-2",
-                                            w.enabled
-                                                ? "bg-brand/10 border-brand text-brand"
-                                                : "bg-zinc-50 border-zinc-100 text-zinc-400 hover:border-zinc-200"
-                                        )}
+                                        style={{
+                                            padding: "10px 14px",
+                                            borderRadius: 12,
+                                            fontSize: 12.5, fontWeight: 600,
+                                            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+                                            cursor: "pointer",
+                                            border: w.enabled ? "1.5px solid #F59E0B" : "1.5px solid #E5E7EB",
+                                            background: w.enabled ? "#FFFBEB" : "#F9FAFB",
+                                            color: w.enabled ? "#D97706" : "#6B7280",
+                                            transition: "all 0.2s ease",
+                                        }}
                                     >
                                         {w.title}
-                                        <div className={cn(
-                                            "h-4 w-4 rounded-full border-2 flex items-center justify-center",
-                                            w.enabled ? "bg-brand border-brand" : "border-zinc-700"
-                                        )}>
-                                            {w.enabled && <Check className="h-3 w-3 text-white" />}
+                                        <div style={{
+                                            width: 16, height: 16, borderRadius: "50%",
+                                            border: `2px solid ${w.enabled ? "#F59E0B" : "#D1D5DB"}`,
+                                            background: w.enabled ? "#F59E0B" : "transparent",
+                                            display: "flex", alignItems: "center", justifyContent: "center",
+                                            flexShrink: 0,
+                                        }}>
+                                            {w.enabled && <Check style={{ width: 9, height: 9, color: "white" }} />}
                                         </div>
                                     </button>
                                 ))}
@@ -299,10 +354,12 @@ export function DashboardClient() {
                         items={widgets.map(w => w.id)}
                         strategy={verticalListSortingStrategy}
                     >
-                        <div className="grid gap-8">
-                            {widgets.map((widget) => (
+                        <div style={{ display: "grid", gap: 24 }}>
+                            {widgets.map((widget, i) => (
                                 <SortableWidget key={widget.id} widget={widget}>
-                                    {renderWidgetContent(widget.id, statsData)}
+                                    <div style={{ animation: `fadeUp 0.5s ease ${i * 0.07}s both` }}>
+                                        {renderWidgetContent(widget.id, statsData, analyticsData)}
+                                    </div>
                                 </SortableWidget>
                             ))}
                         </div>
@@ -314,7 +371,7 @@ export function DashboardClient() {
 }
 
 // --- Widget Component Mapping ---
-function renderWidgetContent(id: string, data: any) {
+function renderWidgetContent(id: string, data: any, analytics: any) {
     const stats = data?.stats || {
         totalStudents: 0,
         activeStaff: 0,
@@ -365,10 +422,38 @@ function renderWidgetContent(id: string, data: any) {
         case "module-health":
             return <ModuleHealthGrid stats={stats} />;
 
+        case "enrollment-trend":
+            return <EnrollmentTrend
+                data={analytics?.enrollmentTrend || []}
+                title="Enrollment Pulse"
+                description="Student population growth (6m)"
+            />;
+
+        case "revenue-flow":
+            return <RevenueFlow
+                data={analytics?.revenueTrend || []}
+                title="Financial Intake"
+                description="Monthly revenue streams (6m)"
+            />;
+
+        case "academic-heatmap":
+            return <AcademicHeatmap
+                data={analytics?.academicHeatmap || []}
+                title="Academic Achievement"
+                description="Avg performance cluster per class"
+            />;
+
+        case "attendance-pulse":
+            return <AttendancePulse
+                data={analytics?.attendancePulse || []}
+                title="Attendance Consistency"
+                description="Weekly engagement metrics (4w)"
+            />;
+
         case "transport-ops":
             return (
                 <div className="grid md:grid-cols-2 gap-8">
-                    <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm">
+                    <div style={{ borderRadius: 24, border: "1px solid #F3F4F6", background: "white", padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-xl font-black flex items-center gap-3 italic">
                                 <Bus className="h-5 w-5 text-emerald-600" />
@@ -400,7 +485,7 @@ function renderWidgetContent(id: string, data: any) {
                         </div>
                     </div>
 
-                    <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm overflow-hidden relative group hover:shadow-xl hover:shadow-brand/5 transition-all">
+                    <div className="hover-lift" style={{ borderRadius: 24, border: "1px solid #F3F4F6", background: "white", padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)", overflow: "hidden", position: "relative" }}>
                         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand/5 blur-[80px]" />
                         <div className="relative z-10 flex flex-col h-full justify-between">
                             <div className="flex items-center justify-between mb-6">
@@ -408,7 +493,7 @@ function renderWidgetContent(id: string, data: any) {
                                     <h3 className="text-xl font-black text-zinc-900 italic">Live Telemetry</h3>
                                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Real-time GPS clusters</p>
                                 </div>
-                                <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-brand hover:bg-brand/10 transition-colors">
+                                <button title="View Detailed Transport Ops" className="h-10 w-10 flex items-center justify-center rounded-xl bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-brand hover:bg-brand/10 transition-colors">
                                     <ChevronRight className="h-5 w-5" />
                                 </button>
                             </div>
@@ -468,7 +553,7 @@ function renderWidgetContent(id: string, data: any) {
 
         case "recent-activity":
             return (
-                <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                <div style={{ borderRadius: 24, border: "1px solid #F3F4F6", background: "white", padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
                     <div className="flex items-center justify-between border-b border-zinc-100 pb-6 dark:border-zinc-800">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-2xl bg-brand/10 flex items-center justify-center">
@@ -476,7 +561,7 @@ function renderWidgetContent(id: string, data: any) {
                             </div>
                             <h3 className="text-xl font-black">Audit Stream</h3>
                         </div>
-                        <button className="text-xs font-black text-brand hover:underline px-4 py-2 bg-brand/10 rounded-xl transition-all">
+                        <button title="View Live Audit Stream" className="text-xs font-black text-brand hover:underline px-4 py-2 bg-brand/10 rounded-xl transition-all">
                             Live Logs
                         </button>
                     </div>
@@ -499,7 +584,7 @@ function renderWidgetContent(id: string, data: any) {
 
         case "upcoming-events":
             return (
-                <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                <div style={{ borderRadius: 24, border: "1px solid #F3F4F6", background: "white", padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
                     <div className="flex items-center justify-between border-b border-zinc-100 pb-6 dark:border-zinc-800">
                         <h3 className="text-xl font-black">Calendar Sync</h3>
                         <button className="text-xs font-black text-brand">Add Event +</button>
@@ -524,7 +609,7 @@ function renderWidgetContent(id: string, data: any) {
 
         case "revenue-collection":
             return (
-                <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                <div style={{ borderRadius: 24, border: "1px solid #F3F4F6", background: "white", padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
                     <div className="flex items-center justify-between border-b border-zinc-100 pb-6 dark:border-zinc-800">
                         <h3 className="text-xl font-black">Revenue Analytics</h3>
                         <div className="px-4 py-2 bg-brand/10 text-brand rounded-xl text-[10px] font-black uppercase tracking-widest border border-brand/20">Yearly Performance</div>

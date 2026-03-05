@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { validateUserSchoolAction } from "./session-actions";
+import { sendNotificationToGroup } from "@/lib/notifications";
 
 export async function sendBulkMessageAction(schoolSlug: string, audience: "EVERYONE" | string, title: string, message: string) {
     try {
@@ -88,6 +89,10 @@ export async function sendBulkMessageAction(schoolSlug: string, audience: "EVERY
                     data: notificationsToCreate
                 });
                 createdNotificationsCount = notificationsToCreate.length;
+
+                // TRIGGER PUSH
+                const userIds = notificationsToCreate.map(n => n.userId);
+                await sendNotificationToGroup(userIds, title, message, { type: 'BROADCAST' });
             }
         }
 
@@ -149,15 +154,23 @@ export async function triggerFeeRemindersAction(schoolSlug: string) {
 
             for (const parent of parents) {
                 if (!processedParents.has(parent.id)) {
+                    const title = "Fee Reminder";
+                    const message = `Friendly reminder: A fee of ${fee.amount} for ${student.firstName} is due on ${fee.dueDate.toISOString().split('T')[0]}.`;
+
                     await prisma.notification.create({
                         data: {
                             userId: parent.id,
                             userType: "PARENT",
-                            title: "Fee Reminder",
-                            message: `Friendly reminder: A fee of ${fee.amount} for ${student.firstName} is due on ${fee.dueDate.toISOString().split('T')[0]}.`,
+                            title,
+                            message,
                             type: "SYSTEM"
                         }
                     });
+
+                    // TRIGGER PUSH (Individual for now in loop as processedParents set is used)
+                    // In a larger system we'd collector and sendGroup at end
+                    await sendNotificationToGroup([parent.id], title, message, { type: 'FEE_REMINDER' });
+
                     processedParents.add(parent.id);
                     generated++;
                 }
@@ -264,8 +277,7 @@ export async function updateBroadcastStatusAction(schoolSlug: string, broadcastI
             where: { id: broadcastId },
             data: {
                 status,
-                approvedById: auth.user.id,
-                approvedAt: status === "APPROVED" ? new Date() : null
+                approvedById: auth.user.id
             }
         });
 

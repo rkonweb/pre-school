@@ -31,27 +31,16 @@ export function Header({
     const params = useParams();
     const slug = params.slug as string;
 
-
     const handleSearch = async (term: string) => {
-        if (term.length < 2) {
-            setSuggestions([]);
-            return;
-        }
+        if (term.length < 2) { setSuggestions([]); return; }
         setIsSearching(true);
-        // We need slug. If not in params (e.g. root), we can't search or need a default.
-        // Assuming dashboard always has slug.
         if (slug) {
             const res = await searchGlobalAction(slug, term);
             if (res.success) {
-                // Formatting suggestions for SearchInput
-                // SearchInput expects { fullName/parentName, ... }
-                // We can add a 'type' field to know where to navigate.
-                // searchGlobalAction returns { students: [], leads: [], staff: [] }
-                // We need to flatten this.
                 const flatSuggestions = [
                     ...(res.data?.students || []).map((s: any) => ({ ...s, type: 'student', index: 'Student' })),
                     ...(res.data?.staff || []).map((s: any) => ({ ...s, type: 'staff', index: 'Staff' })),
-                    ...(res.data?.leads || []).map((s: any) => ({ ...s, type: 'lead', index: 'Lead' }))
+                    ...(res.data?.leads || []).map((s: any) => ({ ...s, type: 'lead', index: 'Lead' })),
                 ];
                 setSuggestions(flatSuggestions);
             }
@@ -61,22 +50,13 @@ export function Header({
 
     const handleSuggestionClick = (item: any) => {
         if (!slug) return;
-        if (item.type === 'student') {
-            router.push(`/s/${slug}/students/${item.id}`);
-        } else if (item.type === 'staff') {
-            // Staff view might be a modal or page. Assuming page or edit page.
-            // Staff management usually has 'edit' or view. Let's go to edit for now or just the list if no view.
-            // Actually StaffPage has edit.
-            router.push(`/s/${slug}/staff/${item.id}/edit`);
-        } else if (item.type === 'lead') {
-            router.push(`/s/${slug}/admissions/inquiry/${item.id}`);
-        }
+        if (item.type === 'student') router.push(`/s/${slug}/students/${item.id}`);
+        else if (item.type === 'staff') router.push(`/s/${slug}/staff/${item.id}/edit`);
+        else if (item.type === 'lead') router.push(`/s/${slug}/admissions/inquiry/${item.id}`);
     };
 
     useEffect(() => {
-        const update = () => {
-            setCurrentTime(getSchoolTime(new Date(), schoolTimezone || "Asia/Kolkata"));
-        };
+        const update = () => setCurrentTime(getSchoolTime(new Date(), schoolTimezone || "Asia/Kolkata"));
         update();
         const interval = setInterval(update, 1000);
         return () => clearInterval(interval);
@@ -84,69 +64,124 @@ export function Header({
 
     return (
         <header
-            style={{ backgroundColor: 'var(--brand-color)' }}
             className={cn(
-                "sticky top-0 z-[999] flex h-[94px] w-full items-center justify-between border-b border-white/10 bg-gradient-to-r from-brand to-brand/90 px-4 shadow-xl shadow-brand/5 backdrop-blur-md sm:px-6 lg:px-8",
+                "sticky top-0 z-[999] flex h-[72px] w-full items-center justify-between px-4 sm:px-6 lg:px-8",
                 isAppFullscreen && "hidden"
             )}
+            style={{
+                background: "white",
+                borderBottom: "1px solid #F3F4F6",
+                boxShadow: "0 2px 16px rgba(0,0,0,0.05)",
+            }}
         >
-            {/* Mobile Menu Trigger & Search */}
-            <div className="flex items-center gap-6">
+            {/* ── Left: Mobile Burger + Search + Clock ── */}
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                {/* Mobile menu toggle */}
                 <button
                     onClick={toggleSidebar}
-                    className="rounded-md p-2 text-white/80 hover:bg-white/10 lg:hidden"
+                    className="lg:hidden"
+                    style={{
+                        padding: "8px", borderRadius: 10,
+                        border: "1.5px solid #E5E7EB",
+                        background: "white", cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        color: "#6B7280", transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F59E0B"; (e.currentTarget as HTMLElement).style.color = "#D97706"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#E5E7EB"; (e.currentTarget as HTMLElement).style.color = "#6B7280"; }}
                 >
-                    <Menu className="h-6 w-6" />
+                    <Menu style={{ width: 18, height: 18 }} />
                     <span className="sr-only">Open sidebar</span>
                 </button>
 
+                {/* Search */}
+                <div className="hidden sm:block" style={{ width: 360 }}>
+                    <SearchInput
+                        onSearch={handleSearch}
+                        suggestions={suggestions}
+                        onSuggestionClick={handleSuggestionClick}
+                        isLoading={isSearching}
+                        placeholder="Search students, staff, leads..."
+                        className="w-full"
+                        style={{
+                            background: "#F9FAFB",
+                            border: "1.5px solid #E5E7EB",
+                            borderRadius: 12,
+                            fontSize: 13.5,
+                            color: "#374151",
+                        } as any}
+                    />
+                </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="hidden sm:block md:w-96">
-                        <SearchInput
-                            onSearch={handleSearch}
-                            suggestions={suggestions}
-                            onSuggestionClick={handleSuggestionClick}
-                            isLoading={isSearching}
-                            placeholder="Search students, staff, leads..."
-                            className="w-full bg-white/10 border-white/10 text-white placeholder:text-white/50 focus:ring-white/20"
-                        />
-                    </div>
-
-                    <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/10 rounded-xl backdrop-blur-sm">
-                        <ClockIcon className="h-3.5 w-3.5 text-white/80" />
-                        <span className="text-xs font-black text-white tabular-nums">
-                            {currentTime || "--:-- --"}
-                        </span>
-                    </div>
+                {/* Clock pill */}
+                <div
+                    className="hidden md:flex items-center gap-2"
+                    style={{
+                        padding: "6px 14px",
+                        background: "#1E1B4B",
+                        borderRadius: 20,
+                        boxShadow: "0 2px 12px rgba(30,27,75,0.2)",
+                    }}
+                >
+                    <ClockIcon style={{ width: 13, height: 13, color: "#A5B4FC" }} />
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "white", fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: 0.3 }}>
+                        {currentTime || "--:-- --"}
+                    </span>
                 </div>
             </div>
 
-            {/* Academic Year Selector */}
-            <div className="flex-1 flex justify-center relative z-[1000]">
+            {/* ── Center: Academic Year Selector ── */}
+            <div style={{ flex: 1, display: "flex", justifyContent: "center", position: "relative", zIndex: 1000 }}>
                 <AcademicYearSelector />
             </div>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-4">
-                <button className="relative rounded-full p-1.5 text-white/80 hover:bg-white/10 transition-colors">
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white dark:ring-zinc-950" />
+            {/* ── Right: Bell + Fullscreen + Profile ── */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {/* Notification Bell */}
+                <button
+                    style={{
+                        position: "relative", padding: 8, borderRadius: 10,
+                        border: "1.5px solid #E5E7EB",
+                        background: "white", cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        transition: "all 0.22s ease",
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F59E0B"; (e.currentTarget as HTMLElement).style.background = "#FFFBEB"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#E5E7EB"; (e.currentTarget as HTMLElement).style.background = "white"; }}
+                >
+                    <Bell style={{ width: 17, height: 17, color: "#6B7280" }} />
+                    {/* Amber pulse dot */}
+                    <span
+                        className="pulse-anim"
+                        style={{
+                            position: "absolute", top: 7, right: 7,
+                            width: 7, height: 7, borderRadius: "50%",
+                            background: "#F59E0B",
+                            boxShadow: "0 0 0 2px white",
+                        }}
+                    />
                     <span className="sr-only">Notifications</span>
                 </button>
 
+                {/* Fullscreen toggle */}
                 <button
                     onClick={toggleFullscreen}
-                    className="rounded-full p-1.5 text-white/80 hover:bg-white/10 transition-colors"
                     title={isAppFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                    style={{
+                        padding: 8, borderRadius: 10,
+                        border: "1.5px solid #E5E7EB",
+                        background: "white", cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        transition: "all 0.22s ease",
+                        color: "#6B7280",
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F59E0B"; (e.currentTarget as HTMLElement).style.color = "#D97706"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#E5E7EB"; (e.currentTarget as HTMLElement).style.color = "#6B7280"; }}
                 >
-                    {isAppFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                    {isAppFullscreen ? <Minimize style={{ width: 17, height: 17 }} /> : <Maximize style={{ width: 17, height: 17 }} />}
                 </button>
 
-                <ProfileMenu
-                    branches={branches}
-                    currentBranchId={currentBranchId}
-                />
+                <ProfileMenu branches={branches} currentBranchId={currentBranchId} />
             </div>
         </header>
     );

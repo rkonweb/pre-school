@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme/app_theme.dart';
 
 class TodayTimelineCard extends StatelessWidget {
   final List<TimelineEvent> events;
@@ -16,148 +18,127 @@ class TodayTimelineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.35),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                spreadRadius: -2,
-              )
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Upcoming Activities',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 18),
-                    ),
-                    Text(
-                      '${events.length} Items',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1, color: Colors.white24),
-              if (events.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(
-                    child: Text('No activities scheduled.',
-                        style: TextStyle(color: Colors.grey)),
-                  ),
-                )
-              else
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: events.take(3).length,
-                  itemBuilder: (context, index) {
-                    final event = events[index];
-                    return _buildTimelineRow(context, event,
-                        isLast: index == events.take(3).length - 1)
-                    .animate()
-                    .fadeIn(delay: (index * 100).ms, duration: 400.ms)
-                    .slideX(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
-                  },
-                ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: ElevatedButton(
-                  onPressed: onPrimaryAction,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black87,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(primaryButtonText),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimelineRow(BuildContext context, TimelineEvent event,
-      {required bool isLast}) {
-    return IntrinsicHeight(
-      child: Row(
+    return Container(
+      decoration: AppTheme.glassDecoration(opacity: 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            width: 60,
-            child: Column(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  margin: const EdgeInsets.only(top: 24),
-                  decoration: BoxDecoration(
-                    color: event.isActive ? const Color(0xFF2563EB) : Colors.grey.shade300,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                if (!isLast)
-                  Expanded(
-                    child: Container(
-                      width: 2,
-                      color: Colors.grey.shade200,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: 16,
-                bottom: isLast ? 16 : 0,
-                right: 16,
+          if (events.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(
+                child: Text('Your child\'s highlights will appear here.',
+                    style: GoogleFonts.dmSans(color: AppTheme.textTertiary, fontSize: 13)),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    event.time,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: event.isActive ? const Color(0xFF2563EB) : Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    event.title,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                  ),
-                  if (event.subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      event.subtitle!,
-                      style: const TextStyle(color: Colors.grey, fontSize: 13),
-                    ),
-                  ],
-                ],
+            )
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: events.take(3).length,
+              itemExtent: 80,
+              itemBuilder: (context, index) {
+                final event = events[index];
+                return _buildTimelineRow(context, event,
+                    isFirst: index == 0,
+                    isLast: index == events.take(3).length - 1)
+                .animate()
+                .fadeIn(delay: (index * 100).ms, duration: 400.ms)
+                .slideX(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
+              },
+            ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: ElevatedButton(
+              onPressed: onPrimaryAction,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.textPrimary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+              ),
+              child: Text(
+                primaryButtonText,
+                style: GoogleFonts.sora(fontWeight: FontWeight.w700, letterSpacing: 0.5),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTimelineRow(BuildContext context, TimelineEvent event,
+      {required bool isFirst, required bool isLast}) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 50,
+          child: Column(
+            children: [
+              if (!isFirst)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    color: AppTheme.borderColor,
+                  ),
+                )
+              else
+                const Spacer(),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: event.isActive ? AppTheme.primaryColor : AppTheme.textTertiary.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    color: AppTheme.borderColor,
+                  ),
+                )
+              else
+                const Spacer(),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  event.time.toUpperCase(),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                    color: event.isActive ? AppTheme.primaryColor : AppTheme.textTertiary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  event.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.sora(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

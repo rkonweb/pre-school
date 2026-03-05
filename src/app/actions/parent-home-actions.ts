@@ -35,10 +35,41 @@ export async function getParentHomeDataAction(phone: string) {
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999);
 
+        // Resolve Parent Details based on phone match
+        const cleanPhone = phone.replace(/\D/g, "").slice(-10);
+        const parentStudent = await prisma.student.findFirst({
+            where: {
+                OR: [
+                    { parentMobile: { contains: cleanPhone } },
+                    { fatherPhone: { contains: cleanPhone } },
+                    { motherPhone: { contains: cleanPhone } },
+                ],
+            },
+            select: { parentName: true, parentMobile: true, fatherName: true, fatherPhone: true, motherName: true, motherPhone: true }
+        });
+
+        let pName = "Parent";
+        if (parentStudent) {
+            if (parentStudent.fatherPhone?.includes(cleanPhone) && parentStudent.fatherName) {
+                pName = parentStudent.fatherName;
+            } else if (parentStudent.motherPhone?.includes(cleanPhone) && parentStudent.motherName) {
+                pName = parentStudent.motherName;
+            } else if (parentStudent.parentName) {
+                pName = parentStudent.parentName;
+            }
+        }
+
+        const parentDetails = {
+            name: pName,
+            phone: phone,
+            initials: pName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2)
+        };
+
         // Map students with safety status
         console.log("[getParentHomeDataAction] Mapping students safety status...");
         const students = await Promise.all(studentsData.map(async (s: any) => {
             let safetyStatus = "AT_HOME";
+            let safetyStatusTime = null;
 
             // Check Attendance
             const attendance = await prisma.attendance.findFirst({
@@ -46,10 +77,13 @@ export async function getParentHomeDataAction(phone: string) {
                 orderBy: { createdAt: 'desc' }
             });
 
-            if (attendance?.status === "PRESENT") {
-                safetyStatus = "IN_SCHOOL";
-            } else if (attendance?.status === "ABSENT") {
-                safetyStatus = "ABSENT";
+            if (attendance) {
+                if (attendance.status === "PRESENT") {
+                    safetyStatus = "IN_SCHOOL";
+                } else if (attendance.status === "ABSENT") {
+                    safetyStatus = "ABSENT";
+                }
+                safetyStatusTime = attendance.createdAt.toISOString();
             }
 
             // Check Transport Log
@@ -59,17 +93,21 @@ export async function getParentHomeDataAction(phone: string) {
             });
 
             if (transport) {
-                if (transport.type === "PICKUP" && transport.status === "BOARDED") safetyStatus = "IN_TRANSIT";
-                if (transport.type === "PICKUP" && transport.status === "DROPPED") safetyStatus = "IN_SCHOOL";
-                if (transport.type === "DROP" && transport.status === "BOARDED") safetyStatus = "IN_TRANSIT";
-                if (transport.type === "DROP" && transport.status === "DROPPED") safetyStatus = "AT_HOME";
+                if (!safetyStatusTime || transport.timestamp > new Date(safetyStatusTime)) {
+                    if (transport.type === "PICKUP" && transport.status === "BOARDED") safetyStatus = "IN_TRANSIT";
+                    if (transport.type === "PICKUP" && transport.status === "DROPPED") safetyStatus = "IN_SCHOOL";
+                    if (transport.type === "DROP" && transport.status === "BOARDED") safetyStatus = "IN_TRANSIT";
+                    if (transport.type === "DROP" && transport.status === "DROPPED") safetyStatus = "AT_HOME";
+                    safetyStatusTime = transport.timestamp.toISOString();
+                }
             }
 
             return {
                 id: s.id,
-                firstName: s.firstName,
+                firstName: s.firstName || s.name || "Student",
                 avatar: s.avatar,
                 safetyStatus,
+                safetyStatusTime,
                 classroomName: s.classroom || "Unassigned"
             };
         }));
@@ -108,13 +146,40 @@ export async function getParentHomeDataAction(phone: string) {
         timelineEvents.sort((a, b) => b.timestamp - a.timestamp);
         const timelineSnippet = timelineEvents.slice(0, 3).map(e => ({ time: e.time, type: e.type, title: e.title, status: e.status }));
 
+        // Count Today's Diary Entries
+        const diaryCount = await prisma.diaryEntry.count({
+            where: {
+                schoolId: schoolId,
+                status: "PUBLISHED",
+                OR: [
+                    {
+                        scheduledFor: { gte: startOfDay, lte: endOfDay }
+                    },
+                    {
+                        scheduledFor: null,
+                        createdAt: { gte: startOfDay, lte: endOfDay }
+                    }
+                ],
+                AND: [
+                    {
+                        OR: [
+                            { classroomId: activeStudent.classroomId },
+                            { recipients: { some: { studentId: activeStudentId } } }
+                        ]
+                    }
+                ]
+            }
+        });
+
         return {
             success: true,
             activeStudentId,
             students,
             school: schoolData,
+            parentDetails,
             criticalAlerts,
-            timelineSnippet
+            timelineSnippet,
+            todaysDiaryCount: diaryCount
         };
     } catch (e: any) {
         console.error("getParentHomeDataAction error:", e);

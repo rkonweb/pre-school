@@ -37,48 +37,52 @@ export async function getBillingDashboardAction(slug: string, options: Dashboard
             return { success: false, error: "School not found" };
         }
 
-        // 2. Stats Calculation (Global KPIs - unaffected by table filters)
-        // Optimization: Use separate aggregation query instead of fetching all records?
-        // SQLite doesn't strictly optimize aggregate over JSON/Relation easily, but let's stick to current logic for accuracy on 'Paid' calculation.
-        // Actually, prisma.fee.aggregate can be faster.
-        // Total Billed = Sum(amount)
-        // Collected = Sum(FeePayment.amount)
-        // Pending = Total Billed - Collected (Roughly, but partials matter).
-        // Let's keep the JS loop for logic correctness on "Pending" (Fee - Payments).
+        // 2. Stats Calculation (Optimized with Aggregations)
+        const academicYearId = filters.academicYearId || undefined;
 
-        const statsFees = await prisma.fee.findMany({
-            where: {
-                student: { schoolId: school.id },
-                academicYearId: filters.academicYearId || undefined
-            },
-            select: {
-                amount: true,
-                dueDate: true,
-                status: true,
-                payments: { select: { amount: true } }
-            }
-        });
-
-        let totalBilled = 0;
-        let collected = 0;
-        let pending = 0;
-        let overdue = 0;
-        const now = new Date();
-
-        statsFees.forEach(fee => {
-            totalBilled += fee.amount;
-            const paid = fee.payments.reduce((sum, p) => sum + p.amount, 0);
-            collected += paid;
-
-            // Calculate pending based on remaining amount logic
-            // (Don't rely just on status, calculate actual $)
-            const remaining = fee.amount - paid;
-            if (remaining > 0) {
-                pending += remaining;
-                if (new Date(fee.dueDate) < now) {
-                    overdue += remaining;
+        const [billingAgg, collectionAgg, overdueAgg] = await Promise.all([
+            // Total Billed
+            prisma.fee.aggregate({
+                where: {
+                    student: { schoolId: school.id },
+                    academicYearId
+                },
+                _sum: { amount: true }
+            }),
+            // Total Collected
+            prisma.feePayment.aggregate({
+                where: {
+                    fee: {
+                        student: { schoolId: school.id },
+                        academicYearId
+                    }
+                },
+                _sum: { amount: true }
+            }),
+            // Overdue (Unpaid and past due date)
+            prisma.fee.findMany({
+                where: {
+                    student: { schoolId: school.id },
+                    academicYearId,
+                    status: { in: ["PENDING", "PARTIAL", "OVERDUE"] },
+                    dueDate: { lt: new Date() }
+                },
+                include: {
+                    payments: { select: { amount: true } }
                 }
-            }
+            })
+        ]);
+
+        const totalBilled = billingAgg._sum.amount || 0;
+        const collected = collectionAgg._sum.amount || 0;
+        const pending = Math.max(0, totalBilled - collected);
+
+        // Overdue needs careful calculation since a fee can be partially paid
+        let overdue = 0;
+        overdueAgg.forEach(fee => {
+            const paid = fee.payments.reduce((sum, p) => sum + p.amount, 0);
+            const remaining = fee.amount - paid;
+            if (remaining > 0) overdue += remaining;
         });
 
 

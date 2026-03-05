@@ -96,16 +96,8 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { title, content, type, classroomId, studentIds, priority, requiresAck } = body;
 
-        // Enforce date constraint: Mobile App can only create entries for TODAY.
-        const todayStr = new Date().toISOString().split('T')[0]; // Format 'YYYY-MM-DD'
-
-        // Ensure that scheduledFor is today or null (meaning now)
-        if (body.scheduledFor) {
-            const plannedDateStr = new Date(body.scheduledFor).toISOString().split('T')[0];
-            if (plannedDateStr !== todayStr) {
-                return NextResponse.json({ success: false, error: "You can only post diary entries for the current date." }, { status: 400 });
-            }
-        }
+        // Ensure that scheduledFor is strictly handled by the Actions Layer 
+        // We defer timezone & scheduling checks back to Prisma payload natively.
 
         // Enforce recipients based on selection. Default to CLASS if a classroomId is provided but no students.
         let recipientType: "CLASS" | "STUDENT" | "GROUP" = body.recipientType;

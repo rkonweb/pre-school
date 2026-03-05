@@ -722,47 +722,66 @@ export async function getTransportDashboardStatsAction(slug: string) {
         const auth = await validateUserSchoolAction(slug);
         if (!auth.success) return { success: false, error: auth.error };
 
+        // 1. Core Data
         const school = await prisma.school.findUnique({
             where: { slug },
-            include: {
-                transportVehicles: {
-                    include: {
-                        VehicleTelemetry: {
-                            orderBy: { recordedAt: 'desc' },
-                            take: 1
-                        }
-                    }
-                },
-                transportRoutes: {
-                    include: {
-                        driver: true
-                    }
-                }
-            }
+            select: { id: true, currency: true }
         });
 
         if (!school) return { success: false, error: "School not found" };
 
-        // 1. Financial Stats
-        const fees = await prisma.fee.findMany({
+        // 2. Optimized Stats Fetching
+        const [feesAgg, vehicleAgg, telemetryAgg, driverAgg, routesWithDrivers] = await Promise.all([
+            // Financial Stats
+            prisma.fee.aggregate({
+                where: {
+                    student: { schoolId: school.id },
+                    category: "TRANSPORT"
+                },
+                _sum: { amount: true }
+            }),
+            // Fleet Stats: Total & Active
+            prisma.transportVehicle.findMany({
+                where: { schoolId: school.id },
+                select: { id: true, status: true }
+            }),
+            // Fleet Stats: Late/Delayed count (Latest telemetry per vehicle)
+            prisma.vehicleTelemetry.findMany({
+                where: { TransportVehicle: { schoolId: school.id } },
+                distinct: ['vehicleId'],
+                orderBy: { recordedAt: 'desc' },
+                select: { vehicleId: true, delayMinutes: true }
+            }),
+            // Driver Stats: Total
+            prisma.transportDriver.count({ where: { schoolId: school.id } }),
+            // Routes with assigned drivers
+            prisma.transportRoute.findMany({
+                where: { schoolId: school.id },
+                select: { driverId: true }
+            })
+        ]);
+
+        // 3. Process Financials
+        // Collected is hard with just aggregate on Fee status, let's get summed payments for accuracy
+        const totalCollectedAgg = await prisma.feePayment.aggregate({
             where: {
-                student: { schoolId: school.id },
-                category: "TRANSPORT"
-            }
+                fee: {
+                    student: { schoolId: school.id },
+                    category: "TRANSPORT"
+                }
+            },
+            _sum: { amount: true }
         });
 
-        const totalExpected = fees.reduce((sum, f) => sum + f.amount, 0);
-        const totalCollected = fees.filter(f => f.status === "PAID").reduce((sum, f) => sum + f.amount, 0);
+        const totalExpected = feesAgg._sum.amount || 0;
+        const totalCollected = totalCollectedAgg._sum.amount || 0;
 
-        // 2. Fleet Stats (AI based)
-        const activeVehicles = school.transportVehicles.filter(v => v.status === "ACTIVE").length;
-        const delayedVehicles = school.transportVehicles.filter(v =>
-            v.VehicleTelemetry?.[0] && v.VehicleTelemetry[0].delayMinutes > 0
-        ).length;
+        // 4. Process Fleet
+        const activeVehicles = vehicleAgg.filter(v => v.status === "ACTIVE").length;
+        const delayedVehicles = telemetryAgg.filter(t => t.delayMinutes > 0).length;
 
-        // 3. Driver Stats
-        const totalDrivers = await prisma.transportDriver.count({ where: { schoolId: school.id } });
-        const driversOnRoute = new Set(school.transportRoutes.map(r => r.driverId).filter(Boolean)).size;
+        // 5. Process Drivers
+        const driversOnRoute = new Set(routesWithDrivers.map(r => r.driverId).filter(Boolean)).size;
 
         return {
             success: true,
@@ -773,14 +792,14 @@ export async function getTransportDashboardStatsAction(slug: string) {
                     collectionRate: totalExpected > 0 ? (totalCollected / totalExpected) * 100 : 0
                 },
                 fleet: {
-                    total: school.transportVehicles.length,
+                    total: vehicleAgg.length,
                     active: activeVehicles,
                     delayed: delayedVehicles
                 },
                 drivers: {
-                    total: totalDrivers,
+                    total: driverAgg,
                     active: driversOnRoute,
-                    absent: totalDrivers - driversOnRoute
+                    absent: Math.max(0, driverAgg - driversOnRoute)
                 }
             }
         };

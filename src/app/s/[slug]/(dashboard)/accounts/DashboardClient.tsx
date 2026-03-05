@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TransactionType } from "@/lib/types/accounts";
 import { cn } from "@/lib/utils";
+import { SectionHeader, ErpCard, Btn, StatusChip, tableStyles } from "@/components/ui/erp-ui";
 import { generateAccountInsights } from '@/app/actions/ai-account-actions';
 import { toast } from 'sonner';
 
@@ -70,44 +71,45 @@ export default function DashboardClient({
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 px-4 xl:px-0">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Financial Overview</h1>
-                    <p className="text-sm font-medium text-gray-500 mt-1">Key metrics for {activeYearName}.</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                className="h-11 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center justify-center shadow-sm transition-all outline-none"
-                                title="More options"
-                            >
-                                <MoreHorizontal className="h-5 w-5 text-zinc-400" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-52">
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${schoolSlug}/staff/payroll`} className="flex items-center gap-2">
-                                    <Briefcase className="h-4 w-4 text-zinc-400" />
-                                    Staff Payroll
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${schoolSlug}/accounts/vendors`} className="flex items-center gap-2">
-                                    <Users className="h-4 w-4 text-zinc-400" />
-                                    Manage Vendors
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${schoolSlug}/accounts/settings`} className="flex items-center gap-2">
-                                    <Settings className="h-4 w-4 text-zinc-400" />
-                                    Financial Settings
-                                </Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
+            <SectionHeader
+                title="Financial Overview"
+                subtitle={`Key metrics for ${activeYearName}.`}
+                icon={TrendingUp}
+                action={
+                    <div className="flex flex-wrap items-center gap-3">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className="h-11 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center justify-center shadow-sm transition-all outline-none"
+                                    title="More options"
+                                >
+                                    <MoreHorizontal className="h-5 w-5 text-zinc-400" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-52">
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${schoolSlug}/staff/payroll`} className="flex items-center gap-2">
+                                        <Briefcase className="h-4 w-4 text-zinc-400" />
+                                        Staff Payroll
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${schoolSlug}/accounts/vendors`} className="flex items-center gap-2">
+                                        <Users className="h-4 w-4 text-zinc-400" />
+                                        Manage Vendors
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${schoolSlug}/accounts/settings`} className="flex items-center gap-2">
+                                        <Settings className="h-4 w-4 text-zinc-400" />
+                                        Financial Settings
+                                    </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                }
+            />
 
             {/* Top Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 xl:px-0">
@@ -257,22 +259,15 @@ export default function DashboardClient({
                                     Scan recent transactions to generate business insights and flag unusually large, mistyped, or suspicious off-hour manual entries.
                                 </p>
                             </div>
-                            <button
+                            <Btn
                                 onClick={handleGenerateInsights}
                                 disabled={isGeneratingAI}
-                                className="px-6 py-3 bg-brand text-[var(--secondary-color)] rounded-xl font-bold hover:brightness-110 shadow-lg shadow-brand/20 transition-all disabled:opacity-70 flex items-center gap-2 whitespace-nowrap min-w-44 justify-center"
+                                variant="primary"
+                                icon={Sparkles}
+                                loading={isGeneratingAI}
                             >
-                                {isGeneratingAI ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-[var(--secondary-color)]/30 border-t-[var(--secondary-color)] rounded-full animate-spin" />
-                                        Scanning Data...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Sparkles className="w-5 h-5" /> Generate Insights
-                                    </>
-                                )}
-                            </button>
+                                {isGeneratingAI ? "Scanning Data..." : "Generate Insights"}
+                            </Btn>
                         </div>
 
                         {aiInsights && (
@@ -343,90 +338,93 @@ export default function DashboardClient({
                     </Link>
                 </div>
 
-                <div className="bg-white rounded-[2.5rem] border border-zinc-200 shadow-xl shadow-zinc-200/50 overflow-hidden flex flex-col">
-                    <div className="overflow-x-auto min-h-0">
-                        <div className="min-w-[800px] p-0 m-0">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-zinc-100 bg-zinc-50/50">
-                                        <th className="py-5 px-8 text-[10px] font-black uppercase tracking-widest text-zinc-400 border-r border-zinc-100/50">Details</th>
-                                        <th className="py-5 px-8 text-[10px] font-black uppercase tracking-widest text-zinc-400 border-r border-zinc-100/50">Date / ID</th>
-                                        <th className="py-5 px-8 text-[10px] font-black uppercase tracking-widest text-zinc-400 border-r border-zinc-100/50">Category</th>
-                                        <th className="py-5 px-8 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-zinc-50">
-                                    {recentTxns.slice(0, 10).map((txn) => {
-                                        const isCredit = txn.type === TransactionType.CREDIT;
-                                        const flagReason = getFlaggedReason(txn.id);
+                <div style={tableStyles.container}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead style={tableStyles.thead}>
+                            <tr>
+                                <th style={tableStyles.thNoSort}>Details</th>
+                                <th style={tableStyles.thNoSort}>Date / ID</th>
+                                <th style={tableStyles.thNoSort}>Category</th>
+                                <th style={{ ...tableStyles.thNoSort, textAlign: 'right' }}>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {recentTxns.slice(0, 10).map((txn, i) => {
+                                const isCredit = txn.type === TransactionType.CREDIT;
+                                const flagReason = getFlaggedReason(txn.id);
 
-                                        return (
-                                            <tr key={txn.id} className={cn(
-                                                "transition-colors group",
-                                                flagReason ? "bg-rose-50/50 hover:bg-rose-50" : "hover:bg-zinc-50/50"
-                                            )}>
-                                                <td className="py-5 px-8 border-r border-zinc-100/30">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={cn(
-                                                            "w-12 h-12 rounded-[1.2rem] flex items-center justify-center shrink-0 shadow-sm",
-                                                            isCredit ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-zinc-50 text-zinc-500 border border-zinc-200",
-                                                            flagReason && "bg-rose-100 border-rose-200 text-rose-600"
-                                                        )}>
-                                                            {flagReason ? <AlertTriangle className="w-5 h-5" /> : (isCredit ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />)}
-                                                        </div>
-                                                        <div>
-                                                            <div className="flex items-center gap-2">
-                                                                <p className={cn(
-                                                                    "text-sm font-black transition-colors line-clamp-1",
-                                                                    flagReason ? "text-rose-900 group-hover:text-rose-700" : "text-zinc-900 group-hover:text-brand"
-                                                                )}>{txn.description || txn.title || 'Untitled Transaction'}</p>
-                                                                {flagReason && (
-                                                                    <span className="hidden group-hover:inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-200 text-rose-800 animate-in fade-in">
-                                                                        Flagged
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-xs text-zinc-500 font-medium mt-0.5">{txn.vendor?.name || 'No Vendor'}</p>
-                                                        </div>
+                                return (
+                                    <tr
+                                        key={txn.id}
+                                        className="group"
+                                        style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
+                                        onMouseEnter={e => {
+                                            (e.currentTarget).style.background = flagReason ? "#FFE4E6" : "#FFFBEB";
+                                        }}
+                                        onMouseLeave={e => {
+                                            (e.currentTarget).style.background = i % 2 === 0 ? (flagReason ? "#FFE4E6" : "white") : (flagReason ? "#FFE4E6" : "#F9FAFB");
+                                        }}
+                                    >
+                                        <td style={tableStyles.td}>
+                                            <div className="flex items-center gap-4">
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                                                    isCredit ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-zinc-50 text-zinc-500 border border-zinc-200",
+                                                    flagReason && "bg-rose-100 border-rose-200 text-rose-600"
+                                                )}>
+                                                    {flagReason ? <AlertTriangle className="w-5 h-5" /> : (isCredit ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />)}
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className={cn(
+                                                            "text-[15px] font-bold transition-colors line-clamp-1",
+                                                            flagReason ? "text-rose-900 group-hover:text-rose-700" : "text-zinc-900 group-hover:text-brand"
+                                                        )}>{txn.description || txn.title || 'Untitled Transaction'}</p>
+                                                        {flagReason && (
+                                                            <span className="hidden group-hover:inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-200 text-rose-800 animate-in fade-in">
+                                                                Flagged
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                </td>
-                                                <td className="py-5 px-8 border-r border-zinc-100/30">
-                                                    <p className="text-sm font-bold text-zinc-900">{new Date(txn.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-                                                    <p className="text-[10px] font-black font-mono text-zinc-400 uppercase tracking-widest mt-1.5">{txn.transactionNo}</p>
-                                                </td>
-                                                <td className="py-5 px-8 border-r border-zinc-100/30">
-                                                    <span className={cn(
-                                                        "px-3 py-1.5 rounded-[0.5rem] text-[10px] font-black tracking-widest uppercase shadow-sm",
-                                                        flagReason ? "bg-rose-100 text-rose-700" : "bg-zinc-100 text-zinc-600"
-                                                    )}>
-                                                        {txn.category?.name || 'Uncategorized'}
-                                                    </span>
-                                                </td>
-                                                <td className="py-5 px-8 text-right">
-                                                    <p className={cn(
-                                                        "text-lg font-black tabular-nums",
-                                                        isCredit ? "text-emerald-600" : (flagReason ? "text-rose-600" : "text-zinc-900")
-                                                    )}>
-                                                        {isCredit ? '+' : '-'}{currencySymbol}{Number(txn.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                    </p>
-                                                    {flagReason && (
-                                                        <p className="text-[10px] font-bold text-rose-500 mt-1 bg-white inline-block px-2 py-0.5 rounded border border-rose-100">Review Required</p>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                    {recentTxns.length === 0 && (
-                                        <tr>
-                                            <td colSpan={4} className="py-16 text-center text-sm font-bold text-zinc-500 bg-zinc-50/30">
-                                                No recent transactions found.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                                    <p className="text-[13px] text-zinc-500 font-medium mt-0.5">{txn.vendor?.name || 'No Vendor'}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style={tableStyles.td}>
+                                            <p className="text-sm font-bold text-zinc-900">{new Date(txn.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                                            <p className="text-[11px] font-semibold font-mono text-zinc-500 mt-1">{txn.transactionNo}</p>
+                                        </td>
+                                        <td style={tableStyles.td}>
+                                            <span className={cn(
+                                                "px-2.5 py-1 rounded-[0.5rem] text-[11px] font-bold shadow-sm",
+                                                flagReason ? "bg-rose-100 text-rose-700" : "bg-zinc-100 text-zinc-700"
+                                            )}>
+                                                {txn.category?.name || 'Uncategorized'}
+                                            </span>
+                                        </td>
+                                        <td style={{ ...tableStyles.td, textAlign: 'right' }}>
+                                            <p className={cn(
+                                                "text-[15px] font-extrabold tabular-nums",
+                                                isCredit ? "text-emerald-600" : (flagReason ? "text-rose-600" : "text-zinc-900")
+                                            )}>
+                                                {isCredit ? '+' : '-'}{currencySymbol}{Number(txn.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                            </p>
+                                            {flagReason && (
+                                                <p className="text-[10px] font-bold text-rose-500 mt-1 bg-white inline-block px-2 py-0.5 rounded border border-rose-100">Review Required</p>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                            {recentTxns.length === 0 && (
+                                <tr>
+                                    <td colSpan={4} className="py-16 text-center text-sm font-bold text-zinc-500 bg-zinc-50/30">
+                                        No recent transactions found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

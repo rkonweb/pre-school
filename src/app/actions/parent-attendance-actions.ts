@@ -17,7 +17,7 @@ export async function getParentAttendanceAction(studentId: string, phone: string
         const attendance = await prisma.attendance.findMany({
             where: { studentId },
             orderBy: { date: 'desc' },
-            take: limit
+            take: 90 // Fetch 3 months of data for the calendar view
         });
 
         return {
