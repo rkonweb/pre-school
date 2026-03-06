@@ -747,80 +747,162 @@ export default function EditTenantPage() {
 
                     {/* ─── SECTION: MODULES ─── */}
                     <SectionCard id="modules" title="Institutional Modules" subtitle="Enable or disable feature modules for this school" icon={Settings}>
-                        <div className="flex items-center justify-end gap-2 mb-4">
-                            <button onClick={() => setFormData(p => ({ ...p, modules: ["admissions", "students", "students.profiles", "students.attendance", "academics", "academics.curriculum", "academics.timetable", "academics.classes", "diary", "staff", "staff.directory", "staff.attendance", "staff.payroll", "billing", "inventory", "communication", "settings"] }))}
-                                className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase">Enable All</button>
-                            <span className="text-zinc-300">|</span>
-                            <button onClick={() => setFormData(p => ({ ...p, modules: [] }))}
-                                className="text-[10px] font-bold text-zinc-400 hover:text-zinc-600 uppercase">Disable All</button>
-                        </div>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {[
-                                { id: "admissions", label: "Admissions", desc: "Lead tracking & enrollment" },
-                                { id: "students", label: "Students", desc: "Student profiles & records", sub: [{ id: "students.profiles", label: "Identity & Profiles" }, { id: "students.attendance", label: "Daily Attendance" }] },
-                                { id: "academics", label: "Academics", desc: "Courses & scheduling", sub: [{ id: "academics.curriculum", label: "Curriculum Manager" }, { id: "academics.timetable", label: "Timetable & Rotations" }, { id: "academics.classes", label: "Classroom Allocation" }] },
+                        {(() => {
+                            const ALL_MODULES = [
+                                {
+                                    id: "admissions", label: "Admissions", desc: "Lead tracking & enrollment", sub: [
+                                        { id: "admissions.applications", label: "Applications" },
+                                        { id: "admissions.interviews", label: "Interviews & Tests" }
+                                    ]
+                                },
+                                {
+                                    id: "students", label: "Students", desc: "Student profiles & records", sub: [
+                                        { id: "students.profiles", label: "Identity & Profiles" },
+                                        { id: "students.attendance", label: "Daily Attendance" },
+                                        { id: "students.performance", label: "Performance & Grades" }
+                                    ]
+                                },
+                                {
+                                    id: "academics", label: "Academics", desc: "Courses & scheduling", sub: [
+                                        { id: "academics.curriculum", label: "Curriculum Manager" },
+                                        { id: "academics.timetable", label: "Timetable & Rotations" },
+                                        { id: "academics.classes", label: "Classroom Allocation" },
+                                        { id: "academics.homework", label: "Homework & Assignments" }
+                                    ]
+                                },
                                 { id: "diary", label: "Digital Diary", desc: "Daily logs & parent updates" },
-                                { id: "staff", label: "Staff & HR", desc: "Employee management", sub: [{ id: "staff.directory", label: "Staff Directory" }, { id: "staff.attendance", label: "Punch Records" }, { id: "staff.payroll", label: "Payroll Automation" }] },
-                                { id: "billing", label: "Billing & Fees", desc: "Fee collection & invoicing" },
-                                { id: "inventory", label: "Inventory", desc: "Stock & asset tracking" },
-                                { id: "communication", label: "Communication", desc: "Messaging & broadcast" },
-                                { id: "settings", label: "System Config", desc: "Roles & global settings" },
-                            ].map((mod) => (
-                                <div key={mod.id} className={cn(
-                                    "p-4 rounded-xl border transition-all duration-200",
-                                    formData.modules.includes(mod.id) ? "bg-blue-50/50 border-blue-200" : "bg-white border-zinc-100 opacity-60 hover:opacity-100"
-                                )}>
-                                    <label className="flex items-start gap-3 cursor-pointer">
-                                        <div className={cn(
-                                            "mt-0.5 h-5 w-5 rounded-lg border flex items-center justify-center transition-all shrink-0",
-                                            formData.modules.includes(mod.id) ? "bg-blue-600 border-blue-600" : "border-zinc-300 bg-white"
-                                        )}>
-                                            {formData.modules.includes(mod.id) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
-                                        </div>
-                                        <input type="checkbox" id={`module-${mod.id}`} title={`Enable ${mod.label} module`} className="hidden" checked={formData.modules.includes(mod.id)}
-                                            onChange={(e) => {
-                                                const isChecked = e.target.checked;
-                                                let newModules = [...formData.modules];
-                                                if (isChecked) {
-                                                    newModules.push(mod.id);
-                                                    if (mod.sub) mod.sub.forEach(s => { if (!newModules.includes(s.id)) newModules.push(s.id); });
-                                                } else {
-                                                    newModules = newModules.filter(x => x !== mod.id);
-                                                    if (mod.sub) { const subIds = mod.sub.map(s => s.id); newModules = newModules.filter(x => !subIds.includes(x)); }
-                                                }
-                                                setFormData(p => ({ ...p, modules: newModules }));
-                                            }} />
-                                        <div className="flex-1">
-                                            <span className="block text-sm font-bold text-zinc-900">{mod.label}</span>
-                                            <span className="block text-[10px] text-zinc-500 font-medium mt-0.5">{mod.desc}</span>
-                                        </div>
-                                    </label>
-                                    {mod.sub && (
-                                        <div className="mt-3 pt-3 border-t border-blue-100/50 space-y-2 ml-8">
-                                            {mod.sub.map(sub => (
-                                                <label key={sub.id} className="flex items-center gap-2 cursor-pointer group">
+                                { id: "ptm", label: "Parent Teacher Meetings", desc: "Schedule & manage PTMs" },
+                                { id: "parent-requests", label: "Parent Requests", desc: "Manage parent inquiries & support" },
+                                {
+                                    id: "staff", label: "Staff & HR", desc: "Employee management", sub: [
+                                        { id: "staff.directory", label: "Staff Directory" },
+                                        { id: "staff.attendance", label: "Punch Records" },
+                                        { id: "staff.payroll", label: "Payroll Automation" },
+                                        { id: "staff.training", label: "Training & PD" }
+                                    ]
+                                },
+                                {
+                                    id: "billing", label: "Billing & Fees", desc: "Fee collection & invoicing", sub: [
+                                        { id: "billing.invoices", label: "Invoices & Receipts" },
+                                        { id: "billing.payments", label: "Payment Gateway Integration" }
+                                    ]
+                                },
+                                {
+                                    id: "accounts", label: "Accounts & Finance", desc: "Ledgers & expense tracking", sub: [
+                                        { id: "accounts.expenses", label: "Expense Management" },
+                                        { id: "accounts.reports", label: "Financial Reporting" }
+                                    ]
+                                },
+                                {
+                                    id: "inventory", label: "Inventory & Assets", desc: "Stock & asset tracking", sub: [
+                                        { id: "inventory.assets", label: "Asset Register" },
+                                        { id: "inventory.vendors", label: "Vendor Management" },
+                                        { id: "inventory.store", label: "School Store & Distribution" }
+                                    ]
+                                },
+                                {
+                                    id: "transport", label: "Transport & Fleet", desc: "Buses, routes & tracking", sub: [
+                                        { id: "transport.routes", label: "Routes & Stops" },
+                                        { id: "transport.fleet", label: "Fleet Maintenance" },
+                                        { id: "transport.tracking", label: "Live GPS Tracking" }
+                                    ]
+                                },
+                                {
+                                    id: "facilities", label: "Campus Facilities", desc: "Hostel, Canteen & Library", sub: [
+                                        { id: "facilities.hostel", label: "Hostel Management" },
+                                        { id: "facilities.canteen", label: "Canteen POS" },
+                                        { id: "facilities.library", label: "Library Management" }
+                                    ]
+                                },
+                                {
+                                    id: "communication", label: "Communication", desc: "Messaging & broadcast", sub: [
+                                        { id: "communication.messages", label: "Direct Messaging" },
+                                        { id: "communication.circulars", label: "Circulars & Notices" },
+                                        { id: "communication.emergency", label: "Emergency Alarms" }
+                                    ]
+                                },
+                                {
+                                    id: "marketing", label: "Marketing & Growth", desc: "Campaigns & analytics", sub: [
+                                        { id: "marketing.campaigns", label: "Campaign Management" },
+                                        { id: "marketing.analytics", label: "Growth Analytics" }
+                                    ]
+                                },
+                                { id: "events", label: "Events & Calendar", desc: "School calendar & activities" },
+                                { id: "documents", label: "Document Center", desc: "Certificates & files repository" },
+                                { id: "settings", label: "System Config", desc: "Roles & global settings" }
+                            ];
+
+                            const ALL_MODULE_IDS = ALL_MODULES.flatMap(m => [m.id, ...(m.sub?.map(s => s.id) || [])]);
+
+                            return (
+                                <>
+                                    <div className="flex items-center justify-end gap-2 mb-4">
+                                        <button onClick={() => setFormData(p => ({ ...p, modules: ALL_MODULE_IDS }))}
+                                            className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase">Enable All</button>
+                                        <span className="text-zinc-300">|</span>
+                                        <button onClick={() => setFormData(p => ({ ...p, modules: [] }))}
+                                            className="text-[10px] font-bold text-zinc-400 hover:text-zinc-600 uppercase">Disable All</button>
+                                    </div>
+                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {ALL_MODULES.map((mod) => (
+                                            <div key={mod.id} className={cn(
+                                                "p-4 rounded-xl border transition-all duration-200",
+                                                formData.modules.includes(mod.id) ? "bg-blue-50/50 border-blue-200" : "bg-white border-zinc-100 opacity-60 hover:opacity-100"
+                                            )}>
+                                                <label className="flex items-start gap-3 cursor-pointer">
                                                     <div className={cn(
-                                                        "h-4 w-4 rounded-md border flex items-center justify-center transition-all",
-                                                        formData.modules.includes(sub.id) ? "bg-blue-500 border-blue-500" : "border-zinc-200 bg-zinc-50"
+                                                        "mt-0.5 h-5 w-5 rounded-lg border flex items-center justify-center transition-all shrink-0",
+                                                        formData.modules.includes(mod.id) ? "bg-blue-600 border-blue-600" : "border-zinc-300 bg-white"
                                                     )}>
-                                                        {formData.modules.includes(sub.id) && <CheckCircle2 className="h-2.5 w-2.5 text-white" />}
+                                                        {formData.modules.includes(mod.id) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
                                                     </div>
-                                                    <input type="checkbox" id={`submodule-${sub.id}`} title={`Enable ${sub.label} submodule`} className="hidden" checked={formData.modules.includes(sub.id)}
+                                                    <input type="checkbox" id={`module-${mod.id}`} title={`Enable ${mod.label} module`} className="hidden" checked={formData.modules.includes(mod.id)}
                                                         onChange={(e) => {
                                                             const isChecked = e.target.checked;
                                                             let newModules = [...formData.modules];
-                                                            if (isChecked) { newModules.push(sub.id); if (!newModules.includes(mod.id)) newModules.push(mod.id); }
-                                                            else { newModules = newModules.filter(x => x !== sub.id); }
+                                                            if (isChecked) {
+                                                                newModules.push(mod.id);
+                                                                if (mod.sub) mod.sub.forEach(s => { if (!newModules.includes(s.id)) newModules.push(s.id); });
+                                                            } else {
+                                                                newModules = newModules.filter(x => x !== mod.id);
+                                                                if (mod.sub) { const subIds = mod.sub.map(s => s.id); newModules = newModules.filter(x => !subIds.includes(x)); }
+                                                            }
                                                             setFormData(p => ({ ...p, modules: newModules }));
                                                         }} />
-                                                    <span className={cn("text-[11px] font-bold transition-colors", formData.modules.includes(sub.id) ? "text-blue-700" : "text-zinc-400")}>{sub.label}</span>
+                                                    <div className="flex-1">
+                                                        <span className="block text-sm font-bold text-zinc-900">{mod.label}</span>
+                                                        <span className="block text-[10px] text-zinc-500 font-medium mt-0.5">{mod.desc}</span>
+                                                    </div>
                                                 </label>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                                                {mod.sub && (
+                                                    <div className="mt-3 pt-3 border-t border-blue-100/50 space-y-2 ml-8">
+                                                        {mod.sub.map(sub => (
+                                                            <label key={sub.id} className="flex items-center gap-2 cursor-pointer group">
+                                                                <div className={cn(
+                                                                    "h-4 w-4 rounded-md border flex items-center justify-center transition-all",
+                                                                    formData.modules.includes(sub.id) ? "bg-blue-500 border-blue-500" : "border-zinc-200 bg-zinc-50"
+                                                                )}>
+                                                                    {formData.modules.includes(sub.id) && <CheckCircle2 className="h-2.5 w-2.5 text-white" />}
+                                                                </div>
+                                                                <input type="checkbox" id={`submodule-${sub.id}`} title={`Enable ${sub.label} submodule`} className="hidden" checked={formData.modules.includes(sub.id)}
+                                                                    onChange={(e) => {
+                                                                        const isChecked = e.target.checked;
+                                                                        let newModules = [...formData.modules];
+                                                                        if (isChecked) { newModules.push(sub.id); if (!newModules.includes(mod.id)) newModules.push(mod.id); }
+                                                                        else { newModules = newModules.filter(x => x !== sub.id); }
+                                                                        setFormData(p => ({ ...p, modules: newModules }));
+                                                                    }} />
+                                                                <span className={cn("text-[11px] font-bold transition-colors", formData.modules.includes(sub.id) ? "text-blue-700" : "text-zinc-400")}>{sub.label}</span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            );
+                        })()}
                     </SectionCard>
 
                     {/* ─── SECTION: ADD-ONS ─── */}
