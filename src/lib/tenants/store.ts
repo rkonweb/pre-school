@@ -20,7 +20,8 @@ const INITIAL_TENANTS: Tenant[] = [
         mrr: 299,
         joinedDate: "2024-01-15T09:00:00.000Z",
         region: "US-West",
-        lastActive: new Date(Date.now() - 1000 * 60 * 2).toISOString()
+        lastActive: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
+        customDomain: "portal.bright-central.com"
     },
     {
         id: "SCH-002",
@@ -39,18 +40,19 @@ const INITIAL_TENANTS: Tenant[] = [
     },
     {
         id: "SCH-003",
-        name: "Tiny Toes Preschool",
-        subdomain: "tinytoes",
+        name: "Littlechanakyas",
+        subdomain: "littlechanakyas",
         brandColor: "#16a34a",
-        adminName: "Emily Chen",
-        email: "emily@tinytoes.sg",
+        adminName: "Admin Chanakya",
+        email: "admin@littlechanakyas.in",
         plan: "Starter",
-        status: "TRIAL",
-        students: 45,
-        mrr: 0,
+        status: "ACTIVE",
+        students: 450,
+        mrr: 199,
         joinedDate: "2026-01-20T08:30:00.000Z",
-        region: "SG-Central",
-        lastActive: new Date(Date.now() - 1000 * 60 * 5).toISOString()
+        region: "IN-South",
+        lastActive: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+        customDomain: "erp.littlechanakyas.in"
     },
 ];
 

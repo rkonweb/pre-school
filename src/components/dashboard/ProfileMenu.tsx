@@ -72,10 +72,9 @@ export function ProfileMenu({
         }
     }, [isOpen]);
 
-    // Handle logout
     const handleLogout = async () => {
         await clearUserSessionAction();
-        router.push("/school-login");
+        router.push(`/${slug}`);
     };
 
     // Handle settings navigation

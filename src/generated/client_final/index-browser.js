@@ -165,7 +165,9 @@ exports.Prisma.SchoolScalarFieldEnum = {
   integrationsConfig: 'integrationsConfig',
   maxBranches: 'maxBranches',
   printableLogo: 'printableLogo',
-  transportSyncToAccounts: 'transportSyncToAccounts'
+  transportSyncToAccounts: 'transportSyncToAccounts',
+  canteenGstType: 'canteenGstType',
+  canteenCommonGst: 'canteenCommonGst'
 };
 
 exports.Prisma.AcademicYearScalarFieldEnum = {
@@ -2050,6 +2052,119 @@ exports.Prisma.HostelAllocationScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CanteenPackageScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  includedMeals: 'includedMeals',
+  monthlyFee: 'monthlyFee',
+  yearlyFee: 'yearlyFee',
+  packageType: 'packageType',
+  isActive: 'isActive',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CanteenItemScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  category: 'category',
+  mealType: 'mealType',
+  dietType: 'dietType',
+  price: 'price',
+  isAddOn: 'isAddOn',
+  foodCategory: 'foodCategory',
+  gstPercentage: 'gstPercentage',
+  hsnCode: 'hsnCode',
+  isAvailable: 'isAvailable',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CanteenMenuPlanScalarFieldEnum = {
+  id: 'id',
+  schoolId: 'schoolId',
+  dayOfWeek: 'dayOfWeek',
+  mealType: 'mealType',
+  items: 'items',
+  isSpecial: 'isSpecial',
+  specialDetails: 'specialDetails',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CanteenSubscriptionScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  packageId: 'packageId',
+  billingCycle: 'billingCycle',
+  feeAmount: 'feeAmount',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  status: 'status',
+  schoolId: 'schoolId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StudentWalletScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  schoolId: 'schoolId',
+  balance: 'balance',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WalletTransactionScalarFieldEnum = {
+  id: 'id',
+  walletId: 'walletId',
+  type: 'type',
+  amount: 'amount',
+  reason: 'reason',
+  description: 'description',
+  canteenOrderId: 'canteenOrderId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CanteenOrderScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  totalAmount: 'totalAmount',
+  subtotal: 'subtotal',
+  taxAmount: 'taxAmount',
+  paymentMethod: 'paymentMethod',
+  subscriptionId: 'subscriptionId',
+  notes: 'notes',
+  status: 'status',
+  orderDate: 'orderDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CanteenOrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  itemId: 'itemId',
+  quantity: 'quantity',
+  price: 'price',
+  taxAmount: 'taxAmount',
+  hsnCode: 'hsnCode'
+};
+
+exports.Prisma.FoodCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  isActive: 'isActive',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2194,7 +2309,16 @@ exports.Prisma.ModelName = {
   OnlinePaymentRequest: 'OnlinePaymentRequest',
   Hostel: 'Hostel',
   HostelRoom: 'HostelRoom',
-  HostelAllocation: 'HostelAllocation'
+  HostelAllocation: 'HostelAllocation',
+  CanteenPackage: 'CanteenPackage',
+  CanteenItem: 'CanteenItem',
+  CanteenMenuPlan: 'CanteenMenuPlan',
+  CanteenSubscription: 'CanteenSubscription',
+  StudentWallet: 'StudentWallet',
+  WalletTransaction: 'WalletTransaction',
+  CanteenOrder: 'CanteenOrder',
+  CanteenOrderItem: 'CanteenOrderItem',
+  FoodCategory: 'FoodCategory'
 };
 
 /**

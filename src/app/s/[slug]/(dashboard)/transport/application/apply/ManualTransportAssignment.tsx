@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { MapPin, Navigation, Search, CheckCircle2, Bus } from "lucide-react";
+import { MapPin, Navigation, Search, CheckCircle2, Bus, User, CreditCard, ChevronRight, X } from "lucide-react";
 import {
     searchStudentsForTransportAction,
     assignStudentToRouteAction
 } from "@/app/actions/transport-actions";
+import { ErpCard, Btn, StatusChip, ErpInput } from "@/components/ui/erp-ui";
+import { cn } from "@/lib/utils";
 
 export default function ManualTransportAssignment({ slug, initialRoutes }: { slug: string, initialRoutes: any[] }) {
     const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +63,7 @@ export default function ManualTransportAssignment({ slug, initialRoutes }: { slu
 
     const handleSubmit = async () => {
         if (!selectedStudent || !selectedRouteId || !pickupStopId || !dropStopId || !fee) {
-            toast.error("Please fill all fields");
+            toast.error("MISSION ABORTED: Missing parameters.");
             return;
         }
 
@@ -77,7 +79,7 @@ export default function ManualTransportAssignment({ slug, initialRoutes }: { slu
         );
 
         if (res.success) {
-            toast.success("Student successfully assigned to route");
+            toast.success("MISSION SUCCESS: Student deployed to route.");
             // Reset form
             setSelectedStudent(null);
             setSelectedRouteId("");
@@ -85,171 +87,257 @@ export default function ManualTransportAssignment({ slug, initialRoutes }: { slu
             setDropStopId("");
             setFee("");
         } else {
-            toast.error(res.error || "Failed to assign student");
+            toast.error(res.error || "TACTICAL FAILURE: Enrollment failed.");
         }
         setIsSubmitting(false);
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left Column: Student Search & Details */}
-            <div className="space-y-6">
-                <div className="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-xl shadow-zinc-200/40">
-                    <h2 className="text-xl font-black text-zinc-900 uppercase tracking-tight mb-4">Select Student</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            {/* Passenger Selection Orbit */}
+            <div className="space-y-8">
+                <ErpCard noPad className="!rounded-[40px] border-zinc-100 shadow-2xl shadow-zinc-200/50 p-10 group bg-zinc-50/30">
+                    <div className="flex items-center gap-4 mb-10">
+                        <div className="h-14 w-14 rounded-2xl bg-zinc-900 text-white flex items-center justify-center shadow-lg shadow-zinc-900/40">
+                            <User className="h-7 w-7" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">Manifest Entry</h2>
+                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic opacity-60">Identity Verification Protocol</p>
+                        </div>
+                    </div>
 
                     {!selectedStudent ? (
                         <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
-                            <input
-                                type="text"
-                                placeholder="SEARCH BY NAME..."
-                                className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-zinc-100 bg-zinc-50 font-bold text-sm uppercase focus:ring-0 focus:border-brand outline-none transition-colors"
+                            <ErpInput
+                                label="Search Registry"
+                                placeholder="ENTER NAME OR ADMISSION ID..."
                                 value={searchTerm}
                                 onChange={e => handleSearch(e.target.value)}
+                                icon={Search}
+                                className="!bg-white shadow-inner"
                             />
 
-                            {/* Search Results Dropdown */}
+                            {/* Tactical Search Dropdown */}
                             {searchTerm.length >= 2 && (
-                                <div className="absolute top-16 left-0 right-0 bg-white border border-zinc-100 rounded-2xl shadow-xl z-10 max-h-64 overflow-y-auto">
+                                <div className="absolute top-24 left-0 right-0 bg-white border border-zinc-100 rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] z-50 max-h-[400px] overflow-y-auto p-3 ring-8 ring-zinc-50/50">
                                     {isSearching ? (
-                                        <div className="p-4 text-center text-sm font-bold text-zinc-400 uppercase">Searching...</div>
+                                        <div className="p-10 text-center flex flex-col items-center gap-4">
+                                            <div className="h-8 w-8 border-4 border-brand border-t-transparent animate-spin rounded-full"></div>
+                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">Scanning Data Matrix...</span>
+                                        </div>
                                     ) : searchResults.length > 0 ? (
-                                        searchResults.map(student => (
-                                            <div
-                                                key={student.id}
-                                                className="p-4 hover:bg-zinc-50 cursor-pointer border-b border-zinc-50 last:border-0 flex items-center justify-between transition-colors"
-                                                onClick={() => handleSelectStudent(student)}
-                                            >
-                                                <div>
-                                                    <p className="font-bold text-zinc-900 uppercase">{student.firstName} {student.lastName}</p>
-                                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{student.admissionNumber}</p>
+                                        <div className="space-y-1">
+                                            {searchResults.map(student => (
+                                                <div
+                                                    key={student.id}
+                                                    className="p-5 hover:bg-zinc-50 rounded-[24px] cursor-pointer group/item flex items-center justify-between transition-all duration-300 active:scale-[0.98]"
+                                                    onClick={() => handleSelectStudent(student)}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="h-12 w-12 rounded-2xl bg-zinc-100 flex items-center justify-center font-black text-zinc-500 uppercase group-hover/item:bg-zinc-900 group-hover/item:text-white transition-all">
+                                                            {student.firstName?.[0]}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-black text-zinc-900 uppercase text-sm leading-tight group-hover/item:text-brand transition-all">{student.firstName} {student.lastName}</p>
+                                                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1 opacity-60 leading-none">{student.admissionNumber}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        {student.transportProfile && (
+                                                            <div className="px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
+                                                                <span className="text-[8px] font-black text-emerald-600 uppercase tracking-tight">ACTIVE NODE</span>
+                                                            </div>
+                                                        )}
+                                                        <ChevronRight className="h-4 w-4 text-zinc-200 group-hover/item:translate-x-1 group-hover/item:text-brand transition-all" />
+                                                    </div>
                                                 </div>
-                                                {student.transportProfile && (
-                                                    <span className="px-2 py-1 bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest flex items-center gap-1 rounded">
-                                                        <CheckCircle2 className="h-3 w-3" /> Enrolled
-                                                    </span>
-                                                )}
-                                            </div>
-                                        ))
+                                            ))}
+                                        </div>
                                     ) : (
-                                        <div className="p-4 text-center text-sm font-bold text-zinc-400 uppercase">No students found</div>
+                                        <div className="p-10 text-center flex flex-col items-center gap-2 opacity-40">
+                                            <X className="h-8 w-8 text-zinc-300" />
+                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">No Handshake Detected</span>
+                                        </div>
                                     )}
                                 </div>
                             )}
                         </div>
                     ) : (
-                        <div className="flex items-center justify-between bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-full bg-brand/10 text-brand flex items-center justify-center font-black text-xl uppercase">
-                                    {selectedStudent.firstName[0]}
+                        <div className="flex flex-col gap-6">
+                            <div className="flex items-center justify-between bg-white p-8 rounded-[32px] border border-zinc-100 shadow-xl shadow-zinc-200/20 relative group/card">
+                                <div className="flex items-center gap-6">
+                                    <div className="relative">
+                                        <div className="absolute -inset-2 bg-brand/20 rounded-[24px] blur-xl opacity-0 group-hover/card:opacity-100 transition-all duration-700" />
+                                        <div className="h-16 w-16 rounded-[24px] bg-zinc-900 text-white flex items-center justify-center font-black text-3xl uppercase shadow-2xl relative z-10 border-2 border-white/10 overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+                                            {selectedStudent.firstName[0]}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-black text-2xl text-zinc-900 uppercase tracking-tighter leading-none mb-2">
+                                            {selectedStudent.firstName} {selectedStudent.lastName}
+                                        </h3>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                {selectedStudent.admissionNumber}
+                                            </span>
+                                            <div className="h-1 w-1 rounded-full bg-zinc-200" />
+                                            <span className="text-[10px] font-black text-brand uppercase tracking-widest italic">
+                                                GRADE {selectedStudent.grade || 'N/A'}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="font-black text-lg text-zinc-900 uppercase leading-none mb-1">
-                                        {selectedStudent.firstName} {selectedStudent.lastName}
-                                    </h3>
-                                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                                        {selectedStudent.admissionNumber}
-                                    </p>
+                                <button
+                                    onClick={() => setSelectedStudent(null)}
+                                    className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                    aria-label="De-select Student"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 bg-zinc-900 rounded-[28px] border border-white/5 shadow-2xl">
+                                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-4 italic">Operational Insight</p>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-500 font-bold uppercase tracking-tight">Active Enrollment</span>
+                                        <span className={cn("font-black uppercase", selectedStudent.transportProfile ? "text-emerald-400" : "text-amber-400")}>
+                                            {selectedStudent.transportProfile ? "DETECTED" : "VACANT"}
+                                        </span>
+                                    </div>
+                                    <div className="h-[1px] bg-white/5 w-full" />
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-zinc-500 font-bold uppercase tracking-tight">Protocol Ready</span>
+                                        <span className="text-white font-black uppercase">INITIALIZED</span>
+                                    </div>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setSelectedStudent(null)}
-                                className="text-[10px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg"
-                            >
-                                Change
-                            </button>
                         </div>
                     )}
-                </div>
+                </ErpCard>
             </div>
 
-            {/* Right Column: Route Assignment Form */}
-            <div className="space-y-6">
-                <div className={`bg-white p-6 rounded-[32px] border border-zinc-100 shadow-xl shadow-zinc-200/40 transition-opacity duration-300 ${!selectedStudent ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="h-10 w-10 bg-brand/10 text-brand rounded-xl flex items-center justify-center">
-                            <Bus className="h-5 w-5" />
+            {/* Tactical Deployment Matrix */}
+            <div className="space-y-8">
+                <ErpCard noPad className={cn(
+                    "!rounded-[40px] border-zinc-100 shadow-2xl p-10 transition-all duration-700 relative overflow-hidden",
+                    !selectedStudent ? "opacity-30 pointer-events-none grayscale blur-[4px] scale-[0.98]" : "opacity-100 shadow-zinc-200/50"
+                )}>
+                    {!selectedStudent && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center p-12 text-center pointer-events-none">
+                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] leading-relaxed">System Locked: <br /> Waiting for Identity Handshake</p>
                         </div>
-                        <h2 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Assignment Details</h2>
+                    )}
+
+                    <div className="flex items-center gap-4 mb-10">
+                        <div className="h-14 w-14 bg-brand text-zinc-900 rounded-2xl flex items-center justify-center shadow-lg shadow-brand/20 relative">
+                            <Bus className="h-7 w-7" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">Route Calibration</h2>
+                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic opacity-60">Telemetry Stop Synchronization</p>
+                        </div>
                     </div>
 
-                    <div className="space-y-4">
-                        {/* Route Selection */}
-                        <div>
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5 block">Select Route</label>
-                            <select
-                                className="w-full px-4 py-3 rounded-2xl border-2 border-zinc-100 bg-zinc-50 font-bold text-sm uppercase focus:ring-0 focus:border-brand outline-none text-zinc-700"
-                                value={selectedRouteId}
-                                onChange={(e) => {
-                                    setSelectedRouteId(e.target.value);
-                                    setPickupStopId("");
-                                    setDropStopId("");
-                                }}
-                            >
-                                <option value="" disabled>--- CHOOSE ROUTE ---</option>
-                                {initialRoutes.map(route => (
-                                    <option key={route.id} value={route.id}>{route.name}</option>
-                                ))}
-                            </select>
+                    <div className="space-y-8">
+                        {/* Route Strategic Link */}
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2">Mission Corridor</label>
+                            <div className="relative group/select">
+                                <Navigation className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 group-hover/select:text-brand transition-colors z-10" />
+                                <select
+                                    aria-label="Select Route"
+                                    className="w-full bg-zinc-50 border border-zinc-200 pl-14 pr-6 py-5 rounded-[24px] text-sm font-black uppercase outline-none focus:ring-4 focus:ring-brand/5 focus:border-brand text-zinc-900 appearance-none shadow-inner transition-all cursor-pointer"
+                                    value={selectedRouteId}
+                                    onChange={(e) => {
+                                        setSelectedRouteId(e.target.value);
+                                        setPickupStopId("");
+                                        setDropStopId("");
+                                    }}
+                                >
+                                    <option value="" disabled className="text-zinc-400">--- SELECT DEPLOYMENT CORRIDOR ---</option>
+                                    {initialRoutes.map(route => (
+                                        <option key={route.id} value={route.id}>{route.name}</option>
+                                    ))}
+                                </select>
+                                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none border-4 border-transparent border-t-zinc-400" />
+                            </div>
                         </div>
 
-                        {/* Stops Selection */}
+                        {/* Node Synchronization (Stops) */}
                         {selectedRouteId && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5 block flex items-center gap-1">
-                                        <MapPin className="h-3 w-3" /> Pickup Stop
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-4 duration-500">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Pickup Node
                                     </label>
                                     <select
-                                        className="w-full px-4 py-3 rounded-2xl border-2 border-zinc-100 bg-zinc-50 font-bold text-xs uppercase focus:ring-0 focus:border-brand outline-none text-zinc-700"
+                                        aria-label="Select Pickup Stop"
+                                        className="w-full bg-zinc-50 border border-zinc-200 p-5 rounded-[22px] text-[10px] font-black uppercase outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 text-zinc-900 appearance-none transition-all cursor-pointer shadow-sm"
                                         value={pickupStopId}
                                         onChange={(e) => setPickupStopId(e.target.value)}
                                     >
-                                        <option value="" disabled>-- SELECT --</option>
+                                        <option value="" disabled>-- SYNC PICKUP --</option>
                                         {stops.map((stop: any) => (
-                                            <option key={stop.id} value={stop.id}>{stop.name} ({stop.pickupTime})</option>
+                                            <option key={stop.id} value={stop.id}>{stop.name} [{stop.pickupTime}]</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5 block flex items-center gap-1">
-                                        <Navigation className="h-3 w-3" /> Drop Stop
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-brand" /> Drop Node
                                     </label>
                                     <select
-                                        className="w-full px-4 py-3 rounded-2xl border-2 border-zinc-100 bg-zinc-50 font-bold text-xs uppercase focus:ring-0 focus:border-brand outline-none text-zinc-700"
+                                        aria-label="Select Drop Stop"
+                                        className="w-full bg-zinc-50 border border-zinc-200 p-5 rounded-[22px] text-[10px] font-black uppercase outline-none focus:ring-4 focus:ring-brand/5 focus:border-brand text-zinc-900 appearance-none transition-all cursor-pointer shadow-sm"
                                         value={dropStopId}
                                         onChange={(e) => setDropStopId(e.target.value)}
                                     >
-                                        <option value="" disabled>-- SELECT --</option>
+                                        <option value="" disabled>-- SYNC DROP --</option>
                                         {stops.map((stop: any) => (
-                                            <option key={stop.id} value={stop.id}>{stop.name} ({stop.dropTime})</option>
+                                            <option key={stop.id} value={stop.id}>{stop.name} [{stop.dropTime}]</option>
                                         ))}
                                     </select>
                                 </div>
                             </div>
                         )}
 
-                        {/* Fee */}
-                        <div>
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5 block">Monthly Transport Fee (₹)</label>
-                            <input
-                                type="number"
-                                placeholder="0.00"
-                                className="w-full px-4 py-3 rounded-2xl border-2 border-zinc-100 bg-zinc-50 font-bold text-sm uppercase focus:ring-0 focus:border-brand outline-none text-zinc-900"
-                                value={fee}
-                                onChange={(e) => setFee(e.target.value)}
-                            />
+                        {/* Economic Impact (Fee) */}
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-2">Monthly Tariff Calibration (₹)</label>
+                            <div className="relative group/fee">
+                                <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 group-hover/fee:text-emerald-500 transition-colors z-10" />
+                                <input
+                                    aria-label="Monthly Fee"
+                                    type="number"
+                                    placeholder="0.00"
+                                    className="w-full bg-zinc-50 border border-zinc-200 pl-14 pr-6 py-5 rounded-[24px] text-sm font-black uppercase outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 text-zinc-900 shadow-inner transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    value={fee}
+                                    onChange={(e) => setFee(e.target.value)}
+                                />
+                            </div>
                         </div>
 
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSubmitting || !selectedStudent || !selectedRouteId || !pickupStopId || !dropStopId || !fee}
-                            className="w-full py-4 mt-2 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-brand hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-zinc-900"
-                        >
-                            {isSubmitting ? "Processing..." : "Assign Student"}
-                        </button>
+                        <div className="pt-6">
+                            <Btn
+                                fullWidth
+                                size="lg"
+                                variant="primary"
+                                onClick={handleSubmit}
+                                loading={isSubmitting}
+                                disabled={!selectedStudent || !selectedRouteId || !pickupStopId || !dropStopId || !fee}
+                                className="!rounded-[24px] !py-6 shadow-2xl shadow-brand/40 group/btn"
+                                icon={CheckCircle2}
+                            >
+                                <span className="text-[11px] uppercase tracking-[0.2em] font-black">
+                                    {isSubmitting ? "ENROLLING MISSION..." : "STRIKE ENROLLMENT NOW"}
+                                </span>
+                            </Btn>
+                        </div>
                     </div>
-                </div>
+                </ErpCard>
             </div>
         </div>
     );

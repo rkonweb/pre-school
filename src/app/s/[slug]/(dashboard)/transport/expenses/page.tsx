@@ -1,5 +1,3 @@
-'use server';
-
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
@@ -21,6 +19,7 @@ import ExpenseActions from "@/components/transport/ExpenseActions";
 import RealtimeLedgerWrapper from "@/components/transport/RealtimeLedgerWrapper";
 import ExpenseCharts from "@/components/transport/ExpenseCharts";
 import ExpenseSettings from "@/components/transport/ExpenseSettings";
+import { SectionHeader, tableStyles, StatusChip, C } from "@/components/ui/erp-ui";
 
 export default async function TransportExpensesPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -56,21 +55,17 @@ export default async function TransportExpensesPage({ params }: { params: Promis
 
     return (
         <div className="p-6 space-y-8 w-full">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">Expense Monitoring</h1>
-                    <p className="text-zinc-500 mt-1 flex items-center gap-2">
-                        <Wallet className="h-4 w-4 text-brand" />
-                        Unified ledger for fleet maintenance and fuel
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <ExpenseSettings slug={slug} syncEnabled={syncEnabled} />
-                    <ExpenseForm slug={slug} vehicles={vehicles} />
-                </div>
-            </div>
+            <SectionHeader
+                title="Expense Monitoring"
+                subtitle="Unified ledger for fleet maintenance and fuel"
+                icon={<Wallet size={18} color={C.amber} />}
+                action={
+                    <div className="flex items-center gap-3">
+                        <ExpenseSettings slug={slug} syncEnabled={syncEnabled} />
+                        <ExpenseForm slug={slug} vehicles={vehicles} />
+                    </div>
+                }
+            />
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -134,7 +129,7 @@ export default async function TransportExpensesPage({ params }: { params: Promis
             {suspiciousCount > 0 && (
                 <div className="bg-red-600 text-white rounded-2xl p-6 shadow-xl shadow-red-200 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
                     <div className="absolute top-0 right-0 opacity-10 -rotate-12 translate-x-4">
-                        <ShieldAlert className="h-48 w-48" />
+                        <LocalShieldAlert className="h-48 w-48" />
                     </div>
                     <div className="relative z-10">
                         <h2 className="text-xl font-black flex items-center gap-2">
@@ -165,7 +160,7 @@ export default async function TransportExpensesPage({ params }: { params: Promis
                         <div className="flex items-center gap-3">
                             <div className="relative">
                                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                <select className="pl-9 pr-4 py-2 bg-white border border-zinc-200 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-brand">
+                                <select aria-label="Filter status" className="pl-9 pr-4 py-2 bg-white border border-zinc-200 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-brand">
                                     <option>All Status</option>
                                     <option>Pending</option>
                                     <option>Approved</option>
@@ -174,7 +169,7 @@ export default async function TransportExpensesPage({ params }: { params: Promis
                             </div>
                             <div className="relative">
                                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                <select className="pl-9 pr-4 py-2 bg-white border border-zinc-200 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-brand">
+                                <select aria-label="Filter category" className="pl-9 pr-4 py-2 bg-white border border-zinc-200 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-brand">
                                     <option>All Categories</option>
                                     <option>Fuel</option>
                                     <option>Maintenance</option>
@@ -299,7 +294,7 @@ export default async function TransportExpensesPage({ params }: { params: Promis
     );
 }
 
-function ShieldAlert(props: any) {
+function LocalShieldAlert(props: any) {
     return (
         <svg
             {...props}

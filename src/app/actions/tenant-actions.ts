@@ -52,6 +52,7 @@ export async function getTenantsAction(): Promise<Tenant[]> {
             id: school.id,
             name: school.name,
             subdomain: school.slug,
+            customDomain: (school as any).customDomain || undefined,
             brandColor: school.brandColor || "#0F172A",
             adminName: admin ? `${admin.firstName || ''} ${admin.lastName || ''}`.trim() || "Admin" : "No Admin",
             email: admin?.email || admin?.mobile || "N/A",
@@ -115,23 +116,25 @@ export async function createTenantAction(data: CreateTenantInput) {
         const lastName = nameParts.slice(1).join(" ") || "";
 
         // Primary contact number for owner
-        const mobile = data.adminPhone || data.contactPhone || `mock-${Date.now()}`;
+        const mobile = data.adminPhone || data.contactPhone;
+        
+        if (!mobile) {
+            return { success: false, error: "Primary contact phone is required." };
+        }
 
         // Global Phone Uniqueness Check for admin phone
-        if (mobile && !mobile.startsWith('mock-')) {
-            const { validatePhoneUniqueness, validateEmailUniqueness } = await import("./identity-validation");
-            const phoneCheck = await validatePhoneUniqueness(mobile);
-            if (!phoneCheck.isValid) {
-                return { success: false, error: phoneCheck.error };
-            }
+        const { validatePhoneUniqueness, validateEmailUniqueness } = await import("./identity-validation");
+        const phoneCheck = await validatePhoneUniqueness(mobile);
+        if (!phoneCheck.isValid) {
+            return { success: false, error: phoneCheck.error };
+        }
 
-            // Check admin email if provided
-            const adminEmail = data.email || data.contactEmail;
-            if (adminEmail) {
-                const emailCheck = await validateEmailUniqueness(adminEmail);
-                if (!emailCheck.isValid) {
-                    return { success: false, error: emailCheck.error };
-                }
+        // Check admin email if provided
+        const adminEmail = data.email || data.contactEmail;
+        if (adminEmail) {
+            const emailCheck = await validateEmailUniqueness(adminEmail);
+            if (!emailCheck.isValid) {
+                return { success: false, error: emailCheck.error };
             }
         }
 
@@ -154,7 +157,11 @@ export async function createTenantAction(data: CreateTenantInput) {
 
         // Get or Create Subscription Plan (Auto-Seeding)
         let planId = "";
-        const planInput = data.plan || "Growth";
+        const planInput = data.plan;
+
+        if (!planInput) {
+            return { success: false, error: "A subscription plan must be selected." };
+        }
 
         let existingPlan = await prisma.subscriptionPlan.findUnique({
             where: { id: planInput }
@@ -192,6 +199,7 @@ export async function createTenantAction(data: CreateTenantInput) {
                 data: {
                     name: data.name,
                     slug: data.subdomain,
+                    customDomain: data.customDomain,
                     address: data.address,
                     city: data.city,
                     state: data.state,
@@ -218,7 +226,7 @@ export async function createTenantAction(data: CreateTenantInput) {
                     currency: data.currency,
                     timezone: data.timezone,
                     dateFormat: data.dateFormat,
-                    modulesConfig: JSON.stringify(PLAN_FEATURES[data.plan || "Starter"] || [])
+                    modulesConfig: JSON.stringify(PLAN_FEATURES[planInput] || [])
                 }
             });
 
@@ -307,6 +315,7 @@ export async function updateTenantAction(id: string, data: any) {
             // Basic info
             if (rest.name !== undefined) schoolUpdateData.name = rest.name;
             if (rest.subdomain !== undefined) schoolUpdateData.slug = rest.subdomain;
+            if (rest.customDomain !== undefined) schoolUpdateData.customDomain = rest.customDomain;
             if (rest.brandColor !== undefined) schoolUpdateData.brandColor = rest.brandColor;
             if (rest.website !== undefined) schoolUpdateData.website = rest.website;
             if (rest.motto !== undefined) schoolUpdateData.motto = rest.motto;
@@ -436,6 +445,7 @@ export async function getTenantByIdAction(id: string): Promise<Tenant | undefine
             id: school.id,
             name: school.name,
             subdomain: school.slug,
+            customDomain: (school as any).customDomain || undefined,
             brandColor: school.brandColor || "#0F172A",
             adminName: admin ? `${admin.firstName || ''} ${admin.lastName || ''}`.trim() || "Admin" : "No Admin",
             email: admin?.email || admin?.mobile || "N/A",

@@ -106,7 +106,7 @@ export default function VehiclesPage() {
 
         if (!confirmed) return;
 
-        const res = await deleteVehicleAction(id, slug);
+        const res = await deleteVehicleAction(slug, id);
         if (res.success) {
             toast.success("Vehicle removed from fleet");
             fetchVehicles();
@@ -215,7 +215,7 @@ export default function VehiclesPage() {
             </div>
 
             {/* Asset Matrix */}
-            <div style={tableStyles.container}>
+            <div className={cn(tableStyles.container, "bg-white overflow-hidden shadow-xl shadow-zinc-200/40")}>
                 {loading ? (
                     <div className="flex h-[40vh] items-center justify-center flex-col gap-4">
                         <Loader2 className="h-8 w-8 animate-spin text-brand" />
@@ -223,48 +223,49 @@ export default function VehiclesPage() {
                     </div>
                 ) : filteredVehicles.length === 0 ? (
                     <div className="py-24 text-center">
-                        <div className="mx-auto h-20 w-20 rounded-[24px] bg-zinc-50 flex items-center justify-center mb-6 dark:bg-zinc-900">
+                        <div className="mx-auto h-20 w-20 rounded-[32px] bg-zinc-50 flex items-center justify-center mb-6">
                             <Bus className="h-8 w-8 text-zinc-200" />
                         </div>
-                        <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight dark:text-zinc-50">No Vehicles Found</h3>
-                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2 max-w-xs mx-auto leading-relaxed">Add your first vehicle to start managing the fleet.</p>
+                        <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">No Vehicles Found</h3>
+                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2 max-w-xs mx-auto leading-relaxed italic spacing-wider">Add your first vehicle to start managing the fleet.</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                            <thead style={tableStyles.thead}>
-                                <tr>
-                                    <th style={{ ...tableStyles.thNoSort, width: "5rem", textAlign: "center" }}>Actions</th>
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr className="bg-zinc-50/50 border-b border-zinc-100">
+                                    <th className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-center w-20">Actions</th>
                                     {columns.map(col => {
                                         if (!visibleColumns[col.id]) return null;
-                                        return <th key={col.id} style={tableStyles.thNoSort as any}>{col.label}</th>;
+                                        return (
+                                            <th key={col.id} className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-left">
+                                                {col.label}
+                                            </th>
+                                        );
                                     })}
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredVehicles.map((vehicle, i) => {
                                     const complianceStatus = [
-                                        getExpiryStatus(vehicle.insuranceExpiry),
-                                        getExpiryStatus(vehicle.pollutionExpiry),
-                                        getExpiryStatus(vehicle.fitnessExpiry),
-                                        getExpiryStatus(vehicle.permitExpiry)
+                                        { s: getExpiryStatus(vehicle.insuranceExpiry), label: 'INS' },
+                                        { s: getExpiryStatus(vehicle.pollutionExpiry), label: 'POL' },
+                                        { s: getExpiryStatus(vehicle.fitnessExpiry), label: 'FIT' },
+                                        { s: getExpiryStatus(vehicle.permitExpiry), label: 'PRM' }
                                     ];
 
-                                    const isCritical = complianceStatus.some(s => s === "EXPIRED");
+                                    const isCritical = complianceStatus.some(item => item.s === "EXPIRED");
 
                                     return (
                                         <tr
                                             key={vehicle.id}
-                                            className="group"
-                                            style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
-                                            onMouseEnter={e => {
-                                                (e.currentTarget).style.background = "#FFFBEB";
-                                            }}
-                                            onMouseLeave={e => {
-                                                (e.currentTarget).style.background = i % 2 === 0 ? "white" : "#F9FAFB";
-                                            }}
+                                            className={cn(
+                                                "group transition-all duration-200 border-b border-zinc-50 last:border-0",
+                                                i % 2 === 0 ? "bg-white" : "bg-zinc-50/20",
+                                                "hover:bg-amber-50/50"
+                                            )}
                                         >
-                                            <td style={{ ...tableStyles.td, textAlign: "center" }}>
+                                            <td className="px-6 py-4 text-center">
                                                 <RowActions
                                                     onView={`/s/${slug}/transport/fleet/vehicles/${vehicle.id}`}
                                                     viewTooltip="View Vehicle Details"
@@ -277,55 +278,55 @@ export default function VehiclesPage() {
                                                 if (!visibleColumns[col.id]) return null;
 
                                                 if (col.id === 'info') return (
-                                                    <td key={col.id} style={tableStyles.td}>
+                                                    <td key={col.id} className="px-6 py-4">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                                                            <div className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 border border-zinc-200/50 shadow-sm shrink-0">
                                                                 <Bus className="h-5 w-5" />
                                                             </div>
                                                             <div>
-                                                                <div className="font-semibold text-zinc-900 whitespace-nowrap">
+                                                                <div className="font-black text-zinc-900 whitespace-nowrap uppercase tracking-tight text-sm leading-tight">
                                                                     {vehicle.registrationNumber}
                                                                 </div>
-                                                                <div className="text-[13px] text-zinc-500 whitespace-nowrap">
-                                                                    {vehicle.model || "Normal"}
+                                                                <div className="text-[10px] font-bold text-zinc-400 whitespace-nowrap uppercase tracking-widest mt-1">
+                                                                    {vehicle.model || "Standard"}
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                 );
                                                 if (col.id === 'capacity') return (
-                                                    <td key={col.id} style={tableStyles.td}>
-                                                        <div className="text-sm font-semibold text-zinc-900 whitespace-nowrap">{vehicle.capacity} Seats</div>
+                                                    <td key={col.id} className="px-6 py-4">
+                                                        <div className="text-xs font-black text-zinc-900 whitespace-nowrap uppercase tracking-widest">{vehicle.capacity} Seats</div>
                                                     </td>
                                                 );
                                                 if (col.id === 'status') return (
-                                                    <td key={col.id} style={tableStyles.td}>
+                                                    <td key={col.id} className="px-6 py-4">
                                                         <StatusChip
                                                             label={isCritical ? "Issue Found" : "Ready"}
                                                         />
                                                     </td>
                                                 );
                                                 if (col.id === 'documents') return (
-                                                    <td key={col.id} style={tableStyles.td}>
+                                                    <td key={col.id} className="px-6 py-4">
                                                         <div className="flex flex-col gap-2">
                                                             <div className="flex gap-1.5">
-                                                                {complianceStatus.map((s, idx) => (
+                                                                {complianceStatus.map((item, idx) => (
                                                                     <div
                                                                         key={idx}
                                                                         className={cn(
-                                                                            "h-2 w-6 rounded-full shadow-inner ring-1 ring-inset ring-black/5 shrink-0",
-                                                                            s === "VALID" ? "bg-emerald-400" :
-                                                                                s === "EXPIRING_SOON" ? "bg-amber-400" :
+                                                                            "h-1.5 w-6 rounded-full shadow-inner ring-1 ring-inset ring-black/5 shrink-0",
+                                                                            item.s === "VALID" ? "bg-emerald-400" :
+                                                                                item.s === "EXPIRING_SOON" ? "bg-amber-400" :
                                                                                     "bg-red-500"
                                                                         )}
-                                                                        title={s}
+                                                                        title={`${item.label}: ${item.s}`}
                                                                     />
                                                                 ))}
                                                             </div>
                                                             {vehicle.documents && JSON.parse(vehicle.documents).length > 0 && (
-                                                                <div className="flex items-center gap-1.5 text-xs font-semibold text-brand whitespace-nowrap">
-                                                                    <FileText className="h-4 w-4" />
-                                                                    +{JSON.parse(vehicle.documents).length} Other(s)
+                                                                <div className="flex items-center gap-1.5 text-[9px] font-black text-brand whitespace-nowrap uppercase tracking-widest">
+                                                                    <FileText className="h-3 w-3" />
+                                                                    +{JSON.parse(vehicle.documents).length} Additional
                                                                 </div>
                                                             )}
                                                         </div>

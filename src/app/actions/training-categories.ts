@@ -1,6 +1,6 @@
 "use server";
 
-import { trainingPrisma as prisma } from "@/lib/training-prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function testAction() {

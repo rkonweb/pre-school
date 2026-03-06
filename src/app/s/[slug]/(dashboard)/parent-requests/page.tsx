@@ -6,6 +6,8 @@ import { Inbox, CheckCircle, Clock, XCircle, MessageSquare } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+import { getParentRequestsAction, updateParentRequestStatusAction } from "@/app/actions/parent-request-actions";
+
 const STATUS_COLORS: Record<string, string> = {
     PENDING: "bg-amber-100 text-amber-700",
     IN_REVIEW: "bg-blue-100 text-blue-700",
@@ -43,19 +45,12 @@ export default function ParentRequestsPage() {
     async function loadRequests() {
         setIsLoading(true);
         try {
-            const { prisma } = await import("@/lib/prisma");
-            const school = await prisma.school.findUnique({ where: { slug }, select: { id: true } });
-            if (!school) return;
-
-            const data = await prisma.parentRequest.findMany({
-                where: { schoolId: school.id },
-                orderBy: { createdAt: "desc" },
-                take: 50,
-                include: {
-                    student: { select: { firstName: true, lastName: true, admissionNumber: true } },
-                }
-            });
-            setRequests(data);
+            const res = await getParentRequestsAction(slug);
+            if (res.success) {
+                setRequests(res.data);
+            } else {
+                toast.error(res.error);
+            }
         } catch (err) {
             console.error(err);
         } finally {
@@ -65,18 +60,15 @@ export default function ParentRequestsPage() {
 
     async function handleRespond(requestId: string, status: "RESOLVED" | "REJECTED" | "IN_REVIEW") {
         try {
-            const { prisma } = await import("@/lib/prisma");
-            await prisma.parentRequest.update({
-                where: { id: requestId },
-                data: {
-                    status,
-                    responseNote: responseNote || undefined,
-                },
-            });
-            toast.success(`Request marked as ${status.toLowerCase().replace("_", " ")}`);
-            setRespondingTo(null);
-            setResponseNote("");
-            loadRequests();
+            const res = await updateParentRequestStatusAction(slug, requestId, status, responseNote);
+            if (res.success) {
+                toast.success(`Request marked as ${status.toLowerCase().replace("_", " ")}`);
+                setRespondingTo(null);
+                setResponseNote("");
+                loadRequests();
+            } else {
+                toast.error(res.error);
+            }
         } catch (err) {
             toast.error("Failed to update request");
         }

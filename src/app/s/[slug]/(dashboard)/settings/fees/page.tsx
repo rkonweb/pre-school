@@ -6,10 +6,9 @@ import { getFeeStructuresAction } from "@/app/actions/fee-settings-actions";
 import { getSchoolSettingsAction } from "@/app/actions/settings-actions";
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { FeeStructureManager } from "@/components/dashboard/settings/FeeStructureManager";
-import { Loader2 } from "lucide-react";
-
+import { SettingsPageHeader, SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
 import { getAcademicYearsAction, getCurrentAcademicYearAction } from "@/app/actions/academic-year-actions";
-import { DashboardLoader } from "@/components/ui/DashboardLoader";
+import { CreditCard } from "lucide-react";
 
 export default function FeeSettingsPage() {
     const params = useParams();
@@ -21,9 +20,7 @@ export default function FeeSettingsPage() {
     const [academicYears, setAcademicYears] = useState<any[]>([]);
     const [currentYear, setCurrentYear] = useState<any>(null);
 
-    useEffect(() => {
-        load();
-    }, [slug]);
+    useEffect(() => { load(); }, [slug]);
 
     async function load() {
         setIsLoading(true);
@@ -34,55 +31,36 @@ export default function FeeSettingsPage() {
             getAcademicYearsAction(slug),
             getCurrentAcademicYearAction(slug)
         ]);
-
-        if (structuresRes.success) {
-            setStructures(structuresRes.data || []);
-        }
-        if (schoolRes.success) {
-            setSchool(schoolRes.data);
-        }
-        if (classesRes.success) {
-            setClassrooms(classesRes.data || []);
-        }
-        if (yearsRes.success) {
-            setAcademicYears(yearsRes.data || []);
-        }
-        if (currentYearRes.success) {
-            setCurrentYear(currentYearRes.data);
-        }
-
+        if (structuresRes.success) setStructures(structuresRes.data || []);
+        if (schoolRes.success) setSchool(schoolRes.data);
+        if (classesRes.success) setClassrooms(classesRes.data || []);
+        if (yearsRes.success) setAcademicYears(yearsRes.data || []);
+        if (currentYearRes.success) setCurrentYear(currentYearRes.data);
         setIsLoading(false);
     }
 
-    if (isLoading) return (
-        <div className="flex-1 flex items-center justify-center min-h-[400px]">
-            <DashboardLoader message="Loading fee configuration..." />
-        </div>
-    );
+    if (isLoading) return <SettingsLoader message="Loading fee configuration..." />;
 
     return (
-        <div className="flex flex-col gap-6 pb-20">
-            {/* Page Header */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                        Fee Configuration
-                    </h1>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Configure automated incentives, late thresholds, and salary rules.
-                    </p>
-                </div>
-            </div>
-
-            <FeeStructureManager
-                slug={slug}
-                initialData={structures}
-                classrooms={classrooms}
-                onRefresh={load}
-                currency={school?.currency}
-                academicYears={academicYears}
-                currentAcademicYear={currentYear}
+        <div style={{ animation: "fadeUp 0.45s ease both" }}>
+            <SettingsPageHeader
+                icon={CreditCard}
+                title="Fee Structure"
+                description="Configure automated incentives, late thresholds, and class-wise fee rules."
+                color="#8B5CF6"
+                bg="#EDE9FE"
             />
+            <div style={{ background: "white", borderRadius: 20, padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)", border: "1px solid #F3F4F6" }}>
+                <FeeStructureManager
+                    slug={slug}
+                    initialData={structures}
+                    classrooms={classrooms}
+                    onRefresh={load}
+                    currency={school?.currency}
+                    academicYears={academicYears}
+                    currentAcademicYear={currentYear}
+                />
+            </div>
         </div>
     );
 }

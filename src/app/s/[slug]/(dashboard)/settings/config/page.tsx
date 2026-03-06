@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getSchoolSettingsAction } from "@/app/actions/settings-actions";
 import { RegionalConfig } from "@/components/dashboard/settings/RegionalConfig";
-import { Loader2 } from "lucide-react";
+import { SettingsPageHeader, SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
+import { Globe } from "lucide-react";
 
 export default function ConfigSettingsPage() {
     const params = useParams();
@@ -15,18 +16,26 @@ export default function ConfigSettingsPage() {
     useEffect(() => {
         async function load() {
             const res = await getSchoolSettingsAction(slug);
-            console.log("DEBUG: ConfigSettingsPage load success:", res.success);
             if (res.success) setSchoolData(res.data);
             setIsLoading(false);
         }
         load();
     }, [slug]);
 
-    if (isLoading) return (
-        <div className="flex-1 flex items-center justify-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin text-zinc-300" />
+    if (isLoading) return <SettingsLoader message="Loading configuration..." />;
+
+    return (
+        <div style={{ animation: "fadeUp 0.45s ease both" }}>
+            <SettingsPageHeader
+                icon={Globe}
+                title="Regional Configuration"
+                description="Configure language, timezone, currency and regional settings."
+                color="#1E1B4B"
+                bg="#EDE9FE"
+            />
+            <div style={{ background: "white", borderRadius: 20, padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)", border: "1px solid #F3F4F6" }}>
+                <RegionalConfig slug={slug} initialData={schoolData} />
+            </div>
         </div>
     );
-
-    return <RegionalConfig slug={slug} initialData={schoolData} />;
 }

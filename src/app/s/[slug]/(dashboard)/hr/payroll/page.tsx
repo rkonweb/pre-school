@@ -44,6 +44,7 @@ import {
     getSchoolDetailsAction
 } from "@/app/actions/payroll-actions";
 import { SlideOver } from "@/components/ui/SlideOver";
+import { SectionHeader } from "@/components/ui/erp-ui";
 
 type ViewState = "LIST" | "DETAILS";
 
@@ -175,60 +176,39 @@ export default function PayrollPage() {
     };
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-[1600px] mx-auto">
-            {/* Header */}
-            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase italic flex items-center gap-3">
-                        Staff <span className="text-emerald-600">Payroll</span>
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse hidden md:block" />
-                    </h1>
-                    <p className="text-zinc-500 font-medium mt-1">Manage institutional finance, salary disbursements and tax tracking.</p>
-                </div>
-
-                {view === "LIST" ? (
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-2 rounded-2xl shadow-sm ring-4 ring-zinc-500/5">
-                            <select
-                                value={genMonth}
-                                title="Select Month"
-                                onChange={(e) => setGenMonth(Number(e.target.value))}
-                                className="bg-transparent text-xs font-black px-3 focus:outline-none appearance-none cursor-pointer uppercase tracking-widest text-zinc-600 dark:text-zinc-400"
-                            >
-                                {Array.from({ length: 12 }, (_, i) => (
-                                    <option key={i + 1} value={i + 1}>{format(new Date(2024, i), "MMMM")}</option>
-                                ))}
-                            </select>
-                            <div className="w-[1px] h-4 bg-zinc-200 dark:bg-zinc-800" />
-                            <select
-                                value={genYear}
-                                title="Select Year"
-                                onChange={(e) => setGenYear(Number(e.target.value))}
-                                className="bg-transparent text-xs font-black px-3 focus:outline-none appearance-none cursor-pointer uppercase tracking-widest text-zinc-600 dark:text-zinc-400"
-                            >
-                                <option value={2026}>2026</option>
-                                <option value={2025}>2025</option>
-                            </select>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 80 }}>
+            <SectionHeader
+                title="Staff Payroll"
+                subtitle="Manage institutional finance, salary disbursements and tax tracking."
+                icon={Banknote}
+                action={
+                    view === "LIST" ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "white", border: "1.5px solid #E5E7EB", borderRadius: 14, padding: "8px 14px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                                <select value={genMonth} title="Select Month" onChange={(e) => setGenMonth(Number(e.target.value))}
+                                    style={{ background: "transparent", fontSize: 12, fontWeight: 700, border: "none", outline: "none", cursor: "pointer", textTransform: "uppercase", color: "#374151" }}>
+                                    {Array.from({ length: 12 }, (_, i) => (<option key={i + 1} value={i + 1}>{format(new Date(2024, i), "MMMM")}</option>))}
+                                </select>
+                                <div style={{ width: 1, height: 16, background: "#E5E7EB" }} />
+                                <select value={genYear} title="Select Year" onChange={(e) => setGenYear(Number(e.target.value))}
+                                    style={{ background: "transparent", fontSize: 12, fontWeight: 700, border: "none", outline: "none", cursor: "pointer", color: "#374151" }}>
+                                    <option value={2026}>2026</option><option value={2025}>2025</option>
+                                </select>
+                            </div>
+                            <button onClick={handleGenerate} disabled={isGenerating}
+                                style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 20px", borderRadius: 12, background: "linear-gradient(135deg,#059669,#047857)", color: "white", border: "none", cursor: isGenerating ? "not-allowed" : "pointer", fontWeight: 800, fontSize: 13, opacity: isGenerating ? 0.7 : 1, boxShadow: "0 4px 16px rgba(5,150,105,0.3)" }}>
+                                {isGenerating ? <Clock className="h-4 w-4" style={{ animation: "spin 1s linear infinite" }} /> : <Plus className="h-4 w-4" />}
+                                Run Payroll Engine
+                            </button>
                         </div>
-                        <button
-                            onClick={handleGenerate}
-                            disabled={isGenerating}
-                            className="bg-brand dark:bg-zinc-50 text-[var(--secondary-color)] dark:text-zinc-900 px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-2xl shadow-brand/20 transition-all hover:-translate-y-1 hover:brightness-110 active:scale-95 disabled:opacity-50"
-                        >
-                            {isGenerating ? <Clock className="h-4 w-4 animate-spin text-emerald-500" /> : <Plus className="h-4 w-4" />}
-                            Run Payroll Engine
+                    ) : (
+                        <button onClick={() => setView("LIST")}
+                            style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 16px", borderRadius: 12, background: "white", border: "1.5px solid #E5E7EB", cursor: "pointer", fontWeight: 700, fontSize: 13, color: "#374151" }}>
+                            <ArrowLeft className="h-4 w-4" /> Return to Archives
                         </button>
-                    </div>
-                ) : (
-                    <button
-                        onClick={() => setView("LIST")}
-                        className="bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 shadow-sm"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        Return to Archives
-                    </button>
-                )}
-            </div>
+                    )
+                }
+            />
 
             {view === "LIST" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

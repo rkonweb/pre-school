@@ -151,6 +151,7 @@ export default function OnboardSchoolPage() {
         // Identity
         schoolName: "",
         subdomain: "",
+        customDomain: "",
         brandColor: "#2563eb",
         website: "",
         motto: "",
@@ -265,6 +266,7 @@ export default function OnboardSchoolPage() {
             const result = await createTenantAction({
                 name: formData.schoolName,
                 subdomain: formData.subdomain,
+                customDomain: formData.customDomain,
                 brandColor: formData.brandColor,
                 website: formData.website,
                 motto: formData.motto,
@@ -398,7 +400,7 @@ export default function OnboardSchoolPage() {
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-zinc-500 uppercase">
-                                            Domain Prefix <span className="text-red-500">*</span>
+                                            Domain Prefix (Slug) <span className="text-red-500">*</span>
                                         </label>
                                         <div className="flex rounded-xl border border-zinc-200 bg-zinc-50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-600 transition-all">
                                             <input
@@ -412,6 +414,20 @@ export default function OnboardSchoolPage() {
                                                 .preschool-erp.com
                                             </div>
                                         </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-zinc-500 uppercase">Custom Domain</label>
+                                        <div className="relative">
+                                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                                            <input
+                                                type="text"
+                                                value={formData.customDomain}
+                                                onChange={e => setFormData({ ...formData, customDomain: e.target.value })}
+                                                placeholder="erp.school.com"
+                                                className="w-full rounded-xl border-zinc-200 bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600 transition-all"
+                                            />
+                                        </div>
+                                        <p className="text-[10px] text-zinc-400">Requires CNAME configuration to point to app domain.</p>
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-zinc-500 uppercase">Public Website</label>
@@ -462,6 +478,9 @@ export default function OnboardSchoolPage() {
                                         <div className="flex items-center gap-4 p-4 rounded-xl border border-zinc-100 bg-zinc-50/50">
                                             <input
                                                 type="color"
+                                                id="brandColor"
+                                                name="brandColor"
+                                                title="Brand Color"
                                                 value={formData.brandColor}
                                                 onChange={e => setFormData({ ...formData, brandColor: e.target.value })}
                                                 className="h-12 w-16 rounded cursor-pointer border-0 bg-transparent p-0"
@@ -551,9 +570,12 @@ export default function OnboardSchoolPage() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-zinc-500 uppercase">City</label>
+                                            <label htmlFor="city" className="text-xs font-bold text-zinc-500 uppercase">City</label>
                                             <input
+                                                id="city"
                                                 type="text"
+                                                title="City"
+                                                placeholder="Enter City"
                                                 value={formData.city}
                                                 onChange={e => setFormData({ ...formData, city: e.target.value })}
                                                 className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600"
@@ -571,19 +593,24 @@ export default function OnboardSchoolPage() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-zinc-500 uppercase">Zip / Postal Code</label>
+                                            <label htmlFor="zip" className="text-xs font-bold text-zinc-500 uppercase">Zip / Postal Code</label>
                                             <input
+                                                id="zip"
                                                 type="text"
+                                                title="Zip Code"
+                                                placeholder="Enter Zip Code"
                                                 value={formData.zip}
                                                 onChange={e => setFormData({ ...formData, zip: e.target.value })}
                                                 className="w-full rounded-xl border-zinc-200 bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-zinc-500 uppercase">
+                                            <label htmlFor="country" className="text-xs font-bold text-zinc-500 uppercase">
                                                 Country <span className="text-red-500">*</span>
                                             </label>
                                             <select
+                                                id="country"
+                                                title="Country"
                                                 value={formData.country}
                                                 onChange={e => handleCountryChange(e.target.value)}
                                                 required

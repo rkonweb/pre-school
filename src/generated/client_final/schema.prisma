@@ -99,6 +99,13 @@ model School {
   users                   User[]
   whatsappTemplates       WhatsAppTemplate[]
   hostels                 Hostel[]
+  canteenPackages         CanteenPackage[]
+  canteenItems            CanteenItem[]
+  canteenMenuPlans        CanteenMenuPlan[]
+  canteenSubscriptions    CanteenSubscription[]
+  studentWallets          StudentWallet[]
+  canteenGstType          String?
+  canteenCommonGst        Float?                  @default(0)
 }
 
 model AcademicYear {
@@ -459,6 +466,9 @@ model Student {
   portfolioEntries      PortfolioEntry[]
   reports               ReportCard[]
   skillAssessments      SkillAssessment[]
+  canteenOrders         CanteenOrder[]
+  canteenSubscriptions  CanteenSubscription[]
+  canteenWallet         StudentWallet?
   branch                Branch?                  @relation(fields: [branchId], references: [id])
   classroom             Classroom?               @relation("CurrentClass", fields: [classroomId], references: [id])
   promotedToClassroom   Classroom?               @relation("PromotedClass", fields: [promotedToClassroomId], references: [id])
@@ -1689,69 +1699,69 @@ model PricingPageContent {
 }
 
 model TrainingAttachment {
-  id           String       @id
-  pageId       String
-  name         String
-  url          String
-  size         Int          @default(0)
-  type         String       @default("file")
-  createdAt    DateTime     @default(now())
-  TrainingPage TrainingPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  id        String       @id
+  pageId    String
+  name      String
+  url       String
+  size      Int          @default(0)
+  type      String       @default("file")
+  createdAt DateTime     @default(now())
+  page      TrainingPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
 
   @@index([pageId])
 }
 
 model TrainingCategory {
-  id             String           @id
-  name           String           @unique
-  slug           String           @unique
-  description    String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime
-  TrainingModule TrainingModule[]
+  id          String           @id
+  name        String           @unique
+  slug        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime
+  modules     TrainingModule[]
 }
 
 model TrainingModule {
-  id               String            @id
-  title            String
-  description      String?
-  cover            String?
-  role             String            @default("TEACHER")
-  categoryId       String?
-  isPublished      Boolean           @default(false)
-  slug             String            @unique
-  order            Int               @default(0)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime
-  TrainingCategory TrainingCategory? @relation(fields: [categoryId], references: [id])
-  TrainingTopic    TrainingTopic[]
+  id          String            @id
+  title       String
+  description String?
+  cover       String?
+  role        String            @default("TEACHER")
+  categoryId  String?
+  isPublished Boolean           @default(false)
+  slug        String            @unique
+  order       Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime
+  category    TrainingCategory? @relation(fields: [categoryId], references: [id])
+  topics      TrainingTopic[]
 }
 
 model TrainingPage {
-  id                 String               @id
-  topicId            String
-  title              String
-  content            String
-  order              Int                  @default(0)
-  isPublished        Boolean              @default(false)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime
-  TrainingAttachment TrainingAttachment[]
-  TrainingTopic      TrainingTopic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  id          String               @id
+  topicId     String
+  title       String
+  content     String
+  order       Int                  @default(0)
+  isPublished Boolean              @default(false)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime
+  attachments TrainingAttachment[]
+  topic       TrainingTopic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
   @@index([topicId])
 }
 
 model TrainingTopic {
-  id             String         @id
-  moduleId       String
-  title          String
-  description    String?
-  order          Int            @default(0)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime
-  TrainingPage   TrainingPage[]
-  TrainingModule TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  id          String         @id
+  moduleId    String
+  title       String
+  description String?
+  order       Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime
+  pages       TrainingPage[]
+  module      TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   @@index([moduleId])
 }
@@ -2606,4 +2616,158 @@ model HostelAllocation {
 
   @@index([studentId])
   @@index([roomId])
+}
+
+// ==========================================
+// CANTEEN MODULE
+// ==========================================
+
+model CanteenPackage {
+  id            String                @id @default(cuid())
+  name          String
+  description   String?
+  includedMeals String
+  monthlyFee    Float
+  yearlyFee     Float
+  packageType   String
+  isActive      Boolean               @default(true)
+  schoolId      String
+  school        School                @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  subscriptions CanteenSubscription[]
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@index([schoolId])
+}
+
+model CanteenItem {
+  id            String             @id @default(cuid())
+  name          String
+  description   String?
+  category      String             @default("[]")
+  mealType      String
+  dietType      String?
+  price         Float
+  isAddOn       Boolean            @default(false)
+  foodCategory  String?
+  gstPercentage Float?             @default(0)
+  hsnCode       String?
+  isAvailable   Boolean            @default(true)
+  schoolId      String
+  school        School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  orderItems    CanteenOrderItem[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([schoolId])
+}
+
+model CanteenMenuPlan {
+  id             String   @id @default(cuid())
+  schoolId       String
+  dayOfWeek      Int
+  mealType       String
+  items          String   @default("[]")
+  isSpecial      Boolean  @default(false)
+  specialDetails String?
+  school         School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([schoolId, dayOfWeek, mealType])
+}
+
+model CanteenSubscription {
+  id           String         @id @default(cuid())
+  studentId    String
+  packageId    String
+  billingCycle String
+  feeAmount    Float
+  startDate    DateTime       @default(now())
+  endDate      DateTime?
+  status       String         @default("ACTIVE")
+  schoolId     String
+  school       School         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  student      Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  package      CanteenPackage @relation(fields: [packageId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([schoolId])
+  @@index([studentId])
+}
+
+model StudentWallet {
+  id           String              @id @default(cuid())
+  studentId    String              @unique
+  schoolId     String
+  balance      Float               @default(0)
+  school       School              @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  student      Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([schoolId])
+}
+
+model WalletTransaction {
+  id             String        @id @default(cuid())
+  walletId       String
+  type           String
+  amount         Float
+  reason         String
+  description    String?
+  canteenOrderId String?
+  wallet         StudentWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  canteenOrder   CanteenOrder? @relation(fields: [canteenOrderId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([walletId])
+}
+
+model CanteenOrder {
+  id             String              @id @default(cuid())
+  studentId      String
+  totalAmount    Float
+  subtotal       Float
+  taxAmount      Float               @default(0)
+  paymentMethod  String
+  subscriptionId String?
+  notes          String?
+  status         String              @default("COMPLETED")
+  orderDate      DateTime            @default(now())
+  student        Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  orderItems     CanteenOrderItem[]
+  transactions   WalletTransaction[]
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([studentId])
+  @@index([orderDate])
+}
+
+model CanteenOrderItem {
+  id        String       @id @default(cuid())
+  orderId   String
+  itemId    String
+  quantity  Int
+  price     Float
+  taxAmount Float        @default(0)
+  hsnCode   String?
+  item      CanteenItem  @relation(fields: [itemId], references: [id])
+  order     CanteenOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([itemId])
+}
+
+model FoodCategory {
+  id        String   @id @default(cuid())
+  name      String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { trainingPrisma as prisma } from "@/lib/training-prisma";
+import { prisma } from "@/lib/prisma";
 import { uploadToGoogleDriveNested } from "@/lib/google-drive-upload";
 
 export async function POST(req: NextRequest) {

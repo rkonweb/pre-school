@@ -58,7 +58,7 @@ const BS: Record<string, { p: string; fs: number; r: number }> = {
 interface BtnProps {
     variant?: keyof typeof BV;
     size?: keyof typeof BS;
-    icon?: LucideIcon;
+    icon?: any;
     iconPos?: "left" | "right";
     loading?: boolean;
     disabled?: boolean;
@@ -71,9 +71,10 @@ interface BtnProps {
 }
 
 export const Btn = ({
-    variant = "primary", size = "md", icon: Icon, iconPos = "left",
+    variant = "primary", size = "md", icon, iconPos = "left",
     loading, disabled, children, onClick, fullWidth, type = "button", title, className
 }: BtnProps) => {
+    const Icon = icon as any;
     const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
     const ref = useRef<HTMLButtonElement>(null);
     const v = BV[variant] ?? BV.primary;
@@ -92,44 +93,44 @@ export const Btn = ({
     };
 
     return (
-        <button
-            ref={ref} type={type} disabled={!!dis} onClick={handleClick} title={title}
-            className={className}
-            onMouseEnter={e => { if (!dis) { (e.currentTarget).style.filter = "brightness(1.08)"; (e.currentTarget).style.transform = "translateY(-2px) scale(1.03)"; } }}
-            onMouseLeave={e => { (e.currentTarget).style.filter = "none"; (e.currentTarget).style.transform = "scale(1)"; }}
-            style={{
-                background: dis ? C.g100 : v.bg,
-                color: dis ? C.g400 : v.color,
-                border: v.border ?? "none",
-                borderRadius: s.r,
-                padding: s.p,
-                fontSize: s.fs,
-                fontWeight: 700,
-                cursor: dis ? "not-allowed" : "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 7,
-                boxShadow: dis ? "none" : v.sh,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                width: fullWidth ? "100%" : "auto",
-                transition: `all 0.4s ${C.spring}, filter 0.15s`,
-                opacity: dis ? 0.55 : 1,
-                letterSpacing: 0.2,
-                position: "relative",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-            }}
-        >
-            {ripples.map(rp => (
-                <span key={rp.id} style={{ position: "absolute", left: rp.x, top: rp.y, width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.5)", animation: "ripple 0.6s ease forwards", marginLeft: -4, marginTop: -4, pointerEvents: "none" }} />
-            ))}
-            {loading
-                ? <Loader2 style={{ width: s.fs, height: s.fs, animation: "spin 0.7s linear infinite" }} />
-                : (Icon && iconPos === "left" ? <Icon size={s.fs - 1} strokeWidth={2.2} /> : null)}
-            {children}
-            {!loading && Icon && iconPos === "right" && <Icon size={s.fs - 1} strokeWidth={2.2} />}
-        </button>
+        <>
+            <style>{`.erp-btn:not(:disabled):hover{filter:brightness(1.08);transform:translateY(-2px) scale(1.03)}.erp-btn{transition:filter 0.15s,transform 0.4s cubic-bezier(0.34,1.56,0.64,1)}`}</style>
+            <button
+                ref={ref} type={type} disabled={!!dis} onClick={handleClick} title={title}
+                className={`erp-btn${className ? ` ${className}` : ""}`}
+                style={{
+                    background: dis ? C.g100 : v.bg,
+                    color: dis ? C.g400 : v.color,
+                    border: v.border ?? "none",
+                    borderRadius: s.r,
+                    padding: s.p,
+                    fontSize: s.fs,
+                    fontWeight: 700,
+                    cursor: dis ? "not-allowed" : "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 7,
+                    boxShadow: dis ? "none" : v.sh,
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    width: fullWidth ? "100%" : "auto",
+                    opacity: dis ? 0.55 : 1,
+                    letterSpacing: 0.2,
+                    position: "relative",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                }}
+            >
+                {ripples.map(rp => (
+                    <span key={rp.id} style={{ position: "absolute", left: rp.x, top: rp.y, width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.5)", animation: "ripple 0.6s ease forwards", marginLeft: -4, marginTop: -4, pointerEvents: "none" }} />
+                ))}
+                {loading
+                    ? <Loader2 style={{ width: s.fs, height: s.fs, animation: "spin 0.7s linear infinite" }} />
+                    : (icon && iconPos === "left" ? (typeof icon === 'function' || (typeof icon === 'object' && 'render' in icon) ? <Icon size={s.fs - 1} strokeWidth={2.2} /> : icon) : null)}
+                {children}
+                {!loading && icon && iconPos === "right" && (typeof icon === 'function' || (typeof icon === 'object' && 'render' in icon) ? <Icon size={s.fs - 1} strokeWidth={2.2} /> : icon)}
+            </button>
+        </>
     );
 };
 
@@ -255,7 +256,7 @@ export const ErpCard = ({ children, className, style, noPad, hover }: ErpCardPro
 
 // ─── SECTION HEADER ────────────────────────────────────────
 interface SectionHeaderProps {
-    icon?: LucideIcon;
+    icon?: any;
     title: string;
     subtitle?: string;
     color?: string;
@@ -263,27 +264,38 @@ interface SectionHeaderProps {
     action?: React.ReactNode;
 }
 
-export const SectionHeader = ({ icon: Icon, title, subtitle, color = C.amber, badge, action }: SectionHeaderProps) => (
-    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {Icon && (
-                <div style={{ background: `${color}20`, borderRadius: 10, padding: "7px 8px", display: "flex", flexShrink: 0 }}>
-                    <Icon size={18} color={color} />
+export const SectionHeader = ({ icon, title, subtitle, color = C.amber, badge, action }: SectionHeaderProps) => {
+    const renderIcon = () => {
+        if (!icon) return null;
+        if (typeof icon === 'function' || (typeof icon === 'object' && 'render' in icon)) {
+            const Icon = icon as any;
+            return <Icon size={18} color={color} />;
+        }
+        return icon as React.ReactNode;
+    };
+
+    return (
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {icon && (
+                    <div style={{ background: `${color}20`, borderRadius: 10, padding: "7px 8px", display: "flex", flexShrink: 0 }}>
+                        {renderIcon()}
+                    </div>
+                )}
+                <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontFamily: "'Sora', sans-serif", fontSize: 17, fontWeight: 800, color: C.navy }}>{title}</span>
+                        {badge && (
+                            <span style={{ background: `linear-gradient(135deg,${C.amber},${C.orange})`, color: "white", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 20 }}>{badge}</span>
+                        )}
+                    </div>
+                    {subtitle && <p style={{ fontSize: 12.5, color: C.g400, marginTop: 2 }}>{subtitle}</p>}
                 </div>
-            )}
-            <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: 17, fontWeight: 800, color: C.navy }}>{title}</span>
-                    {badge && (
-                        <span style={{ background: `linear-gradient(135deg,${C.amber},${C.orange})`, color: "white", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 20 }}>{badge}</span>
-                    )}
-                </div>
-                {subtitle && <p style={{ fontSize: 12.5, color: C.g400, marginTop: 2 }}>{subtitle}</p>}
             </div>
+            {action && <div style={{ flexShrink: 0 }}>{action}</div>}
         </div>
-        {action && <div style={{ flexShrink: 0 }}>{action}</div>}
-    </div>
-);
+    );
+};
 
 // ─── INPUT ─────────────────────────────────────────────────
 interface ErpInputProps {
@@ -565,6 +577,7 @@ export const ErpDropdownMenu = ({ items, align = "right", trigger }: ErpDropdown
             )}
             {open && (
                 <div style={{ position: "absolute", top: "calc(100% + 6px)", ...(align === "right" ? { right: 0 } : { left: 0 }), width: 190, background: "white", borderRadius: 16, boxShadow: C.shM, border: `1.5px solid ${C.g100}`, zIndex: 997, overflow: "hidden", animation: "scaleIn 0.18s ease" }}>
+                    <style>{`.erp-dd-item:hover{background:var(--dd-hover-bg,#F9FAFB)}.erp-dd-item-danger:hover{background:#FEF2F2}`}</style>
                     {items.map((item, i) =>
                         item.divider ? (
                             <div key={i} style={{ height: 1, background: C.g100, margin: "4px 0" }} />
@@ -572,9 +585,8 @@ export const ErpDropdownMenu = ({ items, align = "right", trigger }: ErpDropdown
                             <div
                                 key={i}
                                 onClick={() => { item.onClick?.(); setOpen(false); }}
+                                className={item.danger ? "erp-dd-item erp-dd-item-danger" : "erp-dd-item"}
                                 style={{ padding: "10px 14px", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 9, color: item.danger ? C.red : C.g700, fontWeight: 500, transition: C.tr, animation: `slideRight 0.2s ease ${i * 0.04}s both` }}
-                                onMouseEnter={e => (e.currentTarget).style.background = item.danger ? C.redXL : C.g50}
-                                onMouseLeave={e => (e.currentTarget).style.background = "white"}
                             >
                                 {item.icon && <item.icon size={14} color={item.danger ? C.red : C.g400} />}
                                 {item.label}
@@ -660,26 +672,11 @@ export const RowActions = ({ onView, onEdit, onDelete, viewTooltip = "View", edi
         const isDelete = type === "delete";
         const isView = type === "view";
         const baseColor = isDelete ? C.red : (isView ? C.blue : C.amber);
-        const hoverBg = isDelete ? C.redXL : (isView ? C.blueL : C.amberXL);
         const Icon = isDelete ? Trash2 : (isView ? Eye : Edit2);
-
-        const btnStyle = {
-            width: 30, height: 30, borderRadius: 9, border: `1.5px solid ${C.g200}`,
-            background: "white", cursor: "pointer", display: "flex", alignItems: "center",
-            justifyContent: "center", transition: C.tr
-        };
-
-        const handleEnter = (e: React.MouseEvent<HTMLElement>) => {
-            (e.currentTarget).style.background = hoverBg;
-            (e.currentTarget).style.borderColor = baseColor;
-        };
-        const handleLeave = (e: React.MouseEvent<HTMLElement>) => {
-            (e.currentTarget).style.background = "white";
-            (e.currentTarget).style.borderColor = C.g200;
-        };
+        const className = `erp-row-action erp-row-action-${type}`;
 
         const content = (
-            <div title={tooltip} style={btnStyle} onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+            <div title={tooltip} className={className} style={{ width: 30, height: 30, borderRadius: 9, border: `1.5px solid ${C.g200}`, background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: C.tr }}>
                 <Icon size={13} color={baseColor} />
             </div>
         );
@@ -692,6 +689,7 @@ export const RowActions = ({ onView, onEdit, onDelete, viewTooltip = "View", edi
 
     return (
         <div style={{ display: "flex", gap: 4, alignItems: "center", justifyContent: "center" }}>
+            <style>{`.erp-row-action:hover{border-color:currentcolor!important}.erp-row-action-delete:hover{background:${C.redXL}!important;color:${C.red}!important}.erp-row-action-view:hover{background:${C.blueL}!important;color:${C.blue}!important}.erp-row-action-edit:hover{background:${C.amberXL}!important;color:${C.amber}!important}`}</style>
             {renderAction("view", onView, viewTooltip)}
             {renderAction("edit", onEdit, editTooltip)}
             {renderAction("delete", onDelete, deleteTooltip)}

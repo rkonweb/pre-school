@@ -64,6 +64,42 @@ const SECTIONS = [
     { id: "status", label: "Status", icon: Zap },
 ];
 
+// --- Component Definitions (Moved to root level to prevent lost focus issues) ---
+const SectionCard = ({ id: sectionId, title, subtitle, icon: Icon, children }: { id: string; title: string; subtitle: string; icon: any; children: React.ReactNode }) => (
+    <section id={`section-${sectionId}`} className="scroll-mt-24">
+        <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+            <div className="px-8 py-5 border-b border-zinc-50 bg-gradient-to-r from-zinc-50/80 to-white flex items-center gap-4">
+                <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                    <Icon className="h-5 w-5" />
+                </div>
+                <div>
+                    <h2 className="text-lg font-bold text-zinc-900">{title}</h2>
+                    <p className="text-xs text-zinc-400 font-medium">{subtitle}</p>
+                </div>
+            </div>
+            <div className="p-8">
+                {children}
+            </div>
+        </div>
+    </section>
+);
+
+const InputField = ({ label, required, error, children }: { label: string; required?: boolean; error?: boolean; children: React.ReactNode }) => (
+    <div className="space-y-1.5">
+        <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-wide">
+            {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        {children}
+    </div>
+);
+
+const inputClass = (hasError?: boolean) => cn(
+    "w-full rounded-xl border bg-zinc-50/50 p-3 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:bg-white transition-all outline-none",
+    hasError ? "border-red-300" : "border-zinc-200"
+);
+
+const iconInputClass = "w-full rounded-xl border border-zinc-200 bg-zinc-50/50 py-3 pl-10 pr-3 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:bg-white transition-all outline-none";
+
 export default function EditTenantPage() {
     const params = useParams();
     const id = params.id as string;
@@ -79,6 +115,7 @@ export default function EditTenantPage() {
     const [formData, setFormData] = useState({
         schoolName: "",
         subdomain: "",
+        customDomain: "",
         brandColor: "#2563eb",
         website: "",
         motto: "",
@@ -146,6 +183,7 @@ export default function EditTenantPage() {
                     setFormData({
                         schoolName: tenant.name,
                         subdomain: tenant.subdomain || "",
+                        customDomain: tenant.customDomain || "",
                         brandColor: tenant.brandColor || "#2563eb",
                         website: tenant.website || "",
                         motto: tenant.motto || "",
@@ -181,8 +219,8 @@ export default function EditTenantPage() {
                         currency: tenant.currency || (settingsRes.success && settingsRes.data ? settingsRes.data.currency : "INR"),
                         timezone: tenant.timezone || (settingsRes.success && settingsRes.data ? settingsRes.data.timezone : "UTC+5:30 (IST)"),
                         dateFormat: tenant.dateFormat || "DD/MM/YYYY",
-                        modules: tenant.modules || [],
-                        addons: tenant.addons || [],
+                        modules: Array.isArray(tenant.modules) ? tenant.modules : [],
+                        addons: Array.isArray(tenant.addons) ? tenant.addons : [],
                         status: tenant.status,
                         subscriptionStatus: tenant.subscriptionStatus || tenant.status || "TRIAL",
                         subscriptionStartDate: tenant.subscriptionStartDate ? new Date(tenant.subscriptionStartDate).toISOString().split("T")[0] : "",
@@ -225,6 +263,7 @@ export default function EditTenantPage() {
             const result = await updateTenantAction(id, {
                 name: formData.schoolName,
                 subdomain: formData.subdomain,
+                customDomain: formData.customDomain,
                 brandColor: formData.brandColor,
                 website: formData.website,
                 motto: formData.motto,
@@ -312,40 +351,7 @@ export default function EditTenantPage() {
         );
     }
 
-    const SectionCard = ({ id: sectionId, title, subtitle, icon: Icon, children }: { id: string; title: string; subtitle: string; icon: any; children: React.ReactNode }) => (
-        <section id={`section-${sectionId}`} className="scroll-mt-24">
-            <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-                <div className="px-8 py-5 border-b border-zinc-50 bg-gradient-to-r from-zinc-50/80 to-white flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                        <Icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                        <h2 className="text-lg font-bold text-zinc-900">{title}</h2>
-                        <p className="text-xs text-zinc-400 font-medium">{subtitle}</p>
-                    </div>
-                </div>
-                <div className="p-8">
-                    {children}
-                </div>
-            </div>
-        </section>
-    );
 
-    const InputField = ({ label, required, error, children }: { label: string; required?: boolean; error?: boolean; children: React.ReactNode }) => (
-        <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-wide">
-                {label} {required && <span className="text-red-500">*</span>}
-            </label>
-            {children}
-        </div>
-    );
-
-    const inputClass = (hasError?: boolean) => cn(
-        "w-full rounded-xl border bg-zinc-50/50 p-3 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:bg-white transition-all outline-none",
-        hasError ? "border-red-300" : "border-zinc-200"
-    );
-
-    const iconInputClass = "w-full rounded-xl border border-zinc-200 bg-zinc-50/50 py-3 pl-10 pr-3 text-sm font-medium text-zinc-900 placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:bg-white transition-all outline-none";
 
     return (
         <div className="min-h-screen bg-zinc-50/70 font-sans">
@@ -446,13 +452,22 @@ export default function EditTenantPage() {
                                         autoComplete="off"
                                         placeholder="e.g. Little Chanakyas Preschool" className={inputClass(validationErrors.some(e => e.includes("School Name")))} />
                                 </InputField>
-                                <InputField label="Domain Prefix">
+                                <InputField label="Domain Prefix (Slug)">
                                     <div className="flex rounded-xl border border-zinc-200 bg-zinc-50/50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/30 transition-all">
                                         <input type="text" value={formData.subdomain} onChange={e => setFormData({ ...formData, subdomain: e.target.value })}
                                             autoComplete="off"
                                             placeholder="little-chanakyas" className="flex-1 bg-transparent p-3 font-mono text-sm outline-none font-bold text-zinc-700" />
                                         <div className="bg-zinc-100 px-4 flex items-center text-zinc-500 text-xs font-medium border-l border-zinc-200">.preschool-erp.com</div>
                                     </div>
+                                </InputField>
+                                <InputField label="Custom Domain">
+                                    <div className="relative">
+                                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                                        <input type="text" value={formData.customDomain} onChange={e => setFormData({ ...formData, customDomain: e.target.value })}
+                                            autoComplete="off"
+                                            placeholder="erp.school.com" className={iconInputClass} />
+                                    </div>
+                                    <p className="text-[10px] text-zinc-400">Requires CNAME configuration to point to app domain.</p>
                                 </InputField>
                                 <InputField label="Public Website">
                                     <div className="relative">
@@ -567,7 +582,7 @@ export default function EditTenantPage() {
                                         <input type="text" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} autoComplete="off" className={inputClass()} />
                                     </InputField>
                                     <InputField label="Country">
-                                        <select value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })} className={inputClass()}>
+                                        <select id="country" title="Country" value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })} className={inputClass()}>
                                             <option>India</option><option>United States</option><option>Canada</option><option>United Kingdom</option><option>Singapore</option>
                                         </select>
                                     </InputField>
@@ -616,19 +631,19 @@ export default function EditTenantPage() {
                         </div>
                         <div className="grid md:grid-cols-2 gap-6">
                             <InputField label="Admin Full Name" required error={validationErrors.some(e => e.includes("Admin Name"))}>
-                                <input type="text" value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })}
+                                <input type="text" id="adminName" title="Admin Name" value={formData.adminName} onChange={e => setFormData({ ...formData, adminName: e.target.value })}
                                     autoComplete="off"
                                     placeholder="Aryan Sharma" className={inputClass(validationErrors.some(e => e.includes("Admin Name")))} />
                             </InputField>
                             <InputField label="Designation / Title">
-                                <input type="text" value={formData.adminDesignation} onChange={e => setFormData({ ...formData, adminDesignation: e.target.value })}
+                                <input type="text" id="adminDesignation" title="Admin Designation" value={formData.adminDesignation} onChange={e => setFormData({ ...formData, adminDesignation: e.target.value })}
                                     autoComplete="off"
                                     placeholder="e.g. Principal, Director" className={inputClass()} />
                             </InputField>
                             <InputField label="Login Phone Number (Read-Only)">
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                    <input type="tel" value={formData.adminPhone} readOnly
+                                    <input type="tel" id="adminPhone" title="Admin Phone" value={formData.adminPhone} readOnly
                                         className="w-full rounded-xl border border-zinc-200 bg-zinc-100 py-3 pl-10 pr-3 text-sm font-mono font-bold text-zinc-500 cursor-not-allowed outline-none" />
                                 </div>
                                 <p className="text-[10px] text-amber-600 font-medium mt-1">⚠️ This is the globally unique signup phone. Contact support to change.</p>
@@ -636,7 +651,7 @@ export default function EditTenantPage() {
                             <InputField label="Admin Email (Globally Unique)">
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                    <input type="email" value={formData.adminEmail} onChange={e => setFormData({ ...formData, adminEmail: e.target.value })}
+                                    <input type="email" id="adminEmail" title="Admin Email" value={formData.adminEmail} onChange={e => setFormData({ ...formData, adminEmail: e.target.value })}
                                         autoComplete="off"
                                         placeholder="admin@school.com" className={cn(iconInputClass, validationErrors.some(e => e.includes("Admin Email")) ? "border-red-300" : "")} />
                                 </div>
@@ -649,17 +664,17 @@ export default function EditTenantPage() {
                         {/* Regional Settings */}
                         <div className="grid md:grid-cols-3 gap-4 mb-8">
                             <InputField label="Currency">
-                                <select value={formData.currency} onChange={e => setFormData({ ...formData, currency: e.target.value })} className={inputClass()}>
+                                <select id="currency" title="Currency" value={formData.currency} onChange={e => setFormData({ ...formData, currency: e.target.value })} className={inputClass()}>
                                     <option value="INR">INR (₹)</option><option value="USD">USD ($)</option><option value="EUR">EUR (€)</option><option value="GBP">GBP (£)</option>
                                 </select>
                             </InputField>
                             <InputField label="Timezone">
-                                <select value={formData.timezone} onChange={e => setFormData({ ...formData, timezone: e.target.value })} className={inputClass()}>
+                                <select id="timezone" title="Timezone" value={formData.timezone} onChange={e => setFormData({ ...formData, timezone: e.target.value })} className={inputClass()}>
                                     <option>UTC+5:30 (IST)</option><option>UTC-8 (PST)</option><option>UTC-5 (EST)</option><option>UTC+0 (GMT)</option><option>UTC+1 (CET)</option><option>UTC+8 (SGT)</option>
                                 </select>
                             </InputField>
                             <InputField label="Date Format">
-                                <select value={formData.dateFormat} onChange={e => setFormData({ ...formData, dateFormat: e.target.value })} className={inputClass()}>
+                                <select id="dateFormat" title="Date Format" value={formData.dateFormat} onChange={e => setFormData({ ...formData, dateFormat: e.target.value })} className={inputClass()}>
                                     <option value="DD/MM/YYYY">DD/MM/YYYY</option><option value="MM/DD/YYYY">MM/DD/YYYY</option><option value="YYYY-MM-DD">YYYY-MM-DD</option>
                                 </select>
                             </InputField>
@@ -709,7 +724,7 @@ export default function EditTenantPage() {
                         {/* Subscription Dates & Status */}
                         <div className="grid md:grid-cols-3 gap-4 p-5 rounded-xl bg-zinc-50/80 border border-zinc-100">
                             <InputField label="Subscription Status">
-                                <select value={formData.subscriptionStatus} onChange={e => setFormData({ ...formData, subscriptionStatus: e.target.value })} className={inputClass()}>
+                                <select id="subscriptionStatus" title="Subscription Status" value={formData.subscriptionStatus} onChange={e => setFormData({ ...formData, subscriptionStatus: e.target.value })} className={inputClass()}>
                                     <option value="TRIAL">Trial</option>
                                     <option value="ACTIVE">Active</option>
                                     <option value="PAST_DUE">Past Due</option>
@@ -718,12 +733,12 @@ export default function EditTenantPage() {
                                 </select>
                             </InputField>
                             <InputField label="Start Date">
-                                <input type="date" value={formData.subscriptionStartDate} onChange={e => setFormData({ ...formData, subscriptionStartDate: e.target.value })}
+                                <input type="date" id="subscriptionStartDate" title="Subscription Start Date" value={formData.subscriptionStartDate} onChange={e => setFormData({ ...formData, subscriptionStartDate: e.target.value })}
                                     autoComplete="off"
                                     className={inputClass()} />
                             </InputField>
                             <InputField label="End Date">
-                                <input type="date" value={formData.subscriptionEndDate} onChange={e => setFormData({ ...formData, subscriptionEndDate: e.target.value })}
+                                <input type="date" id="subscriptionEndDate" title="Subscription End Date" value={formData.subscriptionEndDate} onChange={e => setFormData({ ...formData, subscriptionEndDate: e.target.value })}
                                     autoComplete="off"
                                     className={inputClass()} />
                             </InputField>
@@ -762,7 +777,7 @@ export default function EditTenantPage() {
                                         )}>
                                             {formData.modules.includes(mod.id) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
                                         </div>
-                                        <input type="checkbox" className="hidden" checked={formData.modules.includes(mod.id)}
+                                        <input type="checkbox" id={`module-${mod.id}`} title={`Enable ${mod.label} module`} className="hidden" checked={formData.modules.includes(mod.id)}
                                             onChange={(e) => {
                                                 const isChecked = e.target.checked;
                                                 let newModules = [...formData.modules];
@@ -790,7 +805,7 @@ export default function EditTenantPage() {
                                                     )}>
                                                         {formData.modules.includes(sub.id) && <CheckCircle2 className="h-2.5 w-2.5 text-white" />}
                                                     </div>
-                                                    <input type="checkbox" className="hidden" checked={formData.modules.includes(sub.id)}
+                                                    <input type="checkbox" id={`submodule-${sub.id}`} title={`Enable ${sub.label} submodule`} className="hidden" checked={formData.modules.includes(sub.id)}
                                                         onChange={(e) => {
                                                             const isChecked = e.target.checked;
                                                             let newModules = [...formData.modules];

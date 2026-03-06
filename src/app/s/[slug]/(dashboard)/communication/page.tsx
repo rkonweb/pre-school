@@ -32,6 +32,7 @@ import {
     updateMessageModerationStatusAction
 } from "@/app/actions/moderation-actions";
 import { format } from "date-fns";
+import { SectionHeader } from "@/components/ui/erp-ui";
 
 type ViewState = "BLASTER" | "AUTOMATION" | "BROADCASTS" | "MODERATION";
 
@@ -149,88 +150,33 @@ export default function CommunicationPage() {
     }
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-[1600px] mx-auto">
-            {/* Header */}
-            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase italic flex items-center gap-3">
-                        <MessageSquare className="h-8 w-8 text-rose-500" />
-                        Comms <span className="text-rose-500">Engine</span>
-                    </h1>
-                    <p className="text-zinc-500 font-medium mt-1">Unified messaging and automated workflow triggers.</p>
-                </div>
-
-                <div className="flex bg-zinc-100/50 dark:bg-zinc-900/50 p-1.5 rounded-2xl backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 overflow-x-auto no-scrollbar">
-                    <button
-                        onClick={() => setView("BLASTER")}
-                        className={cn(
-                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                            view === "BLASTER"
-                                ? "bg-white dark:bg-zinc-800 text-rose-500 shadow-sm"
-                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
-                        )}
-                    >
-                        Blast Tool
-                    </button>
-                    <button
-                        onClick={() => setView("BROADCASTS")}
-                        className={cn(
-                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap relative",
-                            view === "BROADCASTS"
-                                ? "bg-white dark:bg-zinc-800 text-rose-500 shadow-sm"
-                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
-                        )}
-                    >
-                        Broadcasts
-                        {pendingBroadcasts.length > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-4 w-4 bg-rose-500 text-[8px] items-center justify-center text-white font-bold">
-                                    {pendingBroadcasts.length}
-                                </span>
-                            </span>
-                        )}
-                    </button>
-                    <button
-                        onClick={() => setView("MODERATION")}
-                        className={cn(
-                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap relative",
-                            view === "MODERATION"
-                                ? "bg-white dark:bg-zinc-800 text-rose-500 shadow-sm"
-                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
-                        )}
-                    >
-                        Moderation
-                        {flaggedMessages.length > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-4 w-4 bg-orange-500 text-[8px] items-center justify-center text-white font-bold">
-                                    {flaggedMessages.length}
-                                </span>
-                            </span>
-                        )}
-                    </button>
-                    <button
-                        onClick={() => setView("AUTOMATION")}
-                        className={cn(
-                            "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
-                            view === "AUTOMATION"
-                                ? "bg-white dark:bg-zinc-800 text-indigo-500 shadow-sm"
-                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
-                        )}
-                    >
-                        Automations
-                    </button>
-                    <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-2 self-center shrink-0"></div>
-                    <Link
-                        href={`/s/${slug}/communication/chat-history`}
-                        className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-zinc-500 hover:text-rose-500 dark:hover:text-rose-400 flex items-center gap-2 whitespace-nowrap"
-                    >
-                        <ShieldAlert className="h-3.5 w-3.5" />
-                        Chat History
-                    </Link>
-                </div>
-            </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 80 }}>
+            <SectionHeader
+                title="Comms Engine"
+                subtitle="Unified messaging and automated workflow triggers."
+                icon={MessageSquare}
+                action={
+                    <div style={{ display: "flex", alignItems: "center", background: "#F5F5F7", padding: 4, borderRadius: 16, border: "1.5px solid #E5E7EB", gap: 2, overflowX: "auto" }}>
+                        {(["BLASTER", "BROADCASTS", "MODERATION", "AUTOMATION"] as const).map((v, i) => (
+                            <button key={v} onClick={() => setView(v)}
+                                style={{ padding: "8px 16px", borderRadius: 12, border: "none", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, cursor: "pointer", background: view === v ? "white" : "transparent", color: view === v ? "#EF4444" : "#6B7280", boxShadow: view === v ? "0 1px 4px rgba(0,0,0,0.08)" : "none", position: "relative", whiteSpace: "nowrap" }}>
+                                {v === "BLASTER" ? "Blast Tool" : v === "BROADCASTS" ? "Broadcasts" : v === "MODERATION" ? "Moderation" : "Automations"}
+                                {v === "BROADCASTS" && pendingBroadcasts.length > 0 && (
+                                    <span style={{ position: "absolute", top: -4, right: -4, width: 16, height: 16, background: "#EF4444", borderRadius: "50%", fontSize: 8, color: "white", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>{pendingBroadcasts.length}</span>
+                                )}
+                                {v === "MODERATION" && flaggedMessages.length > 0 && (
+                                    <span style={{ position: "absolute", top: -4, right: -4, width: 16, height: 16, background: "#F97316", borderRadius: "50%", fontSize: 8, color: "white", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>{flaggedMessages.length}</span>
+                                )}
+                            </button>
+                        ))}
+                        <div style={{ width: 1, height: 20, background: "#E5E7EB", margin: "0 4px" }} />
+                        <Link href={`/s/${slug}/communication/chat-history`}
+                            style={{ padding: "8px 14px", borderRadius: 12, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#6B7280", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+                            <ShieldAlert style={{ width: 14, height: 14 }} /> Chat History
+                        </Link>
+                    </div>
+                }
+            />
 
             {/* Content Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

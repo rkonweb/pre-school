@@ -7,7 +7,6 @@ import {
     MessageSquare,
     MessageCircle,
     CreditCard,
-    ArrowLeft,
     ShieldCheck,
     Loader2,
     Save,
@@ -24,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getIntegrationSettingsAction, saveIntegrationSettingsAction, testAIIntegrationAction } from "@/app/actions/settings-actions";
+import { SettingsPageHeader, SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
 
 export default function IntegrationsPage() {
     const params = useParams();
@@ -134,40 +134,28 @@ export default function IntegrationsPage() {
     ];
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-32 gap-4">
-                <Loader2 className="h-8 w-8 animate-spin text-brand" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Restoring connections...</p>
-            </div>
-        );
+        return <SettingsLoader message="Restoring connections..." />;
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-10 pb-20">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
+        <div className="space-y-6 pb-20">
+            <SettingsPageHeader
+                icon={Zap}
+                title="Connectors & APIs"
+                description="Bridge your school with global communication and payment clusters."
+                color="#06B6D4"
+                bg="#CFFAFE"
+                action={
                     <button
-                        onClick={() => router.push(`/s/${slug}/settings`)}
-                        className="group flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white transition-all hover:border-zinc-900 active:scale-95"
+                        onClick={handleSave}
+                        disabled={saving}
+                        style={{ padding: "10px 22px", borderRadius: 12, background: saving ? "#F3F4F6" : "linear-gradient(135deg,#F59E0B,#F97316)", color: saving ? "#9CA3AF" : "white", border: "none", cursor: saving ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans',sans-serif", boxShadow: saving ? "none" : "0 4px 16px rgba(245,158,11,0.4)" }}
                     >
-                        <ArrowLeft className="h-5 w-5 text-zinc-500 group-hover:text-zinc-900" />
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                        {saving ? "Syncing..." : "Save Config"}
                     </button>
-                    <div>
-                        <h1 className="text-3xl font-black text-zinc-900 uppercase tracking-tight">Connectors & APIs</h1>
-                        <p className="text-sm text-zinc-500 font-medium mt-0.5 italic">Bridge your school with global communication and payment clusters.</p>
-                    </div>
-                </div>
-
-                <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="h-12 px-6 bg-brand text-[var(--secondary-color)] rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-brand/20 transition-all hover:brightness-110 hover:scale-105 active:scale-95 disabled:opacity-50"
-                >
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    {saving ? "Syncing..." : "Save Config"}
-                </button>
-            </div>
+                }
+            />
 
             {/* Navigation Tabs */}
             <div className="flex items-center gap-2 p-1.5 bg-zinc-100 rounded-[28px] w-fit overflow-x-auto max-w-full">

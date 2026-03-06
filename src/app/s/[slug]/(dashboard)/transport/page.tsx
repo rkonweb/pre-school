@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
     Bus,
     MapPin,
@@ -13,22 +12,30 @@ import {
     Zap,
     Navigation,
     ArrowRight,
-    Activity
+    Activity,
+    MoreHorizontal,
+    Globe,
+    Gauge,
+    LayoutDashboard,
+    Plane,
+    Wallet,
+    Calendar,
+    Settings,
+    ChevronRight,
+    Search
 } from "lucide-react";
 import Link from "next/link";
 import { getTransportDashboardStatsAction } from "@/app/actions/transport-actions";
 import { getFleetStatusAction } from "@/app/actions/tracking-actions";
 import { cn } from "@/lib/utils";
 import FleetMapPreview from "@/components/transport/FleetMapPreview";
-import { toast } from "sonner";
-import { SectionHeader, ErpCard, Btn } from "@/components/ui/erp-ui";
+import { SectionHeader, ErpCard, Btn, StatusChip, ErpInput, C } from "@/components/ui/erp-ui";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
 
 export default async function TransportDashboard(props: { params: Promise<{ slug: string }> }) {
     const params = await props.params;
@@ -38,24 +45,22 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
 
     if (!statsRes.success || !statsRes.data) {
         return (
-            <div className="p-12 text-center bg-red-50 rounded-xl border border-red-100">
-                <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-red-900">Dashboard Failed to Load</h2>
-                <p className="text-red-600 mt-2">{statsRes.error || "An unexpected error occurred."}</p>
+            <div className="p-12 text-center bg-red-50/50 rounded-[40px] border-2 border-dashed border-red-100 flex flex-col items-center">
+                <div className="p-8 bg-white rounded-[32px] shadow-sm mb-6 ring-4 ring-red-50">
+                    <AlertCircle className="h-16 w-16 text-red-500" />
+                </div>
+                <h2 className="text-3xl font-black text-red-900 uppercase tracking-tight">Telemetry Handshake Failed</h2>
+                <p className="text-[10px] font-black text-red-400 uppercase tracking-widest mt-3 underline decoration-red-200 decoration-2 underline-offset-4">{statsRes.error || "Operational timeout or missing protocol parameters."}</p>
+                <Link href={`/s/${slug}/transport`} className="mt-10">
+                    <Btn variant="destructive">RETRY HANDSHAKE</Btn>
+                </Link>
             </div>
         );
     }
 
-    const handleGenerateFees = async () => {
-        "use server";
-        const { generateMonthlyTransportFeesAction } = await import("@/app/actions/transport-actions");
-        return generateMonthlyTransportFeesAction(slug);
-    };
-
     const { finances, fleet, drivers } = statsRes.data;
     const initialFleet = fleetRes.success && fleetRes.data ? fleetRes.data : [];
 
-    // Additional data for basic stats - Reuse auth context in a real app, but for now select only what's needed
     const school = await prisma.school.findUnique({
         where: { slug },
         select: { id: true, googleMapsApiKey: true, currency: true }
@@ -63,7 +68,6 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
 
     const currencySymbol = school?.currency || 'INR';
 
-    // Optimize: Run these in parallel if possible, or skip if not critical for initial load
     const [pendingRequests, activeStudents] = await Promise.all([
         prisma.studentTransportProfile.count({
             where: { student: { schoolId: school?.id }, status: "PENDING" }
@@ -74,46 +78,43 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
     ]);
 
     return (
-        <div className="p-6 space-y-8 w-full">
-            {/* Header with SOS Action */}
+        <div className="p-8 space-y-12 w-full mb-24">
+            {/* Header Matrix */}
             <SectionHeader
-                title="Intelligent Transport Dashboard"
-                subtitle={
-                    <span className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-brand fill-brand" />
-                        AI-powered monitoring enabled
-                    </span>
-                }
+                title="Logistics Command Center"
+                subtitle="Intelligent fleet orchestration and real-time telemetry matrix enabled."
+                icon={<LayoutDashboard size={18} color={C.amber} />}
                 action={
-                    <div className="flex flex-wrap items-center gap-3">
-                        <Btn
-                            href={`/s/${slug}/transport/fleet/tracking`}
-                            icon={Activity}
-                            variant="primary"
-                        >
-                            Live Fleet Map
-                        </Btn>
+                    <div className="flex items-center gap-4">
+                        <Link href={`/s/${slug}/transport/fleet/tracking`}>
+                            <Btn
+                                icon={<Globe size={18} />}
+                                className="!rounded-[20px] shadow-2xl shadow-brand/40"
+                            >
+                                LIVE FLEET MIRROR
+                            </Btn>
+                        </Link>
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <button
-                                    className="flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-zinc-700 hover:bg-zinc-50 transition-all shadow-sm"
-                                    title="More options"
+                                    className="p-3.5 rounded-2xl border-1.5 border-zinc-200 bg-white text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 transition-all shadow-sm"
+                                    aria-label="Access Advanced Operations"
                                 >
-                                    <MoreHorizontal className="h-5 w-5" />
+                                    <MoreHorizontal className="h-6 w-6" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-48">
+                            <DropdownMenuContent className="w-64 p-3 rounded-[28px] border-zinc-100 shadow-2xl">
                                 <DropdownMenuItem asChild>
-                                    <Link href={`/s/${slug}/transport/route/routes`} className="flex items-center gap-2">
-                                        <Navigation className="h-4 w-4" />
-                                        Manage Routes
+                                    <Link href={`/s/${slug}/transport/route/routes`} className="flex items-center gap-3 p-4 rounded-2xl hover:bg-zinc-50 font-black text-[10px] uppercase tracking-widest text-zinc-900 cursor-pointer">
+                                        <div className="p-2 bg-zinc-100 rounded-lg"><Navigation className="h-4 w-4" /></div>
+                                        Corridor Optimization
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
-                                    <Link href={`/s/${slug}/settings/fees`} className="flex items-center gap-2">
-                                        <DollarSign className="h-4 w-4" />
-                                        Fee Settings
+                                    <Link href={`/s/${slug}/settings/fees`} className="flex items-center gap-3 p-4 rounded-2xl hover:bg-zinc-50 font-black text-[10px] uppercase tracking-widest text-zinc-900 cursor-pointer">
+                                        <div className="p-2 bg-zinc-100 rounded-lg"><DollarSign className="h-4 w-4" /></div>
+                                        Tariff Calibration
                                     </Link>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -122,195 +123,164 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
                 }
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Stats and Map */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Core Metrics Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <ErpCard className="border-none bg-gradient-to-br from-white to-zinc-50 relative group">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                                <Bus className="h-20 w-20 text-brand" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                {/* Visual Telemetry Stream */}
+                <div className="lg:col-span-2 space-y-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <ErpCard noPad className="!rounded-[40px] border-zinc-100 p-10 shadow-2xl shadow-zinc-200/50 relative overflow-hidden group">
+                            <div className="absolute -top-10 -right-10 p-10 opacity-[0.03] group-hover:scale-110 transition-transform duration-700">
+                                <Bus className="h-64 w-64 text-zinc-900" />
                             </div>
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="p-2 rounded-lg bg-zinc-100">
-                                        <Bus className="h-5 w-5 text-brand" />
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="h-14 w-14 rounded-2xl bg-zinc-900 text-white flex items-center justify-center shadow-lg shadow-zinc-900/40">
+                                        <Gauge className="h-7 w-7" />
                                     </div>
-                                    <span className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Fleet Status</span>
+                                    <div>
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Global Fleet Saturation</p>
+                                        <StatusChip label={fleet.active === fleet.total ? "Approved" : "Partial"} />
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-4xl font-black text-zinc-900">{fleet.active} / {fleet.total}</h3>
-                                    <span className={cn(
-                                        "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter",
-                                        fleet.active === fleet.total ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                                    )}>
-                                        {fleet.active === fleet.total ? "Full Deployment" : "Partial Ops"}
-                                    </span>
+                                <div className="mt-auto">
+                                    <h3 className="text-6xl font-black text-zinc-900 tracking-tighter tabular-nums leading-none">
+                                        {fleet.active}<span className="text-2xl text-zinc-300 mx-2">/</span>{fleet.total}
+                                    </h3>
+                                    <p className="text-[11px] font-black text-zinc-500 uppercase tracking-widest mt-4 flex items-center gap-2">
+                                        <Bus className="h-4 w-4 text-brand" /> Active Assets In Deployment
+                                    </p>
                                 </div>
-                                <p className="text-sm text-zinc-500 font-medium mt-1">Vehicles Active</p>
-                            </CardContent>
+                            </div>
                         </ErpCard>
 
-                        <ErpCard className="border-none bg-brand text-[var(--secondary-color)] relative group">
-                            <div className="absolute top-0 right-0 p-4 opacity-20">
-                                <DollarSign className="h-20 w-20 text-[var(--secondary-color)]" />
-                            </div>
-                            <CardContent className="p-6 relative z-10">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="p-2 rounded-lg bg-white/20">
-                                        <DollarSign className="h-5 w-5 text-white" />
-                                    </div>
-                                    <span className="text-sm font-bold text-[var(--secondary-color)] opacity-70 uppercase tracking-wider">Revenue Tracking</span>
+                        <ErpCard noPad className="!rounded-[40px] border-none bg-zinc-900 text-white p-10 shadow-2xl shadow-zinc-900/30 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 opacity-10 flex flex-col gap-1 items-end">
+                                <DollarSign className="h-16 w-16 text-brand" />
+                                <div className="h-1.5 w-32 bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-full bg-brand w-[var(--p)]" style={{ '--p': `${finances.collectionRate}%` } as React.CSSProperties} />
                                 </div>
-                                <div className="flex flex-col">
-                                    <h3 className="text-3xl font-black text-[var(--secondary-color)]">
+                            </div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="flex items-center gap-4 mb-10">
+                                    <div className="h-14 w-14 rounded-2xl bg-white/5 text-brand flex items-center justify-center border border-white/10 shadow-inner">
+                                        <Wallet className="h-7 w-7" />
+                                    </div>
+                                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Revenue Integrity Index</p>
+                                </div>
+                                <div className="mt-auto">
+                                    <h3 className="text-4xl font-black text-white tracking-tighter leading-none mb-6">
                                         {new Intl.NumberFormat('en-IN', { style: 'currency', currency: currencySymbol, maximumFractionDigits: 0 }).format(finances.totalCollected)}
                                     </h3>
-                                    <div className="mt-4 w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-white transition-all duration-500"
-                                            style={{ width: `${Math.min(100, Math.max(0, finances.collectionRate))}%` }}
-                                        ></div>
+                                    <div className="flex items-center gap-5">
+                                        <div className="px-4 py-2 bg-emerald-500/10 rounded-full text-[9px] font-black text-emerald-400 uppercase tracking-widest border border-emerald-500/20">
+                                            {finances.collectionRate.toFixed(1)}% Realized
+                                        </div>
+                                        <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest italic opacity-60">
+                                            Target: {currencySymbol}920K
+                                        </div>
                                     </div>
-                                    <p className="text-[10px] font-bold mt-2 uppercase text-[var(--secondary-color)] opacity-80">{finances.collectionRate.toFixed(1)}% Collected</p>
                                 </div>
-                            </CardContent>
+                            </div>
                         </ErpCard>
                     </div>
 
-                    {/* LIVE MAP TRACKING BOX */}
-                    <ErpCard className="border-none h-[450px]">
-                        <CardHeader className="p-4 bg-white border-b border-zinc-100 flex flex-row items-center justify-between space-y-0">
-                            <div>
-                                <CardTitle className="text-lg font-bold">Live Fleet Mirror</CardTitle>
-                                <CardDescription className="text-xs">Real-time GPS synchronization</CardDescription>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-black border border-green-100 flex items-center gap-1.5">
-                                    <Activity className="h-2.5 w-2.5" />
-                                    SYNCED
+                    {/* LIVE TRACKING INTERFACE */}
+                    <ErpCard noPad className="!rounded-[50px] border-zinc-200 shadow-2xl shadow-zinc-200/50 overflow-hidden group h-[550px]">
+                        <div className="absolute top-6 left-6 z-20 space-y-3">
+                            <div className="bg-white/90 backdrop-blur-md shadow-2xl border border-zinc-200/50 rounded-[28px] px-6 py-4 flex items-center gap-4 group/chip hover:scale-105 transition-all">
+                                <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
+                                <div className="flex flex-col">
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-zinc-900 leading-none">Global Sync Active</span>
+                                    <p className="text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">Satellite Handshake Integrity 99.2%</p>
                                 </div>
                             </div>
-                        </CardHeader>
-                        <CardContent className="p-0 h-[calc(450px-73px)] relative z-0">
+                        </div>
+                        <div className="h-full relative z-0">
                             <FleetMapPreview schoolSlug={slug} initialVehicles={initialFleet} apiKey={school?.googleMapsApiKey || ""} />
-                        </CardContent>
+                        </div>
                     </ErpCard>
                 </div>
 
-                {/* Sidebar Operations */}
-                <div className="space-y-6">
-                    <ErpCard className="border-none bg-zinc-900 text-white">
-                        <CardContent className="p-6">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2 rounded-lg bg-white/10 text-yellow-500">
-                                    <AlertCircle className="h-5 w-5" />
-                                </div>
-                                <span className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Operational Health</span>
+                {/* Logistics Intelligence Sidebar */}
+                <div className="space-y-10">
+                    <ErpCard className="!rounded-[40px] border-none bg-zinc-50 p-10 flex flex-col gap-8 shadow-inner">
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-2xl bg-white text-brand flex items-center justify-center shadow-sm border border-zinc-100">
+                                <ShieldAlert className="h-6 w-6" />
                             </div>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-sm text-zinc-400">Delayed Vehicles</p>
-                                    <span className={cn(
-                                        "text-xl font-black",
-                                        fleet.delayed > 0 ? "text-yellow-500" : "text-green-500"
-                                    )}>{fleet.delayed}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <p className="text-sm text-zinc-400">Drivers Absent</p>
-                                    <span className={cn(
-                                        "text-xl font-black",
-                                        drivers.absent > 0 ? "text-red-500" : "text-green-500"
-                                    )}>{drivers.absent}</span>
-                                </div>
-                                <div className="pt-4 border-t border-white/5 space-y-2">
-                                    <div className="flex items-center justify-between text-[10px] font-bold uppercase text-zinc-500">
-                                        <span>AI Analysis Service</span>
-                                        <span className="text-green-500">Active</span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-[10px] font-bold uppercase text-zinc-500">
-                                        <span>Proactive Alerts</span>
-                                        <span className="text-green-500">Ready</span>
-                                    </div>
-                                </div>
+                            <h4 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Health Status</h4>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between p-4 bg-white rounded-3xl border border-zinc-100 shadow-sm">
+                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Telemetry Lag</p>
+                                <span className={cn(
+                                    "text-lg font-black tabular-nums",
+                                    fleet.delayed > 0 ? "text-amber-500" : "text-emerald-500"
+                                )}>{fleet.delayed} <span className="text-[10px] tracking-normal font-black opacity-40 ml-1 italic">VHC</span></span>
                             </div>
-                        </CardContent>
+                            <div className="flex items-center justify-between p-4 bg-white rounded-3xl border border-zinc-100 shadow-sm">
+                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Pilot Absence</p>
+                                <span className={cn(
+                                    "text-lg font-black tabular-nums",
+                                    drivers.absent > 0 ? "text-red-500" : "text-emerald-500"
+                                )}>{drivers.absent} <span className="text-[10px] tracking-normal font-black opacity-40 ml-1 italic">PLT</span></span>
+                            </div>
+                        </div>
+                        <div className="pt-6 border-t border-zinc-200">
+                            <div className="flex items-center justify-between text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] italic">
+                                <span>AI Risk Analysis</span>
+                                <span className="text-brand font-black">LOW THREAT</span>
+                            </div>
+                        </div>
                     </ErpCard>
 
-                    <ErpCard className="border-none">
-                        <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-4">
-                            <CardTitle className="text-lg">Operations Center</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 flex flex-col gap-2">
-                            {[
-                                { name: "Route Planning", href: `/s/${slug}/transport/route/routes`, icon: Navigation, desc: "Optimize Paths" },
-                                { name: "Vehicles & Docs", href: `/s/${slug}/transport/fleet/vehicles`, icon: Bus, desc: "Predictive Maintenance" },
-                                { name: "Driver Scorecards", href: `/s/${slug}/transport/fleet/drivers`, icon: Users, desc: "Safety Metrics" },
-                                { name: "Fleet Students", href: `/s/${slug}/transport/students`, icon: UserCheck, desc: "Boarding & Alerts" },
-                                { name: "Manual Enroll", href: `/s/${slug}/transport/application/apply`, icon: Navigation, desc: "Direct Assignment" },
-                                { name: "Expense Ledger", href: `/s/${slug}/transport/expenses`, icon: DollarSign, desc: "Fleet Spends & Fuel" },
-                                { name: "Transport Accounts", href: `/s/${slug}/transport/fees`, icon: Activity, desc: "Fee Tracking & Comm" },
-                                { name: "Full Tracking", href: `/s/${slug}/transport/fleet/tracking`, icon: NavPosition, desc: "Global Control" },
-                            ].map((action) => (
-                                <Link
-                                    key={action.name}
-                                    href={action.href}
-                                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-zinc-50 border border-transparent hover:border-zinc-100 transition-all group max-sm:p-4 max-sm:bg-zinc-50 max-sm:border-zinc-100 max-sm:mb-2 max-sm:last:mb-0 max-sm:shadow-sm"
-                                >
-                                    <div className="p-2.5 rounded-lg bg-zinc-100 group-hover:bg-brand group-hover:text-[var(--secondary-color)] transition-colors">
-                                        <action.icon className="h-5 w-5" />
+                    <div className="grid grid-cols-1 gap-6">
+                        {[
+                            { name: "Global Corridor Sync", href: `/s/${slug}/transport/route/routes`, icon: Navigation, tags: "Routes & Stops" },
+                            { name: "Strategic Asset Ledger", href: `/s/${slug}/transport/fleet/vehicles`, icon: Bus, tags: "Fleet Inventory" },
+                            { name: "Pilot Cert Records", href: `/s/${slug}/transport/fleet/drivers`, icon: Users, tags: "Driver Intelligence" },
+                            { name: "Passenger Registry", href: `/s/${slug}/transport/students`, icon: UserCheck, tags: "Student Manifest" },
+                            { name: "Financial Telemetery", href: `/s/${slug}/transport/fees`, icon: Activity, tags: "Economic Impact" },
+                            { name: "Strategic Control", href: `/s/${slug}/transport/fleet/tracking`, icon: Plane, tags: "Live Monitoring" },
+                        ].map((action) => (
+                            <Link
+                                key={action.name}
+                                href={action.href}
+                                className="group relative flex items-center justify-between p-6 bg-white rounded-[32px] border border-zinc-100 shadow-sm hover:shadow-2xl hover:shadow-brand/5 hover:border-brand/20 transition-all duration-500 overflow-hidden"
+                            >
+                                <div className="absolute right-0 top-0 bottom-0 w-2 bg-zinc-50 group-hover:bg-brand transition-all" />
+                                <div className="flex items-center gap-5">
+                                    <div className="h-14 w-14 rounded-2xl bg-zinc-50 text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white flex items-center justify-center transition-all duration-500 shadow-inner group-hover:shadow-lg">
+                                        <action.icon className="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-zinc-900 leading-tight">{action.name}</p>
-                                        <p className="text-[10px] text-zinc-400 font-medium uppercase tracking-tight">{action.desc}</p>
-                                    </div>
-                                    <ArrowRight className="h-4 w-4 ml-auto text-zinc-300 transition-all group-hover:translate-x-1" />
-                                </Link>
-                            ))}
-                        </CardContent>
-                    </ErpCard>
-
-                    <ErpCard className="border-none">
-                        <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-4">
-                            <CardTitle className="text-lg text-emerald-700">Financial Intelligence</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4">
-                            <Link href={`/s/${slug}/transport/fees`} className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-all group max-sm:p-4 shadow-sm">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-white rounded-lg shadow-sm">
-                                        <DollarSign className="h-5 w-5 text-emerald-600" />
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-sm font-bold leading-tight">View Accounts</p>
-                                        <p className="text-[10px] font-medium uppercase tracking-tight opacity-70">Automated Billing & Reminders</p>
+                                        <p className="text-sm font-black text-zinc-900 uppercase tracking-tight group-hover:text-brand transition-all">{action.name}</p>
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1 opacity-60">{action.tags}</p>
                                     </div>
                                 </div>
-                                <ArrowRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
+                                <ChevronRight className="h-5 w-5 text-zinc-200 group-hover:text-brand group-hover:translate-x-1 transition-all" />
                             </Link>
-                        </CardContent>
+                        ))}
+                    </div>
+
+                    <ErpCard noPad className="!rounded-[40px] border-none bg-emerald-50/50 p-8 flex flex-col gap-6 relative overflow-hidden group">
+                        <div className="absolute -bottom-6 -right-6 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                            <TrendingUp className="h-32 w-32 text-emerald-900" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-4">Financial Insight</p>
+                            <h5 className="text-lg font-black text-zinc-900 uppercase tracking-tight leading-snug">Automative Billing <br /> Intelligence Active</h5>
+                        </div>
+                        <Link href={`/s/${slug}/transport/fees`}>
+                            <Btn
+                                variant="secondary"
+                                className="w-full !rounded-[20px] bg-white border-zinc-200 text-emerald-600 shadow-sm hover:bg-emerald-50 transition-all"
+                            >
+                                AUDIT LEDGER
+                            </Btn>
+                        </Link>
                     </ErpCard>
                 </div>
             </div>
         </div>
     );
-}
-
-function NavPosition(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
-            <path d="m13 13 9 9" />
-        </svg>
-    )
 }

@@ -660,7 +660,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
 
                             {!isCollapsed && (
                                 <button
-                                    onClick={async () => { await clearUserSessionAction(); router.push("/school-login"); }}
+                                    onClick={async () => { await clearUserSessionAction(); router.push(`/${slug}`); }}
                                     title="Sign out"
                                     style={{
                                         padding: 7, borderRadius: 8, border: "none",

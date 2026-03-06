@@ -25,12 +25,15 @@ export function SessionTimeoutListener({ timeoutMinutes = 15 }: SessionTimeoutLi
             toast.error("Session timed out due to inactivity.");
 
             // Force redirect to login with callbackUrl
+            const slugMatch = pathname.match(/^\/s\/([^\/]+)/);
+            const loginSlug = slugMatch ? `/${slugMatch[1]}` : "/school-login";
             const currentUrl = encodeURIComponent(`${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`);
-            router.push(`/school-login?callbackUrl=${currentUrl}`);
+            router.push(`${loginSlug}?callbackUrl=${currentUrl}`);
         } catch (error) {
             console.error("Logout failed:", error);
             // Fallback redirect
-            window.location.href = "/school-login";
+            const slugMatchFallback = window.location.pathname.match(/^\/s\/([^\/]+)/);
+            window.location.href = slugMatchFallback ? `/${slugMatchFallback[1]}` : "/school-login";
         }
     }, [router, pathname, searchParams]);
 

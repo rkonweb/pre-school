@@ -22,6 +22,7 @@ import { getAvailablePlansAction, upgradePlanAction, buyAdditionalUsersAction } 
 import { calculateTieredAddonCost } from "@/lib/subscriptions/utils";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { SettingsPageHeader, SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
 
 export default function SubscriptionSettingsPage() {
     const params = useParams();
@@ -149,11 +150,7 @@ export default function SubscriptionSettingsPage() {
     };
 
     if (isLoading) {
-        return (
-            <div className="flex-1 flex items-center justify-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-brand" />
-            </div>
-        );
+        return <SettingsLoader message="Loading subscription..." />;
     }
 
     const currentPlan = profileData?.subscription?.plan;
@@ -162,15 +159,13 @@ export default function SubscriptionSettingsPage() {
 
     return (
         <div className="space-y-8 pb-20">
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-                    Subscription & Billing
-                </h1>
-                <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-                    Manage your subscription plan and view usage statistics
-                </p>
-            </div>
+            <SettingsPageHeader
+                icon={Crown}
+                title="Subscription & Billing"
+                description="Manage your subscription plan and view usage statistics."
+                color="#F59E0B"
+                bg="#FEF3C7"
+            />
 
             {/* Success Message */}
             {successMessage && (

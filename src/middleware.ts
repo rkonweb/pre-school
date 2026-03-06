@@ -53,55 +53,55 @@ export async function middleware(req: NextRequest) {
     const allowedDomains = ["localhost", "10.0.2.2", "bodhiboard.com", "www.bodhiboard.com", "vercel.app", "bodhiboard.in", "www.bodhiboard.in"];
     const isMainDomain = hostname === "localhost" || hostname === "10.0.2.2" || allowedDomains.some(domain => hostname.includes(domain));
 
-    if (isMainDomain) {
-        // If main domain, check tenant logic or just basic next
-        // For main domain we essentially allow passthrough unless it's a tenant path, 
-        // but the current logic was just "return next()".
-        // We must ensure we don't skip the /s/ protection if someone tries to access it via main domain (though uncommon structure).
-        // The original logic returned immediately. We'll capture it.
-        // BUT wait, does /s/ logic apply to main domain? Yes, /s/ is school dashboard path.
-        // If I return here, I skip /s/ check.
-        // Original code: if (isMainDomain) return NextResponse.next();
-        // This implies /s/ routes are NOT shielded on main domain? Or /s/ is ONLY for subdomains?
-        // Looking at line 56 in original: It checks `url.pathname.startsWith("/s/")`.
-        // If `isMainDomain` returns early, /s/ check is skipped.
-        // If the app relies on /s/ being accessible on main domain (e.g. localhost/s/slug), then strictly returning next() is wrong IF we want protection.
-        // However, assuming the original logic was intended, I will keep it but add headers.
+    // Custom Domain Resolution
+    let tenantSlugFromDomain: string | null = null;
+    if (!isMainDomain) {
+        // Fetch dynamically from our internal API (which uses Prisma and caches the result)
+        try {
+            // In a real production edge environment, this absolute URL will need to be derived properly,
+            // or an Edge-compatible KV/DB client used. For now, we fallback to a safe absolute URL check.
+            const proto = req.nextUrl.protocol;
+            const host = req.nextUrl.host;
+            const apiUrl = `${proto}//${host}/api/tenants/domain-map`;
 
-        // Actually, if I am on localhost, I likely use /s/slug. So I SHOULD process /s/ check.
-        // The original logic `if (isMainDomain) return NextResponse.next()` essentially explicitly ALLOWED main domains to bypass the Rewrite logic below.
-        // It did NOT bypass the /s/ check if it was placed *before* the /s/ check?
-        // Original: Line 49 returns. Line 56 is /s/ check.
-        // So on localhost, /s/ check was skipped? That sounds like a bug or dev mode/public landing page feature.
-        // Wait, if I am on localhost/s/slug, `isMainDomain` is true. `NextResponse.next()` is returned.
-        // The Middleware executes sequentially.
-        // If `return next()` happens, the request continues to the page.
-        // If the PAGE `layout.tsx` or `page.tsx` has checks, great.
-        // But `middleware` protection for /s/ was seemingly skipped for localhost?
-        // That seems like a security gap for Dev, but maybe intended.
-        // user: "Make the Cyber security very Hard".
-        // I should fix this gap. /s/ routes should be protected regardless of domain.
+            // We use a short timeout to prevent blocking middleware too long
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 1000);
 
-        // REVISED FLOW:
-        // Do NOT return early for isMainDomain if path starts with /s/.
+            const res = await fetch(apiUrl, {
+                signal: controller.signal,
+                next: { revalidate: 60 } // Cache for 1 minute
+            });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+                const customDomainMap = await res.json();
+                tenantSlugFromDomain = customDomainMap[hostname] || null;
+            }
+        } catch (e) {
+            console.warn("Middleware: Failed to fetch custom domain map dynamically, falling back...", e);
+        }
     }
 
     // 4. Protect School/Parent Routes (Strict Server-Side Check)
-    if (url.pathname.startsWith("/s/")) {
+    if (url.pathname.startsWith("/s/") || tenantSlugFromDomain) {
         const sessionToken = req.cookies.get("session")?.value;
         let isAuthorized = false;
-        let redirectPath = "/school-login";
+        let authorizedSlug: string | null = null;
+        let redirectPath = tenantSlugFromDomain ? `/${tenantSlugFromDomain}` : "/";
 
         if (sessionToken) {
             try {
                 const payload = await decrypt(sessionToken);
-                if (payload && payload.userId) {
+                if (payload && payload.userId && payload.schoolSlug) {
+                    authorizedSlug = payload.schoolSlug as string;
                     // CROSS-TENANT CHECK
                     const pathParts = url.pathname.split("/");
-                    const pathSlug = pathParts[2];
-                    if (pathSlug && payload.schoolSlug && pathSlug !== payload.schoolSlug) {
+                    const pathSlug = tenantSlugFromDomain || pathParts[2];
+
+                    if (pathSlug && pathSlug !== authorizedSlug) {
                         // Redirect to authorized slug
-                        redirectPath = `/s/${payload.schoolSlug}`;
+                        redirectPath = `/s/${authorizedSlug}`;
                     } else {
                         isAuthorized = true;
                     }
@@ -111,17 +111,37 @@ export async function middleware(req: NextRequest) {
             }
         }
 
-        if (!isAuthorized) {
-            const redirectUrl = new URL(redirectPath, req.url);
+        // If trying to access protected /s/ route but unauthorized
+        if (url.pathname.startsWith("/s/") && !isAuthorized) {
+            const redirectUrl = new URL(`/${authorizedSlug || tenantSlugFromDomain || ''}`, req.url);
             redirectUrl.searchParams.set("callbackUrl", req.nextUrl.pathname + req.nextUrl.search);
             response = NextResponse.redirect(redirectUrl);
             return applySecurityHeaders(response);
         }
+
+        // If on custom domain and authenticated, ensure they go to dashboard if they hit root
+        if (tenantSlugFromDomain && isAuthorized && (url.pathname === "/" || url.pathname === "/login" || url.pathname === "/school-login")) {
+            url.pathname = `/s/${authorizedSlug}`;
+            response = NextResponse.redirect(url);
+            return applySecurityHeaders(response);
+        }
     }
 
-    // If we're here, either we passed checks or we are not in a protected route.
+    // CUSTOM DOMAIN REWRITES
+    if (tenantSlugFromDomain && (url.pathname === "/" || url.pathname === "/login" || url.pathname === "/school-login")) {
+        // Rewrite root custom domain to /[slug] login page
+        url.pathname = `/${tenantSlugFromDomain}`;
+        response = NextResponse.rewrite(url);
+        return applySecurityHeaders(response);
+    }
 
-    // REWRITE LOGIC (Only for subdomains usually, but let's stick to existing logic adjusted)
+    // SPECIAL: Old /school-login redirects to root (which might then redirect to /[slug] if domain matched)
+    if (url.pathname === "/school-login") {
+        url.pathname = "/";
+        response = NextResponse.redirect(url);
+        return applySecurityHeaders(response);
+    }
+
     // 5. Special Case: Android Emulator (10.0.2.2) root should show Parent Login
     if (hostname === "10.0.2.2" && url.pathname === "/") {
         url.pathname = "/parent-login";
@@ -129,7 +149,7 @@ export async function middleware(req: NextRequest) {
         return applySecurityHeaders(response);
     }
 
-    if (isMainDomain) {
+    if (isMainDomain && !url.pathname.startsWith("/s/")) {
         response = NextResponse.next();
         return applySecurityHeaders(response);
     }
@@ -141,9 +161,8 @@ export async function middleware(req: NextRequest) {
         return applySecurityHeaders(response);
     }
 
-    // Default Rewrite for Subdomains
-    url.pathname = `/parent-login`;
-    response = NextResponse.rewrite(url);
+    // Default Fallback
+    response = NextResponse.next();
     return applySecurityHeaders(response);
 }
 

@@ -17,18 +17,15 @@ import {
     Check,
     Loader2,
     X,
-    ArrowRight,
     Navigation,
     ShieldCheck,
-    ArrowLeft,
     Layers,
     Activity,
-    AlertTriangle,
-    CheckCircle2
+    IndianRupee
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { SectionHeader } from "@/components/ui/erp-ui";
+import { SectionHeader, ErpCard, Btn, ErpInput, C } from "@/components/ui/erp-ui";
 import { useSidebar } from "@/context/SidebarContext";
 
 export default function TransportAssignmentsPage() {
@@ -37,22 +34,16 @@ export default function TransportAssignmentsPage() {
     const { currency } = useSidebar();
     const slug = params.slug as string;
 
-    // State
     const [searchQuery, setSearchQuery] = useState("");
     const [students, setStudents] = useState<any[]>([]);
     const [loadingStudents, setLoadingStudents] = useState(false);
-
     const [routes, setRoutes] = useState<any[]>([]);
-
-    // Selection
     const [selectedStudent, setSelectedStudent] = useState<any>(null);
     const [selectedRouteId, setSelectedRouteId] = useState("");
     const [stops, setStops] = useState<any[]>([]);
-
     const [pickupStopId, setPickupStopId] = useState("");
     const [dropStopId, setDropStopId] = useState("");
     const [transportFee, setTransportFee] = useState<number>(0);
-
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
@@ -64,7 +55,6 @@ export default function TransportAssignmentsPage() {
         if (res.success && res.data) setRoutes(res.data);
     }
 
-    // Debounced load for search query
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             if (searchQuery.length > 2) {
@@ -74,7 +64,6 @@ export default function TransportAssignmentsPage() {
         return () => clearTimeout(delayDebounce);
     }, [searchQuery]);
 
-    // Handle clearing search term immediately
     useEffect(() => {
         if (searchQuery === "") {
             handleSearch();
@@ -88,7 +77,6 @@ export default function TransportAssignmentsPage() {
         setLoadingStudents(false);
     }
 
-    // When a route is selected, load its stops
     useEffect(() => {
         if (selectedRouteId) {
             async function fetchStops() {
@@ -128,7 +116,7 @@ export default function TransportAssignmentsPage() {
             const res = await assignStudentToRouteAction(selectedStudent.id, selectedRouteId, pickupStopId, dropStopId, slug, transportFee);
             if (res.success) {
                 toast.success("Student assigned to route");
-                handleSearch(); // Refresh list to show updated profile
+                handleSearch();
                 setSelectedStudent(null);
             } else {
                 toast.error(res.error || "Failed Assignment");
@@ -160,48 +148,44 @@ export default function TransportAssignmentsPage() {
     return (
         <div className="space-y-6">
             <SectionHeader
-                title="Assign Students"
-                subtitle="Assign students to routes and manage their transport details."
-                icon={User}
+                title="Route Assignments"
+                subtitle="Assign students to transport routes and manage pick-up points."
+                icon={<Navigation size={18} color={C.amber} />}
             />
 
             <div className="grid lg:grid-cols-12 gap-8">
                 {/* Left: Selection Engine */}
                 <div className="lg:col-span-4 space-y-6">
-                    <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-brand" />
-                        <input
-                            type="text"
-                            placeholder="Search student name..."
-                            className="w-full h-14 rounded-2xl border border-zinc-200 bg-white pl-12 pr-6 text-sm font-medium text-zinc-900 shadow-sm focus:ring-2 focus:ring-brand outline-none transition-all dark:bg-zinc-950 dark:border-zinc-800 dark:text-white"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
+                    <ErpInput
+                        placeholder="Search student identity..."
+                        icon={Search}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
 
                     <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar lg:sticky lg:top-8">
                         {loadingStudents ? (
-                            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                                <Loader2 className="h-8 w-8 animate-spin text-brand" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 tracking-[3px]">Loading students...</p>
+                            <div className="flex flex-col items-center justify-center py-24 gap-4">
+                                <Loader2 className="h-10 w-10 animate-spin text-brand" />
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Syncing Registry...</p>
                             </div>
                         ) : (
-                            <div className="grid gap-3">
+                            <div className="grid gap-4">
                                 {students.map(student => (
                                     <button
                                         key={student.id}
                                         onClick={() => selectStudent(student)}
                                         className={cn(
-                                            "group text-left p-5 rounded-[24px] border transition-all hover:scale-[1.02] active:scale-[0.98]",
+                                            "group text-left p-5 rounded-[28px] border-2 transition-all duration-300",
                                             selectedStudent?.id === student.id
-                                                ? "bg-brand border-zinc-900 text-[var(--secondary-color)] shadow-xl shadow-zinc-400/20"
-                                                : "bg-white border-zinc-100 hover:border-zinc-200 shadow-sm dark:bg-zinc-950 dark:border-zinc-800"
+                                                ? "bg-zinc-900 border-zinc-900 text-white shadow-2xl scale-[1.02]"
+                                                : "bg-white border-zinc-100 hover:border-zinc-200 shadow-sm"
                                         )}
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className={cn(
-                                                "h-12 w-12 shrink-0 rounded-xl flex items-center justify-center font-black text-xs shadow-inner transition-colors",
-                                                selectedStudent?.id === student.id ? "bg-white/10 text-[var(--secondary-color)]" : "bg-zinc-50 text-zinc-400 dark:bg-zinc-900"
+                                                "h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center font-black text-xs shadow-inner",
+                                                selectedStudent?.id === student.id ? "bg-white/10 text-white" : "bg-zinc-50 text-zinc-400"
                                             )}>
                                                 {student.firstName[0]}{student.lastName[0]}
                                             </div>
@@ -210,16 +194,16 @@ export default function TransportAssignmentsPage() {
                                                     {student.firstName} {student.lastName}
                                                 </div>
                                                 <div className={cn(
-                                                    "text-[10px] font-bold uppercase tracking-widest mt-0.5",
-                                                    selectedStudent?.id === student.id ? "text-white/40" : "text-zinc-400"
+                                                    "text-[10px] font-bold uppercase tracking-widest mt-0.5 opacity-60",
+                                                    selectedStudent?.id === student.id ? "text-white" : "text-zinc-400"
                                                 )}>
                                                     Grade: {student.grade || "N/A"}
                                                 </div>
                                             </div>
                                             {student.transportProfile && (
                                                 <div className={cn(
-                                                    "h-8 w-8 rounded-xl flex items-center justify-center shadow-inner transition-all group-hover:rotate-12",
-                                                    selectedStudent?.id === student.id ? "bg-brand text-[var(--secondary-color)] shadow-lg shadow-brand/20" : "bg-brand/5 text-brand"
+                                                    "h-8 w-8 rounded-xl flex items-center justify-center shadow-inner",
+                                                    selectedStudent?.id === student.id ? "bg-brand text-[var(--secondary-color)]" : "bg-brand/5 text-brand"
                                                 )}>
                                                     <Bus className="h-4 w-4" />
                                                 </div>
@@ -231,19 +215,13 @@ export default function TransportAssignmentsPage() {
                         )}
 
                         {students.length === 0 && searchQuery.length > 2 && !loadingStudents && (
-                            <div className="text-center py-20 px-6 rounded-[32px] bg-zinc-50/50 border-2 border-dashed border-zinc-200">
-                                <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
-                                    <Search className="h-5 w-5 text-zinc-200" />
+                            <ErpCard className="text-center py-24 border-dashed border-2 border-zinc-200">
+                                <div className="h-14 w-14 bg-zinc-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                    <Search className="h-6 w-6 text-zinc-200" />
                                 </div>
-                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-relaxed">No students found.</h3>
-                            </div>
-                        )}
-
-                        {searchQuery.length <= 2 && !loadingStudents && (
-                            <div className="text-center py-20 px-6 rounded-[32px] bg-zinc-50/50 border border-zinc-100">
-                                <User className="h-10 w-10 text-zinc-100 mx-auto mb-4" />
-                                <p className="text-[10px] font-black text-zinc-300 uppercase tracking-widest leading-relaxed">Search for a student to see their details.</p>
-                            </div>
+                                <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Zero Results</h3>
+                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-2 italic">Student not in registry.</p>
+                            </ErpCard>
                         )}
                     </div>
                 </div>
@@ -251,60 +229,62 @@ export default function TransportAssignmentsPage() {
                 {/* Right: Workspace */}
                 <div className="lg:col-span-8">
                     {selectedStudent ? (
-                        <div className="rounded-[40px] bg-white p-10 shadow-xl shadow-zinc-200/40 border border-zinc-200 relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 dark:bg-zinc-950 dark:border-zinc-800">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-14 w-14 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center shadow-lg relative overflow-hidden">
-                                        <Layers className="h-6 w-6" />
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-brand/20 to-transparent" />
+                        <ErpCard className="p-10 shadow-2xl shadow-zinc-200/50 border-zinc-100 relative overflow-hidden animate-in fade-in slide-in-from-right-8 duration-500">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
+                                <div className="flex items-center gap-5">
+                                    <div className="h-16 w-16 rounded-3xl bg-zinc-100 flex items-center justify-center shadow-lg border border-zinc-200/50 relative group">
+                                        <Layers className="h-8 w-8 text-zinc-900 group-hover:rotate-12 transition-transform" />
+                                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-brand rounded-full animate-ping" />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight dark:text-zinc-50">
-                                            Transport Details: <span className="text-brand">{selectedStudent.firstName}</span>
+                                        <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight">
+                                            Transport Profile
                                         </h2>
-                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-0.5">Route and stop information</p>
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Assignment for {selectedStudent.firstName}</p>
                                     </div>
                                 </div>
                                 {selectedStudent.transportProfile && (
-                                    <button
+                                    <Btn
+                                        variant="danger"
                                         onClick={handleRemove}
-                                        className="h-12 px-6 rounded-xl bg-red-50 text-red-600 border border-red-100 text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all active:scale-95 shadow-sm dark:bg-red-500/10 dark:border-red-500/20"
+                                        loading={submitting}
+                                        icon={X}
                                     >
-                                        Remove Transport
-                                    </button>
+                                        Detach Transport
+                                    </Btn>
                                 )}
                             </div>
 
-                            <div className="space-y-12">
+                            <div className="space-y-16">
                                 {/* Route Selection */}
-                                <div className="space-y-6">
+                                <div className="space-y-8">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-2xl bg-brand/10 flex items-center justify-center">
-                                            <Navigation className="h-5 w-5 text-brand" />
+                                        <div className="h-10 w-10 rounded-2xl bg-zinc-100 flex items-center justify-center border border-zinc-200 text-zinc-900 shadow-sm">
+                                            <Navigation className="h-5 w-5" />
                                         </div>
-                                        <h3 className="text-xl font-black text-zinc-900 dark:text-zinc-100">Available Routes</h3>
+                                        <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight">Network Selection</h3>
                                     </div>
-                                    <div className="grid sm:grid-cols-2 gap-4">
+                                    <div className="grid sm:grid-cols-2 gap-5">
                                         {routes.map(route => (
                                             <button
                                                 key={route.id}
                                                 onClick={() => setSelectedRouteId(route.id)}
                                                 className={cn(
-                                                    "relative text-left p-6 rounded-[28px] border-2 transition-all hover:scale-[1.02] active:scale-[0.98]",
+                                                    "relative text-left p-8 rounded-[36px] border-2 transition-all duration-300",
                                                     selectedRouteId === route.id
-                                                        ? "bg-brand border-zinc-900 text-[var(--secondary-color)] shadow-xl"
-                                                        : "bg-white border-zinc-100 hover:border-zinc-200 dark:bg-zinc-900/50 dark:border-zinc-800"
+                                                        ? "bg-brand border-zinc-900 text-[var(--secondary-color)] shadow-xl scale-[1.02]"
+                                                        : "bg-white border-zinc-100 hover:border-zinc-200"
                                                 )}
                                             >
-                                                <div className="font-black text-sm uppercase tracking-tight">{route.name}</div>
+                                                <div className="font-black text-base uppercase tracking-tight leading-none">{route.name}</div>
                                                 <div className={cn(
-                                                    "text-[10px] font-bold uppercase tracking-widest mt-1 truncate",
-                                                    selectedRouteId === route.id ? "text-white/50" : "text-zinc-400"
-                                                )}>{route.description || "Route active"}</div>
+                                                    "text-[9px] font-black uppercase tracking-[0.2em] mt-2 opacity-50 italic",
+                                                    selectedRouteId === route.id ? "text-white" : "text-zinc-400"
+                                                )}>{route.description || "Active Corridor"}</div>
 
                                                 {selectedRouteId === route.id && (
-                                                    <div className="absolute top-4 right-4 h-6 w-6 rounded-full bg-brand flex items-center justify-center text-[var(--secondary-color)] shadow-lg">
-                                                        <Check className="h-3 w-3" />
+                                                    <div className="absolute -top-3 -right-3 h-10 w-10 rounded-2xl bg-zinc-900 flex items-center justify-center text-white border-4 border-white shadow-2xl animate-in zoom-in-50 duration-300">
+                                                        <Check className="h-5 w-5" />
                                                     </div>
                                                 )}
                                             </button>
@@ -314,108 +294,97 @@ export default function TransportAssignmentsPage() {
 
                                 {/* Stop Selection */}
                                 {selectedRouteId && (
-                                    <>
-                                        <div className="grid sm:grid-cols-2 gap-8 animate-in slide-in-from-top-4 duration-500">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Pickup Point</label>
-                                                <div className="relative">
+                                    <div className="animate-in slide-in-from-top-12 duration-700 space-y-10">
+                                        <div className="grid sm:grid-cols-2 gap-8">
+                                            <div className="space-y-3 px-1">
+                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Pick-up Logistics</label>
+                                                <div className="relative group">
                                                     <select
-                                                        aria-label="Select Pickup Point"
-                                                        className="w-full h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-6 pr-12 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-brand focus:bg-white outline-none transition-all shadow-sm appearance-none dark:bg-zinc-900 dark:border-zinc-800 dark:text-white"
+                                                        aria-label="Pick-up Stop"
+                                                        className="w-full h-16 rounded-3xl border-2 border-zinc-100 bg-zinc-50/50 px-8 pr-14 text-sm font-black text-zinc-900 focus:ring-4 focus:ring-brand/10 focus:border-brand focus:bg-white outline-none transition-all appearance-none"
                                                         value={pickupStopId}
                                                         onChange={(e) => setPickupStopId(e.target.value)}
-                                                        title="Select Pickup Point"
                                                     >
                                                         <option value="">Select Pickup Point</option>
                                                         {stops.map(stop => (
                                                             <option key={stop.id} value={stop.id}>
-                                                                Stop {stop.sequenceOrder}: {stop.name} [{stop.pickupTime}]
+                                                                ST {stop.sequenceOrder}: {stop.name} [{stop.pickupTime}]
                                                             </option>
                                                         ))}
                                                     </select>
-                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
-                                                        <MapPin className="h-4 w-4" />
-                                                    </div>
+                                                    <MapPin className="absolute right-6 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-300 group-focus-within:text-brand" />
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Drop Point</label>
-                                                <div className="relative">
+                                            <div className="space-y-3 px-1">
+                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Drop-off Logistics</label>
+                                                <div className="relative group">
                                                     <select
-                                                        aria-label="Select Drop Point"
-                                                        className="w-full h-14 rounded-2xl border border-zinc-200 bg-zinc-50 px-6 pr-12 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-brand focus:bg-white outline-none transition-all shadow-sm appearance-none dark:bg-zinc-900 dark:border-zinc-800 dark:text-white"
+                                                        aria-label="Drop-off Stop"
+                                                        className="w-full h-16 rounded-3xl border-2 border-zinc-100 bg-zinc-50/50 px-8 pr-14 text-sm font-black text-zinc-900 focus:ring-4 focus:ring-brand/10 focus:border-brand focus:bg-white outline-none transition-all appearance-none"
                                                         value={dropStopId}
                                                         onChange={(e) => setDropStopId(e.target.value)}
-                                                        title="Select Drop Point"
                                                     >
                                                         <option value="">Select Drop Point</option>
                                                         {stops.map(stop => (
                                                             <option key={stop.id} value={stop.id}>
-                                                                Stop {stop.sequenceOrder}: {stop.name} [{stop.dropTime}]
+                                                                ST {stop.sequenceOrder}: {stop.name} [{stop.dropTime}]
                                                             </option>
                                                         ))}
                                                     </select>
-                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
-                                                        <MapPin className="h-4 w-4" />
-                                                    </div>
+                                                    <MapPin className="absolute right-6 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-300 group-focus-within:text-brand transition-colors" />
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Fee Integration */}
-                                        <div className="p-8 rounded-[32px] bg-emerald-50/50 border border-emerald-100 space-y-4 dark:bg-emerald-500/5 dark:border-emerald-500/10">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-xl bg-white flex items-center justify-center shadow-sm dark:bg-zinc-900">
-                                                    <Activity className="h-4 w-4 text-emerald-600" />
+                                        <div className="p-10 rounded-[48px] bg-emerald-50/30 border-2 border-dashed border-emerald-100 flex flex-col md:flex-row md:items-center justify-between gap-8 group">
+                                            <div className="flex items-center gap-5">
+                                                <div className="h-14 w-14 rounded-3xl bg-white border border-emerald-100 flex items-center justify-center shadow-xl shadow-emerald-200/20 text-emerald-600 group-hover:scale-110 transition-transform">
+                                                    <IndianRupee className="h-7 w-7" />
                                                 </div>
-                                                <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Transport Fee</h4>
+                                                <div>
+                                                    <h4 className="text-sm font-black text-emerald-900 uppercase tracking-tight">Financial Covenant</h4>
+                                                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1 opacity-60 italic">Monthly Transport Retainer</p>
+                                                </div>
                                             </div>
-                                            <div className="relative max-w-xs">
-                                                <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-emerald-600 text-sm">{currency}</span>
+                                            <div className="relative w-full md:w-64">
+                                                <span className="absolute left-8 top-1/2 -translate-y-1/2 font-black text-emerald-600 text-lg opacity-40">{currency}</span>
                                                 <input
                                                     type="number"
                                                     placeholder="0.00"
-                                                    className="w-full h-14 rounded-2xl border-0 bg-white pl-10 pr-6 text-sm font-black text-zinc-900 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all dark:bg-zinc-900 dark:text-white"
+                                                    className="w-full h-16 rounded-[28px] border-0 bg-white ring-2 ring-emerald-100 pl-16 pr-8 text-lg font-black text-zinc-900 shadow-2xl shadow-emerald-200/30 focus:ring-brand transition-all outline-none"
                                                     value={transportFee || ""}
                                                     onChange={(e) => setTransportFee(parseFloat(e.target.value) || 0)}
                                                 />
                                             </div>
-                                            <p className="text-[9px] font-bold text-emerald-600/60 uppercase tracking-widest leading-relaxed">
-                                                A fee record will be created when you assign the student.
-                                            </p>
                                         </div>
-                                    </>
+                                    </div>
                                 )}
 
-                                <div className="flex justify-end pt-10 border-t border-zinc-100 dark:border-zinc-800">
-                                    <button
+                                <div className="flex justify-end pt-12 border-t border-zinc-50">
+                                    <Btn
+                                        size="lg"
+                                        variant="primary"
                                         onClick={handleAssign}
                                         disabled={submitting || !selectedRouteId}
-                                        className="h-16 rounded-2xl bg-brand px-12 text-[10px] font-black uppercase tracking-[2px] text-[var(--secondary-color)] shadow-xl shadow-zinc-200 hover:bg-black hover:text-white hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                        loading={submitting}
+                                        icon={ShieldCheck}
+                                        className="h-20 px-16 rounded-[28px] text-[11px] uppercase tracking-[3px]"
                                     >
-                                        {submitting ? (
-                                            <>
-                                                <Loader2 className="h-5 w-5 animate-spin" />
-                                                Saving...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <ShieldCheck className="h-5 w-5 text-brand" />
-                                                Assign Student
-                                            </>
-                                        )}
-                                    </button>
+                                        Authorize Assignment
+                                    </Btn>
                                 </div>
                             </div>
-                        </div>
+                        </ErpCard>
                     ) : (
-                        <div className="flex h-full min-h-[500px] flex-col items-center justify-center rounded-[48px] border-2 border-dashed border-zinc-100 bg-zinc-50/20 p-20 text-center animate-in fade-in duration-700 dark:border-zinc-800">
-                            <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-[32px] bg-white shadow-xl shadow-zinc-200/50 ring-1 ring-zinc-50 dark:bg-zinc-900 dark:ring-zinc-800 dark:shadow-none">
-                                <Activity className="h-10 w-10 text-zinc-100 dark:text-zinc-800" />
+                        <div className="flex h-full min-h-[600px] flex-col items-center justify-center rounded-[64px] border-2 border-dashed border-zinc-100 bg-zinc-50/20 p-20 text-center animate-pulse">
+                            <div className="mb-10 flex h-28 w-28 items-center justify-center rounded-[40px] bg-white shadow-2xl shadow-zinc-200 border border-zinc-50 relative">
+                                <Activity className="h-12 w-12 text-zinc-100" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 to-transparent opacity-50 rounded-[40px]" />
                             </div>
-                            <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight italic dark:text-zinc-100">Select a Student</h3>
-                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2 max-w-xs leading-relaxed">
-                                Select a student from the list to manage their transport.
+                            <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tight italic opacity-20">Awaiting Target</h3>
+                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-4 max-w-xs leading-relaxed">
+                                Select a student identity from the registry to initiate mission assignment.
                             </p>
                         </div>
                     )}

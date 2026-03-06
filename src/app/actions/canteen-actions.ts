@@ -10,7 +10,7 @@ async function getAuth(slug: string) {
     const auth = await validateUserSchoolAction(slug);
     if (!auth.success || !auth.user) return { success: false as const, error: auth.error ?? 'Not authenticated' };
     // For SUPER_ADMIN, school may be null on the user obj — look it up by slug
-    const school = auth.user.school ?? await (prisma as any).school.findUnique({ where: { slug }, select: { id: true, slug: true, name: true } });
+    const school = auth.user.school ?? await prisma.school.findUnique({ where: { slug }, select: { id: true, slug: true, name: true } });
     if (!school) return { success: false as const, error: 'School not found' };
     return { success: true as const, user: auth.user, school };
 }
@@ -23,7 +23,7 @@ export async function getCanteenPackagesAction(slug: string) {
     try {
         const auth = await getAuth(slug);
         if (!auth.success) return { success: false, error: auth.error, data: [] };
-        const data = await (prisma as any).canteenPackage.findMany({
+        const data = await prisma.canteenPackage.findMany({
             where: { schoolId: auth.school.id },
             orderBy: { name: 'asc' },
         });
@@ -45,7 +45,7 @@ export async function createCanteenPackageAction(slug: string, input: {
     try {
         const auth = await getAuth(slug);
         if (!auth.success) return { success: false, error: auth.error };
-        const pkg = await (prisma as any).canteenPackage.create({
+        const pkg = await prisma.canteenPackage.create({
             data: { ...input, schoolId: auth.school.id },
         });
         revalidatePath(`/s/${slug}/canteen`);
@@ -68,9 +68,9 @@ export async function updateCanteenPackageAction(slug: string, packageId: string
     try {
         const auth = await getAuth(slug);
         if (!auth.success) return { success: false, error: auth.error };
-        await (prisma as any).canteenPackage.update({
+        await prisma.canteenPackage.update({
             where: { id: packageId, schoolId: auth.school.id },
-            data: input
+            data: input as any
         });
         revalidatePath(`/s/${slug}/canteen`);
         return { success: true };
@@ -84,7 +84,7 @@ export async function deleteCanteenPackageAction(slug: string, packageId: string
     try {
         const auth = await getAuth(slug);
         if (!auth.success) return { success: false, error: auth.error };
-        await (prisma as any).canteenPackage.delete({
+        await prisma.canteenPackage.delete({
             where: { id: packageId, schoolId: auth.school.id }
         });
         revalidatePath(`/s/${slug}/canteen`);
@@ -592,6 +592,10 @@ export async function getCanteenAnalyticsAction(slug: string) {
         const monthStart = startOfMonth(now);
 
         // Basic Stats
+        if (!(prisma as any).canteenOrder) {
+            return { success: false, error: "Canteen models not found in Prisma client. Try restarting dev server." };
+        }
+
         const [
             todayOrders,
             monthOrders,
@@ -599,16 +603,16 @@ export async function getCanteenAnalyticsAction(slug: string) {
             activeSubscriptions,
             lowBalanceWallets
         ] = await Promise.all([
-            (prisma as any).canteenOrder.findMany({
+            prisma.canteenOrder.findMany({
                 where: { student: { schoolId }, orderDate: { gte: todayStart } },
                 include: { orderItems: { include: { item: true } } }
-            }),
-            (prisma as any).canteenOrder.findMany({
+            } as any),
+            prisma.canteenOrder.findMany({
                 where: { student: { schoolId }, orderDate: { gte: monthStart } }
-            }),
-            (prisma as any).canteenItem.count({ where: { schoolId } }),
-            (prisma as any).canteenSubscription.count({ where: { schoolId, status: "ACTIVE" } }),
-            (prisma as any).studentWallet.count({ where: { schoolId, balance: { lt: 100 } } })
+            } as any),
+            prisma.canteenItem.count({ where: { schoolId } }),
+            prisma.canteenSubscription.count({ where: { schoolId, status: "ACTIVE" } }),
+            prisma.studentWallet.count({ where: { schoolId, balance: { lt: 100 } } })
         ]);
 
         const todayRevenue = todayOrders.reduce((acc: number, o: any) => acc + o.totalAmount, 0);
@@ -616,10 +620,10 @@ export async function getCanteenAnalyticsAction(slug: string) {
 
         // AI Data Processing: Item Velocity (last 7 days)
         const sevenDaysAgo = subDays(todayStart, 7);
-        const recentOrdersForAI = await (prisma as any).canteenOrder.findMany({
+        const recentOrdersForAI = await prisma.canteenOrder.findMany({
             where: { student: { schoolId }, orderDate: { gte: sevenDaysAgo } },
             include: { orderItems: { include: { item: true } } }
-        });
+        } as any);
 
         const itemFreq: Record<string, { name: string, count: number, revenue: number, category: string }> = {};
         recentOrdersForAI.forEach((o: any) => {

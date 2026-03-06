@@ -2,6 +2,7 @@ export interface Tenant {
     id: string;
     name: string;
     subdomain: string;
+    customDomain?: string;
     brandColor: string;
     adminName: string;
     email: string;
@@ -60,4 +61,4 @@ export interface Tenant {
     branches?: { id: string; name: string; status: string; }[];
 }
 
-export type CreateTenantInput = Omit<Tenant, "id" | "students" | "mrr" | "joinedDate" | "status" | "lastActive">;
+export type CreateTenantInput = Omit<Tenant, "id" | "students" | "staff" | "mrr" | "joinedDate" | "status" | "lastActive">;

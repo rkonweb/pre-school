@@ -1,20 +1,11 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { SettingsShell } from "@/components/dashboard/settings/SettingsShell";
 
 export default function SettingsLayout({
-    children
+    children,
 }: {
-    children: React.ReactNode
+    children: React.ReactNode;
 }) {
-    const pathname = usePathname();
-    const isDesigner = pathname.includes('/id-cards/designer');
-
-    // ID Card Designer needs special full-screen treatment
-    if (isDesigner) {
-        return <div className="-m-8">{children}</div>;
-    }
-
-    // All other settings pages use standard dashboard layout
-    return <>{children}</>;
+    return <SettingsShell>{children}</SettingsShell>;
 }

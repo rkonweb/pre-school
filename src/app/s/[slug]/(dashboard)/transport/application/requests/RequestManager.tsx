@@ -5,8 +5,9 @@ import { Check, X, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { approveTransportRequestAction, rejectTransportRequestAction } from "@/app/actions/transport-actions";
 import { useConfirm } from "@/contexts/ConfirmContext";
+import { ErpCard, Btn, StatusChip } from "@/components/ui/erp-ui";
 
-export default function RequestManager({ requests, routes }: any) {
+export default function RequestManager({ requests, routes, slug }: any) {
     const { confirm: confirmDialog } = useConfirm();
     const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
     const [assignment, setAssignment] = useState({ routeId: "", stopId: "", startDate: "" });
@@ -17,7 +18,7 @@ export default function RequestManager({ requests, routes }: any) {
             return;
         }
 
-        const res = await approveTransportRequestAction(studentId, assignment);
+        const res = await approveTransportRequestAction(slug, studentId, assignment);
         if (res.success) {
             toast.success("Request approved and fee generated");
             setSelectedRequest(null);
@@ -38,7 +39,7 @@ export default function RequestManager({ requests, routes }: any) {
 
         if (!confirmed) return;
 
-        const res = await rejectTransportRequestAction(studentId);
+        const res = await rejectTransportRequestAction(slug, studentId);
         if (res.success) {
             toast.success("Request rejected");
         } else {
@@ -49,92 +50,107 @@ export default function RequestManager({ requests, routes }: any) {
     const selectedRoute = routes.find((r: any) => r.id === assignment.routeId);
 
     return (
-        <div className="space-y-6">
-            <h2 className="text-xl font-bold">Transport Applications</h2>
+        <div className="grid gap-6">
+            {requests.length === 0 && (
+                <div className="py-20 text-center flex flex-col items-center bg-white rounded-[40px] border-2 border-dashed border-zinc-200">
+                    <Check className="h-12 w-12 text-zinc-200 mb-4" />
+                    <h3 className="text-xl font-black text-zinc-900 uppercase">All Requests Processed</h3>
+                    <p className="text-sm font-bold text-zinc-400 uppercase mt-2">Check back later for new transport applications.</p>
+                </div>
+            )}
 
-            <div className="grid gap-4">
-                {requests.length === 0 && <p className="text-zinc-500">No pending requests.</p>}
-
-                {requests.map((req: any) => (
-                    <div key={req.id} className="border p-4 rounded-lg bg-white shadow-sm">
-                        <div className="flex justify-between items-start">
+            {requests.map((req: any) => (
+                <ErpCard key={req.id} hover className="border-zinc-100">
+                    <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-4">
+                            <div className="h-12 w-12 rounded-2xl bg-zinc-100 flex items-center justify-center font-black text-zinc-900 text-lg uppercase shadow-sm border border-zinc-200/50">
+                                {req.student.firstName?.[0]}{req.student.lastName?.[0]}
+                            </div>
                             <div>
-                                <h3 className="font-bold flex items-center gap-2">
+                                <h3 className="font-black text-zinc-900 uppercase tracking-tight text-lg leading-tight flex items-center gap-3">
                                     {req.student.firstName} {req.student.lastName}
-                                    <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full font-medium">{req.status}</span>
+                                    <StatusChip label="Pending" />
                                 </h3>
-                                <p className="text-sm text-zinc-500">Grade: {req.student.grade}</p>
+                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Grade: {req.student.grade || 'N/A'}</p>
 
-                                <div className="mt-3 flex items-start gap-2 text-sm bg-zinc-50 p-2 rounded border border-zinc-100">
+                                <div className="mt-4 flex items-start gap-3 text-sm bg-zinc-50/50 p-4 rounded-[20px] border border-zinc-100">
                                     <MapPin className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
                                     <div>
-                                        <span className="font-semibold text-zinc-700">Requested Location:</span>
-                                        <p className="text-zinc-600">{req.applicationAddress || "No address provided"}</p>
-                                        <div className="text-xs text-zinc-400 mt-1">Coordinates: {req.applicationLat?.toFixed(4)}, {req.applicationLng?.toFixed(4)}</div>
+                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.1em]">Requested Location</span>
+                                        <p className="text-zinc-700 font-bold mt-1">{req.applicationAddress || "No address provided"}</p>
+                                        <div className="text-[10px] font-bold text-zinc-400 mt-2 flex items-center gap-2">
+                                            <span className="bg-zinc-200/50 px-1.5 py-0.5 rounded">LAT: {req.applicationLat?.toFixed(4)}</span>
+                                            <span className="bg-zinc-200/50 px-1.5 py-0.5 rounded">LNG: {req.applicationLng?.toFixed(4)}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            {!selectedRequest && (
-                                <button
-                                    onClick={() => setSelectedRequest(req.studentId)}
-                                    className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                                >
-                                    Assign Route
-                                </button>
-                            )}
                         </div>
 
-                        {selectedRequest === req.studentId && (
-                            <div className="mt-4 pt-4 border-t border-zinc-100 animate-in fade-in slide-in-from-top-2">
-                                <h4 className="font-semibold text-sm mb-3">Assign Route & Stop</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                                    <div>
-                                        <label className="text-xs font-medium text-zinc-500">Select Route</label>
-                                        <select
-                                            className="w-full border p-2 rounded text-sm"
-                                            value={assignment.routeId}
-                                            onChange={e => setAssignment({ ...assignment, routeId: e.target.value, stopId: "" })}
-                                        >
-                                            <option value="">-- Choose Route --</option>
-                                            {routes.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-medium text-zinc-500">Select Stop</label>
-                                        <select
-                                            className="w-full border p-2 rounded text-sm"
-                                            value={assignment.stopId}
-                                            onChange={e => setAssignment({ ...assignment, stopId: e.target.value })}
-                                            disabled={!assignment.routeId}
-                                        >
-                                            <option value="">-- Choose Stop --</option>
-                                            {selectedRoute?.stops.map((s: any) => (
-                                                <option key={s.id} value={s.id}>{s.name} ({s.pickupTime}) - ${s.monthlyFee}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-medium text-zinc-500">Start Date</label>
-                                        <input
-                                            type="date"
-                                            className="w-full border p-2 rounded text-sm"
-                                            value={assignment.startDate}
-                                            onChange={e => setAssignment({ ...assignment, startDate: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end gap-2">
-                                    <button onClick={() => setSelectedRequest(null)} className="px-3 py-1.5 text-zinc-600 hover:bg-zinc-100 rounded text-sm">Cancel</button>
-                                    <button onClick={() => handleReject(req.studentId)} className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded text-sm flex items-center gap-1"><X className="h-3 w-3" /> Reject</button>
-                                    <button onClick={() => handleApprove(req.studentId)} className="px-3 py-1.5 bg-green-600 text-white rounded text-sm flex items-center gap-1 hover:bg-green-700 shadow-sm"><Check className="h-3 w-3" /> Approve & Generate Fee</button>
-                                </div>
-                            </div>
+                        {!selectedRequest && (
+                            <Btn
+                                onClick={() => setSelectedRequest(req.studentId)}
+                                variant="primary"
+                                size="sm"
+                                icon={MapPin}
+                            >
+                                Assign Route
+                            </Btn>
                         )}
                     </div>
-                ))}
-            </div>
+
+                    {selectedRequest === req.studentId && (
+                        <div className="mt-8 pt-8 border-t border-zinc-100 animate-in fade-in slide-in-from-top-4">
+                            <h4 className="text-sm font-black text-zinc-900 uppercase tracking-widest mb-6">Dispatch Assignment</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Select Route</label>
+                                    <select
+                                        aria-label="Select Route"
+                                        className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand"
+                                        value={assignment.routeId}
+                                        onChange={e => setAssignment({ ...assignment, routeId: e.target.value, stopId: "" })}
+                                    >
+                                        <option value="">-- Choose Route --</option>
+                                        {routes.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Select Stop</label>
+                                    <select
+                                        aria-label="Select Stop"
+                                        className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand disabled:opacity-50"
+                                        value={assignment.stopId}
+                                        onChange={e => setAssignment({ ...assignment, stopId: e.target.value })}
+                                        disabled={!assignment.routeId}
+                                    >
+                                        <option value="">-- Choose Stop --</option>
+                                        {selectedRoute?.stops.map((s: any) => (
+                                            <option key={s.id} value={s.id}>{s.name} ({s.pickupTime}) - ₹{s.monthlyFee}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Start Date</label>
+                                    <input
+                                        aria-label="Start Date"
+                                        type="date"
+                                        className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-brand"
+                                        value={assignment.startDate}
+                                        onChange={e => setAssignment({ ...assignment, startDate: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end items-center gap-3">
+                                <Btn variant="ghost" onClick={() => setSelectedRequest(null)}>Cancel</Btn>
+                                <Btn variant="danger" icon={X} onClick={() => handleReject(req.studentId)}>Reject</Btn>
+                                <Btn variant="success" icon={Check} onClick={() => handleApprove(req.studentId)}>Approve & Generate</Btn>
+                            </div>
+                        </div>
+                    )}
+                </ErpCard>
+            ))}
         </div>
     );
 }

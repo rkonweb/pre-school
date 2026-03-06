@@ -104,19 +104,19 @@ function SortableWidget({
     return (
         <div
             ref={setNodeRef}
-            style={style}
             className={cn(
-                "relative group transition-opacity",
+                "erp-widget-card relative transition-all",
                 isDragging ? "opacity-30 z-50" : "opacity-100 z-auto"
             )}
+            style={{ transform: CSS.Transform.toString(transform) }}
         >
-            {/* Drag Handle */}
+            <style>{`.erp-widget-card .erp-drag-handle{opacity:0;transition:opacity 0.2s}.erp-widget-card:hover .erp-drag-handle{opacity:1}`}</style>
             <div
+                className="erp-drag-handle absolute top-3.5 right-3.5 z-10 flex items-center justify-center p-1.5 rounded-lg bg-gray-100 text-gray-400 cursor-grab opacity-0 transition-opacity duration-200"
                 {...attributes}
                 {...listeners}
-                className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1.5 hover:bg-zinc-100 rounded-lg text-zinc-400"
             >
-                <GripVertical className="h-4 w-4" />
+                <GripVertical className="w-[15px] h-[15px]" />
             </div>
             {children}
         </div>
@@ -203,20 +203,24 @@ export function DashboardClient() {
 
     if (isLoading) {
         return (
-            <div className="flex h-[60vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-brand" />
+            <div className="flex h-[60vh] flex-col items-center justify-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-[0_6px_20px_rgba(245,158,11,0.35)]">
+                    <LayoutGrid className="h-5 w-5 text-white" />
+                </div>
+                <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-gray-100 border-t-amber-500" />
+                <span className="font-sans text-[13px] font-semibold text-gray-400">Loading dashboard...</span>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen relative overflow-hidden" style={{ background: "linear-gradient(160deg,#F0EFF8 0%,#FAFAFA 60%,#FFF8F0 100%)" }}>
+        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#F0EFF8] via-[#FAFAFA] to-[#FFF8F0] pb-[40px]">
             {/* Ambient Background Graphics */}
             <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full" style={{ background: "rgba(245,158,11,0.07)", filter: "blur(120px)" }} />
-                <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] rounded-full" style={{ background: "rgba(139,92,246,0.06)", filter: "blur(110px)" }} />
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/5 blur-[120px]" />
+                <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] rounded-full bg-violet-500/5 blur-[110px]" />
                 {/* Subtle dot grid */}
-                <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.03 }} xmlns="http://www.w3.org/2000/svg">
+                <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <pattern id="erp-grid" width="40" height="40" patternUnits="userSpaceOnUse">
                             <circle cx="1" cy="1" r="1.2" fill="#1E1B4B" />
@@ -226,7 +230,7 @@ export function DashboardClient() {
                 </svg>
             </div>
 
-            <div className="w-full p-6 md:p-12 space-y-12 relative z-10">
+            <div className="relative z-10 flex w-full flex-col gap-7 px-10 py-8">
 
 
                 {!staffId && (
@@ -243,43 +247,35 @@ export function DashboardClient() {
                 )}
 
                 {/* Header Area */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
-                    <div style={{ animation: "fadeUp 0.45s ease 0.1s both" }}>
-                        <h1 style={{ fontFamily: "'Sora', sans-serif", fontSize: 30, fontWeight: 800, color: "#1E1B4B", letterSpacing: -1, marginBottom: 6, lineHeight: 1.15 }}>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="animate-[fadeUp_0.45s_ease_0.1s_both]">
+                        <h1 className="mb-1.5 font-sora text-[30px] font-extrabold leading-[1.15] tracking-tight text-[#1E1B4B]">
                             {staffId ? "Personnel Console" : (
                                 <>
                                     School{" "}
-                                    <span style={{ background: "linear-gradient(135deg,#F59E0B,#D97706)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                                    <span className="bg-gradient-to-br from-amber-500 to-amber-600 bg-clip-text text-transparent">
                                         Intelligence
                                     </span>
                                 </>
                             )}
                         </h1>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.15em" }}>
-                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#10B981", animation: "erp-pulse 2s ease-in-out infinite" }} />
+                        <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.15em] text-gray-400">
+                            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                             Live · {slug}{staffId && " · Staff View"}
                         </div>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div className="flex items-center gap-2.5">
                         <DailyReportGenerator slug={slug} />
                         <button
                             onClick={() => setIsConfiguring(!isConfiguring)}
                             title={isConfiguring ? "Lock Dashboard Layout" : "Customize Dashboard Layout"}
-                            style={{
-                                display: "flex", alignItems: "center", gap: 8,
-                                padding: "10px 16px",
-                                borderRadius: 12,
-                                fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
-                                border: isConfiguring ? "none" : "1.5px solid #E5E7EB",
-                                background: isConfiguring
-                                    ? "linear-gradient(135deg,#F59E0B,#D97706)"
-                                    : "white",
-                                color: isConfiguring ? "white" : "#4B5563",
-                                boxShadow: isConfiguring ? "0 4px 16px rgba(245,158,11,0.35)" : "0 2px 8px rgba(0,0,0,0.06)",
-                                cursor: "pointer",
-                                transition: "all 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-                            }}
+                            className={cn(
+                                "flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold tracking-[0.06em] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                                isConfiguring
+                                    ? "bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-[0_4px_16px_rgba(245,158,11,0.35)]"
+                                    : "border-[1.5px] border-gray-200 bg-white text-gray-600 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:border-gray-300"
+                            )}
                         >
                             {isConfiguring ? <Check className="h-4 w-4" /> : <Settings2 className="h-4 w-4" />}
                             {isConfiguring ? "Lock Layout" : "Customise"}
@@ -290,52 +286,42 @@ export function DashboardClient() {
                 {/* Config Overlay / Modal */}
                 <AnimatePresence>
                     {isConfiguring && (
-                        <div style={{
-                            background: "white",
-                            border: "1.5px solid #F3F4F6",
-                            borderRadius: 24,
-                            padding: 24,
-                            boxShadow: "0 8px 40px rgba(0,0,0,0.12)",
-                            animation: "fadeUp 0.3s ease both",
-                        }}>
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                    <div style={{ width: 32, height: 32, borderRadius: 9, background: "#FFFBEB", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <LayoutGrid style={{ width: 15, height: 15, color: "#D97706" }} />
+                        <div className="animate-[fadeUp_0.3s_ease_both] rounded-[24px] border-[1.5px] border-gray-100 bg-white p-6 shadow-[0_8px_40px_rgba(0,0,0,0.12)]">
+                            <div className="mb-4 flex items-center justify-between">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-amber-50">
+                                        <LayoutGrid className="h-[15px] w-[15px] text-amber-600" />
                                     </div>
-                                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: 15, fontWeight: 800, color: "#1E1B4B" }}>Widget Configuration</span>
+                                    <span className="font-sora text-[15px] font-extrabold text-[#1E1B4B]">Widget Configuration</span>
                                 </div>
-                                <button onClick={() => setIsConfiguring(false)} title="Close Configuration"
-                                    style={{ padding: 6, borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", color: "#9CA3AF" }}>
-                                    <X style={{ width: 16, height: 16 }} />
+                                <button
+                                    onClick={() => setIsConfiguring(false)}
+                                    title="Close Configuration"
+                                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-50 focus:outline-none"
+                                >
+                                    <X className="h-4 w-4" />
                                 </button>
                             </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 10 }}>
+                            <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5">
                                 {widgets.map(w => (
                                     <button
                                         key={w.id}
                                         onClick={() => toggleWidget(w.id)}
-                                        style={{
-                                            padding: "10px 14px",
-                                            borderRadius: 12,
-                                            fontSize: 12.5, fontWeight: 600,
-                                            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-                                            cursor: "pointer",
-                                            border: w.enabled ? "1.5px solid #F59E0B" : "1.5px solid #E5E7EB",
-                                            background: w.enabled ? "#FFFBEB" : "#F9FAFB",
-                                            color: w.enabled ? "#D97706" : "#6B7280",
-                                            transition: "all 0.2s ease",
-                                        }}
+                                        className={cn(
+                                            "flex cursor-pointer items-center justify-between gap-2 rounded-xl border-[1.5px] px-[14px] py-[10px] text-[12.5px] font-semibold transition-all duration-200",
+                                            w.enabled
+                                                ? "border-amber-500 bg-amber-50 text-amber-600"
+                                                : "border-gray-200 bg-gray-50 text-gray-500"
+                                        )}
                                     >
                                         {w.title}
-                                        <div style={{
-                                            width: 16, height: 16, borderRadius: "50%",
-                                            border: `2px solid ${w.enabled ? "#F59E0B" : "#D1D5DB"}`,
-                                            background: w.enabled ? "#F59E0B" : "transparent",
-                                            display: "flex", alignItems: "center", justifyContent: "center",
-                                            flexShrink: 0,
-                                        }}>
-                                            {w.enabled && <Check style={{ width: 9, height: 9, color: "white" }} />}
+                                        <div
+                                            className={cn(
+                                                "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
+                                                w.enabled ? "border-amber-500 bg-amber-500" : "border-gray-300 bg-transparent"
+                                            )}
+                                        >
+                                            {w.enabled && <Check className="h-[9px] w-[9px] text-white" />}
                                         </div>
                                     </button>
                                 ))}
@@ -354,7 +340,7 @@ export function DashboardClient() {
                         items={widgets.map(w => w.id)}
                         strategy={verticalListSortingStrategy}
                     >
-                        <div style={{ display: "grid", gap: 24 }}>
+                        <div className="grid gap-6">
                             {widgets.map((widget, i) => (
                                 <SortableWidget key={widget.id} widget={widget}>
                                     <div style={{ animation: `fadeUp 0.5s ease ${i * 0.07}s both` }}>
@@ -387,35 +373,28 @@ function renderWidgetContent(id: string, data: any, analytics: any) {
     switch (id) {
         case "stats-grid":
             return (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatCard
-                        title="Total Students"
-                        value={stats.totalStudents.toString()}
-                        subValue="Live enrollment data"
-                        icon={GraduationCap}
-                        color="brand"
-                    />
-                    <StatCard
-                        title="Attendance Today"
-                        value={stats.attendanceToday}
-                        subValue="Updated just now"
-                        icon={Activity}
-                        color="brand"
-                    />
-                    <StatCard
-                        title="Revenue Today"
-                        value={stats.revenue}
-                        subValue="Payment collections"
-                        icon={CreditCard}
-                        color="purple"
-                    />
-                    <StatCard
-                        title="Staff Active"
-                        value={stats.activeStaff.toString()}
-                        subValue="Currently on duty"
-                        icon={Users}
-                        color="orange"
-                    />
+                <div className="grid grid-cols-4 gap-4">
+                    {[
+                        { title: "Total Students", value: stats.totalStudents.toString(), sub: "Live enrollment", icon: GraduationCap, color: "#3B82F6", bg: "bg-blue-100" },
+                        { title: "Attendance Today", value: stats.attendanceToday, sub: "Updated just now", icon: Activity, color: "#10B981", bg: "bg-emerald-100" },
+                        { title: "Revenue Today", value: stats.revenue, sub: "Payment collections", icon: CreditCard, color: "#8B5CF6", bg: "bg-violet-100" },
+                        { title: "Staff Active", value: stats.activeStaff.toString(), sub: "Currently on duty", icon: Users, color: "#F97316", bg: "bg-orange-100" },
+                    ].map((s, i) => (
+                        <div
+                            key={i}
+                            className="rounded-[20px] border border-gray-100 bg-white p-[22px] shadow-[0_4px_24px_rgba(0,0,0,0.07)]"
+                            style={{ animation: `fadeUp 0.4s ease ${i * 0.08}s both` }}
+                        >
+                            <div className="mb-3.5 flex items-center justify-between">
+                                <div className={cn("flex h-[42px] w-[42px] items-center justify-center rounded-xl", s.bg)}>
+                                    <s.icon size={18} color={s.color} strokeWidth={2.2} />
+                                </div>
+                                <span className="text-[10.5px] font-bold uppercase tracking-[0.8px] text-gray-400">{s.sub}</span>
+                            </div>
+                            <div className="mb-1 font-sora text-[26px] font-extrabold text-[#1E1B4B]">{s.value}</div>
+                            <div className="text-[13px] font-semibold text-gray-600">{s.title}</div>
+                        </div>
+                    ))}
                 </div>
             );
 
@@ -452,66 +431,63 @@ function renderWidgetContent(id: string, data: any, analytics: any) {
 
         case "transport-ops":
             return (
-                <div className="grid md:grid-cols-2 gap-8">
-                    <div style={{ borderRadius: 24, border: "1px solid #F3F4F6", background: "white", padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-xl font-black flex items-center gap-3 italic">
-                                <Bus className="h-5 w-5 text-emerald-600" />
-                                Transport Status
-                            </h3>
-                            <div className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100">
-                                Global Pulse
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-[20px] border border-gray-100 bg-white p-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.07)]">
+                        <div className="mb-5 flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-100">
+                                    <Bus className="h-[17px] w-[17px] text-emerald-500" />
+                                </div>
+                                <span className="font-sora text-[15px] font-extrabold text-[#1E1B4B]">Transport Status</span>
                             </div>
+                            <span className="rounded-full border border-emerald-200 bg-emerald-100 px-3 py-[3px] text-[10.5px] font-bold text-emerald-600">Live</span>
                         </div>
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between p-6 rounded-2xl bg-zinc-50 border border-zinc-100 transition-all hover:bg-white hover:shadow-lg hover:-translate-y-1">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Active Fleet</p>
-                                    <p className="text-2xl font-black text-zinc-900">{stats.routesCount || 0} Routes</p>
+                        <div className="flex flex-col gap-3">
+                            <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-5 py-[18px]">
+                                <div>
+                                    <div className="text-[10.5px] font-bold uppercase tracking-[0.8px] text-gray-400">Active Fleet</div>
+                                    <div className="font-sora text-[22px] font-extrabold text-[#1E1B4B]">{stats.routesCount || 0} Routes</div>
                                 </div>
-                                <div className="h-12 w-12 rounded-xl bg-white border border-zinc-100 flex items-center justify-center">
-                                    <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
+                                <div className="flex h-[42px] w-[42px] items-center justify-center rounded-xl border border-gray-100 bg-white">
+                                    <div className="h-3 w-3 animate-pulse rounded-full bg-emerald-500" />
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between p-6 rounded-2xl bg-rose-50 border border-rose-100 group transition-all cursor-pointer hover:shadow-xl hover:shadow-rose-100/50">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Service Delay</p>
-                                    <p className="text-2xl font-black text-rose-600">{stats.delayedRoutes || 0} Vehicle(s)</p>
+                            <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-5 py-[18px]">
+                                <div>
+                                    <div className="text-[10.5px] font-bold uppercase tracking-[0.8px] text-red-400">Service Delay</div>
+                                    <div className="font-sora text-[22px] font-extrabold text-red-500">{stats.delayedRoutes || 0} Vehicle(s)</div>
                                 </div>
-                                <div className="h-12 w-12 rounded-xl bg-white border border-rose-100 flex items-center justify-center text-rose-500 italic">
-                                    <Clock className="h-5 w-5 animate-pulse" />
+                                <div className="flex h-[42px] w-[42px] items-center justify-center rounded-xl border border-red-200 bg-white">
+                                    <Clock className="h-[17px] w-[17px] text-red-500" />
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div className="hover-lift" style={{ borderRadius: 24, border: "1px solid #F3F4F6", background: "white", padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)", overflow: "hidden", position: "relative" }}>
-                        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand/5 blur-[80px]" />
-                        <div className="relative z-10 flex flex-col h-full justify-between">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="space-y-1">
-                                    <h3 className="text-xl font-black text-zinc-900 italic">Live Telemetry</h3>
-                                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Real-time GPS clusters</p>
+                    <div className="relative overflow-hidden rounded-[20px] border border-gray-100 bg-white p-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.07)]">
+                        <div className="pointer-events-none absolute -right-[60px] -top-[60px] h-[200px] w-[200px] rounded-full bg-amber-500/5 blur-[60px]" />
+                        <div className="relative z-[1]">
+                            <div className="mb-4 flex items-center justify-between">
+                                <div>
+                                    <div className="font-sora text-[15px] font-extrabold text-[#1E1B4B]">Live Telemetry</div>
+                                    <div className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.7px] text-gray-400">Real-time GPS clusters</div>
                                 </div>
-                                <button title="View Detailed Transport Ops" className="h-10 w-10 flex items-center justify-center rounded-xl bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-brand hover:bg-brand/10 transition-colors">
-                                    <ChevronRight className="h-5 w-5" />
+                                <button title="View Details" className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-gray-100 bg-gray-50 text-gray-400">
+                                    <ChevronRight className="h-4 w-4" />
                                 </button>
                             </div>
-                            <div className="space-y-4">
+                            <div className="flex flex-col gap-2.5">
                                 {data?.delayedVehicles?.length > 0 ? (
                                     data.delayedVehicles.map((v: any, i: number) => (
-                                        <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-100/50">
-                                            <div className="flex items-center gap-3">
+                                        <div key={i} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                                            <div className="flex items-center gap-2.5">
                                                 <div className="h-2 w-2 rounded-full bg-amber-500" />
-                                                <span className="text-xs font-black text-zinc-600 tracking-wider font-mono">{v.TransportVehicle.registrationNumber}</span>
+                                                <span className="font-mono text-[12.5px] font-bold text-gray-700">{v.TransportVehicle.registrationNumber}</span>
                                             </div>
-                                            <span className="text-[10px] font-bold text-zinc-400 uppercase italic">Delayed • {v.delayMinutes}m</span>
+                                            <span className="text-[11px] font-bold text-gray-400">Delayed · {v.delayMinutes}m</span>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="text-center py-8 text-zinc-400 text-xs font-bold uppercase tracking-widest italic">
-                                        All vehicles on schedule
-                                    </div>
+                                    <div className="py-7 text-center text-[12.5px] font-bold text-gray-400">All vehicles on schedule ✓</div>
                                 )}
                             </div>
                         </div>
@@ -553,55 +529,53 @@ function renderWidgetContent(id: string, data: any, analytics: any) {
 
         case "recent-activity":
             return (
-                <div style={{ borderRadius: 24, border: "1px solid #F3F4F6", background: "white", padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
-                    <div className="flex items-center justify-between border-b border-zinc-100 pb-6 dark:border-zinc-800">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-2xl bg-brand/10 flex items-center justify-center">
-                                <Activity className="h-5 w-5 text-brand" />
+                <div className="rounded-[20px] border border-gray-100 bg-white p-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.07)]">
+                    <div className="mb-5 flex items-center justify-between border-b border-gray-100 pb-[18px]">
+                        <div className="flex items-center gap-2.5">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-amber-50">
+                                <Activity className="h-[17px] w-[17px] text-amber-600" />
                             </div>
-                            <h3 className="text-xl font-black">Audit Stream</h3>
+                            <span className="font-sora text-[15px] font-extrabold text-[#1E1B4B]">Audit Stream</span>
                         </div>
-                        <button title="View Live Audit Stream" className="text-xs font-black text-brand hover:underline px-4 py-2 bg-brand/10 rounded-xl transition-all">
-                            Live Logs
-                        </button>
+                        <button className="cursor-pointer rounded-lg border border-amber-100 bg-amber-50 px-3.5 py-1.5 text-[12px] font-bold text-amber-600">Live Logs</button>
                     </div>
-                    <div className="mt-8 space-y-8">
+                    <div className="flex flex-col gap-4">
                         {(data?.recentActivity || []).map((activity: any) => (
-                            <div key={activity.id} className="flex items-start gap-6 relative group">
-                                <div className="mt-1.5 h-3 w-3 rounded-full bg-brand ring-4 ring-brand/10 flex-shrink-0" />
+                            <div key={activity.id} className="flex items-start gap-3.5">
+                                <div className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500 shadow-[0_0_0_4px_rgba(245,158,11,0.12)]" />
                                 <div className="flex-1">
-                                    <p className="text-md font-bold text-zinc-900 dark:text-zinc-50">{activity.name}</p>
-                                    <p className="text-xs text-zinc-400 font-medium mt-1 uppercase tracking-wider">{activity.type} • {activity.time}</p>
+                                    <div className="text-[13.5px] font-bold text-gray-800">{activity.name}</div>
+                                    <div className="mt-1 text-[11.5px] uppercase tracking-[0.6px] text-gray-400">{activity.type} · {activity.time}</div>
                                 </div>
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <ArrowUpRight className="h-5 w-5 text-zinc-300" />
-                                </div>
+                                <ArrowUpRight className="h-[15px] w-[15px] text-gray-300" />
                             </div>
                         ))}
+                        {(!data?.recentActivity || data.recentActivity.length === 0) && (
+                            <div className="py-6 text-center text-[13px] font-semibold text-gray-400">No recent activity</div>
+                        )}
                     </div>
                 </div>
             );
 
         case "upcoming-events":
             return (
-                <div style={{ borderRadius: 24, border: "1px solid #F3F4F6", background: "white", padding: 28, boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
-                    <div className="flex items-center justify-between border-b border-zinc-100 pb-6 dark:border-zinc-800">
-                        <h3 className="text-xl font-black">Calendar Sync</h3>
-                        <button className="text-xs font-black text-brand">Add Event +</button>
+                <div className="rounded-[20px] border border-gray-100 bg-white p-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.07)]">
+                    <div className="mb-5 flex items-center justify-between border-b border-gray-100 pb-[18px]">
+                        <span className="font-sora text-[15px] font-extrabold text-[#1E1B4B]">Upcoming Events</span>
+                        <button className="cursor-pointer border-none bg-transparent text-[12.5px] font-bold text-amber-600">Add Event +</button>
                     </div>
-                    <div className="mt-8 grid sm:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-3 gap-3">
                         {data?.upcomingEvents?.length > 0 ? (
                             data.upcomingEvents.map((event: any, i: number) => (
-                                <div key={i} className={cn("p-6 rounded-3xl border transition-all hover:scale-[1.02] cursor-pointer", event.color)}>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 block mb-2">{event.date.split(' ')[0]}</span>
-                                    <span className="text-3xl font-black block mb-4">{event.date.split(' ')[1]}</span>
-                                    <p className="font-bold text-sm leading-tight">{event.title}</p>
+                                <div key={i} className="erp-event-card cursor-pointer rounded-2xl border-[1.5px] border-amber-100 bg-amber-50 px-5 py-[18px] transition-all duration-200">
+                                    <style>{`.erp-event-card:hover{transform:scale(1.02)}`}</style>
+                                    <div className="mb-1.5 text-[10px] font-extrabold uppercase tracking-[1px] text-amber-600 opacity-70">{event.date.split(' ')[0]}</div>
+                                    <div className="mb-2.5 font-sora text-[28px] font-extrabold text-[#1E1B4B]">{event.date.split(' ')[1]}</div>
+                                    <div className="text-[13px] font-bold leading-[1.4] text-gray-700">{event.title}</div>
                                 </div>
                             ))
                         ) : (
-                            <div className="col-span-3 text-center py-12 text-zinc-400 text-xs font-bold uppercase tracking-widest italic">
-                                No upcoming events scheduled
-                            </div>
+                            <div className="col-span-3 py-8 text-center text-[13px] font-semibold text-gray-400">No upcoming events scheduled</div>
                         )}
                     </div>
                 </div>

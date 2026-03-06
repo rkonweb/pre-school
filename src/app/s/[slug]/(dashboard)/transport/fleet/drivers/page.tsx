@@ -135,24 +135,28 @@ export default function DriversPage() {
                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest italic tracking-[3px]">Mapping personnel data...</p>
                 </div>
             ) : (
-                <div style={tableStyles.container}>
+                <div className={cn(tableStyles.container, "bg-white overflow-hidden shadow-xl shadow-zinc-200/40")}>
                     {drivers.length === 0 ? (
                         <div className="py-24 text-center">
-                            <div className="mx-auto h-20 w-20 rounded-[24px] bg-zinc-50 flex items-center justify-center mb-6 dark:bg-zinc-900">
+                            <div className="mx-auto h-20 w-20 rounded-[32px] bg-zinc-50 flex items-center justify-center mb-6">
                                 <Navigation className="h-8 w-8 text-zinc-200" />
                             </div>
-                            <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight dark:text-zinc-50">Zero Registry</h3>
-                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2 max-w-xs mx-auto leading-relaxed">No pilots commissioned for this cluster yet.</p>
+                            <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Zero Registry</h3>
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2 max-w-xs mx-auto leading-relaxed italic spacing-wider">No pilots commissioned for this cluster yet.</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                                <thead style={tableStyles.thead}>
-                                    <tr>
-                                        <th style={{ ...tableStyles.thNoSort, width: "5rem", textAlign: "center" }}>Actions</th>
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr className="bg-zinc-50/50 border-b border-zinc-100">
+                                        <th className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-center w-20">Actions</th>
                                         {columns.map(col => {
                                             if (!visibleColumns[col.id]) return null;
-                                            return <th key={col.id} style={tableStyles.thNoSort as any}>{col.label}</th>;
+                                            return (
+                                                <th key={col.id} className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-left">
+                                                    {col.label}
+                                                </th>
+                                            );
                                         })}
                                     </tr>
                                 </thead>
@@ -160,55 +164,52 @@ export default function DriversPage() {
                                     {drivers.map((driver, i) => (
                                         <tr
                                             key={driver.id}
-                                            className="group"
-                                            style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
-                                            onMouseEnter={e => {
-                                                (e.currentTarget).style.background = "#FFFBEB";
-                                            }}
-                                            onMouseLeave={e => {
-                                                (e.currentTarget).style.background = i % 2 === 0 ? "white" : "#F9FAFB";
-                                            }}
+                                            className={cn(
+                                                "group transition-all duration-200 border-b border-zinc-50 last:border-0",
+                                                i % 2 === 0 ? "bg-white" : "bg-zinc-50/20",
+                                                "hover:bg-amber-50/50"
+                                            )}
                                         >
-                                            <td style={{ ...tableStyles.td, textAlign: "center" }}>
+                                            <td className="px-6 py-4 text-center">
                                                 <RowActions
                                                     onView={`/s/${slug}/transport/fleet/drivers/${driver.id}`}
-                                                    viewTooltip="View details"
+                                                    viewTooltip="View Pilot Clearance"
                                                 />
                                             </td>
                                             {columns.map((col) => {
                                                 if (!visibleColumns[col.id]) return null;
 
                                                 if (col.id === 'driver') return (
-                                                    <td key={col.id} style={tableStyles.td}>
+                                                    <td key={col.id} className="px-6 py-4">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-lg shrink-0">
+                                                            <div className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 font-black text-lg shrink-0 border border-zinc-200/50 shadow-sm">
                                                                 {driver.name.charAt(0)}
                                                             </div>
                                                             <div>
-                                                                <h3 className="font-semibold text-zinc-900 whitespace-nowrap">
+                                                                <h3 className="font-black text-zinc-900 whitespace-nowrap uppercase tracking-tight text-sm leading-tight">
                                                                     {driver.name}
                                                                 </h3>
-                                                                <div className="flex items-center gap-1 font-semibold text-amber-500 text-xs mt-1">
+                                                                <div className="flex items-center gap-1 font-bold text-amber-500 text-[10px] uppercase mt-1">
                                                                     {driver.averageScore ? (driver.averageScore / 20).toFixed(1) : "5.0"}
-                                                                    <Star className="h-3 w-3 fill-amber-500" />
+                                                                    <Star className="h-2.5 w-2.5 fill-amber-500" />
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                 );
                                                 if (col.id === 'license') return (
-                                                    <td key={col.id} style={tableStyles.td}>
-                                                        <span className="font-semibold text-zinc-900 whitespace-nowrap">{driver.licenseNumber}</span>
+                                                    <td key={col.id} className="px-6 py-4">
+                                                        <span className="font-black text-zinc-900 whitespace-nowrap text-xs uppercase tracking-widest bg-zinc-100/50 px-2 py-1 rounded-lg border border-zinc-200/30">{driver.licenseNumber}</span>
                                                     </td>
                                                 );
                                                 if (col.id === 'contact') return (
-                                                    <td key={col.id} style={tableStyles.td}>
-                                                        <span className="font-semibold text-zinc-900 whitespace-nowrap">{driver.phone}</span>
+                                                    <td key={col.id} className="px-6 py-4">
+                                                        <span className="font-bold text-zinc-600 whitespace-nowrap text-sm">{driver.phone}</span>
                                                     </td>
                                                 );
                                                 if (col.id === 'status') return (
-                                                    <td key={col.id} style={tableStyles.td}>
-                                                        <StatusChip label="Clearance Active" />
+                                                    <td key={col.id} className="px-6 py-4">
+                                                        <StatusChip label="Cleared" />
                                                     </td>
                                                 );
                                                 return null;

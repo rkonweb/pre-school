@@ -16,6 +16,7 @@ import {
     deleteEmergencyAlertAction,
 } from "@/app/actions/parent-phase2-actions";
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
+import { SectionHeader } from "@/components/ui/erp-ui";
 
 const ALERT_TYPES = [
     { value: "CLOSURE", label: "School Closure", icon: "🏫", color: "red" },
@@ -192,35 +193,26 @@ export default function EmergencyAlertsPage() {
     const criticalAlerts = activeAlerts.filter(a => a.priority === "CRITICAL");
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-[1600px] mx-auto">
-
-            {/* Header */}
-            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-3">
-                        <ShieldAlert className="h-8 w-8 text-red-500" />
-                        Emergency <span className="text-red-500">Alerts</span>
-                    </h1>
-                    <p className="text-zinc-500 font-medium mt-1">
-                        Broadcast urgent alerts to parents instantly — class-wise or school-wide.
-                    </p>
-                </div>
-                <div className="flex gap-3">
-                    <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 rounded-2xl px-4 py-2">
-                        <div className={cn("h-2.5 w-2.5 rounded-full", activeAlerts.length > 0 ? "bg-red-500 animate-pulse" : "bg-green-500")} />
-                        <span className="text-xs font-black text-zinc-600 dark:text-zinc-300 uppercase tracking-widest">
-                            {activeAlerts.length > 0 ? `${activeAlerts.length} Live` : "All Clear"}
-                        </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 80 }}>
+            <SectionHeader
+                title="Emergency Alerts"
+                subtitle="Broadcast urgent alerts to parents instantly — class-wise or school-wide."
+                icon={ShieldAlert}
+                action={
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#F3F4F6", borderRadius: 12, padding: "8px 14px" }}>
+                            <div style={{ width: 10, height: 10, borderRadius: "50%", background: activeAlerts.length > 0 ? "#EF4444" : "#22C55E", animation: activeAlerts.length > 0 ? "pulse 1s infinite" : "none" }} />
+                            <span style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 1 }}>
+                                {activeAlerts.length > 0 ? `${activeAlerts.length} Live` : "All Clear"}
+                            </span>
+                        </div>
+                        <button onClick={() => setShowForm(!showForm)}
+                            style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 18px", borderRadius: 12, background: "linear-gradient(135deg,#DC2626,#E11D48)", color: "white", border: "none", cursor: "pointer", fontWeight: 800, fontSize: 13, boxShadow: "0 4px 16px rgba(220,38,38,0.3)" }}>
+                            <Plus style={{ width: 16, height: 16 }} /> New Alert
+                        </button>
                     </div>
-                    <button
-                        onClick={() => setShowForm(!showForm)}
-                        className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 shadow-lg shadow-red-500/20"
-                    >
-                        <Plus className="h-4 w-4" />
-                        New Alert
-                    </button>
-                </div>
-            </div>
+                }
+            />
 
             {/* Critical Alert Banner */}
             {criticalAlerts.length > 0 && (

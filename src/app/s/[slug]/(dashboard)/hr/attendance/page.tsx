@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { format, isSameDay, isToday, addDays, subDays } from "date-fns";
 import { SlideOver } from "@/components/ui/SlideOver";
 import { AvatarWithAdjustment } from "@/components/dashboard/staff/AvatarWithAdjustment";
+import { SectionHeader } from "@/components/ui/erp-ui";
 
 // Actions
 import { getStaffAction } from "@/app/actions/staff-actions";
@@ -209,27 +210,24 @@ export default function StaffAttendancePage() {
     }
 
     return (
-        <div className="p-6 space-y-6 max-w-[1600px] mx-auto animate-in fade-in duration-500">
-            {/* Header section with Tabs */}
-            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase italic">
-                        Staff <span className="text-brand">Attendance</span>
-                    </h1>
-                    <p className="text-zinc-500 font-medium mt-1">Real-time tracking, leave management, and punctuality logs.</p>
-                </div>
-
-                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
-                    <TabButton active={activeTab === "daily"} onClick={() => setActiveTab("daily")} label="Daily Log" icon={<Clock className="h-4 w-4" />} />
-                    <TabButton active={activeTab === "leaves"} onClick={() => setActiveTab("leaves")} label="Leaves" icon={<Briefcase className="h-4 w-4" />} />
-                    {(currentUser?.role === "ADMIN" || currentUser?.role === "SUPER_ADMIN") && (
-                        <TabButton active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")} label="Analytics" icon={<BarChart3 className="h-4 w-4" />} />
-                    )}
-                </div>
-            </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 80 }}>
+            <SectionHeader
+                title="Staff Attendance"
+                subtitle="Real-time tracking, leave management, and punctuality logs."
+                icon={Clock}
+                action={
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#F3F4F6", padding: 4, borderRadius: 16, border: "1.5px solid #E5E7EB" }}>
+                        <TabButton active={activeTab === "daily"} onClick={() => setActiveTab("daily")} label="Daily Log" icon={<Clock className="h-4 w-4" />} />
+                        <TabButton active={activeTab === "leaves"} onClick={() => setActiveTab("leaves")} label="Leaves" icon={<Briefcase className="h-4 w-4" />} />
+                        {(currentUser?.role === "ADMIN" || currentUser?.role === "SUPER_ADMIN") && (
+                            <TabButton active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")} label="Analytics" icon={<BarChart3 className="h-4 w-4" />} />
+                        )}
+                    </div>
+                }
+            />
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
                 <StatCard
                     title="Present Today"
                     value={attendance.filter(a => ["PRESENT", "LATE"].includes(a.status)).length.toString()}
@@ -267,7 +265,7 @@ export default function StaffAttendancePage() {
                 />
             </div>
 
-            <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl shadow-zinc-200/50 dark:shadow-none overflow-hidden">
+            <div style={{ background: "white", borderRadius: 24, border: "1.5px solid #E5E7EB", boxShadow: "0 4px 20px rgba(0,0,0,0.06)", overflow: "hidden" }}>
                 {activeTab === "daily" && (
                     <div className="p-0">
                         {/* Control Bar */}

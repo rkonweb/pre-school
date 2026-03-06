@@ -280,87 +280,99 @@ export default function FleetTrackerClient({ apiKey }: FleetTrackerClientProps) 
 
             {/* Main Content: List or Map */}
             {viewMode === "list" ? (
-                <div style={tableStyles.container}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead style={tableStyles.thead}>
-                            <tr>
-                                <th style={tableStyles.thNoSort as any}>Registration</th>
-                                <th style={tableStyles.thNoSort as any}>Route</th>
-                                <th style={tableStyles.thNoSort as any}>Driver</th>
-                                <th style={tableStyles.thNoSort as any}>Status</th>
-                                <th style={tableStyles.thNoSort as any}>Delay</th>
-                                <th style={tableStyles.thNoSort as any}>Last Update</th>
-                                <th style={tableStyles.thNoSort as any}>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredVehicles.map((vehicle, i) => (
-                                <tr
-                                    key={vehicle.id}
-                                    style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
-                                    onMouseEnter={e => { (e.currentTarget).style.background = "#FFFBEB"; }}
-                                    onMouseLeave={e => { (e.currentTarget).style.background = i % 2 === 0 ? "white" : "#F9FAFB"; }}
-                                >
-                                    <td style={tableStyles.td}>
-                                        <div className="flex flex-col">
-                                            <div className="flex items-center gap-2">
-                                                <Bus className="h-4 w-4 text-zinc-400" />
-                                                <span className="font-semibold text-zinc-900">{vehicle.registrationNumber}</span>
-                                            </div>
-                                            {/* AI Insights Labels */}
-                                            {(vehicle as any).aiInsights?.length > 0 && (
-                                                <div className="flex flex-wrap gap-1 mt-1">
-                                                    {(vehicle as any).aiInsights.map((insight: string, idx: number) => (
-                                                        <span key={idx} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-600 border border-purple-100">
-                                                            <Activity className="h-2 w-2" />
-                                                            {insight}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td style={tableStyles.td}>{vehicle.routeName || "-"}</td>
-                                    <td style={tableStyles.td}>{vehicle.driverName || "-"}</td>
-                                    <td style={tableStyles.td}>{getStatusBadge(vehicle)}</td>
-                                    <td style={tableStyles.td}>
-                                        <div className="flex flex-col">
-                                            {vehicle.telemetry && vehicle.telemetry.delayMinutes > 0 ? (
-                                                <>
-                                                    <span className="text-yellow-600 font-bold">+{vehicle.telemetry.delayMinutes} min</span>
-                                                    <span className="text-[10px] text-zinc-400 italic">Delayed arrival</span>
-                                                </>
-                                            ) : (
-                                                <span className="text-green-600 font-medium">On Track</span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td style={tableStyles.td}>{vehicle.telemetry ? getTimeSince(vehicle.telemetry.recordedAt) : "-"}</td>
-                                    <td style={tableStyles.td}>
-                                        <button
-                                            onClick={() => setSelectedVehicle(vehicle.id)}
-                                            disabled={!vehicle.telemetry}
-                                            className={cn(
-                                                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                                                vehicle.telemetry
-                                                    ? "bg-brand text-[var(--secondary-color)] hover:brightness-110 shadow-lg shadow-brand/20"
-                                                    : "bg-zinc-100 text-zinc-400 cursor-not-allowed"
-                                            )}
-                                        >
-                                            <MapPin className="h-4 w-4" />
-                                            Track
-                                        </button>
-                                    </td>
+                <div className={cn(tableStyles.container, "bg-white overflow-hidden shadow-xl shadow-zinc-200/40")}>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr className="bg-zinc-50/50 border-b border-zinc-100 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-left">
+                                    <th className="px-6 py-5">Registration</th>
+                                    <th className="px-6 py-5">Route</th>
+                                    <th className="px-6 py-5">Driver</th>
+                                    <th className="px-6 py-5">Status</th>
+                                    <th className="px-6 py-5">Delay</th>
+                                    <th className="px-6 py-5">Last Update</th>
+                                    <th className="px-6 py-5">Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredVehicles.map((vehicle, i) => (
+                                    <tr
+                                        key={vehicle.id}
+                                        className={cn(
+                                            "group transition-all duration-200 border-b border-zinc-50 last:border-0",
+                                            i % 2 === 0 ? "bg-white" : "bg-zinc-50/20",
+                                            "hover:bg-amber-50/50"
+                                        )}
+                                    >
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-8 w-8 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-900 border border-zinc-200/50 shadow-sm shrink-0">
+                                                        <Bus className="h-4 w-4" />
+                                                    </div>
+                                                    <span className="font-black text-zinc-900 uppercase tracking-tight text-sm">{vehicle.registrationNumber}</span>
+                                                </div>
+                                                {/* AI Insights Labels */}
+                                                {(vehicle as any).aiInsights?.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 mt-2">
+                                                        {(vehicle as any).aiInsights.map((insight: string, idx: number) => (
+                                                            <span key={idx} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-purple-50 text-purple-600 border border-purple-100 shadow-sm shadow-purple-200/50">
+                                                                <Activity className="h-2 w-2" />
+                                                                {insight}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-xs font-black text-zinc-900 uppercase tracking-widest bg-zinc-100/50 px-2 py-1 rounded-lg border border-zinc-200/30">{vehicle.routeName || "No Route"}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-sm font-bold text-zinc-600">{vehicle.driverName || "Unassigned"}</span>
+                                        </td>
+                                        <td className="px-6 py-4">{getStatusBadge(vehicle)}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                {vehicle.telemetry && vehicle.telemetry.delayMinutes > 0 ? (
+                                                    <>
+                                                        <span className="text-rose-600 font-black uppercase tracking-widest text-[10px]">+{vehicle.telemetry.delayMinutes} MIN</span>
+                                                        <span className="text-[9px] font-bold text-rose-400 uppercase tracking-tight italic mt-0.5">Delayed arrival</span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-emerald-600 font-black uppercase tracking-widest text-[10px]">ON MISSION</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest bg-zinc-50 border border-zinc-100 px-2 py-0.5 rounded-md">
+                                                {vehicle.telemetry ? getTimeSince(vehicle.telemetry.recordedAt) : "OFFLINE"}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <Btn
+                                                size="sm"
+                                                variant="primary"
+                                                onClick={() => setSelectedVehicle(vehicle.id)}
+                                                disabled={!vehicle.telemetry}
+                                                icon={MapPin}
+                                            >
+                                                Track
+                                            </Btn>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
                     {filteredVehicles.length === 0 && (
-                        <div className="p-12 text-center">
-                            <Bus className="h-12 w-12 text-zinc-300 mx-auto mb-3" />
-                            <p className="text-zinc-500 font-medium">No vehicles found</p>
-                            <p className="text-sm text-zinc-400 mt-1">Try adjusting your filters</p>
+                        <div className="p-24 text-center">
+                            <div className="mx-auto h-20 w-20 rounded-[32px] bg-zinc-50 flex items-center justify-center mb-6">
+                                <Bus className="h-8 w-8 text-zinc-200" />
+                            </div>
+                            <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Zero Presence</h3>
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2 max-w-xs mx-auto leading-relaxed italic spacing-wider">No active missions matching your filters.</p>
                         </div>
                     )}
                 </div>

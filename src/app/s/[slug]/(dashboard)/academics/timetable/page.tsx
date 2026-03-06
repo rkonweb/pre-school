@@ -28,6 +28,7 @@ import { getStaffAction } from "@/app/actions/staff-actions";
 import { checkTeacherAvailabilityAction } from "@/app/actions/timetable-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { getTimetableStructuresAction, createTimetableStructureAction, updateTimetableStructureAction, deleteTimetableStructureAction, assignTimetableStructureAction } from "@/app/actions/timetable-structure-actions";
+import { SectionHeader } from "@/components/ui/erp-ui";
 
 type PeriodNode = {
     id: string;
@@ -100,40 +101,24 @@ export default function TimetablePage() {
     }
 
     return (
-        <div className="flex-1 space-y-8 p-8 pt-6 pb-20">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <h2 className="text-3xl font-black tracking-tight text-zinc-900">Timetable Management</h2>
-                    <p className="text-sm font-medium text-zinc-500 mt-1">
-                        Configure multiple school timings and manage class schedules.
-                    </p>
-                </div>
-
-                {/* Tabs */}
-                <div className="flex bg-zinc-100 p-1 rounded-full">
-                    <button
-                        onClick={() => setActiveTab("schedule")}
-                        className={cn(
-                            "px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all gap-2 flex items-center",
-                            activeTab === "schedule" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600"
-                        )}
-                    >
-                        <Calendar className="h-4 w-4" />
-                        Class Schedules
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("config")}
-                        className={cn(
-                            "px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all gap-2 flex items-center",
-                            activeTab === "config" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600"
-                        )}
-                    >
-                        <Settings className="h-4 w-4" />
-                        Structure & Settings
-                    </button>
-                </div>
-            </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 80 }}>
+            <SectionHeader
+                title="Timetable Management"
+                subtitle="Configure multiple school timings and manage class schedules."
+                icon={Calendar}
+                action={
+                    <div style={{ display: "flex", background: "#F4F4F5", padding: 4, borderRadius: 999, gap: 2 }}>
+                        <button onClick={() => setActiveTab("schedule")}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 20px", borderRadius: 999, border: "none", fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1.2, cursor: "pointer", background: activeTab === "schedule" ? "white" : "transparent", color: activeTab === "schedule" ? "#18181B" : "#A1A1AA", boxShadow: activeTab === "schedule" ? "0 1px 4px rgba(0,0,0,0.08)" : "none" }}>
+                            <Calendar style={{ width: 14, height: 14 }} /> Class Schedules
+                        </button>
+                        <button onClick={() => setActiveTab("config")}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 20px", borderRadius: 999, border: "none", fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1.2, cursor: "pointer", background: activeTab === "config" ? "white" : "transparent", color: activeTab === "config" ? "#18181B" : "#A1A1AA", boxShadow: activeTab === "config" ? "0 1px 4px rgba(0,0,0,0.08)" : "none" }}>
+                            <Settings style={{ width: 14, height: 14 }} /> Structure &amp; Settings
+                        </button>
+                    </div>
+                }
+            />
 
             {isLoading ? (
                 <div className="h-96 flex items-center justify-center">

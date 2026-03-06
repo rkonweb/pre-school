@@ -1,7 +1,6 @@
 'use server';
 
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
     TrendingUp,
     DollarSign,
@@ -20,6 +19,7 @@ import { getMonthlyTransportReportAction } from "@/app/actions/report-actions";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import ReportTabs from "@/components/transport/ReportTabs";
+import { SectionHeader, ErpCard, Btn, tableStyles, C } from "@/components/ui/erp-ui";
 
 export default async function MonthlyAnalyticsPage(props: {
     params: Promise<{ slug: string }>,
@@ -64,196 +64,191 @@ export default async function MonthlyAnalyticsPage(props: {
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     return (
-        <div className="p-6 space-y-8 w-full">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900">Monthly Insights</h1>
-                    <p className="text-zinc-500 mt-1 flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-brand" />
-                        Aggregated analytics for {monthNames[month - 1]} {year}
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-zinc-100 shadow-sm">
-                        <Calendar className="h-4 w-4 text-zinc-400" />
-                        <select
-                            aria-label="Select Month"
-                            className="bg-transparent border-none text-sm font-bold text-zinc-900 outline-none focus:ring-0"
-                        >
-                            {monthNames.map((m, i) => (
-                                <option key={m} value={i + 1} selected={i + 1 === month}>{m}</option>
-                            ))}
-                        </select>
-                        <select
-                            aria-label="Select Year"
-                            className="bg-transparent border-none text-sm font-bold text-zinc-900 outline-none focus:ring-0"
-                        >
-                            {[2023, 2024, 2025, 2026].map(y => (
-                                <option key={y} value={y} selected={y === year}>{y}</option>
-                            ))}
-                        </select>
+        <div className="p-8 space-y-10 w-full mb-20">
+            <SectionHeader
+                title="Monthly Fleet Insights"
+                subtitle={`Consolidated operational analytics for ${monthNames[month - 1]} ${year}`}
+                icon={<TrendingUp size={18} color={C.amber} />}
+                action={
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-[20px] border border-zinc-100 shadow-sm">
+                            <Calendar className="h-4 w-4 text-brand" />
+                            <select
+                                aria-label="Select Target Month"
+                                className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-zinc-900 outline-none focus:ring-0 cursor-pointer"
+                            >
+                                {monthNames.map((m, i) => (
+                                    <option key={m} value={i + 1} selected={i + 1 === month}>{m}</option>
+                                ))}
+                            </select>
+                            <div className="h-4 w-px bg-zinc-100" />
+                            <select
+                                aria-label="Select Target Year"
+                                className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-zinc-900 outline-none focus:ring-0 cursor-pointer"
+                            >
+                                {[2023, 2024, 2025, 2026].map(y => (
+                                    <option key={y} value={y} selected={y === year}>{y}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <Btn
+                            variant="secondary"
+                            icon={<Download size={18} />}
+                            title="Export Analytics"
+                            size="md"
+                        />
                     </div>
-                    <button
-                        className="p-2.5 bg-zinc-100 text-zinc-600 rounded-xl hover:bg-zinc-200 transition-colors"
-                        title="Download Report"
-                        aria-label="Download Report"
-                    >
-                        <Download className="h-5 w-5" />
-                    </button>
-                </div>
-            </div>
+                }
+            />
 
             <ReportTabs slug={slug} />
 
-            {/* Financial Dashboard */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="border-none shadow-xl shadow-zinc-200/50 bg-gradient-to-br from-brand to-brand/80 text-white overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-4 opacity-20">
-                        <DollarSign className="h-20 w-20" />
+            {/* Financial Dashboard Matrix */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <ErpCard noPad className="!rounded-[40px] border-none shadow-2xl shadow-brand/20 bg-gradient-to-br from-zinc-900 to-black text-white overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <DollarSign className="h-32 w-32" />
                     </div>
-                    <CardContent className="p-8">
-                        <p className="text-xs font-black uppercase text-white/70 tracking-widest">Total Ops Expenditure</p>
-                        <h3 className="text-4xl font-black mt-2">
+                    <div className="p-10 relative z-10">
+                        <p className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em]">Total Operational Burn</p>
+                        <h3 className="text-4xl font-black mt-4 tracking-tighter">
                             {new Intl.NumberFormat('en-IN', { style: 'currency', currency: currency, maximumFractionDigits: 0 }).format(totalFuel + totalMaintenance)}
                         </h3>
-                        <div className="mt-6 flex items-center gap-4">
-                            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase">
-                                <ArrowDownRight className="h-3 w-3" />
-                                12% vs last month
+                        <div className="mt-8 flex items-center gap-4">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10 text-brand">
+                                <ArrowDownRight className="h-3.5 w-3.5" />
+                                12% Optimization
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                </ErpCard>
 
-                <Card className="border-none shadow-xl shadow-zinc-200/50 bg-white overflow-hidden relative">
-                    <CardContent className="p-8">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="text-xs font-black uppercase text-zinc-400 tracking-widest">Fuel Economy Average</p>
-                                <h3 className="text-3xl font-black text-zinc-900 mt-2">
-                                    {totalDistance > 0 ? (totalFuel / totalDistance).toFixed(2) : "0.00"}
-                                    <span className="text-sm font-bold text-zinc-400 ml-1">{currencyStr}/km</span>
-                                </h3>
-                            </div>
-                            <div className="p-3 bg-zinc-50 rounded-xl text-blue-500">
-                                <BarChart3 className="h-6 w-6" />
-                            </div>
+                <ErpCard className="!rounded-[40px] border-zinc-200 p-10 shadow-xl shadow-zinc-200/50 flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em]">Fuel Economy Index</p>
+                            <h3 className="text-4xl font-black text-zinc-900 mt-4 tracking-tighter">
+                                {totalDistance > 0 ? (totalFuel / totalDistance).toFixed(2) : "0.00"}
+                                <span className="text-xs font-black text-zinc-400 ml-2 uppercase tracking-widest">{currencyStr}/KM</span>
+                            </h3>
                         </div>
-                        <div className="mt-6 flex items-center gap-4">
-                            <div className="flex h-1.5 flex-1 bg-zinc-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500" style={{ width: '65%' }} />
-                            </div>
-                            <span className="text-[10px] font-black text-zinc-400 uppercase">Target: {currencyStr}18/km</span>
+                        <div className="p-4 bg-zinc-50 rounded-2xl text-blue-500 shadow-inner">
+                            <BarChart3 className="h-7 w-7" />
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                    <div className="mt-8 flex items-center gap-4">
+                        <div className="flex h-2 flex-1 bg-zinc-50 rounded-full overflow-hidden border border-zinc-100">
+                            <div
+                                className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)] w-[var(--p)]"
+                                style={{ '--p': '65%' } as React.CSSProperties}
+                            />
+                        </div>
+                        <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">DRIVE: {currencyStr}18/KM</span>
+                    </div>
+                </ErpCard>
 
-                <Card className="border-none shadow-xl shadow-zinc-200/50 bg-white overflow-hidden relative">
-                    <CardContent className="p-8">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="text-xs font-black uppercase text-zinc-400 tracking-widest">Fleet Uptime</p>
-                                <h3 className="text-3xl font-black text-zinc-900 mt-2">98.4%</h3>
-                            </div>
-                            <div className="p-3 bg-zinc-50 rounded-xl text-green-500">
-                                <Activity className="h-6 w-6" />
-                            </div>
+                <ErpCard className="!rounded-[40px] border-zinc-200 p-10 shadow-xl shadow-zinc-200/50 flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em]">Fleet Uptime Matrix</p>
+                            <h3 className="text-4xl font-black text-zinc-900 mt-4 tracking-tighter">98.4%</h3>
                         </div>
-                        <div className="mt-6 flex items-center gap-2 text-green-600">
-                            <ArrowUpRight className="h-3 w-3" />
-                            <span className="text-[10px] font-black uppercase">Exceeding Benchmark</span>
+                        <div className="p-4 bg-zinc-50 rounded-2xl text-brand shadow-inner">
+                            <Activity className="h-7 w-7" />
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                    <div className="mt-8 flex items-center gap-2 text-brand">
+                        <ArrowUpRight className="h-4 w-4" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em]">Apex Performance Level</span>
+                    </div>
+                </ErpCard>
             </div>
 
-            {/* Vehicle Analytics Table */}
-            <Card className="border-none shadow-xl shadow-zinc-200/50 overflow-hidden">
-                <CardHeader className="bg-zinc-50/50 border-b border-zinc-100">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="text-xl font-black">Vehicle performance Matrix</CardTitle>
-                            <CardDescription>Individual asset efficiency and financial impact</CardDescription>
-                        </div>
-                        <PieChart className="h-6 w-6 text-zinc-300" />
+            {/* Asset Performance Matrix Table */}
+            <ErpCard noPad className="!rounded-[40px] border-zinc-200 shadow-2xl shadow-zinc-200/50 overflow-hidden">
+                <div className="p-8 border-b border-zinc-100 bg-zinc-50/30 flex items-center justify-between">
+                    <div>
+                        <h4 className="text-2xl font-black text-zinc-900 uppercase tracking-tight">Asset Performance Matrix</h4>
+                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Individual efficiency and financial impact tracking</p>
                     </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-zinc-100 bg-zinc-50/30">
-                                    <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Asset Details</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Active Days</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Distance</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Fuel Expense</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Maintenance</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-right">Efficiency Score</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-50">
-                                {(data || []).map((item: any) => (
-                                    <tr key={item.vehicle.id} className="hover:bg-zinc-50/50 transition-colors">
-                                        <td className="px-6 py-4">
+                    <div className="p-3 bg-white rounded-xl shadow-sm border border-zinc-100 text-zinc-300">
+                        <PieChart className="h-6 w-6" />
+                    </div>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr style={tableStyles.thead}>
+                                <th style={tableStyles.th}>Asset Parameters</th>
+                                <th style={tableStyles.th} className="text-center">Operational Days</th>
+                                <th style={tableStyles.th} className="text-center">Traverse</th>
+                                <th style={tableStyles.th} className="text-center">Fuel Expense</th>
+                                <th style={tableStyles.th} className="text-center">Maintenance</th>
+                                <th style={tableStyles.th} className="text-right pr-10">Efficiency Index</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-50">
+                            {(data || []).map((item: any) => (
+                                <tr key={item.vehicle.id} className="hover:bg-zinc-50/80 transition-all group">
+                                    <td style={tableStyles.td} className="py-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-zinc-100 rounded-2xl text-zinc-600 group-hover:bg-zinc-900 group-hover:text-white transition-all">
+                                                <Bus className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-zinc-900 uppercase tracking-tight">{item.vehicle.registrationNumber}</p>
+                                                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{item.vehicle.model}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style={tableStyles.td} className="text-center">
+                                        <span className="px-4 py-1.5 bg-zinc-50 rounded-full text-[10px] font-black text-zinc-600 uppercase tracking-widest border border-zinc-100">
+                                            {item.totalDaysActive} / 30 DAY CYCLE
+                                        </span>
+                                    </td>
+                                    <td style={tableStyles.td} className="text-center">
+                                        <span className="text-sm font-black text-zinc-900 tracking-tight">{item.totalDistance.toFixed(0)} KM</span>
+                                    </td>
+                                    <td style={tableStyles.td} className="text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Fuel className="h-3.5 w-3.5 text-blue-500" />
+                                            <span className="text-sm font-black text-zinc-900">{currencyStr}{item.totalFuelCost.toLocaleString()}</span>
+                                        </div>
+                                    </td>
+                                    <td style={tableStyles.td} className="text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Wrench className="h-3.5 w-3.5 text-brand" />
+                                            <span className="text-sm font-black text-zinc-900">{currencyStr}{item.totalMaintenanceCost.toLocaleString()}</span>
+                                        </div>
+                                    </td>
+                                    <td style={tableStyles.td} className="text-right pr-10">
+                                        <div className="flex flex-col items-end gap-2">
                                             <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-zinc-100 rounded-lg text-zinc-600">
-                                                    <Bus className="h-4 w-4" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-black text-zinc-900">{item.vehicle.registrationNumber}</p>
-                                                    <p className="text-[10px] text-zinc-400 font-bold uppercase">{item.vehicle.model}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="text-sm font-bold text-zinc-600">{item.totalDaysActive} / 30</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="text-sm font-black text-zinc-900">{item.totalDistance.toFixed(0)} km</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <div className="flex items-center justify-center gap-1.5 text-zinc-900">
-                                                <Fuel className="h-3 w-3 text-blue-500" />
-                                                <span className="text-sm font-black text-zinc-900">{currencyStr}{item.totalFuelCost.toLocaleString()}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <div className="flex items-center justify-center gap-1.5 text-zinc-900">
-                                                <Wrench className="h-3 w-3 text-orange-500" />
-                                                <span className="text-sm font-black text-zinc-900">{currencyStr}{item.totalMaintenanceCost.toLocaleString()}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex flex-col items-end gap-1.5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs font-black text-brand">A+</span>
-                                                    <div className="flex gap-0.5">
-                                                        {[1, 2, 3, 4, 5].map(i => (
-                                                            <div key={i} className={cn("h-3 w-1.5 rounded-sm", i <= 4 ? "bg-brand" : "bg-zinc-200")} />
-                                                        ))}
-                                                    </div>
+                                                <span className="text-sm font-black text-brand tracking-tighter italic">GRADE A+</span>
+                                                <div className="flex gap-1">
+                                                    {[1, 2, 3, 4, 5].map(i => (
+                                                        <div key={i} className={cn("h-4 w-2 rounded-sm", i <= 4 ? "bg-brand" : "bg-zinc-200")} />
+                                                    ))}
                                                 </div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {(data || []).length === 0 && (
-                                    <tr>
-                                        <td colSpan={6} className="px-6 py-12 text-center">
-                                            <div className="flex flex-col items-center gap-2 opacity-50">
-                                                <BarChart3 className="h-12 w-12 text-zinc-200" />
-                                                <p className="text-sm font-black uppercase text-zinc-400">No consolidated data for this month</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
-            </Card>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {(data || []).length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="py-32 text-center">
+                                        <div className="flex flex-col items-center gap-4 opacity-20">
+                                            <BarChart3 className="h-16 w-16 text-zinc-400" />
+                                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Zero consolidated data matrix for this period</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </ErpCard>
         </div>
     );
 }

@@ -39,6 +39,7 @@ import { toast } from "sonner";
 import { getCookie } from "@/lib/cookies";
 import { useSidebar } from "@/context/SidebarContext";
 import { reconcileOrphanFeesAction } from "@/app/actions/billing-maintenance-actions";
+import { SectionHeader } from "@/components/ui/erp-ui";
 
 export default function BillingDashboard() {
     const params = useParams();
@@ -173,8 +174,8 @@ export default function BillingDashboard() {
     }
 
     return (
-        <div className="flex flex-col gap-8 pb-20 relative">
-            {/* Payment Modal */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 80, position: "relative" }}>
+            {/* Payment Modal (unchanged) */}
             {selectedInvoice && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-0">
                     <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -186,6 +187,7 @@ export default function BillingDashboard() {
                             <button
                                 onClick={() => setSelectedInvoice(null)}
                                 className="p-2 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors"
+                                title="Close"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -195,13 +197,9 @@ export default function BillingDashboard() {
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Amount Received</label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-medium">
-                                        {currency}
-                                    </span>
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-medium">{currency}</span>
                                     <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0.01"
+                                        type="number" step="0.01" min="0.01"
                                         max={selectedInvoice.amount - (selectedInvoice.paid || 0)}
                                         value={paymentAmount}
                                         onChange={(e) => setPaymentAmount(e.target.value)}
@@ -209,17 +207,12 @@ export default function BillingDashboard() {
                                         required
                                     />
                                 </div>
-                                <p className="text-xs text-zinc-400 text-right mt-1">Remaining balance: {formatCurrency(selectedInvoice.amount - (selectedInvoice.paid || 0))}</p>
+                                <p className="text-xs text-zinc-400 text-right mt-1">Remaining: {formatCurrency(selectedInvoice.amount - (selectedInvoice.paid || 0))}</p>
                             </div>
-
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Payment Method</label>
-                                <select
-                                    value={paymentMethod}
-                                    onChange={(e) => setPaymentMethod(e.target.value)}
-                                    className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900 transition-shadow"
-                                    required
-                                >
+                                <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}
+                                    className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900" required>
                                     <option value="CASH">Cash</option>
                                     <option value="BANK_TRANSFER">Bank Transfer / NEFT</option>
                                     <option value="CARD">Credit / Debit Card</option>
@@ -227,47 +220,23 @@ export default function BillingDashboard() {
                                     <option value="CHEQUE">Cheque</option>
                                 </select>
                             </div>
-
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Reference / Notes</label>
-                                <input
-                                    type="text"
-                                    value={paymentReference}
-                                    onChange={(e) => setPaymentReference(e.target.value)}
+                                <input type="text" value={paymentReference} onChange={(e) => setPaymentReference(e.target.value)}
                                     placeholder="e.g. Transaction ID, UTR"
-                                    className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900 transition-shadow"
-                                />
+                                    className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900" />
                             </div>
-
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Payment Date</label>
-                                <input
-                                    type="date"
-                                    value={paymentDate}
-                                    onChange={(e) => setPaymentDate(e.target.value)}
-                                    className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900 transition-shadow"
-                                    required
-                                />
+                                <input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)}
+                                    className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand font-medium text-zinc-900" required />
                             </div>
-
                             <div className="pt-2 flex justify-end gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedInvoice(null)}
-                                    className="px-5 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-600 font-bold text-sm hover:bg-zinc-50 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmittingPayment}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-zinc-900 font-bold text-sm hover:brightness-110 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isSubmittingPayment ? (
-                                        <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>
-                                    ) : (
-                                        "Confirm Payment"
-                                    )}
+                                <button type="button" onClick={() => setSelectedInvoice(null)}
+                                    className="px-5 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-600 font-bold text-sm hover:bg-zinc-50 transition-colors">Cancel</button>
+                                <button type="submit" disabled={isSubmittingPayment}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-zinc-900 font-bold text-sm hover:brightness-110 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                    {isSubmittingPayment ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : "Confirm Payment"}
                                 </button>
                             </div>
                         </form>
@@ -275,67 +244,42 @@ export default function BillingDashboard() {
                 </div>
             )}
 
-            {/* Header */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                        Billing & Invoices
-                    </h1>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Manage student fees, generate invoices, and track payments.
-                    </p>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                    <Link
-                        href={`/s/${slug}/billing/bulk`}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-[var(--secondary-color)] transition-colors hover:brightness-110 shadow-sm shadow-brand/20"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Bulk Generate
-                    </Link>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button
-                                className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900"
-                                title="More options"
-                            >
-                                <MoreHorizontal className="h-4 w-4" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-48">
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${slug}/settings/fees`} className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4" />
-                                    Fee Structures
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/s/${slug}/accounts/transactions`} className="flex items-center gap-2">
-                                    <CreditCard className="h-4 w-4" />
-                                    Transactions
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={async () => {
+            <SectionHeader
+                title="Billing & Invoices"
+                subtitle="Manage student fees, generate invoices, and track payments."
+                icon={CreditCard}
+                action={
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <Link href={`/s/${slug}/billing/bulk`}
+                            style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 18px", borderRadius: 12, background: "var(--brand)", color: "var(--secondary-color)", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
+                            <Plus className="h-4 w-4" />
+                            Bulk Generate
+                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50" title="More options">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-48">
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${slug}/settings/fees`} className="flex items-center gap-2"><FileText className="h-4 w-4" />Fee Structures</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/s/${slug}/accounts/transactions`} className="flex items-center gap-2"><CreditCard className="h-4 w-4" />Transactions</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={async () => {
                                     const academicYearId = getCookie(`academic_year_${slug}`) || undefined;
                                     const res = await reconcileOrphanFeesAction(slug, academicYearId);
-                                    if (res.success) {
-                                        toast.success(res.message);
-                                        loadData();
-                                    } else {
-                                        toast.error(res.error);
-                                    }
-                                }}
-                                className="flex items-center gap-2 text-amber-600 focus:text-amber-700 cursor-pointer"
-                            >
-                                <AlertCircle className="h-4 w-4" />
-                                Reconcile Invoices
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
+                                    if (res.success) { toast.success(res.message); loadData(); } else { toast.error(res.error); }
+                                }} className="flex items-center gap-2 text-amber-600 focus:text-amber-700 cursor-pointer">
+                                    <AlertCircle className="h-4 w-4" />Reconcile Invoices
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                }
+            />
 
             {/* Stats Grid */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

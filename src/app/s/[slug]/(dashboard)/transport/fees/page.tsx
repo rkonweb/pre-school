@@ -6,6 +6,7 @@ import { getTransportFeesAction, generateTransportInvoicesAction, sendTransportF
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Plus, Loader2, Wallet, History, AlertCircle, TrendingUp, Filter, Receipt, BellRing, Mail } from "lucide-react";
+import { SectionHeader, StatusChip } from "@/components/ui/erp-ui";
 
 export default function TransportFeesPage() {
     const params = useParams();
@@ -69,43 +70,31 @@ export default function TransportFeesPage() {
 
     return (
         <div className="flex flex-col gap-8 pb-20 w-full animate-in fade-in duration-500">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div className="flex items-center gap-6">
-                    <button
-                        onClick={() => router.push(`/s/${slug}/transport`)}
-                        className="group flex h-12 w-12 items-center justify-center rounded-full border border-zinc-200 bg-white transition-all hover:border-zinc-900 active:scale-95 shadow-sm"
-                    >
-                        <ArrowLeft className="h-5 w-5 text-zinc-500 group-hover:text-zinc-900" />
-                    </button>
-                    <div>
-                        <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                            Transport Accounts
-                        </h1>
-                        <p className="text-sm text-zinc-500 font-medium mt-1">
-                            Monitor fee collections, overdue payments, and billing automation.
-                        </p>
+            <SectionHeader
+                title="Transport Accounts"
+                subtitle="Monitor fee collections, overdue payments, and billing automation."
+                icon={Wallet}
+                action={
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={handleSendReminders}
+                            disabled={reminding || loading}
+                            className="h-10 px-4 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-brand rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                        >
+                            {reminding ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellRing className="h-4 w-4" />}
+                            Broadcast Reminders
+                        </button>
+                        <button
+                            onClick={handleGenerateBilling}
+                            disabled={generating || loading}
+                            className="h-10 px-4 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+                        >
+                            {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                            Generate Invoices
+                        </button>
                     </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={handleSendReminders}
-                        disabled={reminding || loading}
-                        className="h-12 px-6 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-brand rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-sm hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
-                    >
-                        {reminding ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellRing className="h-4 w-4" />}
-                        Broadcast Reminders
-                    </button>
-                    <button
-                        onClick={handleGenerateBilling}
-                        disabled={generating || loading}
-                        className="h-12 px-8 bg-brand text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black text-[10px] uppercase tracking-[2px] flex items-center gap-2 shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
-                    >
-                        {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                        Generate Invoices
-                    </button>
-                </div>
-            </div>
+                }
+            />
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -204,14 +193,9 @@ export default function TransportFeesPage() {
                                             </span>
                                         </td>
                                         <td className="px-8 py-4">
-                                            <span className={cn(
-                                                "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm",
-                                                fee.status === "PAID" ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                                                    fee.status === "PENDING" && new Date(fee.dueDate) < new Date() ? "bg-red-50 text-red-700 border-red-100" :
-                                                        "bg-amber-50 text-amber-700 border-amber-100"
-                                            )}>
-                                                {fee.status === "PENDING" && new Date(fee.dueDate) < new Date() ? "OVERDUE" : fee.status}
-                                            </span>
+                                            <StatusChip
+                                                label={fee.status === "PENDING" && new Date(fee.dueDate) < new Date() ? "OVERDUE" : fee.status}
+                                            />
                                         </td>
                                     </tr>
                                 ))}

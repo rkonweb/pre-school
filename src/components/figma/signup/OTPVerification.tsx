@@ -79,6 +79,7 @@ export function OTPVerification() {
           "FREE_TRIAL": "/signup/free-trial",
           "SCHOOL_SETUP": "/signup/setup",
           "LOADING": "/signup/setup", // Don't re-trigger loading, go back to setup
+          "LOADING": "/signup/setup", // Don't re-trigger loading, go back to setup
           "COMPLETED": "/school-login" // Already registered, go to login
         };
 

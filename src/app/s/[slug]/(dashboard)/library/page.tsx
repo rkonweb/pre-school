@@ -15,6 +15,7 @@ import {
     Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SectionHeader } from "@/components/ui/erp-ui";
 
 export default function LibraryDashboardPage() {
     const params = useParams();
@@ -42,30 +43,24 @@ export default function LibraryDashboardPage() {
     }
 
     return (
-        <div className="mx-auto max-w-7xl space-y-8 p-6 md:p-8">
-            {/* Header */}
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-3xl font-black text-zinc-900">Library</h1>
-                    <p className="text-zinc-500">Manage books, circulation, and member activity.</p>
-                </div>
-                <div className="flex gap-2">
-                    <Link
-                        href={`/s/${slug}/library/issue`}
-                        className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-[var(--secondary-color)] shadow-lg shadow-brand/20 transition-all hover:brightness-110 hover:shadow-xl"
-                    >
-                        <ArrowUpRight className="h-4 w-4" />
-                        Issue Book
-                    </Link>
-                    <Link
-                        href={`/s/${slug}/library/inventory`}
-                        className="flex items-center gap-2 rounded-xl bg-white border border-zinc-200 px-4 py-2.5 text-sm font-bold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50"
-                    >
-                        <Book className="h-4 w-4" />
-                        Inventory
-                    </Link>
-                </div>
-            </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingBottom: 80 }}>
+            <SectionHeader
+                title="Library"
+                subtitle="Manage books, circulation, and member activity."
+                icon={BookOpen}
+                action={
+                    <div style={{ display: "flex", gap: 10 }}>
+                        <Link href={`/s/${slug}/library/issue`}
+                            style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 18px", borderRadius: 12, background: "var(--brand)", color: "var(--secondary-color)", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
+                            <ArrowUpRight style={{ width: 16, height: 16 }} /> Issue Book
+                        </Link>
+                        <Link href={`/s/${slug}/library/inventory`}
+                            style={{ display: "flex", alignItems: "center", gap: 8, height: 42, padding: "0 18px", borderRadius: 12, background: "white", border: "1.5px solid #E4E4E7", color: "#3F3F46", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
+                            <Book style={{ width: 16, height: 16 }} /> Inventory
+                        </Link>
+                    </div>
+                }
+            />
 
             {/* Stats Grid */}
             <div className="grid gap-6 md:grid-cols-3">

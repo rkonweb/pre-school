@@ -1,5 +1,7 @@
 import { getFleetStudentsAction } from "@/app/actions/transport-actions";
 import { FleetStudentsList } from "@/components/dashboard/transport/FleetStudentsList";
+import { SectionHeader, C } from "@/components/ui/erp-ui";
+import { Users } from "lucide-react";
 
 export default async function FleetStudentsPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -7,13 +9,12 @@ export default async function FleetStudentsPage({ params }: { params: Promise<{ 
     const students = studentsRes.success && studentsRes.data ? studentsRes.data : [];
 
     return (
-        <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
-            <div>
-                <h1 className="text-3xl font-black text-zinc-900 tracking-tight uppercase">Fleet Manifest</h1>
-                <p className="text-zinc-500 font-medium mt-1">
-                    Manage student boarding, track attendance, and monitor live fleet passengers.
-                </p>
-            </div>
+        <div className="space-y-6">
+            <SectionHeader
+                title="Fleet Manifest"
+                subtitle="Manage student boarding, track attendance, and monitor live fleet passengers."
+                icon={<Users size={18} color={C.amber} />}
+            />
 
             <FleetStudentsList slug={slug} initialStudents={students} />
         </div>

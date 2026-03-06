@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import RequestManager from "./RequestManager";
+import { SectionHeader, C } from "@/components/ui/erp-ui";
+import { ClipboardList } from "lucide-react";
 
 export default async function RequestsPage(props: { params: Promise<{ slug: string }> }) {
     const params = await props.params;
@@ -21,5 +23,14 @@ export default async function RequestsPage(props: { params: Promise<{ slug: stri
         include: { student: true }
     });
 
-    return <RequestManager requests={requests} routes={school.transportRoutes} />;
+    return (
+        <div className="space-y-6">
+            <SectionHeader
+                title="Transport Applications"
+                subtitle="Review and process student enrollment requests for fleet services."
+                icon={<ClipboardList size={18} color={C.amber} />}
+            />
+            <RequestManager requests={requests} routes={school.transportRoutes} slug={slug} />
+        </div>
+    );
 }
