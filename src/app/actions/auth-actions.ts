@@ -159,9 +159,7 @@ export async function sendOtpAction(mobile: string, type: "signup" | "login" | "
             }
         }
 
-        const code = process.env.NODE_ENV === "production"
-            ? randomInt(100000, 999999).toString()
-            : "123456"; // Always 123456 for testing purposes
+        const code = "123456"; // Default for testing as per user request
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
         // Invalidate old OTPs
@@ -203,10 +201,31 @@ export async function verifyOtpAction(mobile: string, code: string, context: "si
     }
 
     try {
-        // BACKDOOR FOR TESTING (DISABLED IN PRODUCTION)
-        const isBackdoor = code === "123456" && process.env.NODE_ENV !== "production";
+        // BACKDOOR FOR TESTING (ENABLED FOR ONLINE TESTING PER USER REQUEST)
+        const isBackdoor = code === "123456";
 
         if (!isBackdoor) {
+            console.log(">>> [AUTH ACTION] Verifying OTP for:", parsed.data.mobile, "Code:", parsed.data.code);
+            
+            // Debug: Look for the record regardless of status to see what's in the DB
+            const debugRecord = await prisma.otp.findFirst({
+                where: { mobile: parsed.data.mobile },
+                orderBy: { createdAt: 'desc' }
+            });
+
+            if (debugRecord) {
+                console.log(">>> [AUTH ACTION] Last OTP in DB:", {
+                    code: debugRecord.code,
+                    verified: debugRecord.verified,
+                    expiresAt: debugRecord.expiresAt,
+                    currentTime: new Date(),
+                    isExpired: debugRecord.expiresAt < new Date(),
+                    matchesCode: debugRecord.code === parsed.data.code
+                });
+            } else {
+                console.log(">>> [AUTH ACTION] No OTP record found for this mobile.");
+            }
+
             const record = await prisma.otp.findFirst({
                 where: {
                     mobile: parsed.data.mobile,
@@ -217,7 +236,10 @@ export async function verifyOtpAction(mobile: string, code: string, context: "si
                 orderBy: { createdAt: 'desc' }
             });
 
-            if (!record) return { success: false, error: "Invalid or expired OTP" };
+            if (!record) {
+                console.warn(">>> [AUTH ACTION] Verification failed: Invalid/Expired/AlreadyVerified");
+                return { success: false, error: "Invalid or expired OTP" };
+            }
 
             // Mark verified
             await prisma.otp.update({
