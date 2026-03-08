@@ -1,5 +1,5 @@
 // @ts-ignore
-import { PrismaClient } from "/Users/rk/Bodhi-Board/pre-school/src/generated/client_final";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
