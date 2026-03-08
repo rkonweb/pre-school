@@ -77,11 +77,7 @@ export function StudentAnalyticsPage({ studentId }: StudentAnalyticsPageProps) {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             {analytics.student.avatar && (
-                                <img
-                                    src={analytics.student.avatar}
-                                    alt={analytics.student.name}
-                                    className="w-16 h-16 rounded-full object-cover"
-                                />
+                                <img src={analytics.student.avatar} alt={analytics.student.name} className="w-16 h-16 rounded-full object-cover" />
                             )}
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900">

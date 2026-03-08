@@ -53,7 +53,7 @@ export async function createMasterDataAction(data: { type: string; name: string;
         });
 
         revalidatePath("/admin/dashboard/master-data");
-        return { success: true, data: item };
+        return { success: true, data: JSON.parse(JSON.stringify(item)) };
     } catch (error: any) {
         console.error("Create Master Data Error:", error);
         return { success: false, error: error.message || "Failed to create data" };
@@ -73,7 +73,7 @@ export async function updateMasterDataAction(id: string, data: { name?: string; 
         });
 
         revalidatePath("/admin/dashboard/master-data");
-        return { success: true, data: item };
+        return { success: true, data: JSON.parse(JSON.stringify(item)) };
     } catch (error: any) {
         console.error("Update Master Data Error:", error);
         return { success: false, error: error.message || "Failed to update data" };
@@ -221,7 +221,7 @@ export async function getAllMasterDataForExportAction() {
                 { name: 'asc' }
             ]
         });
-        return { success: true, data: allData };
+        return { success: true, data: JSON.parse(JSON.stringify(allData)) };
     } catch (error: any) {
         console.error("Export Fetch Error:", error);
         return { success: false, error: error.message };

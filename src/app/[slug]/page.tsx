@@ -1,4 +1,4 @@
-import { PhoneLogin } from "@/components/figma/login/PhoneLogin";
+import { SchoolLogin } from "@/components/figma/login/SchoolLogin";
 import { Suspense } from "react";
 import { getCMSPageBySlugAction } from "@/app/actions/cms-actions";
 import { notFound } from "next/navigation";
@@ -60,17 +60,36 @@ export default async function SlugPage({ params }: SlugPageProps) {
         );
     }
 
-    // 2. Otherwise, check if it's a Tenant Login Route
+    // 2. Otherwise, check if it's a Tenant Login Route.
+    // getTenantsAction already returns all fields we need: logo, motto, foundingYear,
+    // address, contactPhone, contactEmail, website, brandColor, etc.
     const tenants = await getTenantsAction();
-    const tenant = tenants.find(t => t.subdomain === slug || t.customDomain === slug || t.id.toLowerCase() === slug.toLowerCase());
+    const school = tenants.find(t => t.subdomain === slug || t.customDomain === slug || t.id.toLowerCase() === slug.toLowerCase());
 
-    if (!tenant) {
+    if (!school) {
         notFound();
     }
 
+    const accent = school.brandColor || "#AE7B64";
+
     return (
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-            <PhoneLogin type="school" tenantName={tenant.name} brandColor={tenant.brandColor} />
+            <SchoolLogin
+                tenantName={school.name}
+                tenantSlug={school.subdomain}
+                brandColor={accent}
+                logoUrl={school.logo}
+                tagline={school.motto}
+                address={school.address}
+                city={school.city}
+                state={school.state}
+                zip={school.zip}
+                phone={school.contactPhone}
+                email={school.contactEmail}
+                website={school.website}
+                foundingYear={school.foundingYear}
+            />
         </Suspense>
     );
 }
+

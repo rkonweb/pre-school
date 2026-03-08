@@ -192,7 +192,7 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
 
         return {
             success: true,
-            students: students.map(s => ({
+            students: JSON.parse(JSON.stringify(students.map(s => ({
                 id: s.id,
                 name: `${s.firstName} ${s.lastName}`,
                 admissionNumber: s.admissionNumber || "",
@@ -207,7 +207,7 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
                 status: s.status,
                 avatar: s.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.firstName}`,
                 createdAt: s.createdAt, // Needed for date sort
-            })),
+            })))),
             pagination: {
                 total: totalCount,
                 page,
@@ -234,7 +234,7 @@ export async function getStudentAction(schoolSlug: string, id: string) {
                 school: true
             }
         });
-        return { success: true, student };
+        return { success: true, student: JSON.parse(JSON.stringify(student)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -332,7 +332,7 @@ export async function createStudentAction(schoolSlug: string, data: {
 
         await syncStudent(student.id);
         revalidatePath(`/s/${schoolSlug}/students`);
-        return { success: true, data: student };
+        return { success: true, data: JSON.parse(JSON.stringify(student)) };
     } catch (error: any) {
         console.error("Create Student Action Error:", error);
         return { success: false, error: error.message || "Failed to create student profile" };
@@ -409,7 +409,7 @@ export async function updateStudentAction(schoolSlug: string, id: string, data: 
         await syncStudent(id);
         revalidatePath(`/s/${schoolSlug}/students`);
         revalidatePath(`/s/${schoolSlug}/students/${id}`);
-        return { success: true, student };
+        return { success: true, student: JSON.parse(JSON.stringify(student)) };
     } catch (error: any) {
         console.error("Update Student Error:", error);
         return { success: false, error: error.message };
@@ -497,7 +497,7 @@ export async function searchStudentsAction(schoolSlug: string, query: string, ex
                 avatar: true
             }
         });
-        return { success: true, students };
+        return { success: true, students: JSON.parse(JSON.stringify(students)) };
     } catch (e: any) {
         return { success: false, error: e.message };
     }

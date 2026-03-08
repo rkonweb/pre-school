@@ -116,7 +116,7 @@ export default function AttendanceClient({ slug, classrooms, academicYears = [],
             {/* Header & Controls */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                    <h1 className="text-2xl font-bold tracking-tight bg-brand-gradient bg-clip-text text-transparent">
                         Attendance
                     </h1>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">

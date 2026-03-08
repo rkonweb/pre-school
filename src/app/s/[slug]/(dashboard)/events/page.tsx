@@ -11,7 +11,7 @@ import { getClassroomsAction } from "@/app/actions/classroom-actions";
 const EVENT_TYPES = [
     { value: "HOLIDAY", label: "Holiday", color: "bg-green-500" },
     { value: "EXAM", label: "Exam", color: "bg-red-500" },
-    { value: "SPORTS", label: "Sports Day", color: "bg-orange-500" },
+    { value: "SPORTS", label: "Sports Day", color: "bg-brand" },
     { value: "PTM", label: "PTM", color: "bg-blue-500" },
     { value: "CULTURAL", label: "Cultural", color: "bg-purple-500" },
     { value: "OTHER", label: "Other", color: "bg-zinc-500" },
@@ -171,14 +171,14 @@ export default function SchoolEventsPage() {
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase italic flex items-center gap-3">
-                        <Calendar className="h-8 w-8 text-blue-500" />
-                        School <span className="text-blue-500">Calendar</span>
+                        <Calendar className="h-8 w-8 text-brand" />
+                        School <span className="text-brand">Calendar</span>
                     </h1>
                     <p className="text-zinc-500 font-medium mt-1">Manage school events, holidays, and activities for parents.</p>
                 </div>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="flex items-center gap-2 bg-blue-500 hover:bg-blue-400 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95"
+                    className="flex items-center gap-2 bg-brand-gradient text-[var(--secondary-color)] px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 border-none shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)]"
                 >
                     <Plus className="h-4 w-4" />
                     Add Event
@@ -187,9 +187,9 @@ export default function SchoolEventsPage() {
 
             {/* Create Form */}
             {showForm && (
-                <div className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-blue-200 dark:border-blue-900 shadow-xl p-8 animate-in slide-in-from-top-4">
+                <div className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-brand/20 dark:border-brand/30 shadow-xl p-8 animate-in slide-in-from-top-4">
                     <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6 flex items-center gap-3">
-                        New <span className="text-blue-500">Event</span>
+                        New <span className="text-brand">Event</span>
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -198,7 +198,7 @@ export default function SchoolEventsPage() {
                                 value={form.title}
                                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                                 placeholder="E.g., Republic Day Holiday"
-                                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-semibold focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors"
                             />
                         </div>
                         <div>
@@ -261,7 +261,7 @@ export default function SchoolEventsPage() {
                                     className={cn(
                                         "px-4 py-2 rounded-xl text-xs font-bold transition-all",
                                         form.classIds.includes("all")
-                                            ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
+                                            ? "bg-brand text-[var(--secondary-color)] shadow-md shadow-brand/20"
                                             : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
                                     )}
                                 >
@@ -274,7 +274,7 @@ export default function SchoolEventsPage() {
                                         className={cn(
                                             "px-4 py-2 rounded-xl text-xs font-bold transition-all",
                                             !form.classIds.includes("all") && form.classIds.includes(cls.id)
-                                                ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
+                                                ? "bg-brand text-[var(--secondary-color)] shadow-md shadow-brand/20"
                                                 : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
                                         )}
                                     >
@@ -288,7 +288,7 @@ export default function SchoolEventsPage() {
                         <button
                             onClick={handleCreate}
                             disabled={isCreating}
-                            className="flex-1 bg-blue-500 hover:bg-blue-400 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                            className="flex-1 bg-brand-gradient text-[var(--secondary-color)] py-4 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 border-none shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)]"
                         >
                             {isCreating ? "Creating..." : "Create Event"}
                         </button>

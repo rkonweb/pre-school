@@ -215,7 +215,7 @@ export default function VehiclesPage() {
             </div>
 
             {/* Asset Matrix */}
-            <div className={cn(tableStyles.container, "bg-white overflow-hidden shadow-xl shadow-zinc-200/40")}>
+            <div style={tableStyles.container} className="bg-white overflow-hidden shadow-xl shadow-zinc-200/40">
                 {loading ? (
                     <div className="flex h-[40vh] items-center justify-center flex-col gap-4">
                         <Loader2 className="h-8 w-8 animate-spin text-brand" />
@@ -233,12 +233,12 @@ export default function VehiclesPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse">
                             <thead>
-                                <tr className="bg-zinc-50/50 border-b border-zinc-100">
-                                    <th className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-center w-20">Actions</th>
+                                <tr style={tableStyles.thead}>
+                                    <th style={tableStyles.thNoSort} className="text-center w-20">Actions</th>
                                     {columns.map(col => {
                                         if (!visibleColumns[col.id]) return null;
                                         return (
-                                            <th key={col.id} className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-left">
+                                            <th key={col.id} style={tableStyles.th}>
                                                 {col.label}
                                             </th>
                                         );
@@ -259,13 +259,10 @@ export default function VehiclesPage() {
                                     return (
                                         <tr
                                             key={vehicle.id}
-                                            className={cn(
-                                                "group transition-all duration-200 border-b border-zinc-50 last:border-0",
-                                                i % 2 === 0 ? "bg-white" : "bg-zinc-50/20",
-                                                "hover:bg-amber-50/50"
-                                            )}
+                                            style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
+                                            className="group transition-all duration-200"
                                         >
-                                            <td className="px-6 py-4 text-center">
+                                            <td className="px-6 py-4 text-center" style={tableStyles.td}>
                                                 <RowActions
                                                     onView={`/s/${slug}/transport/fleet/vehicles/${vehicle.id}`}
                                                     viewTooltip="View Vehicle Details"
@@ -278,7 +275,7 @@ export default function VehiclesPage() {
                                                 if (!visibleColumns[col.id]) return null;
 
                                                 if (col.id === 'info') return (
-                                                    <td key={col.id} className="px-6 py-4">
+                                                    <td key={col.id} className="px-6 py-4" style={tableStyles.td}>
                                                         <div className="flex items-center gap-4">
                                                             <div className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 border border-zinc-200/50 shadow-sm shrink-0">
                                                                 <Bus className="h-5 w-5" />
@@ -295,19 +292,19 @@ export default function VehiclesPage() {
                                                     </td>
                                                 );
                                                 if (col.id === 'capacity') return (
-                                                    <td key={col.id} className="px-6 py-4">
+                                                    <td key={col.id} className="px-6 py-4" style={tableStyles.td}>
                                                         <div className="text-xs font-black text-zinc-900 whitespace-nowrap uppercase tracking-widest">{vehicle.capacity} Seats</div>
                                                     </td>
                                                 );
                                                 if (col.id === 'status') return (
-                                                    <td key={col.id} className="px-6 py-4">
+                                                    <td key={col.id} className="px-6 py-4" style={tableStyles.td}>
                                                         <StatusChip
                                                             label={isCritical ? "Issue Found" : "Ready"}
                                                         />
                                                     </td>
                                                 );
                                                 if (col.id === 'documents') return (
-                                                    <td key={col.id} className="px-6 py-4">
+                                                    <td key={col.id} className="px-6 py-4" style={tableStyles.td}>
                                                         <div className="flex flex-col gap-2">
                                                             <div className="flex gap-1.5">
                                                                 {complianceStatus.map((item, idx) => (
@@ -316,7 +313,7 @@ export default function VehiclesPage() {
                                                                         className={cn(
                                                                             "h-1.5 w-6 rounded-full shadow-inner ring-1 ring-inset ring-black/5 shrink-0",
                                                                             item.s === "VALID" ? "bg-emerald-400" :
-                                                                                item.s === "EXPIRING_SOON" ? "bg-amber-400" :
+                                                                                item.s === "EXPIRING_SOON" ? "bg-brand" :
                                                                                     "bg-red-500"
                                                                         )}
                                                                         title={`${item.label}: ${item.s}`}

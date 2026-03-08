@@ -102,7 +102,7 @@ export default function PODetailsClient({ slug, initialPO }: { slug: string, ini
             case "PENDING_APPROVAL":
                 return (
                     <div className="flex gap-2">
-                        <button disabled={isSubmitting} onClick={() => handleUpdateStatus("APPROVED")} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 shadow-sm transition-all disabled:opacity-50">
+                        <button disabled={isSubmitting} onClick={() => handleUpdateStatus("APPROVED")} className="bg-brand-gradient text-[var(--secondary-color)] px-4 py-2 rounded-lg text-sm font-semibold hover:brightness-110 shadow-lg shadow-brand/20 transition-all disabled:opacity-50 border-none">
                             Approve PO
                         </button>
                         <button disabled={isSubmitting} onClick={() => handleUpdateStatus("DRAFT")} className="bg-slate-100 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 shadow-sm transition-all disabled:opacity-50">
@@ -112,14 +112,14 @@ export default function PODetailsClient({ slug, initialPO }: { slug: string, ini
                 );
             case "APPROVED":
                 return (
-                    <button disabled={isSubmitting} onClick={() => handleUpdateStatus("ISSUED")} className="bg-brand text-[var(--secondary-color)] px-4 py-2 rounded-lg text-sm font-semibold hover:brightness-110 shadow-sm transition-all disabled:opacity-50">
+                    <button disabled={isSubmitting} onClick={() => handleUpdateStatus("ISSUED")} className="bg-brand text-[var(--secondary-color)] px-4 py-2 rounded-lg text-sm font-semibold hover:brightness-110 shadow-lg shadow-brand/20 transition-all disabled:opacity-50">
                         Mark as Issued to Vendor
                     </button>
                 );
             case "ISSUED":
             case "PARTIAL_RECEIVED":
                 return (
-                    <button disabled={isSubmitting} onClick={openReceivingModal} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 shadow-sm transition-all disabled:opacity-50">
+                    <button disabled={isSubmitting} onClick={openReceivingModal} className="flex items-center gap-2 bg-brand-gradient text-[var(--secondary-color)] px-4 py-2 rounded-lg text-sm font-semibold hover:brightness-110 shadow-lg shadow-brand/20 transition-all disabled:opacity-50 border-none">
                         <PackagePlus className="h-4 w-4" /> Receive Goods
                     </button>
                 );
@@ -203,13 +203,13 @@ export default function PODetailsClient({ slug, initialPO }: { slug: string, ini
                         </div>
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-slate-200">
-                                <thead className="bg-slate-50">
+                                <thead>
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Item Description</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Qty</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Rate</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Total</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">Received</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase">Item Description</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium uppercase">Qty</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium uppercase">Rate</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium uppercase">Total</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium uppercase">Received</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 bg-white">
@@ -303,7 +303,7 @@ export default function PODetailsClient({ slug, initialPO }: { slug: string, ini
                             </div>
                             <div className="pt-6 mt-4 border-t border-slate-100 flex justify-end gap-3">
                                 <button type="button" onClick={() => setIsReceivingModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg border border-slate-200">Cancel</button>
-                                <button type="submit" disabled={isSubmitting || receivingItems.every(i => i.toReceive === 0)} className="px-6 py-2 bg-brand text-[var(--secondary-color)] text-sm font-medium rounded-lg hover:brightness-110 disabled:opacity-50 shadow-md">
+                                <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-brand-gradient text-[var(--secondary-color)] text-sm font-medium rounded-lg hover:brightness-110 disabled:opacity-50 shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)] border-none">
                                     {isSubmitting ? "Saving..." : "Record Goods Receipt"}
                                 </button>
                             </div>

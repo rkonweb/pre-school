@@ -361,11 +361,11 @@ export default function LibraryInventoryPage() {
                 ) : (
                     <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm ring-1 ring-zinc-100">
                         <table className="w-full text-left">
-                            <thead className="bg-zinc-50 border-b border-zinc-100">
+                            <thead>
                                 <tr>
                                     <th
                                         onClick={() => handleSort("title")}
-                                        className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-pointer hover:text-zinc-700 hover:bg-zinc-100 transition-colors select-none"
+                                        className="px-6 py-4 text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-zinc-100/10 transition-colors select-none"
                                     >
                                         <div className="flex items-center gap-2">
                                             Book

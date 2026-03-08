@@ -160,7 +160,7 @@ export function FleetStudentsList({ slug, initialStudents }: FleetStudentsListPr
                             <button
                                 onClick={() => handleBoarding(profile.student.id, profile.route?.id, "IN", "PICKUP")}
                                 disabled={loadingIds.has(profile.student.id) || !profile.route}
-                                className="flex flex-col items-center justify-center p-4 rounded-[24px] bg-zinc-900 text-white hover:bg-brand transition-all disabled:opacity-30 group/btn"
+                                className="flex flex-col items-center justify-center p-4 rounded-[24px] bg-zinc-900 text-[var(--secondary-color)] hover:bg-brand transition-all disabled:opacity-30 group/btn"
                                 title="Mark Boarding IN"
                             >
                                 <CheckCircle2 className="h-7 w-7 mb-2" />

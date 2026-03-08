@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 import '../../core/theme/school_brand_provider.dart';
 import 'auth_service.dart';
 import '../../core/routing/rbac.dart';
@@ -17,13 +19,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _otpSent = false;
 
   final TextEditingController _mobileController = TextEditingController();
-  final TextEditingController _otpController = TextEditingController();
+  late List<TextEditingController> _otpControllers;
+  late List<FocusNode> _otpFocusNodes;
+
+  int _resendCountdown = 0;
+  Timer? _resendTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _otpControllers = List.generate(6, (_) => TextEditingController());
+    _otpFocusNodes = List.generate(6, (_) => FocusNode());
+  }
 
   @override
   void dispose() {
     _mobileController.dispose();
-    _otpController.dispose();
+    for (var controller in _otpControllers) {
+      controller.dispose();
+    }
+    for (var focusNode in _otpFocusNodes) {
+      focusNode.dispose();
+    }
+    _resendTimer?.cancel();
     super.dispose();
+  }
+
+  void _startResendTimer() {
+    setState(() => _resendCountdown = 30);
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() => _resendCountdown--);
+      if (_resendCountdown == 0) {
+        timer.cancel();
+      }
+    });
+  }
+
+  void _handleOtpInput(int index, String value) {
+    if (value.isNotEmpty) {
+      if (index < 5) {
+        _otpFocusNodes[index + 1].requestFocus();
+      } else {
+        // All digits filled, auto-call verify
+        _otpFocusNodes[index].unfocus();
+        Future.delayed(const Duration(milliseconds: 200), _handleVerifyOtp);
+      }
+    }
+  }
+
+  void _handleOtpBackspace(int index, String value) {
+    if (value.isEmpty && index > 0) {
+      _otpFocusNodes[index - 1].requestFocus();
+    }
   }
 
   Future<void> _handleRequestOtp() async {
@@ -34,7 +81,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       final success = await ref.read(authServiceProvider).requestOtp(mobile);
       if (success) {
-        setState(() => _otpSent = true);
+        setState(() {
+          _otpSent = true;
+        });
+        // Clear and reset OTP controllers
+        for (var controller in _otpControllers) {
+          controller.clear();
+        }
+        _otpFocusNodes[0].requestFocus();
+        _startResendTimer();
       }
     } catch (e) {
       if (!mounted) return;
@@ -47,8 +102,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleVerifyOtp() async {
     final mobile = _mobileController.text.trim();
-    final code = _otpController.text.trim();
-    if (code.isEmpty) return;
+    final code = _otpControllers.map((c) => c.text).join();
+    if (code.isEmpty || code.length != 6) return;
 
     setState(() => _isLoading = true);
     try {
@@ -131,16 +186,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 16),
 
               if (_otpSent) ...[
-                TextField(
-                  controller: _otpController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: '6-Digit OTP',
-                    border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                    prefixIcon: const Icon(Icons.lock_clock),
-                  ),
+                // 6-Digit OTP Input
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Enter OTP',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(6, (index) {
+                        return SizedBox(
+                          width: 45,
+                          height: 55,
+                          child: RawKeyboardListener(
+                            focusNode: FocusNode(),
+                            onKey: (event) {
+                              if (event is RawKeyDownEvent &&
+                                  event.logicalKey == LogicalKeyboardKey.backspace &&
+                                  _otpControllers[index].text.isEmpty) {
+                                _handleOtpBackspace(index, '');
+                              }
+                            },
+                            child: TextField(
+                            controller: _otpControllers[index],
+                            focusNode: _otpFocusNodes[index],
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            maxLength: 1,
+                            enabled: !_isLoading,
+                            decoration: InputDecoration(
+                              counterText: '',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            onChanged: (value) {
+                              if (value.isNotEmpty && !value.characters.first.contains(RegExp(r'[0-9]'))) {
+                                _otpControllers[index].clear();
+                                return;
+                              }
+                              if (value.length > 1) {
+                                _otpControllers[index].text = value[value.length - 1];
+                              }
+                              if (value.isNotEmpty) {
+                                _handleOtpInput(index, value);
+                              }
+                            },
+                          ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 32),
               ] else
@@ -169,20 +278,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
 
               const SizedBox(height: 24),
-              TextButton(
-                onPressed: () {
-                  if (_otpSent) {
-                    setState(() {
-                      _otpSent = false;
-                      _otpController.clear();
-                    });
-                  }
-                },
-                child: Text(
-                  _otpSent ? 'Change Mobile Number' : '',
-                  style: TextStyle(color: brand.primaryColor),
+              if (_otpSent)
+                Column(
+                  children: [
+                    TextButton(
+                      onPressed: _resendCountdown > 0 ? null : _handleRequestOtp,
+                      child: Text(
+                        _resendCountdown > 0
+                            ? 'Resend OTP (${_resendCountdown}s)'
+                            : 'Resend OTP',
+                        style: TextStyle(color: brand.primaryColor),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _otpSent = false;
+                          for (var controller in _otpControllers) {
+                            controller.clear();
+                          }
+                        });
+                        _resendTimer?.cancel();
+                      },
+                      child: Text(
+                        'Change Mobile Number',
+                        style: TextStyle(color: brand.primaryColor),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
             ],
           ),
         ),

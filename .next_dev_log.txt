@@ -2,13 +2,560 @@
 > pre-school@0.1.0 dev
 > next dev
 
- ⚠ Port 3000 is in use by process 72648, using available port 3002 instead.
    ▲ Next.js 15.5.12
-   - Local:        http://localhost:3002
-   - Network:      http://192.168.1.2:3002
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.6:3000
    - Environments: .env
    - Experiments (use with caution):
      · serverActions
 
  ✓ Starting...
- ✓ Ready in 1836ms
+ ✓ Ready in 2.2s
+ ✓ Compiled /middleware in 244ms (226 modules)
+ ○ Compiling / ...
+
+warn - The class `duration-[2s]` is ambiguous and matches multiple utilities.
+warn - If this is content and not a class, replace it with `duration-&lsqb;2s&rsqb;` to silence this warning.
+
+warn - The class `ease-[cubic-bezier(0.34,1.56,0.64,1)]` is ambiguous and matches multiple utilities.
+warn - If this is content and not a class, replace it with `ease-&lsqb;cubic-bezier(0.34,1.56,0.64,1)&rsqb;` to silence this warning.
+ ✓ Compiled / in 4s (1676 modules)
+ GET /?callbackUrl=%2Fs%2Flittlechanakyas%2Fextracurricular%2Factivities 200 in 5066ms
+ ✓ Compiled in 1142ms (732 modules)
+ GET / 200 in 240ms
+ ✓ Compiled /favicon.ico in 318ms (961 modules)
+ GET /favicon.ico 200 in 439ms
+ ○ Compiling /[slug] ...
+ ✓ Compiled /[slug] in 1802ms (2425 modules)
+ GET /littlechanakyas 200 in 6182ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 1275ms (2422 modules)
+ GET /littlechanakyas 200 in 1239ms
+ GET /littlechanakyas 200 in 1766ms
+ ✓ Compiled /favicon.ico in 167ms (1686 modules)
+ GET /favicon.ico 200 in 294ms
+ GET /littlechanakyas 200 in 237ms
+ GET /littlechanakyas 200 in 45ms
+ GET /littlechanakyas 200 in 129ms
+ GET /littlechanakyas 200 in 1342ms
+ GET /favicon.ico 200 in 52ms
+ GET /icon-192.png 404 in 1063ms
+ GET /littlechanakyas 200 in 1128ms
+[SMS SERVICE] OTP for +912323232323 is 123456
+ POST /littlechanakyas 200 in 1227ms
+ POST /littlechanakyas 200 in 454ms
+[AUDIT] [LOGIN_SUCCESS] User logged in {
+  userId: 'cmluomivo00023ik4y7zolqmk',
+  schoolId: 'cmluomiqb00003ik4nf6rigri',
+  role: 'ADMIN',
+  timestamp: '2026-03-07T07:46:50.854Z'
+}
+ POST /littlechanakyas 200 in 2272ms
+ GET /icon-192.png 404 in 1012ms
+ ○ Compiling /s/[slug]/dashboard ...
+ ✓ Compiled /s/[slug]/dashboard in 2.2s (4150 modules)
+[Auto-Create Check] Today: 2026-03-07, Threshold: 2025-05-31
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/dashboard 200 in 4297ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ GET /icon-192.png 404 in 1078ms
+ POST /s/littlechanakyas/dashboard 200 in 1145ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/dashboard 200 in 2573ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/dashboard 200 in 1866ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/dashboard 200 in 2497ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/dashboard 200 in 3821ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/dashboard 200 in 3569ms
+ ○ Compiling /s/[slug]/extracurricular/activities ...
+ ✓ Compiled /s/[slug]/extracurricular/activities in 1575ms (4183 modules)
+ GET /s/littlechanakyas/extracurricular/activities 200 in 2354ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/activities 200 in 1718ms
+ GET /icon-192.png 404 in 1842ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/activities 200 in 1074ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/activities 200 in 1269ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/activities 200 in 1129ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/activities 200 in 1268ms
+Development Mode: Skipped subscription redirect.
+ POST /s/littlechanakyas/extracurricular/activities 200 in 3134ms
+ GET /icon-192.png 404 in 1219ms
+ ○ Compiling /s/[slug]/extracurricular/enrollment ...
+ ✓ Compiled /s/[slug]/extracurricular/enrollment in 664ms (4278 modules)
+ GET /s/littlechanakyas/extracurricular/enrollment 200 in 1206ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1342ms
+ GET /icon-192.png 404 in 1627ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1069ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1328ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1313ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1229ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1175ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1211ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+prisma:error 
+Invalid `prisma.activityEnrollment.create()` invocation:
+
+{
+  data: {
+    studentId: "cmlv0fvcn004xfuxhh5x4dyg8",
+    activityId: "cmmg0v5pu00043p6kv8280xgg",
+    notes: "",
+    ~~~~~
+    schoolId: "cmluomiqb00003ik4nf6rigri",
+?   id?: String,
+?   skillLevel?: String | Null,
+?   medicalRestrictions?: String | Null,
+?   parentApproval?: Boolean,
+?   status?: String,
+?   createdAt?: DateTime,
+?   updatedAt?: DateTime
+  }
+}
+
+Unknown argument `notes`. Available options are marked with ?.
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 964ms
+ ✓ Compiled in 1352ms (4292 modules)
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 2795ms
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/enrollment 200 in 2740ms
+ GET /icon-192.png 404 in 1750ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1610ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1470ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1480ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1251ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1514ms
+Development Mode: Skipped subscription redirect.
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 3725ms
+ ○ Compiling /s/[slug]/extracurricular/timetable ...
+ ✓ Compiled /s/[slug]/extracurricular/timetable in 1131ms (4291 modules)
+ GET /icon-192.png 404 in 1548ms
+ GET /s/littlechanakyas/extracurricular/timetable 200 in 1691ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1478ms
+ GET /icon-192.png 404 in 1790ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1140ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1312ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1152ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1227ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1229ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+prisma:error 
+Invalid `prisma.activityTimetable.create()` invocation:
+
+{
+  data: {
+    activityId: "cmmg0v5pu00043p6kv8280xgg",
+    coachId: "",
+    dayOfWeek: 1,
+               ~
+    startTime: "16:00",
+    endTime: "17:30",
+    venue: "",
+    schoolId: "cmluomiqb00003ik4nf6rigri"
+  }
+}
+
+Argument `dayOfWeek`: Invalid value provided. Expected String, provided Int.
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1284ms
+ ✓ Compiled in 1086ms (4243 modules)
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 2144ms
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/timetable 200 in 2474ms
+ GET /icon-192.png 404 in 1501ms
+ GET /s/littlechanakyas/extracurricular/enrollment 200 in 97ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1109ms
+ GET /icon-192.png 404 in 1482ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/enrollment 200 in 1252ms
+ GET /s/littlechanakyas/extracurricular/timetable 200 in 76ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 795ms
+ GET /icon-192.png 404 in 1286ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 857ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 861ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 903ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1026ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 904ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+Development Mode: Skipped subscription redirect.
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1224ms
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 2176ms
+ GET /icon-192.png 404 in 1283ms
+ ✓ Compiled in 1681ms (4243 modules)
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 3080ms
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/timetable 200 in 2353ms
+ GET /icon-192.png 404 in 1400ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1260ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1211ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1179ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 1144ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 978ms
+Development Mode: Skipped subscription redirect.
+ POST /s/littlechanakyas/extracurricular/timetable 200 in 3133ms
+ GET /icon-192.png 404 in 1157ms
+ ○ Compiling /s/[slug]/extracurricular/attendance ...
+ ⨯ ./src/app/s/[slug]/(dashboard)/extracurricular/attendance/page.tsx
+Module parse failed: Identifier 'router' has already been declared (23:10)
+|     const [showModal, setShowModal] = useState(false);
+|     const [searchTerm, setSearchTerm] = useState("");
+>     const router = useRouter();
+|     const loadData = async ()=>{
+|         setIsLoading(true);
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/extracurricular/attendance/page.tsx
+ ⨯ ./src/app/s/[slug]/(dashboard)/extracurricular/attendance/page.tsx
+Module parse failed: Identifier 'router' has already been declared (23:10)
+|     const [showModal, setShowModal] = useState(false);
+|     const [searchTerm, setSearchTerm] = useState("");
+>     const router = useRouter();
+|     const loadData = async ()=>{
+|         setIsLoading(true);
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/extracurricular/attendance/page.tsx
+ ⨯ ./src/app/s/[slug]/(dashboard)/extracurricular/attendance/page.tsx
+Module parse failed: Identifier 'router' has already been declared (23:10)
+|     const [showModal, setShowModal] = useState(false);
+|     const [searchTerm, setSearchTerm] = useState("");
+>     const router = useRouter();
+|     const loadData = async ()=>{
+|         setIsLoading(true);
+
+Import trace for requested module:
+./src/app/s/[slug]/(dashboard)/extracurricular/attendance/page.tsx
+ GET /s/littlechanakyas/extracurricular/attendance 500 in 3583ms
+ GET /s/littlechanakyas/extracurricular/attendance 500 in 30ms
+ GET /s/littlechanakyas/extracurricular/attendance 500 in 32ms
+ GET /s/littlechanakyas/extracurricular/attendance 500 in 30ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled /_error in 2.2s (4607 modules)
+Development Mode: Skipped subscription redirect.
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/attendance 200 in 3518ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 781ms (3026 modules)
+ GET /favicon.ico 200 in 1272ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ GET /icon-192.png 404 in 2654ms
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 2945ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 840ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1561ms
+ ✓ Compiled in 2.8s (4624 modules)
+Development Mode: Skipped subscription redirect.
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ GET /s/littlechanakyas/extracurricular/attendance 200 in 1595ms
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 2155ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1116ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1206ms
+ GET /icon-192.png 404 in 1057ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1302ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1285ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1189ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1036ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+prisma:error 
+Invalid `prisma.activitySession.create()` invocation:
+
+{
+  data: {
+    activityId: "cmmg0v5pu00043p6kv8280xgg",
+    coachId: "",
+    date: new Date("2026-03-07T00:00:00.000Z"),
+    topic: "",
+    ~~~~~
+    schoolId: "cmluomiqb00003ik4nf6rigri",
+?   id?: String,
+?   location?: String | Null,
+?   notes?: String | Null,
+?   createdAt?: DateTime,
+?   updatedAt?: DateTime,
+?   attendance?: ActivityAttendanceUncheckedCreateNestedManyWithoutSessionInput
+  }
+}
+
+Unknown argument `topic`. Available options are marked with ?.
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 748ms
+ ✓ Compiled in 2.2s (4604 modules)
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 3160ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1299ms
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/attendance 200 in 2025ms
+ GET /icon-192.png 404 in 1341ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1010ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 944ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 969ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 836ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+Development Mode: Skipped subscription redirect.
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 2348ms
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1453ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/attendance 200 in 1189ms
+ GET /icon-192.png 404 in 1425ms
+ ○ Compiling /s/[slug]/extracurricular/performance ...
+ ✓ Compiled /s/[slug]/extracurricular/performance in 1926ms (4601 modules)
+ GET /s/littlechanakyas/extracurricular/performance 200 in 2527ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ GET /icon-192.png 404 in 1714ms
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1874ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1078ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1196ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1567ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1071ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1321ms
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+ ○ Compiling /s/[slug]/extracurricular/events ...
+ ✓ Compiled /s/[slug]/extracurricular/events in 1976ms (4026 modules)
+ GET /s/littlechanakyas/extracurricular/events 200 in 2903ms
+ ○ Compiling /[slug] ...
+ ✓ Compiled /[slug] in 627ms (2463 modules)
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 2596ms
+ GET /icon-192.png 404 in 2990ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 1314ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 1113ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 977ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1002ms (2457 modules)
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 1093ms
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 132ms
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/events 200 in 1857ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ GET /icon-192.png 404 in 1047ms
+ POST /s/littlechanakyas/extracurricular/events 200 in 1564ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 1080ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 938ms
+ ✓ Compiled in 1854ms (4065 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/events 200 in 1571ms
+ GET /icon-192.png 404 in 961ms
+ ✓ Compiled in 1092ms (4065 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/events 200 in 1582ms
+ GET /icon-192.png 404 in 1158ms
+ ✓ Compiled in 1942ms (4034 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/events 200 in 1741ms
+ ✓ Compiled /[slug] in 379ms (2456 modules)
+ GET /icon-192.png 404 in 1631ms
+ ✓ Compiled in 1150ms (4062 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/events 200 in 1527ms
+ GET /icon-192.png 404 in 941ms
+ GET /s/littlechanakyas/extracurricular/performance 200 in 155ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ GET /icon-192.png 404 in 1387ms
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1712ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 911ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 964ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1128ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 877ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 919ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+Development Mode: Skipped subscription redirect.
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 2788ms
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1991ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1770ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1323ms
+ GET /icon-192.png 404 in 1904ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 941ms (2459 modules)
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 1050ms
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 132ms
+ ✓ Compiled in 1988ms (4037 modules)
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 158ms
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 135ms
+ ✓ Compiled in 1129ms (4037 modules)
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 88ms
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 117ms
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 106ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 1351ms (2448 modules)
+ GET /favicon.ico 200 in 1513ms
+ GET /s/littlechanakyas/extracurricular/equipment 404 in 208ms
+ GET /favicon.ico 200 in 38ms
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/performance 200 in 2554ms
+ ○ Compiling /[slug] ...
+ ✓ Compiled /[slug] in 687ms (2476 modules)
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ GET /icon-192.png 404 in 3332ms
+ POST /s/littlechanakyas/extracurricular/performance 200 in 4012ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1122ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1417ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 984ms
+ GET /s/littlechanakyas/extracurricular/events 200 in 133ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 1120ms
+ GET /icon-192.png 404 in 1355ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 985ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 1113ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/events 200 in 938ms
+ GET /s/littlechanakyas/extracurricular/performance 200 in 92ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1187ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ GET /icon-192.png 404 in 1837ms
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1134ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 948ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1165ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1189ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 916ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+Development Mode: Skipped subscription redirect.
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1190ms
+ POST /s/littlechanakyas/extracurricular/performance 200 in 2365ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1135ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1034ms
+ GET /icon-192.png 404 in 905ms
+ ✓ Compiled in 2.9s (4082 modules)
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 4012ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1155ms
+VALIDATE SCHOOL: TargetSlug=littlechanakyas, UserSchoolSlug=littlechanakyas, UserID=cmluomivo00023ik4y7zolqmk, Role=ADMIN
+ POST /s/littlechanakyas/extracurricular/performance 200 in 1034ms
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/performance 200 in 2056ms
+ GET /icon-192.png 404 in 1440ms
+ ✓ Compiled in 947ms (1606 modules)
+Development Mode: Skipped subscription redirect.
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/performance 200 in 1589ms
+ GET /s/littlechanakyas/extracurricular/performance 200 in 1838ms
+ GET /icon-192.png 404 in 1089ms
+ ✓ Compiled in 970ms (1606 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/performance 200 in 2585ms
+ GET /icon-192.png 404 in 1043ms
+ ✓ Compiled in 1753ms (1606 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/performance 200 in 1822ms
+ GET /icon-192.png 404 in 1066ms
+ ✓ Compiled in 794ms (1606 modules)
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/extracurricular/performance 200 in 1446ms
+ GET /icon-192.png 404 in 902ms
+ ○ Compiling /s/[slug] ...
+ ✓ Compiled /s/[slug] in 3.8s (4024 modules)
+Error: Route "/s/[slug]" used `params.slug`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at SchoolRootPage (src/app/s/[slug]/page.tsx:3:52)
+  1 | import { redirect } from "next/navigation";
+  2 |
+> 3 | export default function SchoolRootPage({ params: { slug } }: { params: { slug: string } }) {
+    |                                                    ^
+  4 |     // Simply redirect to the dashboard for this school
+  5 |     redirect(`/s/${slug}/dashboard`);
+  6 | }
+ GET /s/littlechanakyas 307 in 11712ms
+ ○ Compiling /s/[slug]/dashboard ...
+ ✓ Compiled /s/[slug]/dashboard in 13.6s (3000 modules)
+[Auto-Create Check] Today: 2026-03-07, Threshold: 2025-05-31
+Development Mode: Skipped subscription redirect.
+ GET /s/littlechanakyas/dashboard 200 in 32375ms
+ ○ Compiling /[slug] ...

@@ -164,7 +164,7 @@ export default function BulkInvoicePage() {
                         </button>
                         <Link
                             href={`/s/${slug}/billing`}
-                            className="flex items-center gap-2 rounded-xl bg-brand px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-brand/20"
+                            className="flex items-center gap-2 rounded-xl bg-brand px-6 py-2.5 text-sm font-bold text-[var(--secondary-color)] shadow-md shadow-brand/20"
                         >
                             <Copy className="h-4 w-4" />
                             View Billing
@@ -205,7 +205,7 @@ export default function BulkInvoicePage() {
                                             )}
                                         >
                                             <div className="flex w-full items-center justify-between">
-                                                <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", selectedClass === cls.id ? "bg-brand text-white" : "bg-zinc-100 text-zinc-500")}>
+                                                <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", selectedClass === cls.id ? "bg-brand text-[var(--secondary-color)]" : "bg-zinc-100 text-zinc-500")}>
                                                     <Users className="h-4 w-4" />
                                                 </div>
                                                 {selectedClass === cls.id && <Check className="h-4 w-4 text-brand" />}
@@ -270,7 +270,7 @@ export default function BulkInvoicePage() {
                                                         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center">
                                                             <AlertCircle className="h-8 w-8 text-zinc-300" />
                                                             <p className="text-sm font-semibold text-zinc-500">No fee templates found for this grade.</p>
-                                                            <Link href={`/s/${slug}/settings/fees`} className="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white hover:brightness-110 transition-all">
+                                                            <Link href={`/s/${slug}/settings/fees`} className="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-[var(--secondary-color)] hover:brightness-110 transition-all">
                                                                 Go to Fee Configuration →
                                                             </Link>
                                                         </div>
@@ -372,7 +372,7 @@ export default function BulkInvoicePage() {
                                             <button
                                                 disabled={!canGenerate}
                                                 onClick={handleGenerate}
-                                                className="flex items-center gap-2 rounded-xl bg-brand px-8 py-2.5 text-sm font-bold text-white transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-brand/20"
+                                                className="flex items-center gap-2 rounded-xl bg-brand px-8 py-2.5 text-sm font-bold text-[var(--secondary-color)] transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-brand/20"
                                             >
                                                 {isGenerating && <Loader2 className="h-4 w-4 animate-spin" />}
                                                 {isGenerating ? "Generating..." : "Generate Invoices"}

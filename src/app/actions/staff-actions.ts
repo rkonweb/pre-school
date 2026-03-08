@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { validateUserSchoolAction, hasPermissionAction } from "./session-actions";
 import { basename } from "path";
 import { syncStaff, removeStaffFromIndex } from "@/lib/search-sync";
+import { logAuditEvent, AuditEventType } from "@/lib/audit-logger";
 
 import { validateBranchAccess } from "@/lib/branch-utils";
 import { validatePhoneUniqueness, validateEmailUniqueness } from "./identity-validation";
@@ -87,7 +88,7 @@ export async function getStaffAction(schoolSlug: string) {
         const isAuthorized = viewingUser?.role === 'ADMIN' || viewingUser?.role === 'SUPER_ADMIN';
         const maskedStaff = staffList.map(s => maskStaffPII(s, isAuthorized));
 
-        return { success: true, data: maskedStaff };
+        return { success: true, data: JSON.parse(JSON.stringify(maskedStaff)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -328,6 +329,16 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
             });
         }
 
+        await logAuditEvent(
+            AuditEventType.STAFF_CREATED,
+            `Created new staff member: ${firstName} ${lastName}`,
+            { staffId: staff.id, role, designation },
+            currentUser.id,
+            school.id,
+            "User",
+            staff.id
+        );
+
         return { success: true, id: staff.id };
     } catch (error: any) {
         console.error("CREATE STAFF ERROR:", error);
@@ -363,7 +374,7 @@ export async function getStaffMemberAction(schoolSlug: string, id: string) {
         const isAuthorized = auth.user && (auth.user.role === 'ADMIN' || auth.user.role === 'SUPER_ADMIN' || auth.user.id === id);
         const maskedStaff = maskStaffPII(staff, !!isAuthorized);
 
-        return { success: true, data: maskedStaff };
+        return { success: true, data: JSON.parse(JSON.stringify(maskedStaff)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -538,6 +549,16 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
             revalidatePath(`/s/${staff.school.slug}/hr/directory/${id}/edit`);
         }
 
+        await logAuditEvent(
+            AuditEventType.STAFF_UPDATED,
+            `Updated staff member: ${firstName} ${lastName}`,
+            { staffId: staff.id },
+            auth.user.id,
+            staff.schoolId || undefined,
+            "User",
+            staff.id
+        );
+
         return { success: true, id: staff.id };
     } catch (error: any) {
         console.error("UPDATE STAFF ERROR:", error);
@@ -569,7 +590,7 @@ export async function updateStaffBasicInfoAction(schoolSlug: string, id: string,
         await syncStaff(id);
         revalidatePath(`/s/${schoolSlug}/hr/directory`);
         revalidatePath(`/s/${schoolSlug}/hr/directory/${id}`);
-        return { success: true, data: updated };
+        return { success: true, data: JSON.parse(JSON.stringify(updated)) };
     } catch (error: any) {
         console.error("Update Staff Field Error:", error);
         return { success: false, error: error.message || "Failed to update staff" };
@@ -601,6 +622,17 @@ export async function deleteStaffAction(schoolSlug: string, id: string) {
             where: { id, school: { slug: schoolSlug } }
         });
         await removeStaffFromIndex(id);
+        
+        await logAuditEvent(
+            AuditEventType.STAFF_DELETED,
+            `Deleted staff member`,
+            { staffId: id },
+            auth.user.id,
+            auth.user.schoolId || undefined,
+            "User",
+            id
+        );
+
         revalidatePath(`/s/${schoolSlug}/hr/directory`);
         return { success: true };
     } catch (error: any) {
@@ -660,7 +692,7 @@ export async function addSalaryRevisionAction(schoolSlug: string, userId: string
             }
         });
 
-        return { success: true, data: revision };
+        return { success: true, data: JSON.parse(JSON.stringify(revision)) };
     } catch (error: any) {
         console.error("Add Salary Revision Error:", error);
         return { success: false, error: error.message };
@@ -697,7 +729,7 @@ export async function getStaffClassAccessAction(schoolSlug: string, userId: stri
             },
             select: { classroomId: true, canRead: true }
         });
-        return { success: true, access };
+        return { success: true, access: JSON.parse(JSON.stringify(access)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

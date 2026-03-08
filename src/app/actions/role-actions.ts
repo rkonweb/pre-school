@@ -23,7 +23,7 @@ export async function getRolesAction(schoolSlug: string) {
 
         console.log(`[getRolesAction] DB returned ${roles.length} roles for ${schoolSlug}`);
 
-        return { success: true, roles };
+        return { success: true, roles: JSON.parse(JSON.stringify(roles)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -44,7 +44,7 @@ export async function createRoleAction(schoolSlug: string, data: { name: string;
             include: { _count: { select: { users: true } } }
         });
         revalidatePath(`/s/${schoolSlug}/hr/roles`);
-        return { success: true, role };
+        return { success: true, role: JSON.parse(JSON.stringify(role)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -61,7 +61,7 @@ export async function updateRoleAction(schoolSlug: string, roleId: string, data:
             }
         });
         revalidatePath(`/s/${schoolSlug}/hr/roles`);
-        return { success: true, role };
+        return { success: true, role: JSON.parse(JSON.stringify(role)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -112,7 +112,7 @@ export async function getTeachersWithAccessAction(schoolSlug: string) {
                 _count: { select: { classAccesses: true } }
             }
         });
-        return { success: true, teachers };
+        return { success: true, teachers: JSON.parse(JSON.stringify(teachers)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -124,7 +124,7 @@ export async function getUserClassAccessAction(userId: string) {
             where: { userId },
             include: { classroom: true }
         });
-        return { success: true, access };
+        return { success: true, access: JSON.parse(JSON.stringify(access)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -178,7 +178,7 @@ export async function getManagedStaffAction(managerId: string) {
             where: { managerId },
             include: { staff: true }
         });
-        return { success: true, managedStaff };
+        return { success: true, managedStaff: JSON.parse(JSON.stringify(managedStaff)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -549,7 +549,7 @@ RULES:
             })
         });
 
-        return { success: true, data: object };
+        return { success: true, data: JSON.parse(JSON.stringify(object)) };
 
     } catch (error: any) {
         console.error("AI Role Generation Error:", error);

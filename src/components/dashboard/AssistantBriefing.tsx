@@ -107,9 +107,10 @@ export function AssistantBriefing({ stats, slug }: AssistantBriefingProps) {
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.5 }}
                                 whileHover={{ scale: 1.05 }}
-                                className="flex items-center gap-4 rounded-[24px] bg-amber-500/10 border border-amber-200 px-6 py-4 text-amber-700 backdrop-blur-3xl shadow-xl shadow-amber-500/5 transition-colors hover:bg-amber-500/20"
+                                className="flex items-center gap-4 rounded-[24px] bg-brand/10 border border-brand/20 px-6 py-4 text-brand backdrop-blur-3xl shadow-xl shadow-brand/5 transition-colors hover:bg-brand/20"
+                                style={{ color: 'var(--brand-color)', borderColor: 'rgba(var(--brand-color-rgb), 0.2)', backgroundColor: 'rgba(var(--brand-color-rgb), 0.1)' }}
                             >
-                                <div className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse ring-4 ring-amber-500/20" />
+                                <div className="h-2.5 w-2.5 rounded-full bg-brand animate-pulse ring-4 ring-brand/20" style={{ backgroundColor: 'var(--brand-color)' }} />
                                 <span className="text-xs font-black uppercase tracking-[0.1em]">{health.staleInquiries} Admissions Bottlenecks</span>
                             </MotionDiv>
                         )}

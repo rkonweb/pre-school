@@ -189,7 +189,7 @@ export default function IndividualStaffAttendanceReport() {
                     <div className="flex items-center gap-6">
                         <div className="h-24 w-24 rounded-[2rem] bg-zinc-100 dark:bg-zinc-800 border-4 border-white dark:border-zinc-900 shadow-2xl overflow-hidden">
                             {staff.avatar ? (
-                                <img src={staff.avatar} className="h-full w-full object-cover" />
+                                <img src={staff.avatar} alt={staff.firstName} className="h-full w-full object-cover" />
                             ) : (
                                 <div className="h-full w-full flex items-center justify-center text-3xl font-black text-zinc-300 uppercase">
                                     {staff.firstName?.[0]}{staff.lastName?.[0]}

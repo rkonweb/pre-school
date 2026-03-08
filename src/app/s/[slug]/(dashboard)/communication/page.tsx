@@ -89,7 +89,7 @@ export default function CommunicationPage() {
     }
 
     async function loadFlaggedMessages() {
-        const res = await getFlaggedMessagesAction();
+        const res = await getFlaggedMessagesAction(slug);
         if (res.success) {
             setFlaggedMessages(res.messages || []);
         }
@@ -109,7 +109,7 @@ export default function CommunicationPage() {
 
     async function handleModerationAction(messageId: string, status: "SENT" | "REJECTED") {
         setIsModerating(messageId);
-        const res = await updateMessageModerationStatusAction(messageId, status);
+        const res = await updateMessageModerationStatusAction(slug, messageId, status);
         if (res.success) {
             toast.success(`Message ${status === "SENT" ? "approved" : "rejected"} successfully`);
             loadFlaggedMessages();
@@ -199,6 +199,7 @@ export default function CommunicationPage() {
                                         <div className="relative">
                                             <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
                                             <select
+                                                title="Filter by category"
                                                 value={audience}
                                                 onChange={(e) => setAudience(e.target.value)}
                                                 className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl pl-12 pr-4 py-4 text-sm font-semibold focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-colors appearance-none"
@@ -308,7 +309,7 @@ export default function CommunicationPage() {
                     ) : view === "MODERATION" ? (
                         <div className="space-y-6 animate-in slide-in-from-right-8 duration-500">
                             <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-4 flex items-center gap-3">
-                                Moderation <span className="text-orange-500">Queue</span>
+                                Moderation <span className="text-brand">Queue</span>
                             </h2>
                             {flaggedMessages.length === 0 ? (
                                 <div className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 p-20 flex flex-col items-center justify-center text-center">
@@ -335,7 +336,7 @@ export default function CommunicationPage() {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-[9px] font-black uppercase px-3 py-1 rounded-full tracking-widest flex items-center gap-1.5">
+                                                    <div className="bg-brand/10 dark:bg-brand/20 text-brand dark:text-brand/80 text-[9px] font-black uppercase px-3 py-1 rounded-full tracking-widest flex items-center gap-1.5">
                                                         <ShieldAlert className="h-3 w-3" />
                                                         AI Flagged
                                                     </div>
@@ -346,7 +347,7 @@ export default function CommunicationPage() {
                                                         "{msg.content}"
                                                     </p>
                                                     <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-                                                        <p className="text-[10px] text-orange-600 dark:text-orange-400 font-black uppercase tracking-widest mb-1">AI Reasoning:</p>
+                                                        <p className="text-[10px] text-brand/80 dark:text-brand/60 font-black uppercase tracking-widest mb-1">AI Reasoning:</p>
                                                         <p className="text-xs text-zinc-500 font-medium">{msg.flaggedReason || "No reasoning provided."}</p>
                                                     </div>
                                                 </div>

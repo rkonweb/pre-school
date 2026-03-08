@@ -22,7 +22,7 @@ import { getAvailablePlansAction, upgradePlanAction, buyAdditionalUsersAction } 
 import { calculateTieredAddonCost } from "@/lib/subscriptions/utils";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { SettingsPageHeader, SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
+import { SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
 
 export default function SubscriptionSettingsPage() {
     const params = useParams();
@@ -123,11 +123,11 @@ export default function SubscriptionSettingsPage() {
             case "free":
                 return "bg-zinc-100 text-zinc-700 border-zinc-300";
             case "basic":
-                return "bg-brand/10 text-brand border-brand/30";
+                return "bg-[rgba(var(--brand-color-rgb),0.1)] text-[var(--brand-color)] border-[rgba(var(--brand-color-rgb),0.3)]";
             case "premium":
                 return "bg-purple-100 text-purple-700 border-purple-300";
             case "enterprise":
-                return "bg-amber-100 text-amber-700 border-amber-300";
+                return "bg-[rgba(var(--brand-color-rgb),0.1)] text-[var(--brand-color)] border-[rgba(var(--brand-color-rgb),0.3)]";
             default:
                 return "bg-zinc-100 text-zinc-700 border-zinc-300";
         }
@@ -159,13 +159,43 @@ export default function SubscriptionSettingsPage() {
 
     return (
         <div className="space-y-8 pb-20">
-            <SettingsPageHeader
-                icon={Crown}
-                title="Subscription & Billing"
-                description="Manage your subscription plan and view usage statistics."
-                color="#F59E0B"
-                bg="#FEF3C7"
-            />
+            <style>{`
+                @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+                .text-brand-var { color: var(--brand-color, #F59E0B); }
+                .bg-brand-var { background-color: var(--brand-color, #F59E0B); }
+            `}</style>
+            
+            {/* ── PAGE HEADER ── */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 15, background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)", flexShrink: 0 }}>
+                        <Crown size={24} color="var(--secondary-color, white)" strokeWidth={2} />
+                    </div>
+                    <div>
+                        <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 22, fontWeight: 800, color: "#1E1B4B", margin: 0, lineHeight: 1.2 }}>Subscription & Billing</h1>
+                        <p style={{ fontSize: 13.5, color: "#9CA3AF", margin: "5px 0 0", fontWeight: 500 }}>Manage your subscription plan, user licenses, and view system usage statistics.</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── STATS BAR ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24, animation: "fadeUp 0.4s ease 0.07s both" }}>
+                {[
+                    { label: "Current Plan", value: currentPlan?.name || "None", color: "#F59E0B", bg: "#FEF3C7", icon: Crown },
+                    { label: "Billing Status", value: subscription?.status || "ACTIVE", color: subscription?.status === "ACTIVE" ? "#10B981" : "#EF4444", bg: subscription?.status === "ACTIVE" ? "#D1FAE5" : "#FEE2E2", icon: CreditCard },
+                    { label: "Licensing Used", value: `${Math.round((((usage?.currentStudents || 0) + (usage?.currentStaff || 0)) / ((currentPlan?.maxStudents || 0) + (currentPlan?.maxStaff || 0) + (subscription?.addonUsers || 0))) * 100)}%`, color: "#3B82F6", bg: "#DBEAFE", icon: Users },
+                ].map((stat, i) => (
+                    <div key={i} style={{ background: "white", borderRadius: 16, padding: "16px 20px", boxShadow: "0 4px 24px rgba(0,0,0,0.07)", border: "1px solid #F3F4F6", display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 46, height: 46, borderRadius: 13, background: stat.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <stat.icon size={20} color={stat.color} strokeWidth={2.2} />
+                        </div>
+                        <div>
+                            <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 18, fontWeight: 800, color: stat.color }}>{stat.value}</div>
+                            <div style={{ fontSize: 12, color: "#9CA3AF", fontWeight: 600 }}>{stat.label}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
 
             {/* Success Message */}
             {successMessage && (
@@ -247,7 +277,7 @@ export default function SubscriptionSettingsPage() {
                                         subscription.daysRemaining !== null && subscription.daysRemaining < 7
                                             ? "text-red-600"
                                             : subscription.daysRemaining !== null && subscription.daysRemaining < 30
-                                                ? "text-amber-600"
+                                                ? "text-brand-var"
                                                 : "text-emerald-600"
                                     )}>
                                         {subscription.daysRemaining !== null
@@ -287,7 +317,8 @@ export default function SubscriptionSettingsPage() {
                                             </span>
                                             <button
                                                 onClick={() => setIsBuyModalOpen(true)}
-                                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[12px] font-bold hover:scale-105 hover:brightness-110 hover:shadow-xl hover:shadow-indigo-500/40 shadow-lg shadow-indigo-500/20 transition-all active:scale-95 group relative overflow-hidden border border-white/20 backdrop-blur-md"
+                                                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[var(--secondary-color,white)] text-[12px] font-bold hover:scale-105 hover:brightness-110 hover:shadow-xl shadow-lg transition-all active:scale-95 group relative overflow-hidden border border-white/20 backdrop-blur-md"
+                                                style={{ background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))" }}
                                             >
                                                 <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
                                                 <PlusCircle className="h-4 w-4" />
@@ -302,7 +333,7 @@ export default function SubscriptionSettingsPage() {
                                                 (((usage.currentStudents || 0) + (usage.currentStaff || 0)) / ((currentPlan.maxStudents || 0) + (currentPlan.maxStaff || 0) + (subscription?.addonUsers || 0))) * 100 >= 90
                                                     ? "bg-red-500"
                                                     : (((usage.currentStudents || 0) + (usage.currentStaff || 0)) / ((currentPlan.maxStudents || 0) + (currentPlan.maxStaff || 0) + (subscription?.addonUsers || 0))) * 100 >= 75
-                                                        ? "bg-amber-500"
+                                                        ? "bg-brand-var"
                                                         : "bg-emerald-500"
                                             )}
                                             style={{
@@ -330,7 +361,7 @@ export default function SubscriptionSettingsPage() {
                                                 (usage.storageUsedGB / currentPlan.maxStorageGB) * 100 >= 90
                                                     ? "bg-red-500"
                                                     : (usage.storageUsedGB / currentPlan.maxStorageGB) * 100 >= 75
-                                                        ? "bg-amber-500"
+                                                        ? "bg-brand-var"
                                                         : "bg-emerald-500"
                                             )}
                                             style={{
@@ -361,9 +392,10 @@ export default function SubscriptionSettingsPage() {
                                 className={cn(
                                     "bg-white dark:bg-zinc-900 rounded-2xl border-2 p-6 transition-all",
                                     isCurrentPlan
-                                        ? "border-brand shadow-lg shadow-brand/20"
-                                        : "border-zinc-200 dark:border-zinc-800 hover:border-brand/40"
+                                        ? "shadow-lg"
+                                        : "border-zinc-200"
                                 )}
+                                style={isCurrentPlan ? { borderColor: "var(--brand-color, #F59E0B)", boxShadow: "0 10px 25px rgba(var(--brand-color-rgb, 245,158,11), 0.2)" } : {}}
                             >
                                 {/* Plan Header */}
                                 <div className="mb-6">
@@ -376,7 +408,7 @@ export default function SubscriptionSettingsPage() {
                                                 {plan.name}
                                             </h3>
                                             {isCurrentPlan && (
-                                                <span className="text-xs font-bold text-brand">Current Plan</span>
+                                                <span className="text-xs font-bold text-brand-var">Current Plan</span>
                                             )}
                                         </div>
                                     </div>
@@ -444,8 +476,9 @@ export default function SubscriptionSettingsPage() {
                                                 "w-full py-3 px-4 rounded-xl font-bold transition-all border border-white/20 backdrop-blur-md",
                                                 isCurrentPlan
                                                     ? "bg-zinc-100 text-zinc-400 cursor-not-allowed"
-                                                    : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:scale-[1.02] hover:brightness-110 shadow-lg shadow-indigo-500/20 active:scale-95"
+                                                    : "text-[var(--secondary-color,white)] hover:scale-[1.02] hover:brightness-110 shadow-lg active:scale-95"
                                             )}
+                                            style={!isCurrentPlan ? { background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))" } : {}}
                                         >
                                             {isCurrentPlan ? "Current Plan" : isUpgrading ? "Processing..." : isUpgrade ? "Upgrade" : "Switch Plan"}
                                         </button>
@@ -530,7 +563,8 @@ export default function SubscriptionSettingsPage() {
                             <button
                                 onClick={handleBuyAdditionalUsers}
                                 disabled={isPurchasing}
-                                className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 hover:brightness-110 flex items-center justify-center gap-2 transition-all disabled:opacity-50 border border-white/10 backdrop-blur-md active:scale-95"
+                                className="w-full h-12 text-[var(--secondary-color,white)] rounded-xl font-bold shadow-lg hover:brightness-110 flex items-center justify-center gap-2 transition-all disabled:opacity-50 border border-white/10 backdrop-blur-md active:scale-95"
+                                style={{ background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))" }}
                             >
                                 {isPurchasing ? (
                                     <>

@@ -29,7 +29,7 @@ import { DashboardLoader } from "@/components/ui/DashboardLoader";
 const STAGES = [
     { id: "INQUIRY", label: "Inquiries", color: "text-brand bg-brand/10 dark:bg-brand/20" },
     { id: "APPLICATION", label: "Applications", color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20" },
-    { id: "INTERVIEW", label: "Interviews", color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20" },
+    { id: "INTERVIEW", label: "Interviews", color: "text-brand bg-brand/10" },
     { id: "ENROLLED", label: "Enrolled", color: "text-green-600 bg-green-50 dark:bg-green-900/20" },
 ];
 
@@ -285,7 +285,7 @@ export default function AdmissionsPage() {
                                 onClick={() => setShowSourceChart(!showSourceChart)}
                                 className={cn(
                                     "h-8 px-3 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ml-2",
-                                    showSourceChart ? "bg-brand text-white shadow-sm shadow-brand/20" : "bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-900"
+                                    showSourceChart ? "bg-brand text-[var(--secondary-color)] shadow-sm shadow-brand/20" : "bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-900"
                                 )}
                             >
                                 <PieChart className="h-3.5 w-3.5" />
@@ -375,9 +375,9 @@ export default function AdmissionsPage() {
                         <div className="rounded-[32px] border border-zinc-200 bg-white shadow-xl shadow-zinc-200/40 dark:border-zinc-800 dark:bg-zinc-950 overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm border-collapse min-w-max">
-                                    <thead className="bg-zinc-50/50 text-zinc-400 uppercase text-[10px] font-black tracking-widest border-b border-zinc-100">
+                                    <thead className="uppercase text-[10px] font-black tracking-widest">
                                         <tr>
-                                            <th className="px-8 py-5 sticky left-0 bg-zinc-50/50 z-10 border-r border-zinc-100">Action</th>
+                                            <th className="px-8 py-5 sticky left-0 z-10 border-r border-zinc-100">Action</th>
                                             {columns.map(col => {
                                                 if (!visibleColumns[col.id]) return null;
                                                 return <th key={col.id} className="px-8 py-5 whitespace-nowrap">{col.label}</th>;
@@ -465,7 +465,7 @@ export default function AdmissionsPage() {
                                                             <td key={col.id} className="px-8 py-6 whitespace-nowrap">
                                                                 <span className={cn(
                                                                     "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg",
-                                                                    app.priority === "HIGH" ? "bg-red-50 text-red-600" : app.priority === "MEDIUM" ? "bg-orange-50 text-orange-600" : "bg-zinc-50 text-zinc-400"
+                                                                    app.priority === "HIGH" ? "bg-red-50 text-red-600" : app.priority === "MEDIUM" ? "bg-brand/10 text-brand" : "bg-zinc-50 text-zinc-400"
                                                                 )}>
                                                                     {app.priority}
                                                                 </span>

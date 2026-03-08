@@ -38,6 +38,8 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
       appBar: AppHeader(
         title: 'Attendance',
         subtitle: DateFormat('MMMM yyyy').format(_focusedDay),
+        showBackButton: false,
+        showMenuButton: true,
         actions: [
           ElevatedButton(
             onPressed: () {}, 
@@ -46,13 +48,19 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
           ),
         ],
       ),
-      body: dashboardAsync.when(
-        data: (data) {
-          final students = data['students'] as List?;
-          if (students == null || students.isEmpty) {
+      body: Consumer(
+        builder: (context, ref, child) {
+          final activeStudent = ref.watch(activeStudentProvider);
+
+          if (activeStudent == null) {
             return const Center(child: Text('No students found.'));
           }
-          final studentId = students[0]['id'];
+
+          final studentId = activeStudent['id']?.toString();
+          if (studentId == null) {
+            return const Center(child: Text('Student ID not found.'));
+          }
+
           final attendanceAsync = ref.watch(attendanceDataProvider(studentId));
 
           return attendanceAsync.when(
@@ -63,8 +71,6 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             error: (err, stack) => _buildErrorState(err.toString(), studentId),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }
@@ -437,68 +443,164 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(10)))),
-              const SizedBox(height: 24),
-              Text('Apply for Leave', style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-              const SizedBox(height: 8),
-              Text('Select a reason', style: GoogleFonts.dmSans(fontSize: 14, color: const Color(0xFF64748B))),
-              const SizedBox(height: 20),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          String selectedReason = 'Unwell';
+          final notesController = TextEditingController();
+          bool isLoading = false;
+
+          return Container(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _leaveChip('🤒 Unwell', true),
-                  _leaveChip('✈️ Travel', false),
-                  _leaveChip('👨‍👩‍👧 Family Event', false),
-                  _leaveChip('🏥 Medical', false),
-                  _leaveChip('📋 Other', false),
+                  Center(child: Container(width: 40, height: 5, decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(10)))),
+                  const SizedBox(height: 24),
+                  Text('Apply for Leave', style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                  const SizedBox(height: 8),
+                  Text('Select a reason', style: GoogleFonts.dmSans(fontSize: 14, color: const Color(0xFF64748B))),
+                  const SizedBox(height: 20),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _buildSelectableLeaveChip('Unwell', selectedReason == 'Unwell', () {
+                        setState(() => selectedReason = 'Unwell');
+                      }),
+                      _buildSelectableLeaveChip('Travel', selectedReason == 'Travel', () {
+                        setState(() => selectedReason = 'Travel');
+                      }),
+                      _buildSelectableLeaveChip('Family Event', selectedReason == 'Family Event', () {
+                        setState(() => selectedReason = 'Family Event');
+                      }),
+                      _buildSelectableLeaveChip('Medical', selectedReason == 'Medical', () {
+                        setState(() => selectedReason = 'Medical');
+                      }),
+                      _buildSelectableLeaveChip('Other', selectedReason == 'Other', () {
+                        setState(() => selectedReason = 'Other');
+                      }),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: TextField(
+                      controller: notesController,
+                      maxLines: 4,
+                      enabled: !isLoading,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Add a note for the teacher (optional)...',
+                        hintStyle: TextStyle(color: Color(0xFF94A3B8)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: isLoading ? null : () => _submitLeaveRequest(selectedReason, notesController.text, () => Navigator.pop(context)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B6EF8),
+                      disabledBackgroundColor: const Color(0xFFCBD5E1),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                          )
+                        : const Text('Submit Leave Request', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
                 ],
               ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: TextField(
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Add a note for the teacher (optional)...',
-                    hintStyle: TextStyle(color: Color(0xFF94A3B8)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B6EF8), // Premium blue
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-                child: const Text('Submit Leave Request', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
+  }
+
+  Widget _buildSelectableLeaveChip(String text, bool isSelected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1E293B) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+        ),
+        child: Text(text, style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w600, color: isSelected ? Colors.white : const Color(0xFF475569))),
+      ),
+    );
+  }
+
+  Future<void> _submitLeaveRequest(String reason, String notes, VoidCallback onSuccess) async {
+    final apiClient = ref.read(apiClientProvider);
+    final activeStudent = ref.read(activeStudentProvider);
+
+    if (activeStudent == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Student not found')),
+      );
+      return;
+    }
+
+    final studentId = activeStudent['id']?.toString();
+    if (studentId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Student ID not found')),
+      );
+      return;
+    }
+
+    try {
+      final today = DateTime.now();
+      final dateStr = DateFormat('yyyy-MM-dd').format(today);
+
+      final response = await apiClient.post(
+        'parent/attendance/leave',
+        data: {
+          'studentId': studentId,
+          'startDate': dateStr,
+          'endDate': dateStr,
+          'reason': reason,
+          'notes': notes,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Leave request submitted successfully'),
+            backgroundColor: Color(0xFF00C9A7),
+          ),
+        );
+        onSuccess();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.data['error'] ?? 'Failed to submit leave request')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
   }
 
   Widget _leaveChip(String text, bool isSelected) {

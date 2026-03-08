@@ -120,7 +120,7 @@ export async function getFamilyStudentsAction(
 
         return {
             success: true,
-            students: [...studentResults, ...admissionResults],
+            students: JSON.parse(JSON.stringify([...studentResults, ...admissionResults])),
         };
     } catch (error: any) {
         console.error("getFamilyStudentsAction Error:", error);
@@ -213,7 +213,7 @@ export async function getStudentActivityFeedAction(studentId: string, phone: str
         // Sort combined feed by timestamp (descending)
         feed.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-        return { success: true, feed: feed.slice(0, limit) };
+        return { success: true, feed: JSON.parse(JSON.stringify(feed.slice(0, limit))) };
     } catch (error: any) {
         console.error("getStudentActivityFeedAction Error:", error);
         return { success: false, error: error.message || "Failed to fetch activity feed", feed: [] };
@@ -293,7 +293,7 @@ export async function getStudentTransportAction(studentId: string, phone: string
             })
         ]);
 
-        return {
+        return JSON.parse(JSON.stringify({
             success: true,
             isActive: true,
             tripType,
@@ -321,7 +321,7 @@ export async function getStudentTransportAction(studentId: string, phone: string
                 status: telemetry.status,
                 lastUpdated: telemetry.recordedAt.toISOString()
             } : null
-        };
+        }));
     } catch (error: any) {
         console.error("getStudentTransportAction Error:", error);
         return { success: false, error: error.message || "Failed to fetch transport data" };
@@ -476,7 +476,7 @@ export async function getParentDashboardDataAction(schoolSlug: string, parentPho
             });
         }
 
-        return {
+        return JSON.parse(JSON.stringify({
             success: true,
             school: { slug: schoolSlug, name: students[0].schoolName },
             profile: { phone: parentPhone },
@@ -484,7 +484,7 @@ export async function getParentDashboardDataAction(schoolSlug: string, parentPho
             unreadMessages,
             activities: activities.slice(0, 5),
             conversations: []
-        };
+        }));
     } catch (error: any) {
         console.error("getParentDashboardDataAction Error:", error);
         return { success: false, error: "Failed to load dashboard data" };
@@ -574,9 +574,76 @@ export async function getSchoolBySlugAction(slug: string) {
             where: { slug },
         });
         if (!school) return { success: false, error: "School not found" };
-        return { success: true, school };
+        
+        // Ensure serialization by converting Dates to strings
+        const serializedSchool = {
+            ...school,
+            createdAt: school.createdAt.toISOString(),
+            updatedAt: school.updatedAt.toISOString(),
+            academicYearStart: school.academicYearStart ? school.academicYearStart.toISOString() : null,
+            academicYearEnd: school.academicYearEnd ? school.academicYearEnd.toISOString() : null,
+        };
+
+        return { success: true, school: serializedSchool };
     } catch (error: any) {
         console.error("getSchoolBySlugAction Error:", error);
         return { success: false, error: "Failed to fetch school data" };
+    }
+}
+export async function getStudentExtracurricularDataAction(studentId: string, phone: string) {
+    try {
+        // 1. Verify access
+        const familyResult = await getFamilyStudentsAction(phone);
+        if (!familyResult.success || !familyResult.students) {
+            return { success: false, error: "Unauthorized access" };
+        }
+        const hasAccess = familyResult.students.some((s: any) => s.id === studentId);
+        if (!hasAccess) return { success: false, error: "Unauthorized access" };
+
+        const schoolId = familyResult.students.find((s: any) => s.id === studentId)?.schoolId;
+        if (!schoolId) return { success: false, error: "School context not found" };
+
+        // 2. Fetch all relevant extracurricular data
+        const [enrollments, awards, performance, attendance] = await Promise.all([
+            prisma.activityEnrollment.findMany({
+                where: { studentId, status: 'ACTIVE' },
+                include: { activity: true }
+            }),
+            prisma.activityAward.findMany({
+                where: { studentId },
+                include: { activity: true },
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.activityPerformance.findMany({
+                where: { studentId },
+                include: { activity: true },
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.activityAttendance.findMany({
+                where: { studentId },
+                include: { session: { include: { activity: true } } },
+                orderBy: { session: { date: 'desc' } },
+                take: 10
+            })
+        ]);
+
+        return {
+            success: true,
+            data: JSON.parse(JSON.stringify({
+                enrollments,
+                awards,
+                performance,
+                attendance: attendance.map(a => ({
+                    id: a.id,
+                    status: a.status,
+                    date: a.session.date,
+                    activityName: a.session.activity.name,
+                    notes: a.notes
+                }))
+            }))
+        };
+    } catch (error: any) {
+        console.error("getStudentExtracurricularDataAction Error:", error);
+        return { success: false, error: error.message || "Failed to fetch extracurricular data" };
     }
 }

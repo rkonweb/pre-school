@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { getParentRequestsAction, updateParentRequestStatusAction } from "@/app/actions/parent-request-actions";
 
 const STATUS_COLORS: Record<string, string> = {
-    PENDING: "bg-amber-100 text-amber-700",
+    PENDING: "bg-brand/10 text-brand",
     IN_REVIEW: "bg-blue-100 text-blue-700",
     RESOLVED: "bg-emerald-100 text-emerald-700",
     REJECTED: "bg-red-100 text-red-700",
@@ -86,12 +86,12 @@ export default function ParentRequestsPage() {
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase italic flex items-center gap-3">
-                        <Inbox className="h-8 w-8 text-indigo-500" />
-                        Parent <span className="text-indigo-500">Requests</span>
+                        <Inbox className="h-8 w-8 text-brand" />
+                        Parent <span className="text-brand">Requests</span>
                         {pendingCount > 0 && (
                             <span className="relative flex h-7 w-7">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                                <span className="relative inline-flex rounded-full h-7 w-7 bg-amber-500 text-white text-xs font-bold items-center justify-center">{pendingCount}</span>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
+                                <span className="relative inline-flex rounded-full h-7 w-7 bg-brand text-[var(--secondary-color)] text-xs font-bold items-center justify-center">{pendingCount}</span>
                             </span>
                         )}
                     </h1>
@@ -108,7 +108,7 @@ export default function ParentRequestsPage() {
                         className={cn(
                             "px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
                             filterStatus === s
-                                ? "bg-white dark:bg-zinc-800 text-indigo-500 shadow-sm"
+                                ? "bg-white dark:bg-zinc-800 text-brand shadow-sm"
                                 : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
                         )}
                     >
@@ -138,7 +138,7 @@ export default function ParentRequestsPage() {
                                 className={cn(
                                     "bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border p-8 shadow-sm transition-all",
                                     req.status === "PENDING"
-                                        ? "border-amber-200 dark:border-amber-900"
+                                        ? "border-brand/20 dark:border-brand/30"
                                         : "border-zinc-200 dark:border-zinc-800"
                                 )}
                             >
@@ -206,14 +206,14 @@ export default function ParentRequestsPage() {
                                                 <>
                                                     <button
                                                         onClick={() => { setRespondingTo(req.id); setResponseNote(""); }}
-                                                        className="h-12 px-6 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500 hover:text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all"
+                                                        className="h-12 px-6 bg-brand/10 text-brand hover:bg-brand hover:text-[var(--secondary-color)] rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all"
                                                     >
                                                         Respond
                                                     </button>
                                                     {req.status === "PENDING" && (
                                                         <button
                                                             onClick={() => handleRespond(req.id, "IN_REVIEW")}
-                                                            className="h-12 px-6 bg-blue-50 dark:bg-blue-500/10 text-blue-600 hover:bg-blue-500 hover:text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all"
+                                                            className="h-12 px-6 bg-brand-gradient text-[var(--secondary-color)] rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border-none shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)]"
                                                         >
                                                             Mark In Review
                                                         </button>

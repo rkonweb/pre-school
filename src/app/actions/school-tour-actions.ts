@@ -71,7 +71,7 @@ export async function getSchoolToursAction(schoolSlug: string, filters: { range?
 
         return {
             success: true,
-            tours: mappedTours,
+            tours: JSON.parse(JSON.stringify(mappedTours)),
             stats: {
                 overdue: totalOverdue,
                 today: totalToday
@@ -179,7 +179,7 @@ export async function bookTourAction(schoolSlug: string, data: { leadId: string,
         revalidatePath(`/s/${schoolSlug}/admissions/inquiry/tours`);
         revalidatePath(`/s/${schoolSlug}/admissions/inquiry/${data.leadId}`);
 
-        return { success: true, tour };
+        return { success: true, tour: JSON.parse(JSON.stringify(tour)) };
     } catch (error) {
         return { success: false, error: "Failed to book tour" };
     }

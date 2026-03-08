@@ -87,12 +87,12 @@ export async function getParentEventsAction(phone: string, month?: number, year?
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 events,
                 upcoming,
                 month: targetMonth,
                 year: targetYear,
-            }
+            }))
         };
     } catch (error: any) {
         console.error("getParentEventsAction Error:", error);
@@ -119,7 +119,7 @@ export async function getAdminEventsBySlugAction(slug: string, month: number, ye
             take: 5,
         });
 
-        return { success: true, events, upcoming };
+        return { success: true, events: JSON.parse(JSON.stringify(events)), upcoming: JSON.parse(JSON.stringify(upcoming)) };
     } catch (error: any) {
         console.error("getAdminEventsBySlugAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -261,7 +261,7 @@ export async function createEmergencyAlertAction(
             );
         }
 
-        return { success: true, data: alert };
+        return { success: true, data: JSON.parse(JSON.stringify(alert)) };
     } catch (error: any) {
         console.error("createEmergencyAlertAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -301,7 +301,7 @@ export async function submitParentRequestAction(
             },
         });
 
-        return { success: true, data: request };
+        return { success: true, data: JSON.parse(JSON.stringify(request)) };
     } catch (error: any) {
         console.error("submitParentRequestAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -322,7 +322,7 @@ export async function getParentRequestsAction(phone: string, studentId?: string)
             }
         });
 
-        return { success: true, data: requests };
+        return { success: true, data: JSON.parse(JSON.stringify(requests)) };
     } catch (error: any) {
         console.error("getParentRequestsAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -353,7 +353,7 @@ export async function getParentCircularsAction(phone: string) {
             }
         });
 
-        return { success: true, data: circulars };
+        return { success: true, data: JSON.parse(JSON.stringify(circulars)) };
     } catch (error: any) {
         console.error("getParentCircularsAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -403,7 +403,7 @@ export async function createSchoolEventAction(
             );
         }
 
-        return { success: true, data: event };
+        return { success: true, data: JSON.parse(JSON.stringify(event)) };
     } catch (error: any) {
         console.error("createSchoolEventAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -447,7 +447,7 @@ export async function publishCircularAction(
             );
         }
 
-        return { success: true, data: circular };
+        return { success: true, data: JSON.parse(JSON.stringify(circular)) };
     } catch (error: any) {
         console.error("publishCircularAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -493,7 +493,7 @@ export async function getAdminCircularsBySlugAction(slug: string) {
             take: 30,
         });
 
-        return { success: true, data: circulars };
+        return { success: true, data: JSON.parse(JSON.stringify(circulars)) };
     } catch (error: any) {
         console.error("getAdminCircularsBySlugAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -552,7 +552,7 @@ export async function getAdminEmergencyAlertsAction(schoolSlug: string) {
             take: 50,
         });
 
-        return { success: true, data: alerts };
+        return { success: true, data: JSON.parse(JSON.stringify(alerts)) };
     } catch (error: any) {
         console.error("getAdminEmergencyAlertsAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -603,7 +603,7 @@ export async function createAdminEmergencyAlertAction(
         }
 
         revalidatePath(`/s/${schoolSlug}/emergency`);
-        return { success: true, data: alert };
+        return { success: true, data: JSON.parse(JSON.stringify(alert)) };
     } catch (error: any) {
         console.error("createAdminEmergencyAlertAction Error:", error);
         return { success: false, error: "Internal server error" };

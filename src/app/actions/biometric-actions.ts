@@ -34,7 +34,7 @@ export async function getBiometricUnmappedUsersAction(schoolSlug: string) {
         // 3. Filter out IDs that are already mapped
         const unmappedIds = deviceUserIds.filter(id => !mappedIds.has(id));
 
-        return { success: true, data: unmappedIds };
+        return { success: true, data: JSON.parse(JSON.stringify(unmappedIds)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -90,7 +90,7 @@ export async function getRecentBiometricLogsAction(schoolSlug: string) {
             statusLabel: log.status === 0 ? "IN" : log.status === 1 ? "OUT" : "LOG"
         }));
 
-        return { success: true, data: enrichedLogs };
+        return { success: true, data: JSON.parse(JSON.stringify(enrichedLogs)) };
 
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -113,7 +113,7 @@ export async function getConnectedDevicesAction(schoolSlug: string) {
             status: d._max.timestamp && (new Date().getTime() - new Date(d._max.timestamp).getTime() < 1000 * 60 * 15) ? "ONLINE" : "OFFLINE"
         }));
 
-        return { success: true, data: devices };
+        return { success: true, data: JSON.parse(JSON.stringify(devices)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

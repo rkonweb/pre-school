@@ -188,7 +188,7 @@ export async function getFleetStatusAction(schoolSlug: string) {
             };
         });
 
-        return { success: true, data: fleetStatus };
+        return { success: true, data: JSON.parse(JSON.stringify(fleetStatus)) };
     } catch (error: any) {
         console.error("Error fetching fleet status:", error);
         return { success: false, error: error.message };
@@ -439,7 +439,7 @@ export async function updateVehicleTelemetryAction(
         // Trigger proactive alerts in background (non-blocking)
         triggerProactiveAlerts(vehicleId, telemetry, vehicleCheck.school.id);
 
-        return { success: true, data: telemetry };
+        return { success: true, data: JSON.parse(JSON.stringify(telemetry)) };
     } catch (error: any) {
         console.error("Error updating vehicle telemetry:", error);
         return { success: false, error: error.message };
@@ -469,7 +469,7 @@ export async function getVehicleTelemetryHistoryAction(
             orderBy: { recordedAt: 'asc' }
         });
 
-        return { success: true, data: telemetry };
+        return { success: true, data: JSON.parse(JSON.stringify(telemetry)) };
     } catch (error: any) {
         console.error("Error fetching telemetry history:", error);
         return { success: false, error: error.message };
@@ -542,7 +542,7 @@ export async function logStudentBoardingAction(
             });
         }
 
-        return { success: true, data: log };
+        return { success: true, data: JSON.parse(JSON.stringify(log)) };
     } catch (error: any) {
         console.error("Error logging student boarding:", error);
         return { success: false, error: error.message };

@@ -95,7 +95,7 @@ export async function getChildProfileAction(studentId: string, phone: string) {
             }
         };
 
-        return { success: true, data: profile };
+        return { success: true, data: JSON.parse(JSON.stringify(profile)) };
     } catch (error: any) {
         console.error("getChildProfileAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -117,7 +117,7 @@ export async function getAllChildrenProfilesAction(phone: string) {
             .filter(r => r.success)
             .map(r => r.data);
 
-        return { success: true, data: children };
+        return { success: true, data: JSON.parse(JSON.stringify(children)) };
     } catch (error: any) {
         console.error("getAllChildrenProfilesAction Error:", error);
         return { success: false, error: "Internal server error" };

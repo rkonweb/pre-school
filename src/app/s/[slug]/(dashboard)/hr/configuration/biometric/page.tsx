@@ -19,7 +19,10 @@ import { toast } from "sonner";
 
 // ─── DESIGN TOKENS ─────────────────────────────────────────
 const C = {
-    amber: "#F59E0B", amberD: "#D97706", amberL: "#FEF3C7", amberXL: "#FFFBEB",
+    amber: "var(--brand-color, #F59E0B)", 
+    amberD: "var(--brand-color, #D97706)", 
+    amberL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.12)", 
+    amberXL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)",
     navy: "#1E1B4B", navyM: "#312E81",
     green: "#10B981", greenD: "#059669", greenL: "#D1FAE5", greenXL: "#ECFDF5",
     red: "#EF4444", redD: "#DC2626", redL: "#FEE2E2", redXL: "#FEF2F2",
@@ -40,7 +43,7 @@ function Btn({ variant = "primary", size = "md", icon: Icon, loading, disabled, 
     const [ripples, setRipples] = useState<any[]>([]);
     const ref = useRef<HTMLButtonElement>(null);
     const vs: any = {
-        primary: { bg: `linear-gradient(135deg,${C.amber},${C.orange})`, color: "white", sh: `0 4px 16px ${C.amber}45` },
+        primary: { bg: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", color: "var(--secondary-color, white)", sh: "0 4px 16px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)" },
         navy: { bg: `linear-gradient(135deg,${C.navy},${C.navyM})`, color: "white", sh: `0 4px 14px ${C.navy}40` },
         success: { bg: `linear-gradient(135deg,${C.green},${C.greenD})`, color: "white", sh: `0 4px 14px ${C.green}40` },
         secondary: { bg: "white", color: C.navy, border: `1.5px solid ${C.g200}`, sh: C.sh },
@@ -174,8 +177,8 @@ export default function BiometricSettingsPage() {
             {/* ── PAGE HEADER ── */}
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 14, animation: "fadeUp 0.35s ease" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ width: 52, height: 52, borderRadius: 15, background: "linear-gradient(135deg,#3B82F6,#8B5CF6)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px #3B82F645", flexShrink: 0 }}>
-                        <Fingerprint size={24} color="white" strokeWidth={2} />
+                    <div style={{ width: 52, height: 52, borderRadius: 15, background: "var(--school-gradient, linear-gradient(135deg,#3B82F6,#8B5CF6))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(var(--brand-color-rgb, 59, 130, 246), 0.25)", flexShrink: 0 }}>
+                        <Fingerprint size={24} color="var(--secondary-color, white)" strokeWidth={2} />
                     </div>
                     <div>
                         <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 22, fontWeight: 800, color: C.navy, margin: 0, lineHeight: 1.2 }}>Biometric Attendance</h1>

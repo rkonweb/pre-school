@@ -77,7 +77,7 @@ export default function LibraryDashboardPage() {
                 </div>
                 <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-zinc-100">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand">
                             <History className="h-6 w-6" />
                         </div>
                         <div>
@@ -105,7 +105,7 @@ export default function LibraryDashboardPage() {
                     { title: "Inventory", icon: Book, href: `/s/${slug}/library/inventory`, color: "brand", desc: "Manage catalog & stock" },
                     { title: "Issue / Return", icon: ArrowUpRight, href: `/s/${slug}/library/issue`, color: "emerald", desc: "Circulate books" },
                     { title: "Members", icon: Users, href: `/s/${slug}/library/members`, color: "violet", desc: "Borrower history" },
-                    { title: "Reports", icon: History, href: `/s/${slug}/library/reports`, color: "orange", desc: "Fines & analysis" },
+                    { title: "Reports", icon: History, href: `/s/${slug}/library/reports`, color: "brand", desc: "Fines & analysis" },
                 ].map((item) => (
                     <Link
                         key={item.title}
@@ -132,7 +132,7 @@ export default function LibraryDashboardPage() {
 
                 <div className="relative overflow-x-auto">
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-zinc-50 text-zinc-500">
+                        <thead>
                             <tr>
                                 <th className="rounded-l-lg px-4 py-3 font-medium">Book</th>
                                 <th className="px-4 py-3 font-medium">Borrower</th>
@@ -176,7 +176,7 @@ export default function LibraryDashboardPage() {
                                         <td className="px-4 py-3">
                                             <span className={cn(
                                                 "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold",
-                                                tx.status === "ISSUED" ? "bg-amber-100 text-amber-700" :
+                                                tx.status === "ISSUED" ? "bg-brand/10 text-brand" :
                                                     tx.status === "RETURNED" ? "bg-emerald-100 text-emerald-700" :
                                                         "bg-zinc-100 text-zinc-700"
                                             )}>

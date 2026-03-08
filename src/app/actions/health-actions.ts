@@ -26,7 +26,7 @@ export async function addHealthRecordAction(schoolSlug: string, studentId: strin
         });
 
         revalidatePath(`/s/${schoolSlug}/students/${studentId}/progress`);
-        return { success: true, data: record };
+        return { success: true, data: JSON.parse(JSON.stringify(record)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -42,7 +42,7 @@ export async function getStudentHealthHistoryAction(studentId: string, academicY
             orderBy: { recordedAt: 'desc' },
             include: { recordedBy: { select: { firstName: true, lastName: true } } }
         });
-        return { success: true, data: records };
+        return { success: true, data: JSON.parse(JSON.stringify(records)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

@@ -94,7 +94,7 @@ export default function InquiryReportsPage() {
                         <option value="month">This Month</option>
                         <option value="90days">Last 90 Days</option>
                     </select>
-                    <button className="h-10 px-4 bg-zinc-900 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-brand transition-all">
+                    <button className="h-10 px-4 bg-zinc-900 text-[var(--secondary-color)] rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-xl hover:bg-brand transition-all">
                         <Download className="h-4 w-4" />
                         Export
                     </button>

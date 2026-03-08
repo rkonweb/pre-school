@@ -14,10 +14,12 @@ import {
     ChevronDown,
     Activity,
     CheckCircle2,
-    Edit3
+    Edit3,
+    Trophy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStudentAction, updateStudentAction, disconnectSiblingAction } from "@/app/actions/student-actions";
+import { getActivityEnrollmentsAction } from "@/app/actions/extracurricular-actions";
 import { getFamilyStudentsAction } from "@/app/actions/parent-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { PhoneInput } from "@/components/ui/PhoneInput";
@@ -83,6 +85,7 @@ export default function ProfileTab() {
     const [mode, setMode] = useState<"view" | "edit">("view");
     const [student, setStudent] = useState<any>(null);
     const [siblings, setSiblings] = useState<any[]>([]);
+    const [extraActivities, setExtraActivities] = useState<any[]>([]);
     const [isConnectSiblingOpen, setIsConnectSiblingOpen] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -103,13 +106,20 @@ export default function ProfileTab() {
 
     async function loadData() {
         setIsLoading(true);
-        const res = await getStudentAction(slug, id);
+        const [res, extraRes] = await Promise.all([
+            getStudentAction(slug, id),
+            getActivityEnrollmentsAction(slug, undefined, id)
+        ]);
+
         if (res.success && res.student) {
             setStudent(res.student);
             if (res.student.parentMobile) {
                 const sibRes = await getFamilyStudentsAction(slug, res.student.parentMobile);
                 if (sibRes.success) setSiblings(sibRes.students || []);
             }
+        }
+        if (extraRes.success) {
+            setExtraActivities(extraRes.data);
         }
         setIsLoading(false);
     }
@@ -307,7 +317,7 @@ export default function ProfileTab() {
                                 <button
                                     type="button"
                                     onClick={() => setIsConnectSiblingOpen(true)}
-                                    className="h-10 w-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center hover:bg-brand hover:text-white transition-all"
+                                    className="h-10 w-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center hover:bg-brand hover:text-[var(--secondary-color)] transition-all"
                                 >
                                     <Plus className="h-5 w-5" />
                                 </button>
@@ -338,6 +348,37 @@ export default function ProfileTab() {
                             ))}
                             {siblings.filter((s: any) => s.id !== student.id).length === 0 && (
                                 <p className="text-xs text-zinc-400 font-medium italic">No siblings connected.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Extracurricular Activities */}
+                    <div className="bg-white rounded-[40px] p-10 border border-zinc-100 shadow-xl shadow-zinc-200/20">
+                        <div className="flex items-center justify-between mb-8">
+                            <SectionTitle icon={Trophy} title="Activities" />
+                        </div>
+                        <div className="space-y-4">
+                            {extraActivities.map((en: any) => (
+                                <div key={en.id} className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                                            <Trophy className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-zinc-900">{en.activity.name}</p>
+                                            <p className="text-[10px] text-zinc-400 font-black uppercase">{en.skillLevel || "Developing"}</p>
+                                        </div>
+                                    </div>
+                                    <div className={cn(
+                                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                        en.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-zinc-100 text-zinc-500"
+                                    )}>
+                                        {en.status}
+                                    </div>
+                                </div>
+                            ))}
+                            {extraActivities.length === 0 && (
+                                <p className="text-xs text-zinc-400 font-medium italic">No activities enrolled.</p>
                             )}
                         </div>
                     </div>

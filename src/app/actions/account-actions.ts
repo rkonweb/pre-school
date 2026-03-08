@@ -24,10 +24,11 @@ export async function getSchoolIdBySlug(slug: string): Promise<string | null> {
 // --- FINANCIAL YEARS ---
 
 export async function getFinancialYears(schoolId: string) {
-    return await prisma.accountFinancialYear.findMany({
+    const result = await prisma.accountFinancialYear.findMany({
         where: { schoolId },
         orderBy: { startDate: 'desc' }
     });
+    return JSON.parse(JSON.stringify(result));
 }
 
 export async function createFinancialYear(schoolId: string, name: string, startDate: Date, endDate: Date) {
@@ -35,16 +36,17 @@ export async function createFinancialYear(schoolId: string, name: string, startD
         data: { name, startDate, endDate, schoolId, isActive: true }
     });
     revalidatePath(`/s/[slug]/accounts`);
-    return result;
+    return JSON.parse(JSON.stringify(result));
 }
 
 // --- CATEGORIES ---
 
 export async function getAccountCategories(schoolId: string) {
-    return await prisma.accountCategory.findMany({
+    const result = await prisma.accountCategory.findMany({
         where: { schoolId },
         orderBy: { name: 'asc' }
     });
+    return JSON.parse(JSON.stringify(result));
 }
 
 export async function createAccountCategory(schoolId: string, data: AccountCategoryInput) {
@@ -52,16 +54,17 @@ export async function createAccountCategory(schoolId: string, data: AccountCateg
         data: { ...data, schoolId, isSystem: false }
     });
     revalidatePath(`/s/[slug]/accounts/settings`);
-    return result;
+    return JSON.parse(JSON.stringify(result));
 }
 
 // --- VENDORS ---
 
 export async function getAccountVendors(schoolId: string) {
-    return await prisma.accountVendor.findMany({
+    const result = await prisma.accountVendor.findMany({
         where: { schoolId },
         orderBy: { name: 'asc' }
     });
+    return JSON.parse(JSON.stringify(result));
 }
 
 export async function createAccountVendor(schoolId: string, data: AccountVendorInput) {
@@ -69,11 +72,11 @@ export async function createAccountVendor(schoolId: string, data: AccountVendorI
         data: { ...data, schoolId }
     });
     revalidatePath(`/s/[slug]/accounts/vendors`);
-    return result;
+    return JSON.parse(JSON.stringify(result));
 }
 
 export async function getAccountVendorById(vendorId: string) {
-    return await prisma.accountVendor.findUnique({
+    const result = await prisma.accountVendor.findUnique({
         where: { id: vendorId },
         include: {
             transactions: {
@@ -82,6 +85,7 @@ export async function getAccountVendorById(vendorId: string) {
             }
         }
     });
+    return JSON.parse(JSON.stringify(result));
 }
 
 export async function updateAccountVendor(vendorId: string, data: Partial<AccountVendorInput>) {
@@ -90,7 +94,7 @@ export async function updateAccountVendor(vendorId: string, data: Partial<Accoun
         data,
     });
     revalidatePath(`/s/[slug]/accounts/vendors`);
-    return result;
+    return JSON.parse(JSON.stringify(result));
 }
 
 export async function deleteAccountVendor(vendorId: string, slug: string) {
@@ -102,11 +106,12 @@ export async function deleteAccountVendor(vendorId: string, slug: string) {
 // --- TRANSACTIONS ---
 
 export async function getTransactions(schoolId: string) {
-    return await prisma.accountTransaction.findMany({
+    const result = await prisma.accountTransaction.findMany({
         where: { schoolId },
         include: { category: true, vendor: true, financialYear: true },
         orderBy: { date: 'desc' }
     });
+    return JSON.parse(JSON.stringify(result));
 }
 
 /**
@@ -127,10 +132,10 @@ export async function getTransactionsEnhanced(slug: string, financialYearId?: st
     });
 
     // Tag each transaction with a derived source
-    return txns.map(txn => ({
+    return JSON.parse(JSON.stringify(txns.map(txn => ({
         ...txn,
         source: deriveSource(txn),
-    }));
+    }))));
 }
 
 function deriveSource(txn: any): 'TRANSPORT' | 'FEE' | 'PAYROLL' | 'MANUAL' {
@@ -198,7 +203,7 @@ export async function getTransactionStats(slug: string, financialYearId?: string
         sourceTotals[src] = (sourceTotals[src] || 0) + amount;
     }
 
-    return {
+    const result = {
         totalIncome,
         totalExpense,
         netBalance: totalIncome - totalExpense,
@@ -209,6 +214,7 @@ export async function getTransactionStats(slug: string, financialYearId?: string
         sourceTotals,
         count: allTxns.length,
     };
+    return JSON.parse(JSON.stringify(result));
 }
 
 /**
@@ -264,7 +270,7 @@ export async function createTransactionAction(slug: string, data: AccountTransac
 
         revalidatePath(`/s/${slug}/accounts`);
         revalidatePath(`/s/${slug}/accounts/transactions`);
-        return { success: true, data: result };
+        return { success: true, data: JSON.parse(JSON.stringify(result)) };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -291,5 +297,5 @@ export async function getFinancialSummary(schoolId: string, financialYearId?: st
         else if (txn.type === TransactionType.DEBIT) totalExpense += txn.amount;
     }
 
-    return { totalIncome, totalExpense, netBalance: totalIncome - totalExpense, count: transactions.length };
+    return JSON.parse(JSON.stringify({ totalIncome, totalExpense, netBalance: totalIncome - totalExpense, count: transactions.length }));
 }

@@ -233,7 +233,7 @@ export default function VendorProfileClient({ slug, initialVendor }: { slug: str
                         <form onSubmit={handleUploadQuotation} className="p-6 space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Title / Description *</label>
-                                <input required type="text" value={quoteTitle} onChange={e => setQuoteTitle(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-brand focus:border-brand" placeholder="e.g. Uniform Quotation 2026-27" />
+                                <input required type="text" value={quoteTitle} onChange={e => setQuoteTitle(e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-brand focus:border-brand" placeholder="e.g. Uniform Quotation 2025-26" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Document URL (Optional for testing)</label>

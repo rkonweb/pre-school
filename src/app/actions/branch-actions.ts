@@ -22,7 +22,7 @@ export async function getBranchesAction(slug: string) {
             }
         });
 
-        return { success: true, data: branches };
+        return { success: true, data: JSON.parse(JSON.stringify(branches)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -65,7 +65,7 @@ export async function createBranchAction(slug: string, data: { name: string, add
 
         revalidatePath(`/s/${slug}/settings/branches`);
         revalidatePath(`/s/${slug}/dashboard`, 'layout'); // Update sidebar
-        return { success: true, data: branch };
+        return { success: true, data: JSON.parse(JSON.stringify(branch)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -92,7 +92,7 @@ export async function updateBranchAction(slug: string, id: string, data: { name:
 
         revalidatePath(`/s/${slug}/settings/branches`);
         revalidatePath(`/s/${slug}/dashboard`, 'layout');
-        return { success: true, data: branch };
+        return { success: true, data: JSON.parse(JSON.stringify(branch)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

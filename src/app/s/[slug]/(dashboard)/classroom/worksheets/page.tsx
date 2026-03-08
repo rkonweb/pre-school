@@ -151,7 +151,7 @@ export default function TeacherWorksheetsPage() {
                                     className={cn(
                                         "flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold transition-all active:scale-95",
                                         worksheet.isAvailable
-                                            ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20"
+                                            ? "bg-brand-gradient text-[var(--secondary-color)] hover:brightness-110 shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)] border-none"
                                             : "bg-zinc-100 text-zinc-400 cursor-not-allowed dark:bg-zinc-800"
                                     )}
                                 >

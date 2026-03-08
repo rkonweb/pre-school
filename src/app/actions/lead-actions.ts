@@ -114,7 +114,7 @@ export async function getLeadByIdAction(leadId: string) {
                     leadId: admission.id
                 }))
             };
-            return { success: true, lead };
+            return { success: true, lead: JSON.parse(JSON.stringify(lead)) };
         }
 
         // Fallback to Lead table (Legacy)
@@ -136,7 +136,7 @@ export async function getLeadByIdAction(leadId: string) {
 
         if (!lead) return { success: false, error: "Lead not found" };
 
-        return { success: true, lead };
+        return { success: true, lead: JSON.parse(JSON.stringify(lead)) };
     } catch (error) {
         console.error("Get Lead By ID Error:", error);
         return { success: false, error: "Failed to fetch lead details" };
@@ -163,7 +163,7 @@ export async function updateLeadAction(schoolSlug: string, id: string, data: Par
             await syncLead(id);
             revalidatePath(`/s/${schoolSlug}/admissions/inquiry`);
             revalidatePath(`/s/${schoolSlug}/admissions/inquiry/${id}`);
-            return { success: true, lead: updated };
+            return { success: true, lead: JSON.parse(JSON.stringify(updated)) };
         }
 
         const updateData: any = { ...data };
@@ -180,7 +180,7 @@ export async function updateLeadAction(schoolSlug: string, id: string, data: Par
         await syncLead(id);
         revalidatePath(`/s/${schoolSlug}/admissions/inquiry`);
         revalidatePath(`/s/${schoolSlug}/admissions/inquiry/${id}`);
-        return { success: true, lead };
+        return { success: true, lead: JSON.parse(JSON.stringify(lead)) };
     } catch (error) {
         console.error("Update Lead Error:", error);
         return { success: false, error: "Failed to update lead" };
@@ -326,7 +326,7 @@ export async function getBranchesAction(schoolSlug: string) {
             orderBy: { name: 'asc' }
         });
 
-        return { success: true, branches };
+        return { success: true, branches: JSON.parse(JSON.stringify(branches)) };
     } catch (error) {
         console.error("Get Branches Error:", error);
         return { success: false, error: "Failed to fetch branches" };
@@ -351,7 +351,7 @@ export async function getCounsellorsAction(schoolSlug: string) {
             orderBy: { firstName: 'asc' }
         });
 
-        return { success: true, counsellors };
+        return { success: true, counsellors: JSON.parse(JSON.stringify(counsellors)) };
     } catch (error) {
         console.error("Get Counsellors Error:", error);
         return { success: false, error: "Failed to fetch counsellors" };
@@ -441,7 +441,7 @@ export async function getLeadsAction(schoolSlug: string, filters: {
             branch: null // Admission has no branch relation yet
         }));
 
-        return { success: true, leads };
+        return { success: true, leads: JSON.parse(JSON.stringify(leads)) };
     } catch (error) {
         console.error("Get Leads Error:", error);
         return { success: false, error: "Failed to fetch leads" };
@@ -487,7 +487,7 @@ export async function getRecentActivityAction(schoolSlug: string) {
             } : a.lead
         })).filter(a => a.lead); // Ensure we have a valid target
 
-        return { success: true, activities: mappedActivities };
+        return { success: true, activities: JSON.parse(JSON.stringify(mappedActivities)) };
     } catch (error) {
         console.error("Get Recent Activity Error:", error);
         return { success: false, error: "Failed to fetch activity" };

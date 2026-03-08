@@ -9,7 +9,7 @@ export async function getLeavePoliciesAction(schoolSlug: string) {
             where: { school: { slug: schoolSlug } },
             include: { leaveTypes: true }
         });
-        return { success: true, data: policies };
+        return { success: true, data: JSON.parse(JSON.stringify(policies)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -72,7 +72,7 @@ export async function createLeavePolicyAction(schoolSlug: string, data: any) {
         });
 
         revalidatePath(`/s/${schoolSlug}/settings`);
-        return { success: true, data: policy };
+        return { success: true, data: JSON.parse(JSON.stringify(policy)) };
     } catch (error: any) {
         console.error("Create Policy Error:", error);
         if (error.message?.includes("Unknown argument")) {
@@ -149,7 +149,7 @@ export async function updateLeavePolicyAction(schoolSlug: string, policyId: stri
         });
 
         revalidatePath(`/s/${schoolSlug}/settings`);
-        return { success: true, data: policy };
+        return { success: true, data: JSON.parse(JSON.stringify(policy)) };
     } catch (error: any) {
         console.error("Update Policy Error:", error);
         if (error.message?.includes("Unknown argument")) {

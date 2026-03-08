@@ -55,7 +55,7 @@ export async function getActivePTMSessionsAction(phone: string) {
             take: 10,
         });
 
-        return { success: true, data: sessions };
+        return { success: true, data: JSON.parse(JSON.stringify(sessions)) };
     } catch (error: any) {
         console.error("getActivePTMSessionsAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -96,7 +96,7 @@ export async function bookPTMSlotAction(
             },
         });
 
-        return { success: true, data: booking };
+        return { success: true, data: JSON.parse(JSON.stringify(booking)) };
     } catch (error: any) {
         if (error.code === "P2002") return { success: false, error: "This slot is already taken" };
         console.error("bookPTMSlotAction Error:", error);
@@ -115,7 +115,7 @@ export async function getMyPTMBookingsAction(phone: string) {
             orderBy: { createdAt: "desc" },
             take: 20,
         });
-        return { success: true, data: bookings };
+        return { success: true, data: JSON.parse(JSON.stringify(bookings)) };
     } catch (error: any) {
         console.error("getMyPTMBookingsAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -231,7 +231,7 @@ export async function placeStoreOrderAction(
             return newOrder;
         });
 
-        return { success: true, data: order };
+        return { success: true, data: JSON.parse(JSON.stringify(order)) };
     } catch (error: any) {
         console.error("placeStoreOrderAction Error:", error.message);
         return { success: false, error: error.message || "Internal server error" };
@@ -249,7 +249,7 @@ export async function getMyStoreOrdersAction(phone: string) {
             orderBy: { createdAt: "desc" },
             take: 20,
         });
-        return { success: true, data: orders };
+        return { success: true, data: JSON.parse(JSON.stringify(orders)) };
     } catch (error: any) {
         console.error("getMyStoreOrdersAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -392,7 +392,7 @@ export async function createPTMSessionAction(
             },
         });
         revalidatePath("/s/[slug]/ptm", "page");
-        return { success: true, data: session };
+        return { success: true, data: JSON.parse(JSON.stringify(session)) };
     } catch (error: any) {
         console.error("createPTMSessionAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -424,7 +424,7 @@ export async function createStoreItemAction(
                 isAvailable: data.stock > 0,
             },
         });
-        return { success: true, data: item };
+        return { success: true, data: JSON.parse(JSON.stringify(item)) };
     } catch (error: any) {
         console.error("createStoreItemAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -454,7 +454,7 @@ export async function getPTMSessionsAction(schoolSlug: string) {
             take: 50,
         });
 
-        return { success: true, data: sessions };
+        return { success: true, data: JSON.parse(JSON.stringify(sessions)) };
     } catch (error: any) {
         console.error("getPTMSessionsAction Error:", error);
         return { success: false, error: "Internal server error" };

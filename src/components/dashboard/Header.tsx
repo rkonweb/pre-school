@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu, Search, Clock as ClockIcon, Maximize, Minimize } from "lucide-react";
+import { Bell, Menu, Search, Clock as ClockIcon, Maximize, Minimize, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { ProfileMenu } from "./ProfileMenu";
 import { AcademicYearSelector } from "./AcademicYearSelector";
@@ -11,6 +11,11 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { searchGlobalAction } from "@/app/actions/search-actions";
 import { useParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+
+const AMBER = "var(--brand-color, #F59E0B)";
+const AMBER_D = "var(--brand-color, #D97706)";
+const AMBER_L = "rgba(var(--brand-color-rgb, 245, 158, 11), 0.1)";
+const AMBER_XL = "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)";
 
 export function Header({
     schoolName,
@@ -69,31 +74,13 @@ export function Header({
                 isAppFullscreen && "hidden"
             )}
             style={{
-                background: "white",
-                borderBottom: "1px solid #F3F4F6",
-                boxShadow: "0 2px 16px rgba(0,0,0,0.05)",
+                background: "var(--brand-color)",
+                borderBottom: "none",
+                boxShadow: "none",
             }}
         >
             {/* ── Left: Mobile Burger + Search + Clock ── */}
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                {/* Mobile menu toggle */}
-                <button
-                    onClick={toggleSidebar}
-                    className="lg:hidden"
-                    style={{
-                        padding: "8px", borderRadius: 10,
-                        border: "1.5px solid #E5E7EB",
-                        background: "white", cursor: "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#6B7280", transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F59E0B"; (e.currentTarget as HTMLElement).style.color = "#D97706"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#E5E7EB"; (e.currentTarget as HTMLElement).style.color = "#6B7280"; }}
-                >
-                    <Menu style={{ width: 18, height: 18 }} />
-                    <span className="sr-only">Open sidebar</span>
-                </button>
-
                 {/* Search */}
                 <div className="hidden sm:block" style={{ width: 360 }}>
                     <SearchInput
@@ -103,13 +90,6 @@ export function Header({
                         isLoading={isSearching}
                         placeholder="Search students, staff, leads..."
                         className="w-full"
-                        style={{
-                            background: "#F9FAFB",
-                            border: "1.5px solid #E5E7EB",
-                            borderRadius: 12,
-                            fontSize: 13.5,
-                            color: "#374151",
-                        } as any}
                     />
                 </div>
 
@@ -118,13 +98,14 @@ export function Header({
                     className="hidden md:flex items-center gap-2"
                     style={{
                         padding: "6px 14px",
-                        background: "#1E1B4B",
+                        background: "rgba(255,255,255,0.15)",
                         borderRadius: 20,
-                        boxShadow: "0 2px 12px rgba(30,27,75,0.2)",
+                        backdropFilter: "blur(8px)",
+                        border: "1px solid rgba(255,255,255,0.2)",
                     }}
                 >
-                    <ClockIcon style={{ width: 13, height: 13, color: "#A5B4FC" }} />
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "white", fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: 0.3 }}>
+                    <ClockIcon style={{ width: 13, height: 13, color: "var(--secondary-color)" }} />
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "var(--secondary-color)", fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: 0.3 }}>
                         {currentTime || "--:-- --"}
                     </span>
                 </div>
@@ -141,15 +122,17 @@ export function Header({
                 <button
                     style={{
                         position: "relative", padding: 8, borderRadius: 10,
-                        border: "1.5px solid #E5E7EB",
-                        background: "white", cursor: "pointer",
+                        border: "1.5px solid rgba(255,255,255,0.2)",
+                        background: "rgba(255,255,255,0.1)", cursor: "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         transition: "all 0.22s ease",
                     }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F59E0B"; (e.currentTarget as HTMLElement).style.background = "#FFFBEB"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#E5E7EB"; (e.currentTarget as HTMLElement).style.background = "white"; }}
                 >
-                    <Bell style={{ width: 17, height: 17, color: "#6B7280" }} />
+                    <div
+                        className="w-10 h-10 rounded-2xl bg-brand-gradient flex items-center justify-center text-[var(--secondary-color)] shadow-lg shadow-brand/20 group-hover:scale-105 transition-transform"
+                    >
+                        <Sparkles size={20} className="animate-pulse" />
+                    </div>
                     {/* Amber pulse dot */}
                     <span
                         className="pulse-anim"
@@ -167,16 +150,17 @@ export function Header({
                 <button
                     onClick={toggleFullscreen}
                     title={isAppFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                    aria-label={isAppFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
                     style={{
                         padding: 8, borderRadius: 10,
                         border: "1.5px solid #E5E7EB",
                         background: "white", cursor: "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         transition: "all 0.22s ease",
-                        color: "#6B7280",
+                        color: "var(--secondary-color)",
                     }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F59E0B"; (e.currentTarget as HTMLElement).style.color = "#D97706"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#E5E7EB"; (e.currentTarget as HTMLElement).style.color = "#6B7280"; }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.2)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)"; }}
                 >
                     {isAppFullscreen ? <Minimize style={{ width: 17, height: 17 }} /> : <Maximize style={{ width: 17, height: 17 }} />}
                 </button>

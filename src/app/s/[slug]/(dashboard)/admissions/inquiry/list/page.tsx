@@ -165,7 +165,7 @@ export default function LeadListPage() {
                 <div className="rounded-[32px] border border-zinc-200 bg-white shadow-xl shadow-zinc-200/40 dark:border-zinc-800 dark:bg-zinc-950 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm border-collapse">
-                            <thead className="bg-zinc-50/50 text-zinc-400 uppercase text-[10px] font-black tracking-widest border-b border-zinc-100">
+                            <thead className="uppercase text-[10px] font-black tracking-widest border-b border-zinc-100">
                                 <tr>
                                     <th className="px-8 py-5">Parent & Child</th>
                                     <th className="px-8 py-5">Score & Risk</th>

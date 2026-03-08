@@ -302,7 +302,7 @@ export async function getTransactionsAction(schoolSlug: string, filter: "ALL" | 
             take: 50 // Limit for now
         });
 
-        return { success: true, data: transactions };
+        return { success: true, data: JSON.parse(JSON.stringify(transactions)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -317,7 +317,7 @@ export async function getStudentLibraryHistoryAction(slug: string, studentId: st
             include: { book: true },
             orderBy: { issuedDate: 'desc' }
         });
-        return { success: true, data: transactions };
+        return { success: true, data: JSON.parse(JSON.stringify(transactions)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -333,7 +333,7 @@ export async function getStaffLibraryHistoryAction(slug: string, staffId: string
             include: { book: true },
             orderBy: { issuedDate: 'desc' }
         });
-        return { success: true, data: transactions };
+        return { success: true, data: JSON.parse(JSON.stringify(transactions)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

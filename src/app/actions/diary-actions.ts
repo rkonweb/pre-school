@@ -113,7 +113,7 @@ export async function createDiaryEntryAction(data: {
         }
 
         revalidatePath(`/s/${data.schoolSlug}/diary`);
-        return { success: true, data: entry };
+        return { success: true, data: JSON.parse(JSON.stringify(entry)) };
     } catch (error: any) {
         console.error("Create Diary Entry Error:", error);
         return { success: false, error: error.message };
@@ -292,7 +292,7 @@ export async function getDiaryEntriesAction(schoolSlug: string, filters?: {
             ]
         });
 
-        return { success: true, data: entries };
+        return { success: true, data: JSON.parse(JSON.stringify(entries)) };
     } catch (error: any) {
         console.error("Get Diary Entries Error:", error);
         return { success: false, error: error.message };
@@ -388,7 +388,7 @@ export async function getDiaryEntriesForStudentAction(slug: string, studentId: s
             }
         }
 
-        return { success: true, data: uniqueRecipients };
+        return { success: true, data: JSON.parse(JSON.stringify(uniqueRecipients)) };
     } catch (error: any) {
         console.error("Get Student Diary Entries Error:", error);
         return { success: false, error: error.message };
@@ -444,7 +444,7 @@ export async function updateDiaryEntryAction(slug: string, id: string, data: {
             revalidatePath(`/s/${entry.school.slug}/diary`);
         }
 
-        return { success: true, data: entry };
+        return { success: true, data: JSON.parse(JSON.stringify(entry)) };
     } catch (error: any) {
         console.error("Update Diary Entry Error:", error);
         return { success: false, error: error.message };

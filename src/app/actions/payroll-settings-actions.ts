@@ -16,7 +16,7 @@ export async function getPayrollSettingsAction(schoolSlug: string) {
             where: { schoolId: school.id }
         });
 
-        return { success: true, data: settings };
+        return { success: true, data: JSON.parse(JSON.stringify(settings)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -55,7 +55,7 @@ export async function updatePayrollSettingsAction(schoolSlug: string, data: any)
         });
 
         revalidatePath(`/s/${schoolSlug}/settings/payroll`);
-        return { success: true, data: settings };
+        return { success: true, data: JSON.parse(JSON.stringify(settings)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

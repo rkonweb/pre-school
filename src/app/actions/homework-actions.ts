@@ -43,14 +43,14 @@ export async function getSchoolHomeworkAction(slug: string, classroomId?: string
 
         return {
             success: true,
-            data: homework.map(hw => ({
+            data: JSON.parse(JSON.stringify(homework.map(hw => ({
                 ...hw,
                 targetIds: JSON.parse(hw.targetIds || "[]"),
                 attachments: hw.attachments ? JSON.parse(hw.attachments) : [],
                 submissionCount: hw.submissions.length,
                 submittedCount: hw.submissions.filter(s => s.isSubmitted).length,
                 reviewedCount: hw.submissions.filter(s => s.isReviewed).length,
-            }))
+            }))))
         };
     } catch (error: any) {
         console.error("getSchoolHomeworkAction Error:", error);
@@ -79,11 +79,11 @@ export async function getHomeworkByIdAction(slug: string, id: string) {
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 ...homework,
                 targetIds: JSON.parse(homework.targetIds || "[]"),
                 attachments: homework.attachments ? JSON.parse(homework.attachments) : [],
-            }
+            }))
         };
     } catch (error: any) {
         console.error("getHomeworkByIdAction Error:", error);
@@ -178,7 +178,7 @@ export async function createHomeworkAction(slug: string, data: {
         }
 
         revalidatePath(`/s/${slug}/homework`);
-        return { success: true, data: { id: homework.id } };
+        return { success: true, data: JSON.parse(JSON.stringify({ id: homework.id })) };
     } catch (error: any) {
         console.error("createHomeworkAction Error:", error);
         return { success: false, error: error.message };
@@ -354,7 +354,7 @@ export async function getHomeworkSubmissionsAction(homeworkId: string) {
             orderBy: { studentName: "asc" },
         });
 
-        return { success: true, data: submissions };
+        return { success: true, data: JSON.parse(JSON.stringify(submissions)) };
     } catch (error: any) {
         console.error("getHomeworkSubmissionsAction Error:", error);
         return { success: false, error: error.message };
@@ -432,12 +432,12 @@ export async function getStudentHomeworkAction(slug: string, studentId: string) 
 
         return {
             success: true,
-            data: homework.map(hw => ({
+            data: JSON.parse(JSON.stringify(homework.map(hw => ({
                 ...hw,
                 targetIds: JSON.parse(hw.targetIds || "[]"),
                 attachments: hw.attachments ? JSON.parse(hw.attachments) : [],
                 submission: hw.submissions[0] ?? null,
-            }))
+            }))))
         };
     } catch (error: any) {
         console.error("getStudentHomeworkAction Error:", error);

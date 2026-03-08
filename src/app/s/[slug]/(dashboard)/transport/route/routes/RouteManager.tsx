@@ -166,7 +166,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
                                 <DropdownMenuLabel className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3 px-2">
                                     Network Viewports
                                 </DropdownMenuLabel>
-                                <DropdownMenuSeparator className="mb-2" />
+                                <DropdownMenuSeparator />
                                 <DragDropContext onDragEnd={handleDragEnd}>
                                     <Droppable droppableId="route-columns">
                                         {(provided) => (
@@ -287,7 +287,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
                         <tbody className="divide-y divide-zinc-50">
                             {sortedRoutes.length > 0 ? (
                                 sortedRoutes.map((route, i) => (
-                                    <tr key={route.id} className={cn("group transition-colors", i % 2 === 0 ? "bg-white" : "bg-zinc-50/20", "hover:bg-amber-50/40")}>
+                                    <tr key={route.id} className={cn("group transition-colors", i % 2 === 0 ? "bg-white" : "bg-zinc-50/20", "hover:bg-brand/5")}>
                                         <td className="px-8 py-6 flex justify-center">
                                             <RowActions
                                                 onEdit={`/s/${schoolSlug}/transport/route/routes/${route.id}/edit`}
@@ -300,7 +300,7 @@ export default function RouteManager({ schoolSlug, initialRoutes, vehicles }: Ro
                                             if (col.id === 'name') return (
                                                 <td key={col.id} className="px-8 py-6 whitespace-nowrap">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="h-11 w-11 rounded-[1.25rem] bg-zinc-100 flex items-center justify-center text-zinc-900 shadow-sm group-hover:bg-brand group-hover:text-white transition-all">
+                                                        <div className="h-11 w-11 rounded-[1.25rem] bg-zinc-100 flex items-center justify-center text-zinc-900 shadow-sm group-hover:bg-brand group-hover:text-[var(--secondary-color)] transition-all">
                                                             <Bus className="h-5 w-5" />
                                                         </div>
                                                         <div>

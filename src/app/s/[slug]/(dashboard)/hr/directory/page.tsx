@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { AvatarWithAdjustment } from "@/components/dashboard/staff/AvatarWithAdjustment";
 import { SearchInput } from "@/components/ui/SearchInput";
 import { useConfirm } from "@/contexts/ConfirmContext";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { DashboardLoader } from "@/components/ui/DashboardLoader";
 import { ErpTabs, SectionHeader, tableStyles, SortIcon, RowActions, StatusChip, Btn } from "@/components/ui/erp-ui";
 
@@ -33,6 +34,7 @@ export default function StaffPage() {
     const router = useRouter();
     const slug = params.slug as string;
     const { confirm: confirmDialog } = useConfirm();
+    const { requestAdminAuth } = useAdminAuth();
 
     const [isLoading, setIsLoading] = useState(true);
     const [staff, setStaff] = useState<any[]>([]);
@@ -191,6 +193,16 @@ export default function StaffPage() {
         });
 
         if (!confirmed) return;
+
+        const isVerified = await requestAdminAuth({
+            actionName: "Delete Staff Member",
+            description: `You are about to delete ${name}. Please verify your identity to proceed.`
+        });
+
+        if (!isVerified) {
+            toast.error("Deletion cancelled. Identity verification failed.");
+            return;
+        }
 
         const res = await deleteStaffAction(slug, id);
         if (res.success) {

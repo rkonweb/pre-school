@@ -283,7 +283,7 @@ export default function MarksEntryPage() {
                                 </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm text-left">
-                                        <thead className="bg-white text-slate-500 font-medium border-b">
+                                        <thead>
                                             <tr>
                                                 <th className="p-3 w-64">Student</th>
                                                 <th className="p-3 w-32">Marks</th>

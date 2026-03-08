@@ -222,7 +222,7 @@ export function BlogListingClient({ initialPosts }: BlogListingClientProps) {
                                 {post.coverImage ? (
                                     <img
                                         src={post.coverImage}
-                                        alt={post.title}
+                                        alt={post.title || "Blog Post Cover"}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                     />
                                 ) : (

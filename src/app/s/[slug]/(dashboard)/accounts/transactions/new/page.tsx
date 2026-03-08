@@ -150,7 +150,7 @@ export default function NewTransactionPage({ params }: { params: Promise<{ slug:
                             </button>
                             <div>
                                 <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                                    <Receipt className="h-6 w-6 text-orange-500" />
+                                    <Receipt className="h-6 w-6 text-brand" />
                                     Record Entry
                                 </h1>
                                 <p className="text-sm font-medium text-slate-500 mt-1">Log a new financial movement into your system</p>
@@ -408,7 +408,7 @@ export default function NewTransactionPage({ params }: { params: Promise<{ slug:
                                     <button
                                         type="submit"
                                         disabled={saving || !form.title || !form.amount || !form.categoryId}
-                                        className="w-full mt-6 py-3.5 bg-brand hover:bg-brand/90 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-brand/20 disabled:grayscale disabled:opacity-50 flex items-center justify-center gap-2 group"
+                                        className="w-full mt-6 py-3.5 bg-brand hover:bg-brand/90 text-[var(--secondary-color)] rounded-xl text-sm font-bold transition-all shadow-md shadow-brand/20 disabled:grayscale disabled:opacity-50 flex items-center justify-center gap-2 group"
                                     >
                                         {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                                             <>

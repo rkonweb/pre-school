@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/auth/auth_service.dart';
+import '../config/app_config.dart';
 
 part 'api_client.g.dart';
 
@@ -9,9 +10,9 @@ part 'api_client.g.dart';
 Dio dio(DioRef ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'http://localhost:3000/api/mobile/v1/', // Adjust based on environment
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
+      baseUrl: AppConfig.apiBaseUrl,
+      connectTimeout: const Duration(seconds: 45),
+      receiveTimeout: const Duration(seconds: 45),
     ),
   );
 

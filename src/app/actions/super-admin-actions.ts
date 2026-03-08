@@ -32,7 +32,7 @@ export async function updateSchoolLimitAction(slug: string, maxBranches: number)
         );
 
         revalidatePath(`/s/${slug}/settings/branches`);
-        return { success: true, data: school };
+        return { success: true, data: JSON.parse(JSON.stringify(school)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -70,7 +70,7 @@ export async function toggleBranchStatusAction(slug: string, branchId: string) {
         );
 
         revalidatePath(`/s/${slug}/settings/branches`);
-        return { success: true, data: updatedBranch };
+        return { success: true, data: JSON.parse(JSON.stringify(updatedBranch)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

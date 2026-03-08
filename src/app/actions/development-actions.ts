@@ -163,7 +163,7 @@ export async function getDevelopmentDomainsAction(schoolId: string) {
             },
             orderBy: { order: "asc" },
         });
-        return { success: true, data: domains };
+        return { success: true, data: JSON.parse(JSON.stringify(domains)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -180,7 +180,7 @@ export async function getStudentMilestonesAction(
             where: { studentId, academicYearId: academicYearId || null },
             include: { milestone: { include: { domain: true } } },
         });
-        return { success: true, data: records };
+        return { success: true, data: JSON.parse(JSON.stringify(records)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -221,7 +221,7 @@ export async function upsertMilestoneRecordAction(
                 achievedDate: status === "ACHIEVED" ? new Date() : null,
             },
         });
-        return { success: true, data: record };
+        return { success: true, data: JSON.parse(JSON.stringify(record)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -239,7 +239,7 @@ export async function getStudentSkillsAction(
             where: { studentId, term, academicYearId: academicYearId || null },
             include: { skill: { include: { domain: true } } },
         });
-        return { success: true, data: assessments };
+        return { success: true, data: JSON.parse(JSON.stringify(assessments)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -277,7 +277,7 @@ export async function upsertSkillAssessmentAction(
             },
             update: { rating, notes, recordedById },
         });
-        return { success: true, data: assessment };
+        return { success: true, data: JSON.parse(JSON.stringify(assessment)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -317,7 +317,7 @@ export async function bulkUpsertSkillAssessmentsAction(
                 })
             )
         );
-        return { success: true, data: results };
+        return { success: true, data: JSON.parse(JSON.stringify(results)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -335,7 +335,7 @@ export async function getPortfolioEntriesAction(
             orderBy: { createdAt: "desc" },
             include: { recordedBy: { select: { firstName: true, lastName: true } } },
         });
-        return { success: true, data: entries };
+        return { success: true, data: JSON.parse(JSON.stringify(entries)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -372,7 +372,7 @@ export async function createPortfolioEntryAction(
                 recordedById,
             },
         });
-        return { success: true, data: entry };
+        return { success: true, data: JSON.parse(JSON.stringify(entry)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -399,7 +399,7 @@ export async function getDevelopmentReportAction(
             where: { studentId, term, academicYearId: academicYearId || null },
             include: { recordedBy: { select: { firstName: true, lastName: true } } },
         });
-        return { success: true, data: report };
+        return { success: true, data: JSON.parse(JSON.stringify(report)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -437,7 +437,7 @@ export async function saveDevelopmentReportAction(
             },
             update: { ...data, recordedById },
         });
-        return { success: true, data: report };
+        return { success: true, data: JSON.parse(JSON.stringify(report)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -449,7 +449,7 @@ export async function publishDevelopmentReportAction(reportId: string) {
             where: { id: reportId },
             data: { published: true, publishedAt: new Date() },
         });
-        return { success: true, data: report };
+        return { success: true, data: JSON.parse(JSON.stringify(report)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -466,7 +466,7 @@ export async function createDevelopmentDomainAction(
         const domain = await prisma.developmentDomain.create({
             data: { ...data, schoolId, order: count + 1 },
         });
-        return { success: true, data: domain };
+        return { success: true, data: JSON.parse(JSON.stringify(domain)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -481,7 +481,7 @@ export async function updateDevelopmentDomainAction(
             where: { id: domainId },
             data,
         });
-        return { success: true, data: domain };
+        return { success: true, data: JSON.parse(JSON.stringify(domain)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -505,7 +505,7 @@ export async function createMilestoneAction(
         const milestone = await prisma.developmentMilestone.create({
             data: { ...data, domainId, order: count + 1 },
         });
-        return { success: true, data: milestone };
+        return { success: true, data: JSON.parse(JSON.stringify(milestone)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -520,7 +520,7 @@ export async function updateMilestoneAction(
             where: { id: milestoneId },
             data,
         });
-        return { success: true, data: milestone };
+        return { success: true, data: JSON.parse(JSON.stringify(milestone)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -544,7 +544,7 @@ export async function createSkillItemAction(
         const skill = await prisma.skillItem.create({
             data: { ...data, domainId, order: count + 1 },
         });
-        return { success: true, data: skill };
+        return { success: true, data: JSON.parse(JSON.stringify(skill)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -610,7 +610,7 @@ export async function getClassDevelopmentSummaryAction(
             };
         });
 
-        return { success: true, data: summary };
+        return { success: true, data: JSON.parse(JSON.stringify(summary)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

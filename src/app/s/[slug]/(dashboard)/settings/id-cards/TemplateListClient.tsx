@@ -199,7 +199,7 @@ export function TemplateListClient({ slug, schoolId, initialTemplates }: Templat
 
                                 {isSystem && (
                                     <div className="absolute top-6 left-6 flex items-center gap-2">
-                                        <div className="bg-indigo-600/90 backdrop-blur text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">
+                                        <div className="backdrop-blur text-[var(--secondary-color)] px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg" style={{ backgroundColor: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.9)" }}>
                                             System Original
                                         </div>
                                         {hasOverride && (
@@ -223,7 +223,9 @@ export function TemplateListClient({ slug, schoolId, initialTemplates }: Templat
                                         onClick={() => handleEdit(template)}
                                         disabled={!!isProcessing}
                                         title="Edit Template"
-                                        className="h-9 w-9 rounded-xl bg-zinc-50 flex items-center justify-center text-zinc-400 hover:text-indigo-600 border border-zinc-100 transition-all hover:bg-white hover:shadow-sm disabled:opacity-50"
+                                        className="h-9 w-9 rounded-xl bg-zinc-50 flex items-center justify-center text-zinc-400 border border-zinc-100 transition-all hover:bg-white hover:shadow-sm disabled:opacity-50"
+                                        onMouseEnter={e => e.currentTarget.style.color = "var(--brand-color, #F59E0B)"}
+                                        onMouseLeave={e => e.currentTarget.style.color = ""}
                                     >
                                         {isProcessing === template.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Edit2 className="h-4 w-4" />}
                                     </button>
@@ -241,8 +243,11 @@ export function TemplateListClient({ slug, schoolId, initialTemplates }: Templat
                                         <button
                                             onClick={() => handleReset(override.id)}
                                             disabled={!!isProcessing}
-                                            title="Reset to Original"
-                                            className="h-9 w-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-400 hover:text-amber-600 border border-amber-100 transition-all hover:bg-white hover:shadow-sm disabled:opacity-50"
+                                            title="Edit template"
+                                            className="h-9 w-9 rounded-xl flex items-center justify-center transition-all hover:bg-white hover:shadow-sm disabled:opacity-50"
+                                            style={{ backgroundColor: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.1)", color: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.6)", borderColor: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.2)", borderWidth: 1 }}
+                                            onMouseEnter={e => e.currentTarget.style.color = "var(--brand-color, #F59E0B)"}
+                                            onMouseLeave={e => e.currentTarget.style.color = "rgba(var(--brand-color-rgb, 245, 158, 11), 0.6)"}
                                         >
                                             {isProcessing === override.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Layout className="h-4 w-4 rotate-180" />}
                                         </button>

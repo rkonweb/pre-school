@@ -63,7 +63,7 @@ export default function TransportApplication({ studentId, existingProfile }: any
     return (
         <div className="max-w-md mx-auto bg-white p-6 rounded-xl border shadow-sm">
             <div className="text-center mb-6">
-                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-600">
+                <div className="h-12 w-12 bg-brand/10 rounded-full flex items-center justify-center mx-auto mb-3 text-brand">
                     <BusIcon className="h-6 w-6" />
                 </div>
                 <h2 className="text-xl font-bold">Apply for Transport</h2>
@@ -74,7 +74,7 @@ export default function TransportApplication({ studentId, existingProfile }: any
                 <div>
                     <label className="text-sm font-medium text-zinc-700 mb-1 block">Pickup Address</label>
                     <textarea
-                        className="w-full border border-zinc-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full border border-zinc-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-brand outline-none"
                         rows={3}
                         placeholder="Enter your full address..."
                         value={address}
@@ -82,7 +82,7 @@ export default function TransportApplication({ studentId, existingProfile }: any
                     />
                 </div>
 
-                <div className="bg-blue-50 p-3 rounded-lg flex gap-3 text-sm text-blue-700">
+                <div className="bg-brand/5 p-3 rounded-lg flex gap-3 text-sm text-brand font-medium">
                     <Navigation className="h-5 w-5 shrink-0" />
                     <p>The transport department will review your location and assign the nearest active route and stop.</p>
                 </div>
@@ -90,7 +90,7 @@ export default function TransportApplication({ studentId, existingProfile }: any
                 <button
                     onClick={handleSubmit}
                     disabled={isSubmitting || !address}
-                    className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    className="w-full py-2.5 bg-brand-gradient text-[var(--secondary-color)] rounded-lg font-medium hover:brightness-110 disabled:opacity-50 transition-colors border-none shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)]"
                 >
                     {isSubmitting ? "Submitting..." : "Submit Application"}
                 </button>

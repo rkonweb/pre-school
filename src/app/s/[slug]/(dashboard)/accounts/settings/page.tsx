@@ -183,7 +183,13 @@ export default function AccountsSettingsPage({ params }: { params: Promise<{ slu
                     <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center px-8 py-6 border-b border-zinc-100">
                             <h3 className="text-lg font-black text-zinc-900">Add New Category</h3>
-                            <button onClick={() => setShowCatModal(false)} className="text-zinc-400 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-full transition-colors"><X className="w-4 h-4" /></button>
+                            <button 
+                                onClick={() => setShowCatModal(false)} 
+                                className="text-zinc-400 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-full transition-colors"
+                                aria-label="Close"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
                         <form onSubmit={handleAddCategory} className="p-8 space-y-6">
                             <div>
@@ -210,7 +216,7 @@ export default function AccountsSettingsPage({ params }: { params: Promise<{ slu
                             </div>
                             <div className="flex gap-4 pt-4">
                                 <button type="button" onClick={() => setShowCatModal(false)} className="flex-1 border border-zinc-200 text-zinc-700 rounded-xl py-3 text-sm font-black hover:bg-zinc-50 transition-colors">Cancel</button>
-                                <button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand/90 text-white shadow-lg shadow-brand/20 rounded-xl py-3 text-sm font-black disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
+                                <button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand/90 text-[var(--secondary-color)] shadow-lg shadow-brand/20 rounded-xl py-3 text-sm font-black disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
                                     {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save Category'}
                                 </button>
                             </div>
@@ -225,31 +231,40 @@ export default function AccountsSettingsPage({ params }: { params: Promise<{ slu
                     <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center px-8 py-6 border-b border-zinc-100">
                             <h3 className="text-lg font-black text-zinc-900">Add Financial Year</h3>
-                            <button onClick={() => setShowYearModal(false)} className="text-zinc-400 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-full transition-colors"><X className="w-4 h-4" /></button>
+                            <button 
+                                onClick={() => setShowYearModal(false)} 
+                                className="text-zinc-400 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-full transition-colors"
+                                aria-label="Close"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
                         <form onSubmit={handleAddYear} className="p-8 space-y-6">
                             <div>
-                                <label className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-2">Year Name <span className="text-red-500">*</span></label>
+                                <label htmlFor="year-name" className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-2">Year Name <span className="text-red-500">*</span></label>
                                 <input required value={yearForm.name} onChange={e => setYearForm(f => ({ ...f, name: e.target.value }))}
-                                    placeholder="e.g. FY 2024-25"
+                                    id="year-name"
+                                    placeholder="e.g. FY 2025-26"
                                     data-lpignore="true" suppressHydrationWarning
                                     className="w-full bg-zinc-50/50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 placeholder:font-medium placeholder:text-zinc-400 outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all" />
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-2">Start Date <span className="text-red-500">*</span></label>
+                                    <label htmlFor="start-date" className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-2">Start Date <span className="text-red-500">*</span></label>
                                     <input required type="date" value={yearForm.startDate} onChange={e => setYearForm(f => ({ ...f, startDate: e.target.value }))}
+                                        id="start-date"
                                         className="w-full bg-zinc-50/50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all" />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-2">End Date <span className="text-red-500">*</span></label>
+                                    <label htmlFor="end-date" className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-2">End Date <span className="text-red-500">*</span></label>
                                     <input required type="date" value={yearForm.endDate} onChange={e => setYearForm(f => ({ ...f, endDate: e.target.value }))}
+                                        id="end-date"
                                         className="w-full bg-zinc-50/50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all" />
                                 </div>
                             </div>
                             <div className="flex gap-4 pt-4">
                                 <button type="button" onClick={() => setShowYearModal(false)} className="flex-1 border border-zinc-200 text-zinc-700 rounded-xl py-3 text-sm font-black hover:bg-zinc-50 transition-colors">Cancel</button>
-                                <button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand/90 text-white shadow-lg shadow-brand/20 rounded-xl py-3 text-sm font-black disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
+                                <button type="submit" disabled={saving} className="flex-1 bg-brand hover:bg-brand/90 text-[var(--secondary-color)] shadow-lg shadow-brand/20 rounded-xl py-3 text-sm font-black disabled:opacity-50 flex items-center justify-center gap-2 transition-all">
                                     {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save Year'}
                                 </button>
                             </div>

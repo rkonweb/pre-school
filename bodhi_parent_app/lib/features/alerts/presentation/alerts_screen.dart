@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/theme/school_brand_provider.dart';
 import '../../../core/theme/app_theme.dart';
@@ -41,27 +42,33 @@ final circularsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async
   }
 });
 
+// ─── Filter State Provider ──────────────────────────────────────────────────
+final selectedAlertFilterProvider = StateProvider<String>((ref) => 'All');
+
 // ─── Emergency Alerts Screen ─────────────────────────────────────────────────
 class AlertsScreen extends ConsumerWidget {
   const AlertsScreen({super.key});
 
   static const _typeData = {
-    'CLOSURE': {'emoji': '🏫', 'label': 'School Closure'},
-    'WEATHER': {'emoji': '⛈️', 'label': 'Weather Warning'},
-    'BUS_BREAKDOWN': {'emoji': '🚌', 'label': 'Bus Breakdown'},
-    'SAFETY': {'emoji': '🔒', 'label': 'Safety Alert'},
-    'GENERAL': {'emoji': '🚨', 'label': 'Emergency'},
+    'CLOSURE': {'emoji': '🏫', 'label': 'School Closure', 'severity': 'HIGH'},
+    'WEATHER': {'emoji': '⛈️', 'label': 'Weather Warning', 'severity': 'MEDIUM'},
+    'BUS_BREAKDOWN': {'emoji': '🚌', 'label': 'Bus Breakdown', 'severity': 'MEDIUM'},
+    'SAFETY': {'emoji': '🔒', 'label': 'Safety Alert', 'severity': 'HIGH'},
+    'GENERAL': {'emoji': '🚨', 'label': 'Emergency', 'severity': 'EMERGENCY'},
   };
+
+  static const _filterOptions = ['All', 'Emergency', 'General', 'Health', 'Transport'];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final brand = ref.watch(schoolBrandProvider);
     final alertsAsync = ref.watch(alertsProvider);
+    final selectedFilter = ref.watch(selectedAlertFilterProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppHeader(
-        title: 'Emergency Alerts',
+        title: 'Alerts & Notices',
         subtitle: 'Critical school-wide updates',
         actions: [
           ElevatedButton(
@@ -77,10 +84,40 @@ class AlertsScreen extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // Filter Chips
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _filterOptions.map((filter) {
+                    final isSelected = selectedFilter == filter;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(filter),
+                        selected: isSelected,
+                        onSelected: (_) {
+                          ref.read(selectedAlertFilterProvider.notifier).state = filter;
+                        },
+                        backgroundColor: Colors.white,
+                        selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+                        labelStyle: TextStyle(
+                          color: isSelected ? AppTheme.primaryColor : Colors.grey,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                        side: BorderSide(
+                          color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 20),
+
               // Active Alerts
               if (data.hasActiveAlerts) ...[
                 const SizedBox(height: 8),
-                ...data.activeAlerts.map((a) => _buildActiveAlert(a)),
+                ...data.activeAlerts.map((a) => _buildActiveAlert(context, a)),
                 const SizedBox(height: 24),
               ],
 
@@ -133,52 +170,124 @@ class AlertsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActiveAlert(Map<String, dynamic> a) {
-    final typeInfo = _typeData[a['type']] ?? {'emoji': '🚨', 'label': 'Emergency'};
+  Widget _buildActiveAlert(BuildContext context, Map<String, dynamic> a) {
+    final typeInfo = _typeData[a['type']] ?? {'emoji': '🚨', 'label': 'Emergency', 'severity': 'EMERGENCY'};
+    final severity = typeInfo['severity'] ?? 'EMERGENCY';
+
+    Color getBorderColor(String sev) {
+      switch (sev) {
+        case 'EMERGENCY':
+          return const Color(0xFFD32F2F);
+        case 'HIGH':
+          return const Color(0xFFFF9800);
+        case 'MEDIUM':
+          return const Color(0xFF2196F3);
+        default:
+          return Colors.grey;
+      }
+    }
+
+    final borderColor = getBorderColor(severity);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFFD32F2F), Color(0xFFB71C1C)]),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: const Color(0xFFD32F2F).withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 4))],
+        border: Border(
+          left: BorderSide(color: borderColor, width: 6),
+        ),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
-                child: Text(typeInfo['emoji']!, style: const TextStyle(fontSize: 24)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(typeInfo['label']!, style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
-                    Text(a['title'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  ],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (severity == 'EMERGENCY')
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration: const Duration(seconds: 1),
+                    builder: (context, value, child) {
+                      return Transform.scale(
+                        scale: 0.8 + (value * 0.2),
+                        child: Icon(
+                          Icons.warning_rounded,
+                          color: borderColor,
+                          size: 24,
+                        ),
+                      );
+                    },
+                  )
+                else
+                  Icon(Icons.info_rounded, color: borderColor, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        typeInfo['label']!,
+                        style: TextStyle(
+                          color: borderColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        a['title'] ?? '',
+                        style: const TextStyle(
+                          color: Color(0xFF1A1D2E),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              a['message'] ?? '',
+              style: const TextStyle(
+                color: Color(0xFF4A5068),
+                fontSize: 14,
               ),
-              Container(
-                width: 12, height: 12,
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
-                child: const Center(child: Text('', style: TextStyle(fontSize: 0))),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(a['message'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 14)),
-          const SizedBox(height: 8),
-          Text(
-            'Sent: ${_formatTime(a['sentAt'])}',
-            style: const TextStyle(color: Colors.white60, fontSize: 11),
-          ),
-        ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Sent: ${_formatTime(a['sentAt'])}',
+                  style: const TextStyle(color: Colors.grey, fontSize: 11),
+                ),
+                if (severity == 'EMERGENCY')
+                  ElevatedButton(
+                    onPressed: () {
+                      context.push('/emergency-alarm', extra: {
+                        'title': a['title'] ?? 'Emergency Alert',
+                        'message': a['message'] ?? 'Please check immediately',
+                        'alertType': a['type'] ?? 'GENERAL',
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: borderColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text(
+                      'View Details',
+                      style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

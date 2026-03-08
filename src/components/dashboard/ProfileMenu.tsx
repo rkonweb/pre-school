@@ -93,7 +93,7 @@ export function ProfileMenu({
     const getStatusColor = (status: string, daysRemaining: number | null) => {
         if (status === "EXPIRED") return "text-red-600 bg-red-50 border-red-200";
         if (status === "EXPIRING_SOON" || (daysRemaining !== null && daysRemaining < 7)) {
-            return "text-amber-600 bg-amber-50 border-amber-200";
+            return "text-brand bg-brand/10 border-brand/20";
         }
         if (status === "TRIAL") return "text-brand bg-brand/5 border-brand/20";
         return "text-emerald-600 bg-emerald-50 border-emerald-200";
@@ -103,8 +103,7 @@ export function ProfileMenu({
     const getDaysColor = (days: number | null) => {
         if (days === null) return "text-zinc-500";
         if (days < 0) return "text-red-600";
-        if (days <= 7) return "text-amber-600 animate-pulse";
-        if (days <= 30) return "text-amber-600";
+        if (days >= 0 && days <= 30) return "text-brand";
         return "text-emerald-600";
     };
 
@@ -117,7 +116,7 @@ export function ProfileMenu({
     // Get usage color
     const getUsageColor = (percentage: number) => {
         if (percentage >= 90) return "bg-red-500";
-        if (percentage >= 75) return "bg-amber-500";
+        if (percentage >= 75) return "bg-brand";
         return "bg-emerald-500";
     };
 
@@ -132,6 +131,7 @@ export function ProfileMenu({
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 rounded-full hover:bg-white/10 transition-colors p-1"
+                aria-label="User Profile Menu"
             >
                 <AvatarWithAdjustment
                     src={user?.avatar}

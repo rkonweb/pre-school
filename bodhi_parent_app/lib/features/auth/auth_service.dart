@@ -1,12 +1,14 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:universal_io/io.dart' show Platform;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
-
-// Adjust based on actual parent API endpoints
-const String baseUrl = 'http://localhost:3000/api/mobile/v1/auth';
+import 'dart:convert';
+import 'dart:typed_data';
+import '../../../core/config/app_config.dart';
+import '../../../core/config/school_config_service.dart';
+import '../../../core/api/api_client.dart';
 
 final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
   return const FlutterSecureStorage();
@@ -14,13 +16,45 @@ final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
 
 class AuthService {
   final FlutterSecureStorage _storage;
+  final Ref? _ref;
   final Dio _dio = Dio();
 
-  AuthService(this._storage);
+  AuthService(this._storage, [this._ref]);
+
+  String get baseUrl => '${AppConfig.apiBaseUrl}auth';
+
+  // Decode JWT payload (base64url middle segment)
+  Map<String, dynamic>? _decodeJwtPayload(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      String payload = parts[1];
+      // Pad base64
+      switch (payload.length % 4) {
+        case 2: payload += '=='; break;
+        case 3: payload += '='; break;
+      }
+      final decoded = base64Url.decode(payload);
+      return jsonDecode(utf8.decode(decoded)) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool isTokenExpired(String token) {
+    final payload = _decodeJwtPayload(token);
+    if (payload == null) return true;
+    final exp = payload['exp'];
+    if (exp == null) return false;
+    final expSeconds = exp is int ? exp : int.tryParse(exp.toString()) ?? 0;
+    final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return nowSeconds >= expSeconds;
+  }
 
   Future<bool> hasValidToken() async {
     final token = await getToken();
-    return token != null && token.isNotEmpty;
+    if (token == null || token.isEmpty) return false;
+    return !isTokenExpired(token);
   }
 
   Future<String?> getToken() async {
@@ -51,6 +85,12 @@ class AuthService {
   }
 
   Future<void> logout() async {
+    // Clear school config cache so next login fetches fresh keys
+    await SchoolConfigService.clear();
+    if (_ref != null) {
+      _ref!.read(schoolConfigProvider.notifier).state = SchoolConfig.defaults;
+    }
+
     if (kIsWeb || Platform.isMacOS) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('parent_jwt_token');
@@ -90,6 +130,23 @@ class AuthService {
       if (response.data['success'] == true) {
         final token = response.data['token'];
         await saveToken(token);
+
+        // ── Fetch school config from ERP settings ──────────────────────────
+        // The school admin configures Razorpay key, Maps key, feature flags,
+        // etc. in the ERP Login Settings page. We fetch that config now and
+        // cache it so the rest of the app reads live keys instead of stubs.
+        try {
+          if (_ref != null) {
+            final apiClient = _ref!.read(apiClientProvider);
+            final config = await SchoolConfigService.fetchAndCache(apiClient);
+            // Notify reactive providers so UI can update (e.g., feature flags)
+            _ref!.read(schoolConfigProvider.notifier).state = config;
+          }
+        } catch (e) {
+          // Non-fatal — the app works with cached or default config
+          debugPrint('AuthService: school config fetch failed: $e');
+        }
+
         return response.data;
       }
       throw Exception('Failed to verify OTP');
@@ -121,5 +178,5 @@ class AuthService {
 }
 
 final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService(ref.read(secureStorageProvider));
+  return AuthService(ref.read(secureStorageProvider), ref);
 });

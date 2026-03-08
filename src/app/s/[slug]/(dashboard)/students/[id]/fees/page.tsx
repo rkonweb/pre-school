@@ -127,14 +127,14 @@ export default function FeesTab() {
 
                             <div className="bg-white rounded-[32px] border border-zinc-100 shadow-xl overflow-hidden">
                                 <table className="w-full text-left">
-                                    <thead className="bg-zinc-50/50 border-b border-zinc-100">
+                                    <thead className="border-b border-zinc-100">
                                         <tr>
-                                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Invoice Details</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Amount</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Paid</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Balance</th>
-                                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-right">Actions</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">Invoice Details</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">Status</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">Amount</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">Paid</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">Balance</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-zinc-50">

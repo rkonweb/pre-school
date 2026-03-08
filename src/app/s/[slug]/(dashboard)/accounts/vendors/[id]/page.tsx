@@ -320,7 +320,7 @@ export default function VendorDetailPage({ params }: { params: Promise<{ slug: s
                         <button
                             type="submit"
                             disabled={saving}
-                            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-brand font-black text-white px-8 py-4 transition-all hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/20 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-brand font-black text-[var(--secondary-color)] px-8 py-4 transition-all hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/20 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {saving ? <><Loader2 className="h-5 w-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Changes</>}
                         </button>

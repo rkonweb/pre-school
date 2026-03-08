@@ -53,7 +53,7 @@ export default async function HomeworkDetailPage(props: {
                                 {hw.isPublished ? (
                                     <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded-md text-[10px] font-black uppercase tracking-wider">Published</span>
                                 ) : (
-                                    <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-md text-[10px] font-black uppercase tracking-wider">Draft</span>
+                                    <span className="px-2 py-0.5 bg-brand/20 text-brand rounded-md text-[10px] font-black uppercase tracking-wider">Draft</span>
                                 )}
                                 <span className="px-2 py-0.5 bg-white/10 text-zinc-300 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
                                     {hw.assignedTo === 'CLASS' ? <><Users className="h-2.5 w-2.5" /> Class</> : <><User className="h-2.5 w-2.5" /> Individual</>}

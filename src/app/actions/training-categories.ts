@@ -25,7 +25,7 @@ export async function getTrainingCategoriesAction() {
                 name: true
             }
         });
-        return { success: true, data: categories };
+        return { success: true, data: JSON.parse(JSON.stringify(categories)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -41,7 +41,7 @@ export async function createTrainingCategoryAction(name: string) {
             }
         });
         revalidatePath('/admin/training');
-        return { success: true, data: category };
+        return { success: true, data: JSON.parse(JSON.stringify(category)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -66,7 +66,7 @@ export async function renameTrainingCategoryAction(categoryId: string, name: str
             data: { name }
         });
         revalidatePath('/admin/training');
-        return { success: true, data: category };
+        return { success: true, data: JSON.parse(JSON.stringify(category)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

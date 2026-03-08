@@ -45,10 +45,16 @@ android {
         applicationId "com.bodhi.bodhi_parent_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion flutter.minSdkVersion
+        minSdkVersion 21  // Required by google_maps_flutter and razorpay_flutter
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+
+        // Inject MAPS_API_KEY into AndroidManifest.xml.
+        // Set this in local.properties or pass via --dart-define / CI secret:
+        //   MAPS_API_KEY=AIzaSy... flutter run --dart-define=MAPS_API_KEY=...
+        def mapsApiKey = System.getenv("MAPS_API_KEY") ?: localProperties.getProperty("MAPS_API_KEY") ?: ""
+        manifestPlaceholders += [MAPS_API_KEY: mapsApiKey]
     }
 
     buildTypes {

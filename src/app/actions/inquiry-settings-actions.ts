@@ -39,11 +39,11 @@ export async function getInquirySettingsAction(slug: string) {
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 branches: school.branches,
                 programs: programs,
                 staff: school.users,
-            },
+            })),
         };
     } catch (error: any) {
         console.error("getInquirySettingsAction Error:", error);

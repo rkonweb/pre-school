@@ -76,7 +76,7 @@ export async function createParentRequestAction(
             }
         });
 
-        return { success: true, data: request };
+        return { success: true, data: JSON.parse(JSON.stringify(request)) };
     } catch (error: any) {
         console.error("createParentRequestAction Error:", error);
         return { success: false, error: "Failed to submit request" };

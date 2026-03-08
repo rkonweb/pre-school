@@ -19,7 +19,9 @@ const C = {
     navy: "#1E1B4B", navyM: "#312E81",
     green: "#10B981", greenD: "#059669", greenL: "#D1FAE5", greenXL: "#ECFDF5",
     red: "#EF4444", redL: "#FEE2E2",
-    blue: "#3B82F6", blueL: "#DBEAFE", blueXL: "#EFF6FF",
+    blue: "var(--brand-color, #3B82F6)", 
+    blueL: "rgba(var(--brand-color-rgb, 59, 130, 246), 0.12)", 
+    blueXL: "rgba(var(--brand-color-rgb, 59, 130, 246), 0.05)",
     g50: "#F9FAFB", g100: "#F3F4F6", g200: "#E5E7EB",
     g300: "#D1D5DB", g400: "#9CA3AF", g500: "#6B7280",
     g600: "#4B5563", g700: "#374151", g800: "#1F2937",
@@ -34,7 +36,7 @@ function Btn({ variant = "primary", size = "md", icon: Icon, loading, disabled, 
     const [ripples, setRipples] = useState<any[]>([]);
     const ref = useRef<HTMLButtonElement>(null);
     const vs: any = {
-        primary: { bg: `linear-gradient(135deg,${C.amber},${C.orange})`, color: "white", sh: `0 4px 16px ${C.amber}45` },
+        primary: { bg: "var(--school-gradient, linear-gradient(135deg,#3B82F6,#6366F1))", color: "var(--secondary-color, white)", sh: "0 4px 16px rgba(var(--brand-color-rgb, 59, 130, 246), 0.25)" },
         navy: { bg: `linear-gradient(135deg,${C.navy},${C.navyM})`, color: "white", sh: `0 4px 14px ${C.navy}40` },
         success: { bg: `linear-gradient(135deg,${C.green},${C.greenD})`, color: "white", sh: `0 4px 14px ${C.green}40` },
         secondary: { bg: "white", color: C.navy, border: `1.5px solid ${C.g200}`, sh: C.sh },

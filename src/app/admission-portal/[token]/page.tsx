@@ -286,7 +286,7 @@ export default function ParentAdmissionPortal() {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="w-full max-w-sm h-16 bg-brand text-white rounded-2xl font-black text-lg flex items-center justify-center gap-4 shadow-xl shadow-brand/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                            className="w-full max-w-sm h-16 bg-brand text-[var(--secondary-color)] rounded-2xl font-black text-lg flex items-center justify-center gap-4 shadow-xl shadow-brand/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
                         >
                             {isSaving ? <Loader2 className="h-6 w-6 animate-spin" /> : <ArrowRight className="h-6 w-6" />}
                             Complete Enrollment

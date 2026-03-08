@@ -94,13 +94,13 @@ export default function LibraryTransactionsPage() {
                 <div className="rounded-3xl bg-white shadow-sm ring-1 ring-zinc-100 overflow-hidden">
                     <div className="relative overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-zinc-50/50 text-zinc-500">
+                            <thead>
                                 <tr>
-                                    <th className="px-6 py-4 font-bold">Book Details</th>
+                                    <th className="px-6 py-4 font-bold rounded-tl-xl">Book Details</th>
                                     <th className="px-6 py-4 font-bold">Borrower</th>
                                     <th className="px-6 py-4 font-bold">Dates</th>
                                     <th className="px-6 py-4 font-bold">Status</th>
-                                    <th className="px-6 py-4 font-bold text-right">Action</th>
+                                    <th className="px-6 py-4 font-bold text-right rounded-tr-xl">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-100">

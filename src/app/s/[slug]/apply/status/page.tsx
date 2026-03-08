@@ -73,7 +73,7 @@ export default function ApplicationStatusPage({ params }: { params: { slug: stri
                     <CardContent>
                         <button
                             onClick={() => router.push(`/s/${params.slug}/apply/form`)}
-                            className="bg-brand text-white px-4 py-2 rounded-md font-medium hover:bg-brand-600 transition-colors inline-flex items-center"
+                            className="bg-brand text-[var(--secondary-color)] px-4 py-2 rounded-md font-medium hover:bg-brand-600 transition-colors inline-flex items-center"
                         >
                             Start New Application
                             <ArrowRight className="ml-2 w-4 h-4" />

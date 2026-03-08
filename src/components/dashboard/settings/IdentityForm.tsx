@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import {
     Building2, Globe, Calendar, Upload, X, Save, Loader2,
     Phone, Shield, CheckCircle2, Check, AlertCircle, Image,
-    Palette, Type, Sparkles,
+    Palette, Type, Sparkles, Layers,
 } from "lucide-react";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/image-utils";
@@ -12,10 +12,14 @@ import { updateSchoolProfileAction } from "@/app/actions/settings-actions";
 import { sendOtpAction, verifyOtpAction } from "@/app/actions/auth-actions";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
 import { toast } from "sonner";
+import { RefreshCcw } from "lucide-react";
 
 // ─── DESIGN TOKENS ─────────────────────────────────────────
 const C = {
-    amber: "#F59E0B", amberD: "#D97706", amberL: "#FEF3C7", amberXL: "#FFFBEB",
+    amber: "var(--brand-color, #F59E0B)", 
+    amberD: "var(--brand-color, #D97706)", 
+    amberL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.12)", 
+    amberXL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)",
     navy: "#1E1B4B", navyM: "#312E81",
     green: "#10B981", greenD: "#059669", greenL: "#D1FAE5", greenXL: "#ECFDF5",
     red: "#EF4444", redL: "#FEE2E2", redXL: "#FEF2F2",
@@ -35,12 +39,12 @@ function Btn({ variant = "primary", size = "md", icon: Icon, loading, disabled, 
     const [ripples, setRipples] = useState<any[]>([]);
     const ref = useRef<HTMLButtonElement>(null);
     const vs: any = {
-        primary: { bg: `linear-gradient(135deg,${C.amber},${C.orange})`, color: "white", sh: `0 4px 16px ${C.amber}45` },
+        primary: { bg: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", color: "var(--secondary-color, white)", sh: "0 4px 16px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)" },
         secondary: { bg: "white", color: C.navy, border: `1.5px solid ${C.g200}`, sh: C.sh },
         danger: { bg: `linear-gradient(135deg,${C.red},#DC2626)`, color: "white", sh: `0 4px 14px ${C.red}40` },
         success: { bg: `linear-gradient(135deg,${C.green},${C.greenD})`, color: "white", sh: `0 4px 14px ${C.green}40` },
         ghost: { bg: "transparent", color: C.g500, sh: "none" },
-        outline: { bg: "transparent", color: C.amber, border: `1.5px solid ${C.amber}`, sh: "none" },
+        outline: { bg: "transparent", color: "var(--brand-color, #F59E0B)", border: "1.5px solid var(--brand-color, #F59E0B)", sh: "none" },
     };
     const ss: any = { sm: { p: "7px 14px", fs: 12, r: 9 }, md: { p: "10px 20px", fs: 13.5, r: 12 }, lg: { p: "13px 28px", fs: 15, r: 14 } };
     const v = vs[variant] || vs.primary; const s = ss[size];
@@ -61,7 +65,7 @@ function Btn({ variant = "primary", size = "md", icon: Icon, loading, disabled, 
             onMouseLeave={e => { e.currentTarget.style.filter = "none"; e.currentTarget.style.transform = "none"; }}
             style={{ background: dis ? C.g100 : v.bg, color: dis ? C.g400 : v.color, border: v.border || "none", borderRadius: s.r, padding: s.p, fontSize: s.fs, fontWeight: 700, cursor: dis ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: dis ? "none" : v.sh, fontFamily: "'Plus Jakarta Sans',sans-serif", width: fullWidth ? "100%" : "auto", transition: `all 0.4s ${C.spring}, filter 0.15s`, opacity: dis ? 0.55 : 1, position: "relative", overflow: "hidden" }}>
             {ripples.map(rp => <span key={rp.id} style={{ position: "absolute", left: rp.x, top: rp.y, width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.5)", animation: "ripple 0.6s ease forwards", marginLeft: -4, marginTop: -4, pointerEvents: "none" }} />)}
-            {loading ? <div style={{ width: 14, height: 14, border: `2px solid ${v.color}40`, borderTop: `2px solid ${v.color}`, borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : (Icon ? <Icon size={s.fs - 1} strokeWidth={2.2} /> : null)}
+            {loading ? <div style={{ width: 14, height: 14, border: `2px solid ${v.color}40`, borderTopWidth: 2, borderTopStyle: "solid" as const, borderTopColor: v.color, borderRadius: "50%", animation: "spin 0.7s linear infinite" }} /> : (Icon ? <Icon size={s.fs - 1} strokeWidth={2.2} /> : null)}
             {children}
         </button>
     );
@@ -97,7 +101,7 @@ function FInput({ label, type = "text", value, onChange, placeholder, required, 
 function OTPInput({ value, onChange }: any) {
     return (
         <input type="text" value={value} onChange={onChange} placeholder="· · · ·" maxLength={4}
-            style={{ flex: 1, border: `2px solid ${C.amber}`, borderRadius: 12, padding: "12px 16px", fontFamily: "'Sora',sans-serif", fontSize: 24, fontWeight: 800, textAlign: "center", letterSpacing: 12, color: C.navy, outline: "none", background: C.amberXL, transition: C.tr }} />
+            style={{ flex: 1, border: `2px solid var(--brand-color, #F59E0B)`, borderRadius: 12, padding: "12px 16px", fontFamily: "'Sora',sans-serif", fontSize: 24, fontWeight: 800, textAlign: "center", letterSpacing: 12, color: C.navy, outline: "none", background: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)", transition: C.tr }} />
     );
 }
 
@@ -105,7 +109,7 @@ function OTPInput({ value, onChange }: any) {
 function SectionHdr({ icon: Icon, title, sub, color = C.amber }: any) {
     return (
         <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 22 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 13, background: `linear-gradient(135deg,${color},${color}cc)`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 4px 14px ${color}40`, flexShrink: 0 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 13, background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)", flexShrink: 0 }}>
                 <Icon size={20} color="white" strokeWidth={2} />
             </div>
             <div>
@@ -204,6 +208,32 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
     const [croppingTarget, setCroppingTarget] = useState<"logo" | "printableLogo">("logo");
 
+    // ─── GRADIENT STATE ────────────────
+    const defaultGradient = { from: formData.brandColor || "#F59E0B", to: "#EF4444", angle: 135, style: "linear" as "linear" | "radial" };
+    const [gc, setGc] = useState<{ from: string; to: string; angle: number; style: "linear" | "radial" }>(
+        formData.gradientConfig && Object.keys(formData.gradientConfig).length > 0
+            ? formData.gradientConfig
+            : defaultGradient
+    );
+    const setGradient = (patch: Partial<typeof gc>) => {
+        const next = { ...gc, ...patch };
+        setGc(next);
+        setFormData({ ...formData, gradientConfig: next });
+    };
+    const PRESETS = [
+        { label: "Amber",    from: "#F59E0B", to: "#EF4444", angle: 135, style: "linear" as const },
+        { label: "Ocean",    from: "#0EA5E9", to: "#6366F1", angle: 120, style: "linear" as const },
+        { label: "Forest",   from: "#10B981", to: "#0D9488", angle: 135, style: "linear" as const },
+        { label: "Rose",     from: "#F43F5E", to: "#EC4899", angle: 120, style: "linear" as const },
+        { label: "Midnight", from: "#1E1B4B", to: "#4338CA", angle: 160, style: "linear" as const },
+        { label: "Aurora",   from: "#8B5CF6", to: "#06B6D4", angle: 100, style: "radial" as const },
+        { label: "Gold",     from: "#D97706", to: "#B45309", angle: 135, style: "linear" as const },
+        { label: "Coral",    from: "#FB923C", to: "#F472B6", angle: 120, style: "linear" as const },
+    ];
+    const liveGradient = gc.style === "radial"
+        ? `radial-gradient(circle, ${gc.from}, ${gc.to})`
+        : `linear-gradient(${gc.angle}deg, ${gc.from}, ${gc.to})`;
+
     // Phone number management
     const [currentPhone, setCurrentPhone] = useState<string>("");
     const [newPhone, setNewPhone] = useState("");
@@ -300,6 +330,15 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
 
     function cancelPhoneChange() { setPhoneStep("idle"); setNewPhone(""); setOldPhoneOtp(""); setNewPhoneOtp(""); }
 
+    useEffect(() => {
+        const btn = document.getElementById("save-identity-btn");
+        if (btn) {
+            const clickHandler = () => handleSave();
+            btn.addEventListener("click", clickHandler);
+            return () => btn.removeEventListener("click", clickHandler);
+        }
+    }, [formData, isSaving]); // Re-bind if formData changes to capture latest state in handleSave closure
+
     return (
         <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", maxWidth: 900 }}>
             <style>{`
@@ -351,7 +390,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
 
             {/* ── THEME COLORS ── */}
             <Card style={{ animation: "fadeUp 0.5s ease 0.14s both" }}>
-                <SectionHdr icon={Palette} title="Brand Colors" sub="Primary and secondary theme colors used across the portal" color={C.purple} />
+                <SectionHdr icon={Palette} title="Brand Colors" sub="Primary and secondary theme colors used across the portal" color="#8B5CF6" />
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                     <ColorPicker
                         label="Primary Color"
@@ -391,77 +430,196 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                 </div>
             </Card>
 
-            {/* ── PHONE NUMBER ── */}
-            <Card style={{ animation: "fadeUp 0.55s ease 0.21s both" }}>
-                <SectionHdr icon={Phone} title="Registered Phone Number" sub="Manage your account phone with OTP verification" color={C.green} />
+            {/* ── GLOBAL GRADIENT ── */}
+            <Card style={{ animation: "fadeUp 0.52s ease 0.18s both" }}>
+                <SectionHdr icon={Layers} title="Global Gradient Style" sub="Custom gradient used on navigation, banners and highlight elements across the portal" color="#8B5CF6" />
 
-                {phoneStep === "idle" && (
-                    <div style={{ background: C.g50, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", border: `1.5px solid ${C.g200}` }}>
-                        <div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: C.g400, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 5 }}>Current Phone</div>
-                            <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 20, fontWeight: 800, color: currentPhone ? C.navy : C.g300 }}>
-                                {currentPhone ? `+91 ${currentPhone}` : "No number registered"}
-                            </div>
-                        </div>
-                        <Btn icon={Phone} variant="success" size="md" loading={isPhoneLoading} onClick={startPhoneChange}>
-                            {currentPhone ? "Change Number" : "Add Number"}
-                        </Btn>
-                    </div>
-                )}
+                {/* Preset Chips */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+                    {PRESETS.map(p => (
+                        <button key={p.label}
+                            onClick={() => {
+                                const next = { from: p.from, to: p.to, angle: p.angle, style: p.style };
+                                setGc(next);
+                                setFormData({ ...formData, gradientConfig: next });
+                            }}
+                            style={{
+                                padding: "7px 14px", borderRadius: 20, fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer",
+                                background: `linear-gradient(${p.angle}deg, ${p.from}, ${p.to})`,
+                                color: "white", boxShadow: `0 3px 10px ${p.from}60`,
+                                transition: C.tr, outline: (gc.from === p.from && gc.to === p.to) ? `3px solid ${C.navy}` : "none",
+                                transform: (gc.from === p.from && gc.to === p.to) ? "scale(1.07)" : "scale(1)"
+                            }}
+                        >{p.label}</button>
+                    ))}
+                </div>
 
-                {phoneStep === "verify-old" && (
-                    <div style={{ background: C.amberXL, borderRadius: 16, padding: "20px 22px", border: `2px solid ${C.amberL}`, animation: "fadeUp 0.3s ease" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
-                            <Shield size={16} color={C.amberD} />
-                            <span style={{ fontWeight: 700, fontSize: 14, color: C.amberD }}>Verify Current Number</span>
-                        </div>
-                        <p style={{ fontSize: 13, color: C.g600, marginBottom: 16 }}>
-                            OTP sent to <strong>+91 {currentPhone}</strong>
-                        </p>
-                        <div style={{ display: "flex", gap: 10 }}>
-                            <OTPInput value={oldPhoneOtp} onChange={(e: any) => setOldPhoneOtp(e.target.value)} />
-                            <Btn variant="primary" size="md" icon={Check} loading={isPhoneLoading} disabled={oldPhoneOtp.length !== 4} onClick={verifyOldPhone}>Verify</Btn>
-                            <Btn variant="secondary" size="md" onClick={cancelPhoneChange}>Cancel</Btn>
-                        </div>
-                    </div>
-                )}
+                {/* Color Pickers Row */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
+                    <ColorPicker
+                        label="From Color"
+                        sub="Starting color of the gradient"
+                        value={gc.from}
+                        onChange={(e: any) => setGradient({ from: e.target.value })}
+                    />
+                    <ColorPicker
+                        label="To Color"
+                        sub="Ending color of the gradient"
+                        value={gc.to}
+                        onChange={(e: any) => setGradient({ to: e.target.value })}
+                    />
+                </div>
 
-                {phoneStep === "enter-new" && (
-                    <div style={{ background: C.amberXL, borderRadius: 16, padding: "20px 22px", border: `2px solid ${C.amberL}`, animation: "fadeUp 0.3s ease" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 14 }}>
-                            <Phone size={16} color={C.amberD} />
-                            <span style={{ fontWeight: 700, fontSize: 14, color: C.amberD }}>Enter New Phone Number</span>
-                        </div>
-                        <div style={{ display: "flex", gap: 10 }}>
-                            <FInput placeholder="Enter 10-digit number" value={newPhone} prefix="+91" type="tel"
-                                onChange={(e: any) => setNewPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} />
-                            <Btn variant="primary" size="md" icon={Phone} loading={isPhoneLoading} disabled={newPhone.length !== 10} onClick={sendNewPhoneOtp}>Send OTP</Btn>
-                            <Btn variant="secondary" size="md" onClick={cancelPhoneChange}>Cancel</Btn>
-                        </div>
-                    </div>
-                )}
-
-                {phoneStep === "verify-new" && (
-                    <div style={{ background: C.greenXL, borderRadius: 16, padding: "20px 22px", border: `2px solid ${C.greenL}`, animation: "fadeUp 0.3s ease" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
-                            <Shield size={16} color={C.greenD} />
-                            <span style={{ fontWeight: 700, fontSize: 14, color: C.greenD }}>Verify New Number</span>
-                        </div>
-                        <p style={{ fontSize: 13, color: C.g600, marginBottom: 16 }}>OTP sent to <strong>+91 {newPhone}</strong></p>
-                        <div style={{ display: "flex", gap: 10 }}>
-                            <OTPInput value={newPhoneOtp} onChange={(e: any) => setNewPhoneOtp(e.target.value)} />
-                            <Btn variant="success" size="md" icon={Check} loading={isPhoneLoading} disabled={newPhoneOtp.length !== 4} onClick={verifyNewPhone}>Verify & Update</Btn>
-                            <Btn variant="secondary" size="md" onClick={cancelPhoneChange}>Cancel</Btn>
+                {/* Angle + Style Row */}
+                <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 18, flexWrap: "wrap" }}>
+                    {/* Angle Slider */}
+                    <div style={{ flex: 1, minWidth: 180 }}>
+                        <Lbl>Gradient Angle</Lbl>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            <input type="range" min={0} max={360} value={gc.angle}
+                                onChange={e => setGradient({ angle: Number(e.target.value) })}
+                                disabled={gc.style === "radial"}
+                                style={{ flex: 1, accentColor: gc.from, cursor: gc.style === "radial" ? "not-allowed" : "pointer", opacity: gc.style === "radial" ? 0.4 : 1 }}
+                            />
+                            <div style={{
+                                minWidth: 54, textAlign: "center", fontFamily: "monospace", fontSize: 13, fontWeight: 800,
+                                color: C.navy, background: C.g100, padding: "5px 10px", borderRadius: 8
+                            }}>{gc.angle}°</div>
                         </div>
                     </div>
-                )}
+                    {/* Style Toggle */}
+                    <div>
+                        <Lbl>Style</Lbl>
+                        <div style={{ display: "flex", gap: 8 }}>
+                            {(["linear", "radial"] as const).map(s => (
+                                <button key={s} onClick={() => setGradient({ style: s })}
+                                    style={{
+                                        padding: "8px 18px", borderRadius: 10, fontSize: 12.5, fontWeight: 700,
+                                        border: `2px solid ${gc.style === s ? "#8B5CF6" : C.g200}`,
+                                        background: gc.style === s ? "#EDE9FE" : "white",
+                                        color: gc.style === s ? "#7C3AED" : C.g500,
+                                        cursor: "pointer", transition: C.tr, textTransform: "capitalize"
+                                    }}
+                                >{s}</button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Live Preview Banner */}
+                <div style={{ borderRadius: 14, overflow: "hidden", boxShadow: C.sh }}>
+                    <div style={{ background: liveGradient, padding: "18px 22px", display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <Sparkles size={19} color="white" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 15, fontWeight: 800, color: "white" }}>{formData.name || "Your School Name"}</div>
+                            <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.75)" }}>Navigation Bar · Banners · Highlights</div>
+                        </div>
+                        <div style={{ padding: "7px 16px", borderRadius: 9, background: "rgba(255,255,255,0.2)", color: "white", fontSize: 12, fontWeight: 700 }}>
+                            {gc.style === "radial" ? "Radial" : `${gc.angle}°`}
+                        </div>
+                    </div>
+                    <div style={{ background: C.g50, padding: "10px 20px", fontSize: 11.5, color: C.g400, fontWeight: 600, borderTop: `1px solid ${C.g100}` }}>
+                        ↑ Live preview of the global gradient applied across your school portal
+                    </div>
+                </div>
             </Card>
 
-            {/* ── SAVE BUTTON ── */}
-            <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 4 }}>
-                <Btn variant="primary" size="lg" icon={Save} loading={isSaving} onClick={handleSave}>
-                    Update Identity
-                </Btn>
+            {/* ── PHONE NUMBER ── */}
+            <div style={{
+                borderRadius: 22, overflow: "hidden",
+                background: `linear-gradient(145deg,${C.navy},${C.navyM},#4C1D95)`,
+                boxShadow: `0 12px 40px ${C.navy}50`,
+                position: "relative", animation: "fadeUp 0.55s ease 0.21s both",
+            }}>
+                <div style={{ position: "absolute", top: -80, right: -80, width: 300, height: 300, borderRadius: "50%", background: "rgba(16,185,129,0.15)", filter: "blur(60px)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", bottom: -60, left: -60, width: 250, height: 250, borderRadius: "50%", background: "rgba(59,130,246,0.15)", filter: "blur(50px)", pointerEvents: "none" }} />
+
+                <div style={{ padding: "28px 32px", position: "relative", zIndex: 1, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
+                    <div style={{ flex: 1, minWidth: 280 }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "4px 14px", borderRadius: 20, background: "rgba(255,255,255,0.12)", marginBottom: 14 }}>
+                            <Shield size={13} color="rgba(255,255,255,0.8)" />
+                            <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.8)", textTransform: "uppercase", letterSpacing: 0.9 }}>Account Security</span>
+                        </div>
+                        <h2 style={{ fontFamily: "'Sora',sans-serif", fontSize: 21, fontWeight: 800, color: "white", margin: "0 0 10px", lineHeight: 1.3 }}>
+                            Registered Phone Number
+                        </h2>
+                        <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.6)", margin: 0, maxWidth: 420, lineHeight: 1.5 }}>
+                            Manage your account phone with OTP verification. This number is used for important alerts.
+                        </p>
+                    </div>
+
+                    <div style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", borderRadius: 18, padding: "20px", display: "flex", flexDirection: "column", gap: 16, minWidth: 300, maxWidth: 400, flex: 1 }}>
+                        {phoneStep === "idle" && (
+                            <>
+                                <div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 5 }}>Current Phone</div>
+                                    <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 20, fontWeight: 800, color: currentPhone ? "white" : "rgba(255,255,255,0.4)" }}>
+                                        {currentPhone ? `+91 ${currentPhone}` : "No number registered"}
+                                    </div>
+                                </div>
+                                <Btn icon={Phone} variant="success" size="md" loading={isPhoneLoading} onClick={startPhoneChange} fullWidth={true}>
+                                    {currentPhone ? "Change Number" : "Add Number"}
+                                </Btn>
+                            </>
+                        )}
+
+                        {phoneStep === "verify-old" && (
+                            <div style={{ animation: "fadeUp 0.3s ease" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
+                                    <Shield size={16} color="rgba(255,255,255,0.9)" />
+                                    <span style={{ fontWeight: 700, fontSize: 14, color: "white" }}>Verify Current Number</span>
+                                </div>
+                                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 16 }}>
+                                    OTP sent to <strong>+91 {currentPhone}</strong>
+                                </p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    <OTPInput value={oldPhoneOtp} onChange={(e: any) => setOldPhoneOtp(e.target.value)} />
+                                    <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                                        <Btn variant="primary" size="md" icon={Check} loading={isPhoneLoading} disabled={oldPhoneOtp.length !== 4} onClick={verifyOldPhone} fullWidth={true}>Verify</Btn>
+                                        <Btn variant="ghost" size="md" onClick={cancelPhoneChange} style={{ color: "rgba(255,255,255,0.7)" }}>Cancel</Btn>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {phoneStep === "enter-new" && (
+                            <div style={{ animation: "fadeUp 0.3s ease" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 14 }}>
+                                    <Phone size={16} color="rgba(255,255,255,0.9)" />
+                                    <span style={{ fontWeight: 700, fontSize: 14, color: "white" }}>Enter New Phone</span>
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    <input placeholder="Enter 10-digit number" value={newPhone} type="tel"
+                                        onChange={(e: any) => setNewPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} 
+                                        style={{ width: "100%", border: "1px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.1)", padding: "11px 14px", fontSize: 13.5, color: "white", outline: "none", fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 600, borderRadius: 12 }} />
+                                    <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                                        <Btn variant="primary" size="md" icon={Phone} loading={isPhoneLoading} disabled={newPhone.length !== 10} onClick={sendNewPhoneOtp} fullWidth={true}>Send OTP</Btn>
+                                        <Btn variant="ghost" size="md" onClick={cancelPhoneChange} style={{ color: "rgba(255,255,255,0.7)" }}>Cancel</Btn>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {phoneStep === "verify-new" && (
+                            <div style={{ animation: "fadeUp 0.3s ease" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
+                                    <Shield size={16} color="rgba(255,255,255,0.9)" />
+                                    <span style={{ fontWeight: 700, fontSize: 14, color: "white" }}>Verify New Number</span>
+                                </div>
+                                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 16 }}>OTP sent to <strong>+91 {newPhone}</strong></p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    <OTPInput value={newPhoneOtp} onChange={(e: any) => setNewPhoneOtp(e.target.value)} />
+                                    <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                                        <Btn variant="success" size="md" icon={Check} loading={isPhoneLoading} disabled={newPhoneOtp.length !== 4} onClick={verifyNewPhone} fullWidth={true}>Verify</Btn>
+                                        <Btn variant="ghost" size="md" onClick={cancelPhoneChange} style={{ color: "rgba(255,255,255,0.7)" }}>Cancel</Btn>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* ── CROP MODAL ── */}
@@ -482,7 +640,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                             </button>
                         </div>
                         {/* Crop Area */}
-                        <div style={{ position: "relative", height: 380, background: C.g900 as any }}>
+                        <div style={{ position: "relative", height: 380, background: "#111827" }}>
                             <Cropper image={tempImage} crop={crop} zoom={zoom} aspect={aspect}
                                 onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
                         </div>

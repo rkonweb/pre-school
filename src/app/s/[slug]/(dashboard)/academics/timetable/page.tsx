@@ -170,7 +170,7 @@ function StructuresView({ structures, slug, onUpdate }: any) {
     return (
         <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             <div className="bg-orange-50 border border-orange-100 p-6 rounded-[2rem] flex items-start gap-4">
-                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
+                <div className="h-10 w-10 rounded-full bg-brand/10 flex items-center justify-center text-brand shrink-0">
                     <Info className="h-5 w-5" />
                 </div>
                 <div>
@@ -182,7 +182,7 @@ function StructuresView({ structures, slug, onUpdate }: any) {
                 <div className="ml-auto shrink-0">
                     <button
                         onClick={() => setIsCreatingNew(true)}
-                        className="h-10 px-5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-colors shadow-lg shadow-orange-600/20"
+                        className="h-10 px-5 bg-brand hover:opacity-90 text-[var(--secondary-color)] rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-colors shadow-lg shadow-brand/20"
                     >
                         <Plus className="h-4 w-4" />
                         New Structure
@@ -442,6 +442,7 @@ function StructureEditor({ structure, slug, onClose, onSave }: any) {
                                 <div>
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1 block">Slot Name</label>
                                     <input
+                                        title="Slot Name"
                                         value={period.name}
                                         onChange={e => updatePeriod(index, "name", e.target.value)}
                                         className="w-full h-10 px-3 rounded-xl bg-zinc-50 border-none text-sm font-bold focus:ring-2 focus:ring-brand/10 transition-all placeholder:text-zinc-300"
@@ -452,14 +453,16 @@ function StructureEditor({ structure, slug, onClose, onSave }: any) {
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1 block">Type</label>
                                     <div className="flex bg-zinc-100 p-1 rounded-lg h-10">
                                         <button
+                                            title="Set type to Class"
                                             onClick={() => updatePeriod(index, "type", "CLASS")}
                                             className={cn("flex-1 rounded-md text-[10px] font-black uppercase transition-all", period.type === "CLASS" ? "bg-white shadow-sm text-brand" : "text-zinc-400")}
                                         >
                                             Class
                                         </button>
                                         <button
+                                            title="Set type to Break"
                                             onClick={() => updatePeriod(index, "type", "BREAK")}
-                                            className={cn("flex-1 rounded-md text-[10px] font-black uppercase transition-all", period.type === "BREAK" ? "bg-white shadow-sm text-orange-600" : "text-zinc-400")}
+                                            className={cn("flex-1 rounded-md text-[10px] font-black uppercase transition-all", period.type === "BREAK" ? "bg-white shadow-sm text-brand" : "text-zinc-400")}
                                         >
                                             Break
                                         </button>
@@ -468,6 +471,7 @@ function StructureEditor({ structure, slug, onClose, onSave }: any) {
                                 <div>
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1 block">Start Time</label>
                                     <input
+                                        title="Start time"
                                         type="time"
                                         value={period.startTime}
                                         onChange={e => updatePeriod(index, "startTime", e.target.value)}
@@ -477,6 +481,7 @@ function StructureEditor({ structure, slug, onClose, onSave }: any) {
                                 <div>
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase mb-1 block">End Time</label>
                                     <input
+                                        title="End time"
                                         type="time"
                                         value={period.endTime}
                                         onChange={e => updatePeriod(index, "endTime", e.target.value)}
@@ -485,7 +490,7 @@ function StructureEditor({ structure, slug, onClose, onSave }: any) {
                                 </div>
                             </div>
 
-                            <button onClick={() => removePeriod(index)} className="h-10 w-10 flex items-center justify-center text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                            <button title="Remove period" onClick={() => removePeriod(index)} className="h-10 w-10 flex items-center justify-center text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
                                 <Trash2 className="h-4 w-4" />
                             </button>
                         </div>
@@ -599,6 +604,7 @@ function SchedulerView({ classrooms, staff, subjects, structures, slug, onUpdate
                     <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 mb-2 block">1. Select Classroom</label>
                     <div className="relative">
                         <select
+                            title="Select Classroom"
                             value={selectedClassId}
                             onChange={(e) => setSelectedClassId(e.target.value)}
                             className="w-full h-14 pl-6 pr-10 bg-zinc-50 rounded-2xl text-sm font-bold border-0 outline-none focus:ring-2 focus:ring-brand appearance-none cursor-pointer"
@@ -618,6 +624,7 @@ function SchedulerView({ classrooms, staff, subjects, structures, slug, onUpdate
                     </label>
                     <div className="relative">
                         <select
+                            title="Select Timetable Structure"
                             disabled={!selectedClassId}
                             value={selectedStructureId}
                             onChange={(e) => setSelectedStructureId(e.target.value)}

@@ -32,7 +32,7 @@ export async function getAcademicMonthsAction(curriculumId: string) {
             }
         });
 
-        return { success: true, data: months };
+        return { success: true, data: JSON.parse(JSON.stringify(months)) };
     } catch (error: any) {
         console.error("getAcademicMonthsAction Error:", error);
         return { success: false, error: error.message };
@@ -58,7 +58,7 @@ export async function getAcademicMonthAction(curriculumId: string, monthNumber: 
             }
         });
 
-        return { success: true, data: month };
+        return { success: true, data: JSON.parse(JSON.stringify(month)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -137,7 +137,7 @@ export async function saveAcademicDayAction(
         });
 
         revalidatePath('/admin/curriculum');
-        return { success: true, data: day };
+        return { success: true, data: JSON.parse(JSON.stringify(day)) };
     } catch (error: any) {
         console.error("saveAcademicDayAction Error:", error);
         return { success: false, error: error.message };
@@ -282,7 +282,7 @@ export async function updateAcademicMonthAction(
         });
 
         revalidatePath('/admin/curriculum');
-        return { success: true, data: month };
+        return { success: true, data: JSON.parse(JSON.stringify(month)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -300,7 +300,7 @@ export async function getCurriculumsAction() {
         });
 
         // If no curriculums exist, return empty array (user can add them)
-        return { success: true, data: curriculums };
+        return { success: true, data: JSON.parse(JSON.stringify(curriculums)) };
     } catch (error: any) {
         console.error("getCurriculumsAction Error:", error);
         return { success: false, error: error.message };
@@ -385,7 +385,7 @@ export async function getMonthCurriculumAction(curriculumId: string, startDate: 
             start,
             end
         );
-        return { success: true, data: days };
+        return { success: true, data: JSON.parse(JSON.stringify(days)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -411,7 +411,7 @@ export async function createCurriculumAction(name: string, color: string) {
         await initializeAcademicStructureAction(curriculum.id);
 
         revalidatePath('/admin/curriculum');
-        return { success: true, data: curriculum };
+        return { success: true, data: JSON.parse(JSON.stringify(curriculum)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -429,7 +429,7 @@ export async function updateCurriculumAction(id: string, name: string, color: st
         });
 
         revalidatePath('/admin/curriculum');
-        return { success: true, data: curriculum };
+        return { success: true, data: JSON.parse(JSON.stringify(curriculum)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

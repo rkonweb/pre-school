@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getMobileAuth } from "@/lib/auth-mobile";
+import { getFamilyStudentsAction } from "@/app/actions/parent-actions";
 
 // GET all conversations for a student
 export async function GET(req: Request) {
     try {
+        console.log("Messages GET Headers Auth:", req.headers.get("Authorization"));
         const auth = await getMobileAuth(req);
         if (!auth) {
+            console.log("Messages GET Auth Failed. Missing or invalid token.");
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
@@ -23,18 +26,10 @@ export async function GET(req: Request) {
         }
 
         // Security check: ensure this parent is linked to this student
-        const student = await prisma.student.findFirst({
-            where: {
-                id: studentId,
-                OR: [
-                    { fatherPhone: phone },
-                    { motherPhone: phone },
-                    { emergencyContactPhone: phone }
-                ]
-            }
-        });
-
-        if (!student) {
+        const familyResult = await getFamilyStudentsAction(phone);
+        const hasAccess = familyResult.success && familyResult.students.some((s: any) => s.id === studentId);
+        if (!hasAccess) {
+            console.log("Messages GET Auth Failed. studentId:", studentId, "familyResult students:", familyResult.students?.map((s:any)=>s.id));
             return NextResponse.json({ success: false, error: "Unauthorized access to student data" }, { status: 403 });
         }
 

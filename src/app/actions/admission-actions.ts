@@ -68,7 +68,7 @@ export async function getAdmissionsAction(slug: string) {
             }
         }).catch(console.error);
 
-        return { success: true, admissions };
+        return { success: true, admissions: JSON.parse(JSON.stringify(admissions)) };
     } catch (error: any) {
         console.error("Fetch Admissions Error:", error);
         return { success: false, error: error.message || "Failed to fetch admissions" };
@@ -152,7 +152,7 @@ export async function createInquiryAction(slug: string, data: any) {
         });
 
         revalidatePath(`/s/${slug}/admissions`);
-        return { success: true, data: admission };
+        return { success: true, data: JSON.parse(JSON.stringify(admission)) };
     } catch (error: any) {
         console.error("Create Inquiry Error:", error);
         return { success: false, error: error.message || "Failed to create inquiry" };
@@ -188,7 +188,7 @@ export async function updateAdmissionStageAction(slug: string, admissionId: stri
         }
 
         revalidatePath(`/s/${slug}/admissions`);
-        return { success: true, data: updated };
+        return { success: true, data: JSON.parse(JSON.stringify(updated)) };
     } catch (error: any) {
         console.error("Update Stage Error:", error);
         return { success: false, error: error.message || "Failed to update stage" };
@@ -213,7 +213,7 @@ export async function getAdmissionAction(slug: string, id: string) {
         if (!admission) return { success: false, error: "Admission not found" };
         if (admission.schoolId !== (auth.user as any).schoolId) return { success: false, error: "Tenant mismatch" };
 
-        return { success: true, admission };
+        return { success: true, admission: JSON.parse(JSON.stringify(admission)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -364,7 +364,7 @@ export async function updateAdmissionAction(slug: string, id: string, data: any)
 
         revalidatePath(`/s/${slug}/admissions`);
         revalidatePath(`/s/${slug}/admissions/${id}`); // Ensure this specific page is revalidated
-        return { success: true, data: updated };
+        return { success: true, data: JSON.parse(JSON.stringify(updated)) };
     } catch (error: any) {
         console.error("Update Admission Error:", error);
         return { success: false, error: error.message || "Failed to update admission" };
@@ -478,7 +478,7 @@ export async function getAdmissionByTokenAction(token: string) {
 
         if (!admission) return { success: false, error: "Link expired or invalid" };
 
-        return { success: true, admission };
+        return { success: true, admission: JSON.parse(JSON.stringify(admission)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -495,7 +495,7 @@ export async function updateComprehensiveAdmissionAction(token: string, data: an
             }
         });
 
-        return { success: true, data: admission };
+        return { success: true, data: JSON.parse(JSON.stringify(admission)) };
     } catch (error: any) {
         console.error("Update Comprehensive Error:", error);
         return { success: false, error: error.message || "Failed to update" };
@@ -803,7 +803,7 @@ export async function checkParentByPhoneAction(slug: string, phone: string) {
             return {
                 success: true,
                 found: true,
-                parent: richData
+                parent: JSON.parse(JSON.stringify(richData))
             };
         }
 
@@ -903,7 +903,7 @@ export async function getSiblingsAction(slug: string, phone: string, currentAdmi
             }))
         ];
 
-        return { success: true, siblings: synonyms };
+        return { success: true, siblings: JSON.parse(JSON.stringify(synonyms)) };
 
     } catch (error: any) {
         console.error("Get Siblings Error:", error);
@@ -976,7 +976,7 @@ export async function getAIDashboardDataAction(slug: string) {
                 lastAction: a.lastMeaningfulActionAt || a.createdAt
             }));
 
-        return {
+        return JSON.parse(JSON.stringify({
             success: true,
             data: {
                 kpis: {
@@ -991,7 +991,7 @@ export async function getAIDashboardDataAction(slug: string) {
                     pipelineHealth: "Robust"
                 }
             }
-        };
+        }));
     } catch (error: any) {
         console.error("AI Dashboard Data Error:", error);
         return { success: false, error: error.message };
@@ -1063,13 +1063,13 @@ export async function getLeadIntelligenceAction(slug: string, id: string) {
 
         return {
             success: true,
-            intelligence: {
+            intelligence: JSON.parse(JSON.stringify({
                 propensity,
                 sentiment,
                 sentimentScore,
                 nba,
                 risks
-            }
+            }))
         };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -1170,12 +1170,12 @@ export async function getAISettingsAction(slug: string) {
 
         return {
             success: true,
-            settings: {
+            settings: JSON.parse(JSON.stringify({
                 ...settings,
                 weights: JSON.parse(settings.weights || "{}"),
                 automationRules: JSON.parse(settings.automationRules || "{}"),
                 quietHours: JSON.parse(settings.quietHours || "{\"start\":\"20:00\",\"end\":\"09:00\"}")
-            }
+            }))
         };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -1244,7 +1244,7 @@ export async function getAIDistributionPreviewAction(slug: string, weights: any)
             { label: "Cold (<40)", count: simulatedScores.filter(s => s < 40).length, color: "bg-zinc-400" },
         ];
 
-        return { success: true, distribution };
+        return { success: true, distribution: JSON.parse(JSON.stringify(distribution)) };
     } catch (error: any) {
         console.error("Distribution Simulation Error:", error);
         return { success: false, error: error.message };
@@ -1272,7 +1272,7 @@ export async function addAdmissionInteractionAction(slug: string, admissionId: s
         });
 
         revalidatePath(`/s/${slug}/admissions/${admissionId}`);
-        return { success: true, interaction };
+        return { success: true, interaction: JSON.parse(JSON.stringify(interaction)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -1306,7 +1306,7 @@ export async function getAdmissionSourceStatsAction(slug: string) {
                         label === "ADVERTISEMENT" ? "#3b82f6" : "#94a3b8"
         }));
 
-        return { success: true, data: chartData };
+        return { success: true, data: JSON.parse(JSON.stringify(chartData)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

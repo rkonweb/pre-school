@@ -45,5 +45,31 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- Location — required by google_maps_flutter for live bus tracking -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app uses your location to show the school bus position on the map.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Background location is used to alert you when the bus is approaching your stop.</string>
+
+	<!-- Face ID — required by local_auth for biometric re-authentication -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Use Face ID to securely sign in to the Parent Portal.</string>
+
+	<!-- Camera — required for document upload and profile photo -->
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is needed to upload documents and update your profile photo.</string>
+
+	<!-- Photo Library — required for picking profile photos and documents -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is needed to select documents and profile images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save downloaded documents and receipts to your photo library.</string>
+
+	<!-- Google Maps API Key
+	     Replace YOUR_GOOGLE_MAPS_API_KEY below with the key from Google Cloud Console.
+	     Add it as a CI/CD secret and inject via a pre-build script if needed. -->
+	<key>GMSApiKey</key>
+	<string>$(MAPS_API_KEY)</string>
 </dict>
 </plist>

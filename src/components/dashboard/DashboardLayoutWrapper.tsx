@@ -24,7 +24,7 @@ export function DashboardLayoutWrapper({ children }: { children: React.ReactNode
             "flex-1 flex flex-col transition-all duration-300",
             isAppFullscreen
                 ? "ml-0 fixed inset-0 z-[10000] bg-zinc-50 dark:bg-zinc-900"
-                : (isCollapsed ? "lg:ml-[100px] min-h-0 min-w-0" : "lg:ml-[272px] min-h-0 min-w-0")
+                : (isCollapsed ? "lg:ml-[80px] min-h-0 min-w-0" : "lg:ml-[256px] min-h-0 min-w-0")
         )}>
             {isAppFullscreen && (
                 <div className="fixed top-4 right-4 z-[10001] flex items-center gap-2">

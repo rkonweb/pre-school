@@ -671,7 +671,7 @@ export function AddStaffForm({
                                                             isSelected ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "hover:bg-zinc-50 text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                                                         )}
                                                     >
-                                                        <div className={cn("h-4 w-4 rounded border flex items-center justify-center transition-colors", isSelected ? "bg-brand border-brand text-white" : "border-zinc-300 dark:border-zinc-600")}>
+                                                        <div className={cn("h-4 w-4 rounded border flex items-center justify-center transition-colors", isSelected ? "bg-brand border-brand text-[var(--secondary-color)]" : "border-zinc-300 dark:border-zinc-600")}>
                                                             {isSelected && <Check className="h-3 w-3" />}
                                                         </div>
                                                         {sub.name}
@@ -1035,7 +1035,7 @@ export function AddStaffForm({
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="rounded-xl bg-brand px-10 py-2.5 text-sm font-bold text-white shadow-xl shadow-brand/20 transition-all hover:brightness-110 active:scale-95 disabled:opacity-50"
+                        className="rounded-xl bg-brand px-10 py-2.5 text-sm font-bold text-[var(--secondary-color)] shadow-xl shadow-brand/20 transition-all hover:brightness-110 active:scale-95 disabled:opacity-50"
                     >
                         {isLoading ? "Saving..." : (staffId ? "Update Staff" : "Add Staff")}
                     </button>
@@ -1082,7 +1082,7 @@ export function AddStaffForm({
                                 <button
                                     type="button"
                                     onClick={finalizeAdjustment}
-                                    className="px-10 py-4 bg-brand text-white rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-brand/20 active:scale-95"
+                                    className="px-10 py-4 bg-brand text-[var(--secondary-color)] rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-brand/20 active:scale-95"
                                 >
                                     Apply Adjustment
                                 </button>

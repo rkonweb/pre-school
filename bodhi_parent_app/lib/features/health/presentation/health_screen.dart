@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/school_brand_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../ui/components/app_header.dart';
@@ -11,151 +13,211 @@ class HealthScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardAsync = ref.watch(dashboardDataProvider);
     final brand = ref.watch(schoolBrandProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: const AppHeader(
-        title: 'Health & Medical',
-        subtitle: 'Medical records & emergency contacts',
+        title: 'Health Records',
+        subtitle: 'Medical information & check-ups',
       ),
-      body: dashboardAsync.when(
-        data: (data) {
-          final students = data['students'] as List?;
-          if (students == null || students.isEmpty) return const Center(child: Text('No students found.'));
-          final studentId = students[0]['id'] as String;
+      body: Consumer(
+        builder: (context, ref, child) {
+          final activeStudent = ref.watch(activeStudentProvider);
+
+          if (activeStudent == null) {
+            return const Center(child: Text('No students found.'));
+          }
+
+          final studentId = activeStudent['id']?.toString();
+          if (studentId == null) {
+            return const Center(child: Text('Student ID not found.'));
+          }
+
           final healthAsync = ref.watch(healthDataProvider(studentId));
 
           return healthAsync.when(
             data: (health) => RefreshIndicator(
               onRefresh: () => ref.refresh(healthDataProvider(studentId).future),
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildMedicalInfo(health, brand),
-                  const SizedBox(height: 16),
-                  _buildEmergencyContact(health, brand),
-                  const SizedBox(height: 16),
-                  _buildHealthRecords(health, brand),
-                  const SizedBox(height: 32),
-                ],
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    _buildMedicalInfo(health).animate().fadeIn(delay: 50.ms).slideY(begin: 0.1),
+                    const SizedBox(height: 16),
+                    _buildEmergencyContact(health).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
+                    const SizedBox(height: 16),
+                    _buildHealthRecords(health).animate().fadeIn(delay: 150.ms).slideY(begin: 0.1),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => Center(child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                const SizedBox(height: 16),
-                Text(err.toString()),
-                ElevatedButton(
-                  onPressed: () => ref.refresh(healthDataProvider(studentId)),
-                  child: const Text('Retry'),
-                )
-              ],
-            )),
+            error: (err, _) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(err.toString()),
+                  ElevatedButton(
+                    onPressed: () => ref.refresh(healthDataProvider(studentId)),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
       ),
     );
   }
 
-  Widget _buildMedicalInfo(HealthData health, SchoolBrandState brand) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.medical_information, color: brand.primaryColor),
-                const SizedBox(width: 8),
-                const Text('Medical Information', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              ],
-            ),
-            const Divider(height: 24),
-            _infoRow('Blood Group', health.bloodGroup ?? 'Not recorded', Icons.water_drop, Colors.red),
-            const SizedBox(height: 12),
-            _infoRow('Allergies', health.allergies?.isNotEmpty == true ? health.allergies! : 'None recorded',
-                Icons.warning_amber, Colors.orange),
-            const SizedBox(height: 12),
-            _infoRow('Medical Conditions', health.medicalConditions?.isNotEmpty == true ? health.medicalConditions! : 'None recorded',
-                Icons.healing, Colors.purple),
-          ],
-        ),
+  Widget _buildMedicalInfo(HealthData health) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Medical Summary',
+            style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+          ),
+          const SizedBox(height: 16),
+          _infoRow('Blood Group', health.bloodGroup ?? 'Not recorded', Icons.water_drop, Colors.red),
+          const SizedBox(height: 12),
+          _infoRow('Allergies', health.allergies?.isNotEmpty == true ? health.allergies! : 'None', Icons.warning_amber, Colors.orange),
+          const SizedBox(height: 12),
+          _infoRow('Medical Conditions', health.medicalConditions?.isNotEmpty == true ? health.medicalConditions! : 'None', Icons.healing, Colors.purple),
+        ],
       ),
     );
   }
 
-  Widget _buildEmergencyContact(HealthData health, SchoolBrandState brand) {
+  Widget _buildEmergencyContact(HealthData health) {
     final contact = health.emergencyContact;
     if (contact == null || (contact['name'] == null && contact['phone'] == null)) {
       return const SizedBox.shrink();
     }
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: const Color(0xFFE8F5E9),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.emergency, color: Colors.green),
-                SizedBox(width: 8),
-                Text('Emergency Contact', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (contact['name'] != null)
-              Text(contact['name'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            if (contact['phone'] != null)
-              Text(contact['phone'], style: const TextStyle(color: Colors.grey, fontSize: 14)),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                child: const Icon(Icons.emergency_outlined, color: Colors.red, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Emergency Contact',
+                style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      contact['name'] ?? 'Not set',
+                      style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+                    ),
+                    const SizedBox(height: 4),
+                    if (contact['relationship'] != null)
+                      Text(
+                        contact['relationship'],
+                        style: GoogleFonts.dmSans(fontSize: 12, color: const Color(0xFF64748B)),
+                      ),
+                  ],
+                ),
+              ),
+              if (contact['phone'] != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    contact['phone'],
+                    style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildHealthRecords(HealthData health, SchoolBrandState brand) {
+  Widget _buildHealthRecords(HealthData health) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Health Check Records', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        Text(
+          'Health Check Records',
+          style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+        ),
         const SizedBox(height: 12),
         if (health.healthRecords.isEmpty)
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(Icons.health_and_safety, size: 48, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text('No health records yet', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(Icons.health_and_safety_outlined, size: 48, color: Colors.grey.shade300),
+                  const SizedBox(height: 8),
+                  Text(
+                    'No health records yet',
+                    style: GoogleFonts.dmSans(color: const Color(0xFF94A3B8)),
+                  ),
+                ],
               ),
             ),
           )
         else
-          ...health.healthRecords.map((record) => Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Padding(
+          ...health.healthRecords.asMap().entries.map((e) {
+            final record = e.value;
+            final idx = e.key;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -163,25 +225,26 @@ class HealthScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        record.recordedAt != null
-                            ? _formatDate(record.recordedAt!)
-                            : 'Date Unknown',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        record.recordedAt != null ? _formatDate(record.recordedAt!) : 'Date Unknown',
+                        style: GoogleFonts.sora(fontWeight: FontWeight.bold, fontSize: 14, color: const Color(0xFF1E293B)),
                       ),
                       if (record.generalHealth != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: brand.primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            color: const Color(0xFF00C9A7).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text(record.generalHealth!, style: TextStyle(color: brand.primaryColor, fontSize: 12)),
+                          child: Text(
+                            record.generalHealth!,
+                            style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF00C9A7)),
+                          ),
                         ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Wrap(
-                    spacing: 16,
+                    spacing: 8,
                     runSpacing: 8,
                     children: [
                       if (record.height != null) _metricChip('Height', '${record.height} cm'),
@@ -193,8 +256,8 @@ class HealthScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-            ),
-          )),
+            );
+          }).toList(),
       ],
     );
   }
@@ -204,9 +267,9 @@ class HealthScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: color, size: 20),
         ),
         const SizedBox(width: 12),
@@ -214,8 +277,15 @@ class HealthScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                label,
+                style: GoogleFonts.dmSans(fontSize: 11, color: const Color(0xFF94A3B8), fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+              ),
             ],
           ),
         ),
@@ -225,15 +295,22 @@ class HealthScreen extends ConsumerWidget {
 
   Widget _metricChip(String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF0F4FF),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: [
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+          Text(
+            value,
+            style: GoogleFonts.sora(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF1E293B)),
+          ),
+          Text(
+            label,
+            style: GoogleFonts.dmSans(fontSize: 10, color: const Color(0xFF94A3B8), fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );
@@ -242,7 +319,7 @@ class HealthScreen extends ConsumerWidget {
   String _formatDate(String iso) {
     try {
       final dt = DateTime.parse(iso);
-      return '${dt.day}/${dt.month}/${dt.year}';
+      return '${dt.day} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][dt.month - 1]} ${dt.year}';
     } catch (_) {
       return iso;
     }

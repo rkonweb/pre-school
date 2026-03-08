@@ -99,7 +99,7 @@ export function SearchInput({
                                 className="px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer flex items-center gap-3 border-b border-zinc-50 dark:border-zinc-800/50 last:border-0"
                             >
                                 {item.avatar && (
-                                    <img src={item.avatar} alt="" className="h-8 w-8 rounded-full object-cover bg-zinc-100" />
+                                    <img src={item.avatar} alt={item.fullName || item.parentName || item.name} className="h-8 w-8 rounded-full object-cover bg-zinc-100" />
                                 )}
                                 <div className="flex-1 min-w-0">
                                     <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">

@@ -44,7 +44,7 @@ export async function getIdentifierConfigsAction(slug: string) {
             merged[key] = { ...DEFAULT_CONFIGS[key], ...(identifiers[key] || {}) };
         });
 
-        return { success: true, data: merged };
+        return { success: true, data: JSON.parse(JSON.stringify(merged)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

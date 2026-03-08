@@ -42,7 +42,7 @@ export async function getSystemSettingsAction() {
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 timezone: settings.timezone,
                 currency: settings.currency,
                 mfaEnabled: Boolean(settings.mfaEnabled),
@@ -57,7 +57,7 @@ export async function getSystemSettingsAction() {
                 backupFrequency: settings.backupFrequency,
                 maintenanceMode: Boolean(settings.maintenanceMode),
                 integrationsConfig: (settings as any).integrationsConfig
-            }
+            }))
         };
     } catch (error: any) {
         console.error("getSystemSettingsAction Error:", error);
@@ -164,12 +164,12 @@ export async function getInfrastructureStatsAction() {
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 totalSchools: schoolsCount,
                 totalStaff: usersCount,
                 totalStudents: studentsCount,
                 dbSizeMB: dbSizeMB || 12.4 // Fallback matching UI feel
-            }
+            }))
         };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -223,7 +223,7 @@ export async function getSchoolSettingsAction(slug: string) {
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 id: school.id,
                 name: school.name,
                 slug: school.slug,
@@ -237,10 +237,15 @@ export async function getSchoolSettingsAction(slug: string) {
                 brandColor: school.brandColor || school.primaryColor,
                 primaryColor: school.primaryColor,
                 secondaryColor: school.secondaryColor,
+                gradientConfig: (() => {
+                    try {
+                        return school.gradientConfig ? JSON.parse(school.gradientConfig) : {};
+                    } catch { return {}; }
+                })(),
                 timezone: school.timezone || "UTC+05:30 (India Standard Time)",
                 currency: school.currency || "INR",
-                academicYearStart: school.academicYearStart,
-                academicYearEnd: school.academicYearEnd,
+                academicYearStart: school.academicYearStart?.toISOString() || null,
+                academicYearEnd: school.academicYearEnd?.toISOString() || null,
                 academicYearStartMonth: school.academicYearStartMonth || 4,
                 workingDays: (() => {
                     try {
@@ -253,7 +258,7 @@ export async function getSchoolSettingsAction(slug: string) {
                 zip: school.zip,
                 pincode: school.zip,
                 googleMapsApiKey: school.googleMapsApiKey
-            }
+            }))
         };
     } catch (error: any) {
         console.error("getSchoolSettingsAction Error for slug:", slug, error);
@@ -305,6 +310,13 @@ export async function updateSchoolProfileAction(slug: string, data: any) {
         setIfDefined("motto", data.motto);
         setIfDefined("website", data.website);
 
+        // Gradient Config
+        if (data.gradientConfig !== undefined) {
+            updateData.gradientConfig = data.gradientConfig
+                ? JSON.stringify(data.gradientConfig)
+                : "{}";
+        }
+
         if (data.foundingYear !== undefined) {
             updateData.foundingYear = data.foundingYear ? String(data.foundingYear) : null;
         }
@@ -328,7 +340,7 @@ export async function updateSchoolProfileAction(slug: string, data: any) {
             updateData.academicYearStartMonth = parseInt(data.academicYearStartMonth as any);
         }
 
-        const updated = await (prisma as any).school.update({
+        await (prisma as any).school.update({
             where: { id: school.id },
             data: updateData
         });
@@ -341,7 +353,7 @@ export async function updateSchoolProfileAction(slug: string, data: any) {
         revalidatePath(`/s/${slug}`, 'layout');
         revalidatePath(`/s/${slug}/parent`, 'layout');
 
-        return { success: true, data: updated };
+        return { success: true };
     } catch (error: any) {
         console.error("updateSchoolProfileAction Error:", error);
         return { success: false, error: error.message || "Failed to update profile" };
@@ -382,7 +394,7 @@ export async function getIntegrationSettingsAction(slug: string) {
             folderId: ""
         };
 
-        return { success: true, data: config };
+        return { success: true, data: JSON.parse(JSON.stringify(config)) };
     } catch (error: any) {
         console.error("getIntegrationSettingsAction Error:", error);
         return { success: false, error: error.message };

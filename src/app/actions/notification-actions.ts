@@ -38,7 +38,7 @@ export async function getBroadcastHistoryAction(schoolSlug: string) {
             take: 20
         });
 
-        return { success: true, data: broadcasts };
+        return { success: true, data: JSON.parse(JSON.stringify(broadcasts)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -178,7 +178,7 @@ export async function sendBroadcastAction(schoolSlug: string, payload: {
         }
 
         revalidatePath(`/s/${schoolSlug}/communication`);
-        return { success: true, count: recipientUserIds.length };
+        return { success: true, count: JSON.parse(JSON.stringify(recipientUserIds.length)) };
 
     } catch (error: any) {
         console.error("Broadcast Error:", error);
@@ -214,7 +214,7 @@ export async function createNotificationAction(data: {
             }
         });
         revalidatePath("/notifications");
-        return { success: true, data: notification };
+        return { success: true, data: JSON.parse(JSON.stringify(notification)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -231,7 +231,7 @@ export async function getUserNotificationsAction(userId: string, unreadOnly: boo
             take: 50
         });
 
-        return { success: true, data: notifications };
+        return { success: true, data: JSON.parse(JSON.stringify(notifications)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -370,7 +370,7 @@ export async function sendPushNotificationAction(data: {
 
         return {
             success: successCount > 0,
-            data: { sent: successCount, total: subscriptions.length }
+            data: JSON.parse(JSON.stringify({ sent: successCount, total: subscriptions.length }))
         };
     } catch (error: any) {
         console.error("sendPushNotificationAction Error:", error);
@@ -408,7 +408,7 @@ export async function scheduleNotificationAction(data: {
             data.sendVia || 'PUSH'
         );
 
-        return { success: true, data: { id } };
+        return { success: true, data: JSON.parse(JSON.stringify({ id })) };
     } catch (error: any) {
         console.error("scheduleNotificationAction Error:", error);
         return { success: false, error: error.message };
@@ -487,7 +487,7 @@ export async function processPendingNotificationsAction() {
             }
         }
 
-        return { success: true, data: { processed: pending.length } };
+        return { success: true, data: JSON.parse(JSON.stringify({ processed: pending.length })) };
     } catch (error: any) {
         console.error("processPendingNotificationsAction Error:", error);
         return { success: false, error: error.message };
@@ -545,7 +545,7 @@ export async function scheduleHomeworkRemindersAction(homeworkId: string) {
             });
         }
 
-        return { success: true, data: { scheduled: unviewedSubmissions.length } };
+        return { success: true, data: JSON.parse(JSON.stringify({ scheduled: unviewedSubmissions.length })) };
     } catch (error: any) {
         console.error("scheduleHomeworkRemindersAction Error:", error);
         return { success: false, error: error.message };

@@ -89,7 +89,7 @@ function PackageCard({ pkg, slug, onAssign }: { pkg: any; slug: string; onAssign
                 </div>
                 <button
                     onClick={() => onAssign(pkg)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand hover:brightness-110 px-3 py-1.5 rounded-lg transition-all"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--secondary-color)] bg-brand hover:brightness-110 px-3 py-1.5 rounded-lg transition-all"
                 >
                     <Users className="h-3.5 w-3.5" />
                     Assign to Grade

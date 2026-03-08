@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../ui/components/app_header.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/transport_provider.dart';
@@ -17,6 +17,10 @@ class TransportScreen extends ConsumerStatefulWidget {
 
 class _TransportScreenState extends ConsumerState<TransportScreen> {
   int _selectedTabIndex = 0;
+  GoogleMapController? _mapController;
+
+  // Default to school location (India) if no GPS data yet
+  static const _defaultPosition = LatLng(28.6139, 77.2090);
 
   @override
   void initState() {
@@ -50,6 +54,8 @@ class _TransportScreenState extends ConsumerState<TransportScreen> {
       appBar: AppHeader(
         title: 'Transport',
         subtitle: 'Bus #7 · South Colony Route',
+        showBackButton: false,
+        showMenuButton: true,
         actions: [
           ElevatedButton(
             onPressed: () {},
@@ -145,91 +151,149 @@ class _TransportScreenState extends ConsumerState<TransportScreen> {
   }
 
   Widget _buildCinematicMap() {
+    final locationUpdate = ref.watch(transportLocationProvider);
+
+    // Pan the map camera whenever a new GPS fix arrives (post-frame to avoid build-phase side effects)
+    ref.listen<LocationUpdate?>(transportLocationProvider, (prev, next) {
+      if (next?.lat != null && next?.lng != null && _mapController != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _mapController?.animateCamera(
+            CameraUpdate.newLatLng(LatLng(next!.lat!, next.lng!)),
+          );
+        });
+      }
+    });
+
+    // Derive bus position from live data or fall back to default
+    final busPosition = (locationUpdate?.lat != null && locationUpdate?.lng != null)
+        ? LatLng(locationUpdate!.lat!, locationUpdate.lng!)
+        : _defaultPosition;
+
+    final speed = locationUpdate?.speed?.toStringAsFixed(0) ?? '—';
+    final eta = locationUpdate?.etaMinutes;
+    final statusMsg = locationUpdate?.statusMessage ?? 'Bus #7 — South Colony';
+
+    final now = TimeOfDay.now();
+    final liveTime = '${now.hourOfPeriod == 0 ? 12 : now.hourOfPeriod}:${now.minute.toString().padLeft(2, '0')} ${now.period == DayPeriod.am ? 'AM' : 'PM'}';
+
+    final busMarker = Marker(
+      markerId: const MarkerId('bus'),
+      position: busPosition,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+      infoWindow: InfoWindow(title: 'School Bus', snippet: statusMsg),
+    );
+
     return Container(
       height: 280,
       width: double.infinity,
-      color: const Color(0xFFE2E8F0),
       child: Stack(
         children: [
-          // Simulated Map Background
-          Positioned.fill(
-             child: CustomPaint(
-                painter: MockMapPainter(),
-             ),
-          ),
-          
-          // Map controls
-          Positioned(
-             top: 16, right: 16,
-             child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0,4))]),
-                child: Row(
-                   children: [
-                     Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle)).animate(onPlay: (controller)=>controller.repeat(reverse:true)).fade(duration:800.ms),
-                     const SizedBox(width: 6),
-                     Text('LIVE 3:28 PM', style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                   ],
-                ),
-             )
+          // ── Real Google Map ─────────────────────────────────────────────
+          GoogleMap(
+            initialCameraPosition: CameraPosition(target: busPosition, zoom: 15),
+            markers: {busMarker},
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            mapToolbarEnabled: false,
+            onMapCreated: (controller) => _mapController = controller,
           ),
 
-          // Live Bus Pill
+          // ── Live badge ─────────────────────────────────────────────────
           Positioned(
-            bottom: 70, left: 30,
+            top: 16, right: 16,
             child: Container(
-               padding: const EdgeInsets.all(12),
-               decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 10))]
-               ),
-               child: Row(
-                  children: [
-                     Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.directions_bus_rounded, color: Color(0xFF3B6EF8), size: 20),
-                     ),
-                     const SizedBox(width: 12),
-                     Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                           Text('Bus #7 — South Colony', style: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                           Text('📍 Near MG Road Junction', style: GoogleFonts.dmSans(fontSize: 11, color: const Color(0xFF64748B))),
-                        ],
-                     ),
-                     const SizedBox(width: 16),
-                     Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: const Color(0xFF3B6EF8).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                        child: Column(
-                           children: [
-                              Text('38', style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF3B6EF8))),
-                              Text('km/h', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, color: const Color(0xFF3B6EF8))),
-                           ],
-                        ),
-                     )
-                  ],
-               ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+              ),
+              child: Row(children: [
+                Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle))
+                    .animate(onPlay: (c) => c.repeat(reverse: true)).fade(duration: 800.ms),
+                const SizedBox(width: 6),
+                Text('LIVE $liveTime', style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+              ]),
+            ),
+          ),
+
+          // ── Bus info pill ──────────────────────────────────────────────
+          Positioned(
+            bottom: 70, left: 16,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 10))],
+              ),
+              child: Row(children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(10)),
+                  child: const Icon(Icons.directions_bus_rounded, color: Color(0xFF3B6EF8), size: 20),
+                ),
+                const SizedBox(width: 12),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(statusMsg, style: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                  if (eta != null)
+                    Text('ETA: $eta min', style: GoogleFonts.dmSans(fontSize: 11, color: const Color(0xFF64748B)))
+                  else
+                    Text('Tracking active', style: GoogleFonts.dmSans(fontSize: 11, color: const Color(0xFF64748B))),
+                ]),
+                const SizedBox(width: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(color: const Color(0xFF3B6EF8).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                  child: Column(children: [
+                    Text(speed, style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF3B6EF8))),
+                    Text('km/h', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, color: const Color(0xFF3B6EF8))),
+                  ]),
+                ),
+              ]),
             ).animate().slideY(begin: 0.5, duration: 400.ms, curve: Curves.easeOutBack),
           ),
 
-          // Focus target
+          // ── Recenter button ────────────────────────────────────────────
           Positioned(
-             bottom: 16, right: 16,
-             child: Container(
+            bottom: 16, right: 16,
+            child: GestureDetector(
+              onTap: () => _mapController?.animateCamera(CameraUpdate.newLatLngZoom(busPosition, 15)),
+              child: Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)]),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
+                ),
                 child: const Icon(Icons.my_location_rounded, color: Color(0xFF1E293B), size: 20),
-             ),
-          )
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildEtaFloatCard(Map<String, dynamic> data) {
+    final locationUpdate = ref.watch(transportLocationProvider);
+    final etaMinutes = locationUpdate?.etaMinutes ?? (data['locationUpdate']?['etaMinutes'] as int?);
+    final speed = locationUpdate?.speed ?? (data['locationUpdate']?['speed'] as double?);
+    final statusMsg = locationUpdate?.statusMessage ?? (data['locationUpdate']?['statusMessage'] as String?) ?? 'Tracking active';
+
+    // Compute ETA clock time from minutes
+    String etaText = '—';
+    if (etaMinutes != null) {
+      final etaTime = DateTime.now().add(Duration(minutes: etaMinutes));
+      final h = etaTime.hour > 12 ? etaTime.hour - 12 : (etaTime.hour == 0 ? 12 : etaTime.hour);
+      final m = etaTime.minute.toString().padLeft(2, '0');
+      final period = etaTime.hour >= 12 ? 'PM' : 'AM';
+      etaText = '$h:$m $period';
+    }
+
+    final speedValue = speed?.toInt() ?? 0;
+    final speedFraction = (speedValue / 80.0).clamp(0.0, 1.0);
+
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Container(
@@ -248,15 +312,16 @@ class _TransportScreenState extends ConsumerState<TransportScreen> {
                 children: [
                   Text('ESTIMATED ARRIVAL', style: GoogleFonts.sora(fontSize: 10, fontWeight: FontWeight.w800, color: const Color(0xFF94A3B8), letterSpacing: 1.1)),
                   const SizedBox(height: 4),
-                  Text('3:50 PM', style: GoogleFonts.sora(fontSize: 32, fontWeight: FontWeight.w900, color: const Color(0xFF1E293B))),
+                  Text(etaText, style: GoogleFonts.sora(fontSize: 32, fontWeight: FontWeight.w900, color: const Color(0xFF1E293B))),
                   const SizedBox(height: 8),
-                  Text('📍 Near MG Road · 3 stops left · 4.2 km away', style: GoogleFonts.dmSans(fontSize: 12, color: const Color(0xFF64748B), fontWeight: FontWeight.w500)),
+                  Text('📍 $statusMsg', style: GoogleFonts.dmSans(fontSize: 12, color: const Color(0xFF64748B), fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _buildPill('🕐 38 min', const Color(0xFFF1F5F9), const Color(0xFF475569)),
-                      const SizedBox(width: 8),
-                      _buildPill('⚠ Light Traffic', const Color(0xFFFF6B3D).withOpacity(0.15), const Color(0xFFFF6B3D)),
+                      if (etaMinutes != null)
+                        _buildPill('🕐 $etaMinutes min', const Color(0xFFF1F5F9), const Color(0xFF475569)),
+                      if (etaMinutes != null) const SizedBox(width: 8),
+                      _buildPill('🛰 GPS Live', const Color(0xFF00C9A7).withOpacity(0.12), const Color(0xFF00C9A7)),
                     ],
                   )
                 ],
@@ -264,27 +329,24 @@ class _TransportScreenState extends ConsumerState<TransportScreen> {
             ),
             // Circular Speed Gauge
             SizedBox(
-               width: 80, height: 80,
-               child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                     CircularProgressIndicator(
-                        value: 0.7,
-                        strokeWidth: 6,
-                        color: const Color(0xFF00C9A7),
-                        backgroundColor: const Color(0xFFE2E8F0),
-                     ),
-                     Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                           const Icon(Icons.speed_rounded, size: 20, color: Color(0xFF00C9A7)),
-                           const SizedBox(height: 2),
-                           Text('38', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-                           Text('KM/H', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, color: const Color(0xFF94A3B8))),
-                        ],
-                     )
-                  ],
-               ),
+              width: 80, height: 80,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    value: speedFraction,
+                    strokeWidth: 6,
+                    color: const Color(0xFF00C9A7),
+                    backgroundColor: const Color(0xFFE2E8F0),
+                  ),
+                  Column(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.speed_rounded, size: 20, color: Color(0xFF00C9A7)),
+                    const SizedBox(height: 2),
+                    Text('$speedValue', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                    Text('KM/H', style: GoogleFonts.dmSans(fontSize: 9, fontWeight: FontWeight.w700, color: const Color(0xFF94A3B8))),
+                  ]),
+                ],
+              ),
             )
           ],
         ),
@@ -555,49 +617,6 @@ class _TransportScreenState extends ConsumerState<TransportScreen> {
       ),
     );
   }
-}
-
-class MockMapPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 6
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-      
-    // Map lines
-    final p1 = Path();
-    p1.moveTo(0, size.height * 0.4);
-    p1.quadraticBezierTo(size.width * 0.3, size.height * 0.4, size.width * 0.5, size.height * 0.6);
-    p1.quadraticBezierTo(size.width * 0.8, size.height * 0.8, size.width, size.height * 0.7);
-    
-    canvas.drawPath(p1, paint);
-    
-    // Route trace
-    final tracePaint = Paint()
-      ..color = const Color(0xFF3B6EF8)
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke;
-    
-    canvas.drawPath(p1, tracePaint);
-    
-    // Grid
-    final gridPaint = Paint()
-      ..color = Colors.black.withOpacity(0.04)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-      
-    for (double i = 0; i < size.width; i += 40) {
-       canvas.drawLine(Offset(i, 0), Offset(i, size.height), gridPaint);
-    }
-    for (double i = 0; i < size.height; i += 40) {
-       canvas.drawLine(Offset(0, i), Offset(size.width, i), gridPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class SparklinePainter extends CustomPainter {

@@ -165,7 +165,7 @@ export async function generatePayrollAction(schoolSlug: string, month: number, y
         });
 
         revalidatePath(`/s/${schoolSlug}/hr/payroll`);
-        return { success: true, data: payroll };
+        return { success: true, data: JSON.parse(JSON.stringify(payroll)) };
     } catch (error: any) {
         console.error("Payroll Generation Error:", error);
         return { success: false, error: error.message };
@@ -185,7 +185,7 @@ export async function getPayrollsAction(schoolSlug: string) {
             include: { payslips: true }
         });
 
-        return { success: true, data: payrolls };
+        return { success: true, data: JSON.parse(JSON.stringify(payrolls)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -200,7 +200,7 @@ export async function getPayslipsAction(payrollId: string, schoolSlug: string) {
             where: { payrollId, payroll: { schoolId: auth.user.schoolId } },
             include: { user: true }
         });
-        return { success: true, data: payslips };
+        return { success: true, data: JSON.parse(JSON.stringify(payslips)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -282,7 +282,7 @@ export async function getSchoolDetailsAction(slug: string) {
                 currency: true
             }
         });
-        return { success: true, data: school };
+        return { success: true, data: JSON.parse(JSON.stringify(school)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

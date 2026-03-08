@@ -179,7 +179,7 @@ export default function StorePOClient({ slug, initialPurchaseOrders }: { slug: s
                 </div>
                 <Link
                     href={`/s/${slug}/vendor/purchase-orders/new`}
-                    className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-black text-white shadow-md hover:bg-brand/90 transition-all self-start"
+                    className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-black text-[var(--secondary-color)] shadow-md hover:bg-brand/90 transition-all self-start"
                 >
                     <Plus className="h-4 w-4" /> Raise PO
                 </Link>

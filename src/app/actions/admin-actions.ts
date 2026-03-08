@@ -19,7 +19,7 @@ export async function getSchoolAdminsAction(schoolSlug: string) {
             orderBy: { createdAt: 'desc' }
         });
 
-        return { success: true, data: admins };
+        return { success: true, data: JSON.parse(JSON.stringify(admins)) };
     } catch (error: any) {
         console.error("getSchoolAdminsAction Error:", error);
         return { success: false, error: error.message };
@@ -79,7 +79,7 @@ export async function createAdminAction(schoolSlug: string, data: unknown) {
         );
 
         revalidatePath(`/s/${schoolSlug}/settings/admin`);
-        return { success: true, data: newUser };
+        return { success: true, data: JSON.parse(JSON.stringify(newUser)) };
     } catch (error: any) {
         console.error("createAdminAction Error:", error);
         return { success: false, error: error.message };
@@ -184,7 +184,7 @@ export async function toggleAdminStatusAction(schoolSlug: string, userId: string
         );
 
         revalidatePath(`/s/${schoolSlug}/settings/admin`);
-        return { success: true, data: { status: newStatus } };
+        return { success: true, data: JSON.parse(JSON.stringify({ status: newStatus })) };
     } catch (error: any) {
         console.error("toggleAdminStatusAction Error:", error);
         return { success: false, error: error.message };

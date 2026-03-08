@@ -99,10 +99,10 @@ export default function InsightsPage({ params }: { params: Promise<{ slug: strin
 
                         {/* Anomalies Flagged Card */}
                         <div className="bg-white rounded-[2rem] p-8 border border-zinc-200 shadow-xl shadow-zinc-200/50 relative overflow-hidden flex flex-col h-full">
-                            <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500"></div>
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-brand"></div>
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center shrink-0">
-                                    <AlertTriangle className="w-5 h-5 text-amber-500" />
+                                <div className="w-10 h-10 rounded-2xl bg-brand/10 flex items-center justify-center shrink-0">
+                                    <AlertTriangle className="w-5 h-5 text-brand" />
                                 </div>
                                 <h3 className="text-sm uppercase tracking-widest font-black text-zinc-800">
                                     Flagged Anomalies
@@ -113,10 +113,10 @@ export default function InsightsPage({ params }: { params: Promise<{ slug: strin
                                 {insights.anomalies && insights.anomalies.length > 0 ? (
                                     <ul className="space-y-4">
                                         {insights.anomalies.map((anomaly: any, idx: number) => (
-                                            <li key={idx} className="flex flex-col p-5 bg-amber-50/50 rounded-2xl border border-amber-100/50 transition-all hover:bg-amber-50 hover:border-amber-200">
-                                                <span className="text-amber-900 font-bold text-sm leading-relaxed mb-2">{anomaly.issue}</span>
+                                            <li key={idx} className="flex flex-col p-5 bg-brand/5 rounded-2xl border border-brand/10 transition-all hover:bg-brand/10 hover:border-brand/20">
+                                                <span className="text-zinc-900 font-bold text-sm leading-relaxed mb-2">{anomaly.issue}</span>
                                                 {anomaly.transactionNo && (
-                                                    <span className="text-[11px] font-black uppercase tracking-widest text-amber-600/70 py-1.5 px-3 bg-amber-100/50 rounded-lg w-fit">
+                                                    <span className="text-[11px] font-black uppercase tracking-widest text-brand/70 py-1.5 px-3 bg-brand/10 rounded-lg w-fit">
                                                         Ref: {anomaly.transactionNo}
                                                     </span>
                                                 )}

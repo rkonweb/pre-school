@@ -9,7 +9,7 @@ export async function getJobPostingsAction() {
             include: { JobApplication: true },
             orderBy: { createdAt: "desc" }
         });
-        return { success: true, data: postings };
+        return { success: true, data: JSON.parse(JSON.stringify(postings)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -22,7 +22,7 @@ export async function updateApplicationStatusAction(id: string, status: string, 
             data: { status }
         });
         revalidatePath(`/s/${slug}/hr/recruitment`);
-        return { success: true, data: app };
+        return { success: true, data: JSON.parse(JSON.stringify(app)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -44,7 +44,7 @@ export async function createJobPostingAction(data: any, slug: string) {
             }
         });
         revalidatePath(`/s/${slug}/hr/recruitment`);
-        return { success: true, data: posting };
+        return { success: true, data: JSON.parse(JSON.stringify(posting)) };
     } catch (error: any) {
         console.error("Failed to create job posting:", error);
         return { success: false, error: error.message };

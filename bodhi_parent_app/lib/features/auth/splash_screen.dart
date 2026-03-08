@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/school_brand_provider.dart';
 import 'auth_service.dart';
 import '../../core/routing/rbac.dart';
@@ -36,17 +37,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     // 1. Minimum display time for premium feel
     await Future.delayed(const Duration(milliseconds: 1500));
 
-    // 2. Check Auth Status
+    // 2. Check DPDP Consent
+    final prefs = await SharedPreferences.getInstance();
+    final hasConsent = prefs.getBool('dpdp_consent_given') ?? false;
+
+    if (!mounted) return;
+
+    if (!hasConsent) {
+      // User hasn't accepted consent yet
+      if (mounted) context.go('/consent');
+      return;
+    }
+
+    // 3. Check Auth Status
     final authService = ref.read(authServiceProvider);
     final hasToken = await authService.hasValidToken();
 
     if (!mounted) return;
 
     if (hasToken) {
-      // 3. Restore saved brand colors immediately
+      // 4. Restore saved brand colors immediately
       await ref.read(schoolBrandProvider.notifier).restoreFromStorage();
 
-      // 4. Fetch fresh branding
+      // 5. Fetch fresh branding
       try {
         final brandData = await authService.fetchBranding().timeout(
           const Duration(seconds: 5),
@@ -58,7 +71,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         // Timeout or error — proceed with cached brand colors
       }
 
-      // 5. Initialize RBAC
+      // 6. Initialize RBAC
       ref.read(rbacProvider.notifier).initializeWith('PARENT', [
         'dashboard.view',
         'attendance.view',

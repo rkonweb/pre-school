@@ -131,7 +131,7 @@ export default function CanteenAccountsClient({ slug, initialData }: { slug: str
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-slate-500 bg-slate-50/50 border-b border-slate-200 uppercase tracking-wider font-semibold">
+                        <thead>
                             <tr>
                                 <th className="px-6 py-4">Date & Time</th>
                                 <th className="px-6 py-4">Student</th>

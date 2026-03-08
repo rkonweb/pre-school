@@ -16,7 +16,7 @@ export async function getFeeStructuresAction(schoolSlug: string) {
                 createdAt: "desc"
             }
         });
-        return { success: true, data: structures };
+        return { success: true, data: JSON.parse(JSON.stringify(structures)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -51,7 +51,7 @@ export async function createFeeStructureAction(schoolSlug: string, data: any) {
         });
 
         revalidatePath(`/s/${schoolSlug}/settings/fees`);
-        return { success: true, data: structure };
+        return { success: true, data: JSON.parse(JSON.stringify(structure)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

@@ -88,6 +88,8 @@ class _CanteenScreenState extends ConsumerState<CanteenScreen> {
       appBar: AppHeader(
         title: 'Canteen',
         subtitle: 'City School · Wednesday, Nov 20',
+        showBackButton: false,
+        showMenuButton: true,
         actions: [
           ElevatedButton(
             onPressed: () {},

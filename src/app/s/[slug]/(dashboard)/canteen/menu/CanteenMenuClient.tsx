@@ -332,7 +332,7 @@ export default function CanteenMenuClient({
                             className={cn(
                                 "px-4 py-3 text-sm font-bold border-b-2 transition-colors",
                                 activeTab === tab
-                                    ? "border-orange-500 text-orange-600"
+                                    ? "border-brand text-brand"
                                     : "border-transparent text-zinc-500 hover:text-zinc-800"
                             )}
                         >
@@ -351,10 +351,10 @@ export default function CanteenMenuClient({
                                 aria-label="Import CSV"
                                 onChange={handleImportCSV}
                             />
-                            <button onClick={() => fileInputRef.current?.click()} disabled={isPending} className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-orange-600 bg-white border border-zinc-200 hover:border-orange-300 font-semibold px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                            <button onClick={() => fileInputRef.current?.click()} disabled={isPending} className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-brand bg-white border border-zinc-200 hover:border-brand/30 font-semibold px-3 py-1.5 rounded-lg transition-all shadow-sm">
                                 <Upload className="h-3.5 w-3.5" /> Import
                             </button>
-                            <button onClick={handleExportCSV} className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-orange-600 bg-white border border-zinc-200 hover:border-orange-300 font-semibold px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                            <button onClick={handleExportCSV} className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-brand bg-white border border-zinc-200 hover:border-brand/30 font-semibold px-3 py-1.5 rounded-lg transition-all shadow-sm">
                                 <Download className="h-3.5 w-3.5" /> Export
                             </button>
                         </>
@@ -390,7 +390,7 @@ export default function CanteenMenuClient({
                                 <input
                                     value={newItem.name}
                                     onChange={e => setNewItem({ ...newItem, name: e.target.value })}
-                                    className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                    className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
                                     placeholder="e.g. Veg Biryani"
                                 />
                             </div>
@@ -402,7 +402,7 @@ export default function CanteenMenuClient({
                                         <button
                                             type="button"
                                             onClick={() => setCategoryDropdownOpen(o => !o)}
-                                            className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-300 flex items-center justify-between text-left"
+                                            className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 flex items-center justify-between text-left"
                                         >
                                             <span className="truncate text-zinc-700">
                                                 {newItem.category.length === 0 ? 'Select...' : newItem.category.map(c => CATEGORY_OPTIONS.find(o => o.value === c)?.label ?? c).join(', ')}
@@ -412,10 +412,10 @@ export default function CanteenMenuClient({
                                         {categoryDropdownOpen && (
                                             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-zinc-200 rounded-xl shadow-lg z-50 overflow-hidden">
                                                 {CATEGORY_OPTIONS.map(o => (
-                                                    <label key={o.value} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-orange-50 text-sm">
+                                                    <label key={o.value} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-brand/10 text-sm">
                                                         <input
                                                             type="checkbox"
-                                                            className="rounded text-orange-500 focus:ring-orange-400 shrink-0"
+                                                            className="rounded text-brand focus:ring-brand/20 shrink-0"
                                                             checked={newItem.category.includes(o.value)}
                                                             onChange={(e) => {
                                                                 const checked = e.target.checked;
@@ -441,7 +441,7 @@ export default function CanteenMenuClient({
                                         min={0}
                                         value={newItem.price || ""}
                                         onChange={e => setNewItem({ ...newItem, price: parseFloat(e.target.value) || 0 })}
-                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
                                         placeholder="0"
                                     />
                                 </div>
@@ -456,7 +456,7 @@ export default function CanteenMenuClient({
                                         aria-label="Food Category (Cuisine)"
                                         value={newItem.foodCategory}
                                         onChange={e => setNewItem({ ...newItem, foodCategory: e.target.value })}
-                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
                                     >
                                         <option value="">-- Select cuisine --</option>
                                         {foodCategories.map(fc => (
@@ -471,7 +471,7 @@ export default function CanteenMenuClient({
                                         type="text"
                                         value={newItem.hsnCode}
                                         onChange={e => setNewItem({ ...newItem, hsnCode: e.target.value })}
-                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
                                         placeholder="e.g. 210690"
                                     />
                                 </div>
@@ -485,7 +485,7 @@ export default function CanteenMenuClient({
                                         min={0}
                                         value={newItem.gstPercentage || ""}
                                         onChange={e => setNewItem({ ...newItem, gstPercentage: parseFloat(e.target.value) || 0 })}
-                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
                                         placeholder="0"
                                     />
                                 </div>
@@ -496,7 +496,7 @@ export default function CanteenMenuClient({
                                 <textarea
                                     value={newItem.description}
                                     onChange={e => setNewItem({ ...newItem, description: e.target.value })}
-                                    className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                    className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/20"
                                     rows={2}
                                     placeholder="Short description..."
                                 />
@@ -507,7 +507,7 @@ export default function CanteenMenuClient({
                                     type="checkbox"
                                     checked={newItem.isAddOn}
                                     onChange={e => setNewItem({ ...newItem, isAddOn: e.target.checked })}
-                                    className="rounded text-orange-500 focus:ring-orange-400"
+                                    className="rounded text-brand focus:ring-brand/20"
                                 />
                                 <span className="text-sm font-semibold text-zinc-700">Mark as Add-on</span>
                             </label>
@@ -525,7 +525,7 @@ export default function CanteenMenuClient({
                                 <button
                                     onClick={handleSaveItem}
                                     disabled={isPending}
-                                    className="flex-[2] bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 rounded-xl text-sm shadow-sm transition-all flex justify-center items-center gap-2 disabled:opacity-60"
+                                    className="flex-[2] bg-brand hover:opacity-90 text-[var(--secondary-color)] font-bold py-2.5 rounded-xl text-sm shadow-sm transition-all flex justify-center items-center gap-2 disabled:opacity-60"
                                 >
                                     {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : editingItemId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                                     {editingItemId ? "Update Item" : "Save Item"}
@@ -545,7 +545,7 @@ export default function CanteenMenuClient({
                             <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-sm whitespace-nowrap">
-                                        <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-semibold uppercase text-xs tracking-wider">
+                                        <thead>
                                             <tr>
                                                 <th className="px-4 py-3">Item Name</th>
                                                 <th className="px-4 py-3">Categories</th>
@@ -555,7 +555,7 @@ export default function CanteenMenuClient({
                                         </thead>
                                         <tbody className="divide-y divide-zinc-200">
                                             {items.map(item => (
-                                                <tr key={item.id} className="hover:bg-orange-50/50 transition-colors group">
+                                                <tr key={item.id} className="hover:bg-brand/5 transition-colors group">
                                                     <td className="px-4 py-3">
                                                         <div className="flex items-center gap-3">
                                                             <div className={cn(
@@ -581,7 +581,7 @@ export default function CanteenMenuClient({
                                                             {item.isAddOn && <span className="text-[10px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">Add-on</span>}
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-3 text-right font-black text-orange-600">
+                                                    <td className="px-4 py-3 text-right font-black text-brand">
                                                         {currency}{item.price}
                                                     </td>
                                                     <td className="px-4 py-3 text-center">
@@ -630,15 +630,15 @@ export default function CanteenMenuClient({
                                         className={cn(
                                             "w-full text-left px-4 py-2.5 rounded-xl font-bold transition-all flex items-center justify-between text-sm",
                                             selectedDay === idx
-                                                ? "bg-orange-500 text-white shadow-md"
-                                                : "bg-white border border-zinc-200 text-zinc-600 hover:border-orange-300"
+                                                ? "bg-brand text-[var(--secondary-color)] shadow-md"
+                                                : "bg-white border border-zinc-200 text-zinc-600 hover:border-brand/30"
                                         )}
                                     >
                                         {day}
                                         {isToday && (
                                             <span className={cn(
                                                 "text-[10px] px-2 py-0.5 rounded-md uppercase tracking-widest font-extrabold",
-                                                selectedDay === idx ? "bg-white/20 text-white" : "bg-orange-100 text-orange-600"
+                                                selectedDay === idx ? "bg-white/20 text-white" : "bg-brand/10 text-brand"
                                             )}>
                                                 Today
                                             </span>
@@ -652,7 +652,7 @@ export default function CanteenMenuClient({
                     {/* Meal editors */}
                     <div className="lg:col-span-3">
                         {items.length === 0 && (
-                            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm font-medium mb-4">
+                            <div className="bg-brand/5 border border-brand/20 text-brand p-4 rounded-xl text-sm font-medium mb-4">
                                 ⚠️ Add items to Food Inventory first before creating a timetable.
                             </div>
                         )}
@@ -732,7 +732,7 @@ export default function CanteenMenuClient({
                             <div>
                                 <label className="text-xs font-bold text-zinc-500 block mb-1.5">GST Application Type</label>
                                 <select
-                                    className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                    className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
                                     value={gstType}
                                     title="GST Application Type"
                                     onChange={(e) => setGstType(e.target.value)}
@@ -751,7 +751,7 @@ export default function CanteenMenuClient({
                                         min={0}
                                         value={commonGst || ""}
                                         onChange={(e) => setCommonGst(parseFloat(e.target.value) || 0)}
-                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                        className="w-full border border-zinc-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
                                         placeholder="E.g. 5, 12, 18"
                                     />
                                 </div>
@@ -769,7 +769,7 @@ export default function CanteenMenuClient({
                             <button onClick={() => setShowGstSettings(false)} className="px-4 py-2 border border-zinc-200 text-zinc-600 font-semibold text-sm rounded-xl hover:bg-zinc-50">
                                 Cancel
                             </button>
-                            <button disabled={isPending} onClick={handleSaveGstSettings} className="px-4 py-2 bg-orange-500 text-white font-bold text-sm rounded-xl hover:bg-orange-600 shadow-sm flex items-center gap-1.5 disabled:opacity-50">
+                            <button disabled={isPending} onClick={handleSaveGstSettings} className="px-4 py-2 bg-brand text-[var(--secondary-color)] font-bold text-sm rounded-xl hover:opacity-90 shadow-sm flex items-center gap-1.5 disabled:opacity-50">
                                 {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 Save Settings
                             </button>

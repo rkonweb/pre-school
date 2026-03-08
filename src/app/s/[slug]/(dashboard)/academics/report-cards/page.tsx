@@ -249,8 +249,8 @@ export default function ReportCardsPage() {
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 uppercase italic flex items-center gap-3">
-                        <GraduationCap className="h-8 w-8 text-indigo-600" />
-                        Report <span className="text-indigo-600">Cards</span>
+                        <GraduationCap className="h-8 w-8 text-brand" />
+                        Report <span className="text-brand">Cards</span>
                     </h1>
                     <p className="text-zinc-500 font-medium mt-1">Generate dynamic academic transcripts and continuous evaluation records.</p>
                 </div>
@@ -282,7 +282,7 @@ export default function ReportCardsPage() {
                     <button
                         onClick={handleSaveAll}
                         disabled={isSaving || !selectedClassId || students.length === 0}
-                        className="bg-indigo-600 text-white hover:bg-indigo-500 px-8 py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-2xl shadow-indigo-600/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                        className="bg-brand-gradient text-[var(--secondary-color)] hover:brightness-110 px-8 py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 border-none"
                     >
                         <Save className="h-4 w-4" />
                         {isSaving ? "Syncing Grid..." : "Cloud Save Grid"}
@@ -301,7 +301,7 @@ export default function ReportCardsPage() {
                 </div>
             ) : isLoading ? (
                 <div className="py-20 flex justify-center items-center">
-                    <div className="h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="h-8 w-8 border-4 border-brand border-t-transparent rounded-full animate-spin" />
                 </div>
             ) : students.length === 0 ? (
                 <div className="py-20 text-center text-zinc-500">No students enrolled in this class.</div>

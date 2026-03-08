@@ -33,7 +33,7 @@ export async function getTransportFeesAction(slug: string, period?: { month: num
             orderBy: { dueDate: 'desc' }
         });
 
-        return { success: true, data: fees };
+        return { success: true, data: JSON.parse(JSON.stringify(fees)) };
     } catch (error: any) {
         console.error("Error fetching transport fees:", error);
         return { success: false, error: error.message };
@@ -146,7 +146,7 @@ export async function generateTransportInvoicesAction(
         }
 
         revalidatePath(`/s/${slug}/transport/fees`);
-        return { success: true, count: generatedCount };
+        return { success: true, count: JSON.parse(JSON.stringify(generatedCount)) };
     } catch (error: any) {
         console.error("Error generating invoices:", error);
         return { success: false, error: error.message };
@@ -215,7 +215,7 @@ export async function sendTransportFeeRemindersAction(slug: string) {
             }
         }
 
-        return { success: true, count: sentCount };
+        return { success: true, count: JSON.parse(JSON.stringify(sentCount)) };
     } catch (e: any) {
         console.error("Reminder Generation Error:", e);
         return { success: false, error: e.message };

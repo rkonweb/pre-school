@@ -51,12 +51,12 @@ export default function LibraryTab() {
 
             <div className="bg-white rounded-[40px] border border-zinc-100 shadow-xl overflow-hidden">
                 <table className="w-full text-left">
-                    <thead className="bg-zinc-50/50 border-b border-zinc-100">
+                    <thead className="border-b border-zinc-100">
                         <tr>
-                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Book Information</th>
-                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Issued Date</th>
-                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status</th>
-                            <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Fine</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">Book Information</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">Issued Date</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">Status</th>
+                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">Fine</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-50">

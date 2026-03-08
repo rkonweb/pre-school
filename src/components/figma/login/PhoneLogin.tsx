@@ -92,7 +92,7 @@ export function PhoneLogin({ type, tenantName, brandColor }: PhoneLoginProps) {
                 <div className="bg-white border border-slate-100 p-8 rounded-[2rem] space-y-6 shadow-2xl scale-100 hover:scale-[1.01] transition-transform duration-300">
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                            <Label className="text-slate-700 text-sm font-semibold tracking-wide">Phone Number</Label>
+                            <Label htmlFor="parent-phone" className="text-slate-700 text-sm font-semibold tracking-wide">Phone Number</Label>
                             <span className="text-[10px] font-mono font-bold" style={{ color: isValid ? primaryColor : '#94a3b8' }}>
                                 {currentDigits.length}/10
                             </span>
@@ -105,7 +105,6 @@ export function PhoneLogin({ type, tenantName, brandColor }: PhoneLoginProps) {
                                 value={countryCode}
                                 onChange={(e) => setCountryCode(e.target.value)}
                                 className="w-32 px-2 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 outline-none transition-all cursor-pointer hover:bg-slate-100 font-bold text-sm"
-                                style={{ focusRing: primaryColor }}
                             >
                                 {COUNTRY_CODES.map(c => (
                                     <option key={`${c.code}-${c.name}`} value={c.code}>
@@ -115,7 +114,9 @@ export function PhoneLogin({ type, tenantName, brandColor }: PhoneLoginProps) {
                             </select>
                             <div className="flex-1 relative">
                                 <Input
+                                    id="parent-phone"
                                     type="tel"
+                                    autoFocus
                                     placeholder="9876543210"
                                     maxLength={10}
                                     value={phoneNumber}

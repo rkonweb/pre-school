@@ -22,6 +22,7 @@ import {
     deleteSkillItemAction,
 } from "@/app/actions/development-actions";
 import { getSchoolBySlugAction } from "@/app/actions/parent-actions";
+import { SettingsPageHeader, SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
 
 const DOMAIN_ICONS: Record<string, any> = {
     Brain, MessageCircle, Heart, Activity, Palette,
@@ -137,27 +138,60 @@ export default function DevelopmentSettingsPage() {
         else toast.error("Failed to delete");
     };
 
-    if (loading) return (
-        <div className="h-96 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-brand" />
-        </div>
-    );
+    if (loading) return <SettingsLoader message="Loading tracking configurations..." />;
+
+    // Calculate totals for stats bar
+    const totalDomains = domains.length;
+    const totalMilestones = domains.reduce((acc, curr) => acc + (curr.milestones?.length || 0), 0);
+    const totalSkills = domains.reduce((acc, curr) => acc + (curr.skills?.length || 0), 0);
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-black text-zinc-900">Development Tracking Settings</h1>
-                    <p className="text-zinc-500 mt-1">Manage developmental domains, milestones, and skill items</p>
+        <div className="max-w-4xl mx-auto pb-20 mt-6" style={{ animation: "fadeUp 0.45s ease both" }}>
+            <style>{`
+                @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+            `}</style>
+
+            {/* ── PAGE HEADER ── */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 15, background: "var(--school-gradient, linear-gradient(135deg,#06B6D4,#3B82F6))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(var(--brand-color-rgb, 6, 182, 212), 0.25)", flexShrink: 0 }}>
+                        <Activity size={24} color="var(--secondary-color, white)" strokeWidth={2} />
+                    </div>
+                    <div>
+                        <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 22, fontWeight: 800, color: "#1E1B4B", margin: 0, lineHeight: 1.2 }}>Development Domains</h1>
+                        <p style={{ fontSize: 13.5, color: "#9CA3AF", margin: "5px 0 0", fontWeight: 500 }}>Manage developmental tracking domains, milestones, and skills.</p>
+                    </div>
                 </div>
-                <button
-                    onClick={() => setShowAddDomain(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-brand text-[var(--secondary-color)] rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all"
-                >
-                    <Plus className="h-3.5 w-3.5" />
-                    Add Domain
-                </button>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <button
+                        onClick={() => setShowAddDomain(true)}
+                        style={{ padding: "10px 22px", borderRadius: 12, background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", color: "var(--secondary-color, white)", textDecoration: "none", fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans',sans-serif", boxShadow: "0 4px 16px rgba(var(--brand-color-rgb, 245, 158, 11), 0.4)", border: "none", cursor: "pointer", transition: "all 0.2s" }}
+                        onMouseEnter={e => { e.currentTarget.style.filter = "brightness(1.08)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.filter = "none"; e.currentTarget.style.transform = "none"; }}
+                    >
+                        <Plus className="h-4 w-4" /> Add Domain
+                    </button>
+                </div>
+            </div>
+
+            {/* ── STATS BAR ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24, animation: "fadeUp 0.4s ease 0.07s both" }}>
+                {[
+                    { label: "Active Domains", value: totalDomains.toString(), color: "#10B981", bg: "#D1FAE5", icon: Brain },
+                    { label: "Total Milestones", value: totalMilestones.toString(), color: "#8B5CF6", bg: "#EDE9FE", icon: CheckCircle2 },
+                    { label: "Tracked Skills", value: totalSkills.toString(), color: "#3B82F6", bg: "#DBEAFE", icon: Settings },
+                ].map((stat, i) => (
+                    <div key={i} style={{ background: "white", borderRadius: 16, padding: "16px 20px", boxShadow: "0 4px 24px rgba(0,0,0,0.07)", border: "1px solid #F3F4F6", display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 46, height: 46, borderRadius: 13, background: stat.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <stat.icon size={20} color={stat.color} strokeWidth={2.2} />
+                        </div>
+                        <div>
+                            <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 18, fontWeight: 800, color: stat.color }}>{stat.value}</div>
+                            <div style={{ fontSize: 12, color: "#9CA3AF", fontWeight: 600 }}>{stat.label}</div>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Add Domain Form */}
@@ -194,8 +228,9 @@ export default function DevelopmentSettingsPage() {
                                             onClick={() => setDomainForm(p => ({ ...p, icon }))}
                                             className={cn(
                                                 "h-10 w-10 rounded-xl flex items-center justify-center transition-all border",
-                                                domainForm.icon === icon ? "bg-brand text-[var(--secondary-color)] border-brand" : "bg-zinc-50 text-zinc-500 border-zinc-200 hover:border-zinc-400"
+                                                domainForm.icon === icon ? "border-transparent" : "bg-zinc-50 text-zinc-500 border-zinc-200 hover:border-zinc-400"
                                             )}
+                                            style={domainForm.icon === icon ? { backgroundColor: "var(--brand-color, #F59E0B)", color: "var(--secondary-color, white)" } : undefined}
                                         >
                                             <Icon className="h-4 w-4" />
                                         </button>
@@ -222,7 +257,11 @@ export default function DevelopmentSettingsPage() {
                     </div>
                     <div className="flex gap-3">
                         <button onClick={handleAddDomain} disabled={savingDomain}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-brand text-[var(--secondary-color)] rounded-xl text-xs font-black hover:brightness-110 transition-all disabled:opacity-50">
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all disabled:opacity-50"
+                            style={{ background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", color: "var(--secondary-color, white)", border: "none" }}
+                            onMouseEnter={e => e.currentTarget.style.filter = "brightness(1.1)"}
+                            onMouseLeave={e => e.currentTarget.style.filter = "none"}
+                        >
                             {savingDomain ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                             Create Domain
                         </button>
@@ -305,7 +344,8 @@ export default function DevelopmentSettingsPage() {
                                                     [domain.id]: { ...prev[domain.id] || { ageGroup: "3-5 years" }, title: e.target.value }
                                                 }))}
                                                 placeholder="New milestone title..."
-                                                className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-brand/30"
+                                                className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-1 transition-all"
+                                                style={{ "--tw-ring-color": "rgba(var(--brand-color-rgb, 245, 158, 11), 0.3)" } as React.CSSProperties}
                                             />
                                             <input
                                                 value={milestoneInputs[domain.id]?.ageGroup || ""}
@@ -319,7 +359,10 @@ export default function DevelopmentSettingsPage() {
                                             <button
                                                 onClick={() => handleAddMilestone(domain.id)}
                                                 disabled={addingMilestone === domain.id}
-                                                className="px-3 py-2 bg-brand text-[var(--secondary-color)] rounded-xl text-xs font-black hover:brightness-110 transition-all disabled:opacity-50"
+                                                className="px-3 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-50"
+                                                style={{ backgroundColor: "var(--brand-color, #F59E0B)", color: "var(--secondary-color, white)" }}
+                                                onMouseEnter={e => e.currentTarget.style.filter = "brightness(1.1)"}
+                                                onMouseLeave={e => e.currentTarget.style.filter = "none"}
                                             >
                                                 {addingMilestone === domain.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
                                             </button>
@@ -348,13 +391,17 @@ export default function DevelopmentSettingsPage() {
                                                 value={skillInputs[domain.id] || ""}
                                                 onChange={(e) => setSkillInputs(prev => ({ ...prev, [domain.id]: e.target.value }))}
                                                 placeholder="New skill name..."
-                                                className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-brand/30"
+                                                className="flex-1 px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-1 transition-all"
+                                                style={{ "--tw-ring-color": "rgba(var(--brand-color-rgb, 245, 158, 11), 0.3)" } as React.CSSProperties}
                                                 onKeyDown={(e) => e.key === "Enter" && handleAddSkill(domain.id)}
                                             />
                                             <button
                                                 onClick={() => handleAddSkill(domain.id)}
                                                 disabled={addingSkill === domain.id}
-                                                className="px-3 py-2 bg-brand text-[var(--secondary-color)] rounded-xl text-xs font-black hover:brightness-110 transition-all disabled:opacity-50"
+                                                className="px-3 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-50"
+                                                style={{ backgroundColor: "var(--brand-color, #F59E0B)", color: "var(--secondary-color, white)" }}
+                                                onMouseEnter={e => e.currentTarget.style.filter = "brightness(1.1)"}
+                                                onMouseLeave={e => e.currentTarget.style.filter = "none"}
                                             >
                                                 {addingSkill === domain.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
                                             </button>

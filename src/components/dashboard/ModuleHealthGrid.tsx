@@ -42,10 +42,10 @@ export function ModuleHealthGrid({ stats }: ModuleHealthGridProps) {
             status: (stats.collectionPercent || 85) > 80 ? "Healthy" : "Attention",
             trend: "-0.5%",
             issues: (stats.collectionPercent || 85) < 100 ? ["Outstanding dues remain"] : [],
-            accent: (stats.collectionPercent || 85) > 80 ? "emerald-500" : "amber-500",
+            accent: (stats.collectionPercent || 85) > 80 ? "emerald-500" : "brand",
             icon: <TrendingUp className="h-6 w-6" />,
-            gradient: (stats.collectionPercent || 85) > 80 ? "from-emerald-500 to-teal-500" : "from-amber-500 to-orange-500",
-            border: (stats.collectionPercent || 85) > 80 ? "border-emerald-500/20" : "border-amber-500/20"
+            gradient: (stats.collectionPercent || 85) > 80 ? "from-emerald-500 to-teal-500" : "bg-brand-gradient",
+            border: (stats.collectionPercent || 85) > 80 ? "border-emerald-500/20" : "border-brand/20"
         },
         {
             id: "transport",
@@ -66,10 +66,10 @@ export function ModuleHealthGrid({ stats }: ModuleHealthGridProps) {
             status: healthData.staleInquiries > 0 ? "Warning" : "Active",
             trend: "+5.2%",
             issues: healthData.staleInquiries > 0 ? [`${healthData.staleInquiries} Stale Inquiries`] : [],
-            accent: healthData.staleInquiries > 0 ? "amber-500" : "emerald-500",
+            accent: healthData.staleInquiries > 0 ? "brand" : "emerald-500",
             icon: <Users className="h-6 w-6" />,
-            gradient: healthData.staleInquiries > 0 ? "from-amber-500 to-yellow-500" : "from-emerald-500 to-teal-500",
-            border: healthData.staleInquiries > 0 ? "border-amber-500/20" : "border-emerald-500/20"
+            gradient: healthData.staleInquiries > 0 ? "bg-brand-gradient" : "from-emerald-500 to-teal-500",
+            border: healthData.staleInquiries > 0 ? "border-brand/20" : "border-emerald-500/20"
         }
     ];
 
@@ -90,7 +90,10 @@ export function ModuleHealthGrid({ stats }: ModuleHealthGridProps) {
                 >
                     {/* Live Indicator */}
                     <div className="absolute top-6 right-6 flex items-center gap-2">
-                        <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", `bg-${m.accent}`)} />
+                        <div 
+                            className={cn("h-1.5 w-1.5 rounded-full animate-pulse", m.accent === "brand" ? "bg-brand" : `bg-${m.accent}`)} 
+                            style={m.accent === "brand" ? { backgroundColor: 'var(--brand-color)' } : {}}
+                        />
                         <span className="text-[10px] font-black uppercase tracking-tighter text-slate-400">Signal Active</span>
                     </div>
 
@@ -107,7 +110,7 @@ export function ModuleHealthGrid({ stats }: ModuleHealthGridProps) {
                                 <motion.circle
                                     cx="56" cy="56" r="50"
                                     fill="transparent"
-                                    stroke="url(#grad)"
+                                    stroke={`url(#grad-${m.id})`}
                                     strokeWidth="8"
                                     strokeDasharray="314.159"
                                     initial={{ strokeDashoffset: 314.159 }}
@@ -116,14 +119,21 @@ export function ModuleHealthGrid({ stats }: ModuleHealthGridProps) {
                                     strokeLinecap="round"
                                 />
                                 <defs>
-                                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <linearGradient id={`grad-${m.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
                                         <stop offset="0%" stopColor="#4F46E5" />
-                                        <stop offset="100%" className={cn(`text-${m.accent}`, "fill-current")} />
+                                        <stop 
+                                            offset="100%" 
+                                            stopColor={m.accent === "brand" ? "var(--brand-color, #F59E0B)" : `var(--${m.accent.split('-')[0]})`}
+                                            className={m.accent === "brand" ? "" : cn(`text-${m.accent}`, "fill-current")}
+                                        />
                                     </linearGradient>
                                 </defs>
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <div className={cn("p-4 rounded-3xl bg-white shadow-lg group-hover:scale-110 transition-transform shadow-slate-200/50", `text-${m.accent}`)}>
+                                <div 
+                                    className={cn("p-4 rounded-3xl bg-white shadow-lg group-hover:scale-110 transition-transform shadow-slate-200/50", m.accent === "brand" ? "text-brand" : `text-${m.accent}`)}
+                                    style={m.accent === "brand" ? { color: 'var(--brand-color)' } : {}}
+                                >
                                     {m.icon}
                                 </div>
                             </div>
@@ -131,7 +141,10 @@ export function ModuleHealthGrid({ stats }: ModuleHealthGridProps) {
                         <div className="mt-4 text-center">
                             <h3 className="text-xl font-black text-slate-900 tracking-tight">{m.title}</h3>
                             <div className="flex items-center gap-2 justify-center">
-                                <span className={cn("text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full", `bg-${m.accent}/10 text-${m.accent}`)}>
+                                <span 
+                                    className={cn("text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full", m.accent === "brand" ? "bg-brand/10 text-brand" : `bg-${m.accent}/10 text-${m.accent}`)}
+                                    style={m.accent === "brand" ? { color: 'var(--brand-color)', backgroundColor: 'rgba(var(--brand-color-rgb), 0.1)' } : {}}
+                                >
                                     {m.status}
                                 </span>
                                 <span className="text-xs font-bold text-slate-400">{m.trend}</span>
@@ -162,10 +175,13 @@ export function ModuleHealthGrid({ stats }: ModuleHealthGridProps) {
                         </div>
                     </div>
 
-                    <div className={cn(
-                        "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-[0.02] transition-opacity rounded-[40px]",
-                        m.gradient
-                    )} />
+                    <div 
+                        className={cn(
+                            "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-[0.02] transition-opacity rounded-[40px]",
+                            m.gradient.startsWith('bg-') ? m.gradient : ""
+                        )} 
+                        style={!m.gradient.startsWith('bg-') ? { background: `var(--school-gradient, linear-gradient(135deg, #4F46E5, var(--brand-color, #F59E0B)))` } : {}}
+                    />
                 </motion.div>
             ))}
         </div>

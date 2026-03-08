@@ -49,7 +49,7 @@ export async function createCanteenPackageAction(slug: string, input: {
             data: { ...input, schoolId: auth.school.id },
         });
         revalidatePath(`/s/${slug}/canteen`);
-        return { success: true, data: pkg };
+        return { success: true, data: JSON.parse(JSON.stringify(pkg)) };
     } catch (e: any) {
         console.error('[createCanteenPackageAction]', e);
         return { success: false, error: e?.message ?? 'Failed to create package' };
@@ -133,7 +133,7 @@ export async function createCanteenItemAction(slug: string, input: {
             data: { ...input, schoolId: auth.school.id },
         });
         revalidatePath(`/s/${slug}/canteen`);
-        return { success: true, data: item };
+        return { success: true, data: JSON.parse(JSON.stringify(item)) };
     } catch (e: any) {
         console.error('[createCanteenItemAction]', e);
         return { success: false, error: e?.message ?? 'Failed to create item' };
@@ -154,7 +154,7 @@ export async function bulkCreateCanteenItemsAction(slug: string, items: any[]) {
         );
 
         revalidatePath(`/s/${slug}/canteen`);
-        return { success: true, count: items.length };
+        return { success: true, count: JSON.parse(JSON.stringify(items.length)) };
     } catch (e: any) {
         console.error('[bulkCreateCanteenItemsAction]', e);
         return { success: false, error: e?.message ?? 'Failed to bulk import items' };
@@ -354,7 +354,7 @@ export async function subscribeStudentToPackageAction(slug: string, input: {
         });
 
         revalidatePath(`/s/${slug}/canteen`);
-        return { success: true, data: subscription };
+        return { success: true, data: JSON.parse(JSON.stringify(subscription)) };
     } catch (e: any) {
         console.error('[subscribeStudentToPackageAction]', e);
         return { success: false, error: e?.message ?? 'Failed to subscribe student' };
@@ -395,7 +395,7 @@ export async function getStudentWalletAction(slug: string, studentId: string) {
                 include: { transactions: true },
             });
         }
-        return { success: true, data: wallet };
+        return { success: true, data: JSON.parse(JSON.stringify(wallet)) };
     } catch (e: any) {
         console.error('[getStudentWalletAction]', e);
         return { success: false, error: e?.message, data: null };
@@ -505,7 +505,7 @@ export async function processCanteenOrderAction(slug: string, input: {
         });
 
         revalidatePath(`/s/${slug}/canteen`);
-        return { success: true, data: result };
+        return { success: true, data: JSON.parse(JSON.stringify(result)) };
     } catch (e: any) {
         console.error('[processCanteenOrderAction]', e);
         return { success: false, error: e?.message ?? 'Failed to process order' };

@@ -68,8 +68,8 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
     const getSeverityColor = (severity: string) => {
         switch (severity) {
             case "high": return "from-rose-500 to-orange-500";
-            case "medium": return "from-amber-500 to-orange-400";
-            default: return "from-brand to-brand/80";
+            case "medium": return "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))";
+            default: return "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))";
         }
     };
 
@@ -101,9 +101,11 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                             {/* Header */}
                             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white/40">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-brand to-brand/80 flex items-center justify-center shadow-lg shadow-brand/20">
-                                        <Sparkles className="h-5 w-5 text-white animate-pulse" />
-                                    </div>
+                                <div 
+                                    className="h-10 w-10 rounded-2xl flex items-center justify-center shadow-lg shadow-brand/20 bg-brand-gradient"
+                                >
+                                    <Sparkles className="h-5 w-5 text-white animate-pulse" />
+                                </div>
                                     <div>
                                         <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                             Aura Assistant
@@ -133,10 +135,12 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                                                 className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-brand/40 transition-all group cursor-pointer"
                                             >
                                                 <div className="flex items-start gap-4">
-                                                    <div className={cn(
-                                                        "h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br shadow-lg flex-shrink-0",
-                                                        getSeverityColor(insight.severity)
-                                                    )}>
+                                                    <div 
+                                                        className={cn(
+                                                            "h-10 w-10 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0",
+                                                            insight.severity === "high" ? "bg-gradient-to-br from-rose-500 to-orange-500" : "bg-brand-gradient"
+                                                        )}
+                                                    >
                                                         <span className="text-white">{getIcon(insight.type)}</span>
                                                     </div>
                                                     <div className="space-y-1">
@@ -155,7 +159,9 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                                 <div className="space-y-4">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Intel Inquiry</h4>
                                     <div className="relative group">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-brand to-brand/50 rounded-2xl opacity-10 group-hover:opacity-20 transition-opacity blur-sm" />
+                                        <div 
+                                            className="absolute -inset-0.5 rounded-2xl opacity-10 group-hover:opacity-20 transition-opacity blur-sm bg-brand-gradient"
+                                        />
                                         <div className="relative p-1 rounded-2xl bg-white border border-slate-100">
                                             {aiResponse && (
                                                 <div className="p-5 bg-slate-50 rounded-xl mb-1 border border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500 holographic-seal">
@@ -213,15 +219,17 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                 {/* Outer Glows */}
                 <div className={cn(
                     "absolute -inset-4 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity animate-pulse",
-                    getSeverityColor(currentInsight.severity).replace('from-', 'bg-').split(' ')[0]
-                )} />
+                    currentInsight.severity === "high" ? "bg-rose-500" : "bg-brand"
+                )} style={currentInsight.severity !== "high" ? { backgroundColor: 'var(--brand-color)' } : {}} />
                 <div className="absolute -inset-8 rounded-full bg-brand/10 blur-3xl" />
 
                 {/* The Orb Interior */}
-                <div className={cn(
-                    "h-20 w-20 rounded-full bg-gradient-to-tr p-[2px] shadow-2xl relative z-10 overflow-hidden",
-                    getSeverityColor(currentInsight.severity)
-                )}>
+                <div 
+                    className={cn(
+                        "h-20 w-20 rounded-full p-[2px] shadow-2xl relative z-10 overflow-hidden",
+                        currentInsight.severity === "high" ? "bg-gradient-to-tr from-rose-500 to-orange-500" : "bg-brand-gradient"
+                    )}
+                >
                     <div className="h-full w-full rounded-full bg-white flex flex-col items-center justify-center relative overflow-hidden group-hover:bg-slate-50 transition-colors">
                         {/* Dynamic Reflection SVG */}
                         <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 100 100">
@@ -240,7 +248,7 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="absolute -top-1 -right-1 h-6 w-6 bg-brand rounded-full flex items-center justify-center text-[10px] font-black text-white border-2 border-white"
+                                className="absolute -top-1 -right-1 h-6 w-6 bg-brand rounded-full flex items-center justify-center text-[10px] font-black text-[var(--secondary-color)] border-2 border-white"
                             >
                                 {insights.length}
                             </motion.div>

@@ -152,7 +152,7 @@ export async function getBulkStudentAnalyticsAction(schoolSlug: string, studentI
             bulkData[studentId] = processStudentData(sExamResults, sAttendance, sHealth, sActivities);
         }
 
-        return { success: true, data: bulkData };
+        return { success: true, data: JSON.parse(JSON.stringify(bulkData)) };
 
     } catch (error: any) {
         console.error("Bulk Analytics Error:", error);

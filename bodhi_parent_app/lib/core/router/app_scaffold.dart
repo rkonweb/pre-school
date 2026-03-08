@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../core/theme/app_theme.dart';
 import '../../ui/components/premium_bottom_nav.dart';
+import '../../ui/components/app_drawer.dart';
+import '../../features/dashboard/data/dashboard_provider.dart';
+import '../widgets/connectivity_banner.dart';
+
+final GlobalKey<ScaffoldState> appScaffoldKey = GlobalKey<ScaffoldState>();
 
 class AppScaffold extends ConsumerStatefulWidget {
   const AppScaffold({
@@ -18,7 +21,7 @@ class AppScaffold extends ConsumerStatefulWidget {
 }
 
 class _AppScaffoldState extends ConsumerState<AppScaffold> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  // Use global key
 
   void _onTap(int index) {
     widget.navigationShell.goBranch(
@@ -30,10 +33,15 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
+      key: appScaffoldKey,
       extendBody: true,
-      drawer: _buildDrawer(context),
-      body: widget.navigationShell,
+      drawer: const AppDrawer(),
+      body: Column(
+        children: [
+          const ConnectivityBanner(),
+          Expanded(child: _buildBody()),
+        ],
+      ),
       bottomNavigationBar: PremiumBottomNav(
         currentIndex: widget.navigationShell.currentIndex,
         onTap: _onTap,
@@ -41,170 +49,156 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     );
   }
 
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      width: 285, // --sm-panel width: 285px
-      backgroundColor: AppTheme.surfaceColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-      ),
-      child: Column(
-        children: [
-          // ── Drawer Header (Profile Section) ──
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 60, 20, 24),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF1A2A6C),
-                  Color(0xFF2350DD),
-                  Color(0xFF00C9A7),
-                ],
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
+  Widget _buildBody() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final dashAsync = ref.watch(dashboardDataProvider);
+        final activeIdx = ref.watch(activeStudentIndexProvider);
+
+        return Stack(
+          children: [
+            widget.navigationShell,
+            // Student switcher chip — only show if multiple students
+            dashAsync.when(
+              data: (data) {
+                final students = data['students'] as List?;
+                if (students == null || students.isEmpty || students.length < 2) {
+                  return const SizedBox.shrink();
+                }
+
+                final activeStudent = students[activeIdx.clamp(0, students.length - 1)];
+                final studentName = activeStudent['name'] ?? 'Student';
+
+                return Positioned(
+                  top: 16,
+                  right: 16,
+                  child: GestureDetector(
+                    onTap: () => _showStudentSwitcher(context, ref, students, activeIdx),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white38, width: 2),
-                        color: Colors.white24,
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'RK',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundColor: Colors.blue.shade200,
+                            child: Text(
+                              studentName[0].toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            studentName,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.expand_more,
+                            size: 20,
+                            color: Colors.grey.shade600,
+                          ),
+                        ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white70),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Rahul Kumar',
-                  style: GoogleFonts.sora(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                const Text(
-                  'Parent Account',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                const SizedBox(height: 20),
-                // Kid Switcher Strip
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(100),
-                    border: Border.all(color: Colors.white10),
-                  ),
-                  child: Row(
-                    children: [
-                      const CircleAvatar(
-                        radius: 12,
-                        backgroundColor: Colors.white24,
-                        child: Text('D', style: TextStyle(fontSize: 10, color: Colors.white)),
-                      ),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text(
-                          'Dhwani Kumar',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
-                        ),
-                      ),
-                      Icon(Icons.unfold_more_rounded, color: Colors.white.withOpacity(0.5), size: 16),
-                    ],
-                  ),
-                ),
-              ],
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
             ),
-          ),
-          
-          // ── Drawer Menu Body ──
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              children: [
-                _buildDrawerItem(Icons.person_outline_rounded, 'My Profile', 'Manage your account'),
-                _buildDrawerItem(Icons.settings_outlined, 'Settings', 'Notifications & Preferences'),
-                _buildDrawerItem(Icons.help_outline_rounded, 'Support', 'Help center & contact'),
-                const Divider(indent: 20, endIndent: 20, color: AppTheme.borderColor),
-                _buildDrawerItem(Icons.info_outline_rounded, 'About App', 'Version 1.0.2'),
-              ],
-            ),
-          ),
-          
-          // ── Drawer Footer ──
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: AppTheme.borderColor)),
-            ),
-            child: Row(
-              children: [
-                const CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppTheme.primaryColor,
-                  child: Icon(Icons.logout_rounded, color: Colors.white, size: 18),
-                ),
-                const SizedBox(width: 12),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Logout', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text('See you soon!', style: TextStyle(color: AppTheme.textTertiary, fontSize: 11)),
-                  ],
-                ),
-                const Spacer(),
-                Switch(
-                  value: false,
-                  onChanged: (v) {},
-                  activeColor: AppTheme.primaryColor,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildDrawerItem(IconData icon, String title, String subtitle) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceColor2,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: AppTheme.textSecondary, size: 20),
+  void _showStudentSwitcher(
+    BuildContext context,
+    WidgetRef ref,
+    List<dynamic> students,
+    int currentIdx,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      subtitle: Text(subtitle, style: const TextStyle(color: AppTheme.textTertiary, fontSize: 11)),
-      onTap: () {},
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.only(top: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  'Select Student',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: students.length,
+                  itemBuilder: (context, idx) {
+                    final student = students[idx];
+                    final name = student['name'] ?? 'Student';
+                    final className = student['class'] ?? 'Class';
+                    final isSelected = idx == currentIdx;
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: isSelected ? Colors.blue : Colors.grey.shade200,
+                        child: Text(
+                          name[0].toUpperCase(),
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.grey.shade800,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        name,
+                        style: TextStyle(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected ? Colors.blue : Colors.black87,
+                        ),
+                      ),
+                      subtitle: Text(className),
+                      trailing: isSelected ? const Icon(Icons.check, color: Colors.blue) : null,
+                      onTap: () {
+                        ref.read(activeStudentIndexProvider.notifier).state = idx;
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

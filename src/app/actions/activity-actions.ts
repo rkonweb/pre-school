@@ -19,7 +19,7 @@ export async function addActivityRecordAction(schoolSlug: string, studentId: str
         });
 
         revalidatePath(`/s/${schoolSlug}/students/${studentId}/progress`);
-        return { success: true, data: record };
+        return { success: true, data: JSON.parse(JSON.stringify(record)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -34,7 +34,7 @@ export async function getStudentActivitiesAction(studentId: string, academicYear
             where,
             orderBy: { date: 'desc' }
         });
-        return { success: true, data: records };
+        return { success: true, data: JSON.parse(JSON.stringify(records)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

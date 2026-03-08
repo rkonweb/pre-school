@@ -355,7 +355,7 @@ export default function HostelAllocationClient({
                                                         setAllocationTarget(student)
                                                         setSelectedRoomId(null)
                                                     }}
-                                                    className="h-8 rounded-lg font-bold text-xs bg-brand text-white shadow-sm"
+                                                    className="h-8 rounded-lg font-bold text-xs bg-brand text-[var(--secondary-color)] shadow-sm"
                                                 >
                                                     <UserPlus className="h-3.5 w-3.5 mr-1" />
                                                     Assign Room
@@ -414,7 +414,7 @@ export default function HostelAllocationClient({
                                                     className={cn(
                                                         "w-full text-left p-3 rounded-2xl border transition-all flex flex-col",
                                                         isSelected
-                                                            ? "bg-brand border-brand/20 shadow-lg shadow-brand/10 text-white"
+                                                            ? "bg-brand border-brand/20 shadow-lg shadow-brand/10 text-[var(--secondary-color)]"
                                                             : isFull
                                                                 ? "bg-zinc-100 border-zinc-200 opacity-50 cursor-not-allowed"
                                                                 : "bg-white border-zinc-200 hover:border-brand/40"

@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:universal_io/io.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
@@ -36,7 +36,7 @@ class EmergencyAlarmService {
         enableVibration: true,
         enableLights: true,
         ledColor: Color.fromARGB(255, 255, 0, 0),
-        audioAttributesUsage: AudioAttributesUsage.alarm,
+        // audioAttributesUsage not available in flutter_local_notifications 16.x
       );
 
       await _localNotifications

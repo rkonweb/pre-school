@@ -23,8 +23,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getIntegrationSettingsAction, saveIntegrationSettingsAction, testAIIntegrationAction } from "@/app/actions/settings-actions";
-import { SettingsPageHeader, SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
-
+import { SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
 export default function IntegrationsPage() {
     const params = useParams();
     const router = useRouter();
@@ -123,9 +122,9 @@ export default function IntegrationsPage() {
 
     const tabs = [
         { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
-        { id: "sms", label: "SMS Gateway", icon: MessageSquare, color: "text-brand", bg: "bg-brand/5" },
+        { id: "sms", label: "SMS Gateway", icon: MessageSquare, color: "text-[var(--brand-color)]", bg: "bg-[rgba(var(--brand-color-rgb),_0.1)]" },
         { id: "payment", label: "Payments", icon: CreditCard, color: "text-purple-500", bg: "bg-purple-50" },
-        { id: "email", label: "Email SMTP", icon: Zap, color: "text-orange-500", bg: "bg-orange-50" },
+        { id: "email", label: "Email SMTP", icon: Zap, color: "text-[var(--brand-color)]", bg: "bg-[rgba(var(--brand-color-rgb),_0.1)]" },
         { id: "maps", label: "Google Maps", icon: MapPin, color: "text-red-500", bg: "bg-red-50" },
         { id: "zoom", label: "Zoom / Meet", icon: Video, color: "text-cyan-500", bg: "bg-cyan-50" },
         { id: "storage", label: "Cloud Drive", icon: Cloud, color: "text-sky-500", bg: "bg-sky-50" },
@@ -139,23 +138,55 @@ export default function IntegrationsPage() {
 
     return (
         <div className="space-y-6 pb-20">
-            <SettingsPageHeader
-                icon={Zap}
-                title="Connectors & APIs"
-                description="Bridge your school with global communication and payment clusters."
-                color="#06B6D4"
-                bg="#CFFAFE"
-                action={
+            <style>{`
+                @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+                @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+            `}</style>
+
+            {/* ── PAGE HEADER ── */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 15, background: "var(--school-gradient, linear-gradient(135deg,#06B6D4,#3B82F6))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(var(--brand-color-rgb, 6, 182, 212), 0.25)", flexShrink: 0 }}>
+                        <Zap size={24} color="var(--secondary-color, white)" strokeWidth={2} />
+                    </div>
+                    <div>
+                        <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 22, fontWeight: 800, color: "#1E1B4B", margin: 0, lineHeight: 1.2 }}>Connectors & APIs</h1>
+                        <p style={{ fontSize: 13.5, color: "#9CA3AF", margin: "5px 0 0", fontWeight: 500 }}>Bridge your school with global communication and payment clusters.</p>
+                    </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        style={{ padding: "10px 22px", borderRadius: 12, background: saving ? "#F3F4F6" : "linear-gradient(135deg,#F59E0B,#F97316)", color: saving ? "#9CA3AF" : "white", border: "none", cursor: saving ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans',sans-serif", boxShadow: saving ? "none" : "0 4px 16px rgba(245,158,11,0.4)" }}
+                        style={{ padding: "10px 22px", borderRadius: 12, background: saving ? "#F3F4F6" : "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", color: saving ? "#9CA3AF" : "white", border: "none", cursor: saving ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "'Plus Jakarta Sans',sans-serif", boxShadow: saving ? "none" : "0 4px 16px rgba(var(--brand-color-rgb, 245, 158, 11), 0.4)", transition: "all 0.2s" }}
+                        onMouseEnter={e => { if(!saving) { e.currentTarget.style.filter = "brightness(1.08)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
+                        onMouseLeave={e => { e.currentTarget.style.filter = "none"; e.currentTarget.style.transform = "none"; }}
                     >
                         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         {saving ? "Syncing..." : "Save Config"}
                     </button>
-                }
-            />
+                </div>
+            </div>
+
+            {/* ── STATS BAR ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24, animation: "fadeUp 0.4s ease 0.07s both" }}>
+                {[
+                    { label: "Active Channels", value: [config.whatsapp?.enabled, config.sms?.enabled, config.email?.enabled].filter(Boolean).length.toString(), color: "#10B981", bg: "#D1FAE5", icon: MessageCircle },
+                    { label: "Financial Tunnel", value: config.payment?.enabled ? "Vault Encrypted" : "Offline", color: config.payment?.enabled ? "#8B5CF6" : "#F59E0B", bg: config.payment?.enabled ? "#EDE9FE" : "#FEF3C7", icon: CreditCard },
+                    { label: "AI & External APIs", value: [config.maps?.enabled, config.zoom?.enabled, config.ai?.enabled].filter(Boolean).length + " Active", color: "#3B82F6", bg: "#DBEAFE", icon: Sparkles },
+                ].map((stat, i) => (
+                    <div key={i} style={{ background: "white", borderRadius: 16, padding: "16px 20px", boxShadow: "0 4px 24px rgba(0,0,0,0.07)", border: "1px solid #F3F4F6", display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 46, height: 46, borderRadius: 13, background: stat.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <stat.icon size={20} color={stat.color} strokeWidth={2.2} />
+                        </div>
+                        <div>
+                            <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 18, fontWeight: 800, color: stat.color }}>{stat.value}</div>
+                            <div style={{ fontSize: 12, color: "#9CA3AF", fontWeight: 600 }}>{stat.label}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
 
             {/* Navigation Tabs */}
             <div className="flex items-center gap-2 p-1.5 bg-zinc-100 rounded-[28px] w-fit overflow-x-auto max-w-full">
@@ -282,9 +313,9 @@ export default function IntegrationsPage() {
                                     <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">SMS Gateway Matrix</h3>
                                     <p className="text-[10px] font-black text-zinc-400 tracking-widest uppercase italic">Tier-1 transit for transactional alerts</p>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand/5 border border-brand/10">
-                                    <div className={cn("h-2 w-2 rounded-full", config.sms.enabled ? "bg-brand animate-pulse" : "bg-zinc-300")} />
-                                    <span className="text-[9px] font-black text-brand uppercase tracking-widest">
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.1)", border: "1px solid rgba(var(--brand-color-rgb, 245, 158, 11), 0.2)" }}>
+                                    <div className={cn("h-2 w-2 rounded-full", config.sms.enabled ? "animate-pulse" : "bg-zinc-300")} style={{ backgroundColor: config.sms.enabled ? "var(--brand-color, #F59E0B)" : undefined }} />
+                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: "var(--brand-color, #F59E0B)" }}>
                                         {config.sms.enabled ? "Synchronized" : "Stalled"}
                                     </span>
                                 </div>
@@ -297,14 +328,15 @@ export default function IntegrationsPage() {
                                         onClick={() => setConfig({ ...config, sms: { ...config.sms, enabled: !config.sms.enabled } })}
                                         className={cn(
                                             "w-full h-14 rounded-2xl border flex items-center justify-between px-6 transition-all",
-                                            config.sms.enabled ? "bg-brand/5 border-brand/20 text-brand" : "bg-zinc-50 border-zinc-100 text-zinc-400"
+                                            !config.sms.enabled && "bg-zinc-50 border-zinc-100 text-zinc-400"
                                         )}
+                                        style={config.sms.enabled ? { backgroundColor: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)", borderColor: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.2)", color: "var(--brand-color, #F59E0B)" } : {}}
                                     >
                                         <span className="text-xs font-black uppercase tracking-widest">Enable SMS</span>
                                         <div className={cn(
                                             "w-10 h-5 rounded-full relative transition-all",
-                                            config.sms.enabled ? "bg-brand" : "bg-zinc-200"
-                                        )}>
+                                            !config.sms.enabled && "bg-zinc-200"
+                                        )} style={{ backgroundColor: config.sms.enabled ? "var(--brand-color, #F59E0B)" : undefined }}>
                                             <div className={cn(
                                                 "absolute top-1 w-3 h-3 bg-white rounded-full transition-all",
                                                 config.sms.enabled ? "right-1" : "left-1"
@@ -442,9 +474,9 @@ export default function IntegrationsPage() {
                                     <h3 className="text-xl font-black text-zinc-900 uppercase tracking-tight">Email SMTP Relay</h3>
                                     <p className="text-[10px] font-black text-zinc-400 tracking-widest uppercase italic">Native mail server orchestration</p>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100">
-                                    <div className={cn("h-2 w-2 rounded-full", config.email.enabled ? "bg-orange-500 animate-pulse" : "bg-zinc-300")} />
-                                    <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.1)", border: "1px solid rgba(var(--brand-color-rgb, 245, 158, 11), 0.2)" }}>
+                                    <div className={cn("h-2 w-2 rounded-full", config.email.enabled ? "animate-pulse" : "bg-zinc-300")} style={{ backgroundColor: config.email.enabled ? "var(--brand-color, #F59E0B)" : undefined }} />
+                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: "var(--brand-color, #F59E0B)" }}>
                                         {config.email.enabled ? "Relay Active" : "Default Server"}
                                     </span>
                                 </div>
@@ -457,14 +489,15 @@ export default function IntegrationsPage() {
                                         onClick={() => setConfig({ ...config, email: { ...config.email, enabled: !config.email.enabled } })}
                                         className={cn(
                                             "w-full h-14 rounded-2xl border flex items-center justify-between px-6 transition-all",
-                                            config.email.enabled ? "bg-orange-50 border-orange-200 text-orange-900" : "bg-zinc-50 border-zinc-100 text-zinc-400"
+                                            !config.email.enabled && "bg-zinc-50 border-zinc-100 text-zinc-400"
                                         )}
+                                        style={config.email.enabled ? { backgroundColor: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)", borderColor: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.2)", color: "var(--brand-color, #F59E0B)" } : {}}
                                     >
                                         <span className="text-xs font-black uppercase tracking-widest">Enable Relay</span>
                                         <div className={cn(
                                             "w-10 h-5 rounded-full relative transition-all",
-                                            config.email.enabled ? "bg-orange-500" : "bg-zinc-200"
-                                        )}>
+                                            !config.email.enabled && "bg-zinc-200"
+                                        )} style={{ backgroundColor: config.email.enabled ? "var(--brand-color, #F59E0B)" : undefined }}>
                                             <div className={cn(
                                                 "absolute top-1 w-3 h-3 bg-white rounded-full transition-all",
                                                 config.email.enabled ? "right-1" : "left-1"
@@ -478,7 +511,8 @@ export default function IntegrationsPage() {
                                         placeholder="e.g. smtp.gmail.com"
                                         value={config.email.host}
                                         onChange={(e) => setConfig({ ...config, email: { ...config.email, host: e.target.value } })}
-                                        className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 px-6 text-xs font-bold text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-orange-500/20 transition-all font-mono"
+                                        title="SMTP Host"
+                                        className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 px-6 text-xs font-bold text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all font-mono"
                                     />
                                 </div>
                                 <div className="space-y-3">
@@ -511,13 +545,14 @@ export default function IntegrationsPage() {
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">Password / API Secret</label>
                                     <div className="relative group">
-                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 group-focus-within:text-orange-500 transition-colors" />
+                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-300 group-focus-within:text-brand transition-colors" />
                                         <input
                                             type="password"
                                             placeholder="••••••••••••"
                                             value={config.email.pass}
                                             onChange={(e) => setConfig({ ...config, email: { ...config.email, pass: e.target.value } })}
-                                            className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 pl-14 pr-6 text-xs font-bold text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-orange-500/20 transition-all"
+                                            title="Sender Email"
+                                            className="w-full h-14 rounded-2xl border border-zinc-100 bg-zinc-50 pl-14 pr-6 text-xs font-bold text-zinc-900 outline-none focus:bg-white focus:ring-2 focus:ring-brand/20 transition-all"
                                         />
                                     </div>
                                 </div>
@@ -1015,7 +1050,7 @@ export default function IntegrationsPage() {
 
             {/* Security Warning */}
             <div className="p-8 rounded-[32px] bg-amber-50 border border-amber-100 flex items-start gap-4">
-                <AlertCircle className="h-6 w-6 text-amber-500 mt-1" />
+                <AlertCircle className="h-6 w-6 mt-1 text-amber-500" />
                 <div className="space-y-2">
                     <h4 className="text-sm font-black text-amber-900 uppercase">Cryptographic Safety Disclaimer</h4>
                     <p className="text-xs text-amber-700 leading-relaxed font-medium">

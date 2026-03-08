@@ -365,7 +365,7 @@ export default function BillingDashboard() {
                 <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950 flex flex-col overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                            <thead>
                                 <tr>
                                     <th className="px-6 py-4 font-medium cursor-pointer hover:bg-zinc-100 transition-colors" onClick={() => handleSort('id')}>
                                         <div className="flex items-center gap-1">Ref <SortIcon field="id" /></div>

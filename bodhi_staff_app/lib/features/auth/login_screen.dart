@@ -55,9 +55,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       final data = await ref.read(authServiceProvider).verifyOtp(mobile, code);
 
-      // Initialize RBAC with the role returned from the real JWT response
+      // Initialize RBAC with the role and permissions returned from the backend
       final role = data['user']['role'] ?? 'STAFF';
-      ref.read(rbacProvider.notifier).initializeWith(role, [
+      final List<dynamic>? backendPermissions = data['user']['permissions'];
+      
+      final List<String> permissions = backendPermissions?.map((e) => e.toString()).toList() ?? [
         'dashboard.view',
         'tasks.view',
         'communication.view',
@@ -71,8 +73,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         'development.view',
         'health.view',
         'chat.view',
-      ] // Eventually derived from backend
-          );
+      ];
+
+      ref.read(rbacProvider.notifier).initializeWith(role, permissions);
 
       // Apply school brand colors from the auth response
       await ref.read(schoolBrandProvider.notifier).applyFromAuthResponse(data);

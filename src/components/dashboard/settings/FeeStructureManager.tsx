@@ -36,7 +36,7 @@ interface FeeStructureManagerProps {
 }
 
 export function FeeStructureManager({ slug, initialData, classrooms, academicYears = [], currentAcademicYear, onRefresh, currency }: FeeStructureManagerProps) {
-    const defaultYear = currentAcademicYear?.name || (academicYears && academicYears.length > 0 ? academicYears[0].name : "2024-25");
+    const defaultYear = currentAcademicYear?.name || (academicYears && academicYears.length > 0 ? academicYears[0].name : "2025-26");
     const [selectedYear, setSelectedYear] = useState(defaultYear);
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -91,7 +91,7 @@ export function FeeStructureManager({ slug, initialData, classrooms, academicYea
     // Form State
     const [formData, setFormData] = useState({
         name: "", // Will be auto-generated or hidden
-        academicYear: "2024-25",
+        academicYear: "2025-26",
         description: "",
         termConfig: {
             count: 1,
@@ -416,17 +416,14 @@ export function FeeStructureManager({ slug, initialData, classrooms, academicYea
     return (
         <div className="max-w-6xl space-y-10 animate-in fade-in duration-700 pb-20">
             <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-3xl font-black tracking-tight text-zinc-900">Fee Management</h2>
-                    <p className="text-sm font-medium text-zinc-500 mt-1">Configure fees for each grade for the academic year.</p>
-                </div>
+                <div></div>
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-zinc-200">
+                    <div className="flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded-xl border border-zinc-200">
                         <span className="text-xs font-bold text-zinc-400 uppercase">Academic Year</span>
                         <select
                             value={selectedYear}
                             onChange={(e) => setSelectedYear(e.target.value)}
-                            className="bg-transparent font-bold text-zinc-900 outline-none text-sm"
+                            className="bg-transparent font-bold text-zinc-900 outline-none text-sm cursor-pointer"
                         >
                             {academicYears.length > 0 ? (
                                 academicYears.map(year => (
@@ -434,10 +431,8 @@ export function FeeStructureManager({ slug, initialData, classrooms, academicYea
                                 ))
                             ) : (
                                 <>
-                                    <option>2023-24</option>
-                                    <option>2024-25</option>
                                     <option>2025-26</option>
-                                    <option>2026-27</option>
+                                    <option>2024-25</option>
                                 </>
                             )}
                         </select>

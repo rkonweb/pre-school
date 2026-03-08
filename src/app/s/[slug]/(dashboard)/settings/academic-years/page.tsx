@@ -9,11 +9,14 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { getAcademicYearsAction, createAcademicYearAction, updateAcademicYearAction } from "@/app/actions/academic-year-actions";
-import { SettingsPageHeader, SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
+import { SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────
 const C = {
-    amber: "#F59E0B", amberD: "#D97706", amberL: "#FEF3C7", amberXL: "#FFFBEB",
+    amber: "var(--brand-color, #F59E0B)",
+    amberD: "var(--brand-color, #D97706)",
+    amberL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.12)",
+    amberXL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)",
     navy: "#1E1B4B", navyM: "#312E81",
     green: "#10B981", greenD: "#059669", greenL: "#D1FAE5", greenXL: "#ECFDF5",
     red: "#EF4444", redL: "#FEE2E2",
@@ -32,7 +35,7 @@ function Btn({ variant = "primary", size = "md", icon: Icon, loading, disabled, 
     const [ripples, setRipples] = useState<any[]>([]);
     const ref = useRef<any>();
     const vs: any = {
-        primary: { bg: `linear-gradient(135deg,${C.amber},${C.orange})`, color: "white", sh: `0 4px 16px ${C.amber}45` },
+        primary: { bg: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", color: "var(--secondary-color, white)", sh: "0 4px 16px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)" },
         secondary: { bg: "white", color: C.navy, border: `1.5px solid ${C.g200}`, sh: C.sh },
         danger: { bg: `linear-gradient(135deg,${C.red},#DC2626)`, color: "white", sh: `0 4px 14px ${C.red}40` },
         success: { bg: `linear-gradient(135deg,${C.green},${C.greenD})`, color: "white", sh: `0 4px 14px ${C.green}40` },
@@ -154,21 +157,45 @@ export default function AcademicYearsPage() {
                 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
             `}</style>
 
-            <SettingsPageHeader
-                icon={CalendarDays}
-                title="Academic Years"
-                description="Manage and define institutional calendar cycles and active periods."
-                color={C.green}
-                bg={C.greenL}
-                action={
-                    <div style={{ display: "flex", gap: 10 }}>
-                        <Btn icon={RefreshCw} variant="secondary" size="sm" onClick={loadData}>Refresh</Btn>
-                        <Btn icon={Plus} variant="primary" size="md" onClick={() => { setEditingYear(null); setFormData({ name: "", startDate: "", endDate: "", isCurrent: false }); setShowForm(true); }}>
-                            Add Year
-                        </Btn>
+            {/* ── PAGE HEADER ── */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 15, background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)", flexShrink: 0 }}>
+                        <CalendarDays size={24} color="var(--secondary-color, white)" strokeWidth={2} />
                     </div>
-                }
-            />
+                    <div>
+                        <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 22, fontWeight: 800, color: C.navy, margin: 0, lineHeight: 1.2 }}>Academic Years</h1>
+                        <p style={{ fontSize: 13.5, color: C.g400, margin: "5px 0 0", fontWeight: 500 }}>Manage and define institutional calendar cycles and active periods.</p>
+                    </div>
+                </div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    <Btn icon={RefreshCw} variant="secondary" size="md" onClick={loadData}>
+                        Refresh
+                    </Btn>
+                    <Btn icon={Plus} variant="primary" size="md" onClick={() => { setEditingYear(null); setFormData({ name: "", startDate: "", endDate: "", isCurrent: false }); setShowForm(true); }}>
+                        Add Year
+                    </Btn>
+                </div>
+            </div>
+
+            {/* ── STATS BAR ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24, animation: "fadeUp 0.4s ease 0.07s both" }}>
+                {[
+                    { label: "Total Sessions", value: years.length.toString(), color: C.blue, bg: C.blueL, icon: Archive },
+                    { label: "Active Session", value: currentYear ? currentYear.name : "None", color: currentYear ? C.green : C.orange, bg: currentYear ? C.greenL : C.amberL, icon: CheckCircle2 },
+                    { label: "System Status", value: currentYear ? "Operational" : "Pending Setup", color: currentYear ? C.green : C.red, bg: currentYear ? C.greenL : C.redL, icon: Settings2 },
+                ].map((stat: any, i) => (
+                    <div key={i} style={{ background: "white", borderRadius: 16, padding: "16px 20px", boxShadow: C.sh, border: `1px solid ${C.g100}`, display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 46, height: 46, borderRadius: 13, background: stat.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <stat.icon size={20} color={stat.color} strokeWidth={2.2} />
+                        </div>
+                        <div>
+                            <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 18, fontWeight: 800, color: stat.color }}>{stat.value}</div>
+                            <div style={{ fontSize: 12, color: C.g400, fontWeight: 600 }}>{stat.label}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
 
             {/* Add/Edit Modal */}
             {showForm && (

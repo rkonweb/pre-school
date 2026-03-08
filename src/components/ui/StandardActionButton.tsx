@@ -59,7 +59,7 @@ export const StandardActionButton = React.forwardRef<HTMLButtonElement, Standard
             switch (variant) {
                 case 'primary':
                     return cn(base,
-                        "h-11 px-5 bg-brand text-[var(--secondary-color)] rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-brand/20 hover:scale-[1.02] hover:brightness-110 active:scale-95 border-none disabled:opacity-50"
+                        "h-11 px-5 bg-brand-gradient text-[var(--secondary-color)] rounded-2xl font-bold text-sm uppercase tracking-widest shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.5)] hover:scale-[1.02] hover:brightness-110 active:scale-95 border-none disabled:opacity-50"
                     );
                 case 'secondary':
                     return cn(base,

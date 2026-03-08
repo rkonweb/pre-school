@@ -9,7 +9,11 @@ export enum AuditEventType {
     UNAUTHORIZED_ACCESS = "UNAUTHORIZED_ACCESS",
     FILE_UPLOAD = "FILE_UPLOAD",
     FILE_DELETE = "FILE_DELETE",
-    DATA_EXPORT = "DATA_EXPORT"
+    DATA_EXPORT = "DATA_EXPORT",
+    // New Staff HR tracking events
+    STAFF_CREATED = "STAFF_CREATED",
+    STAFF_UPDATED = "STAFF_UPDATED",
+    STAFF_DELETED = "STAFF_DELETED"
 }
 
 export async function logAuditEvent(
@@ -17,10 +21,12 @@ export async function logAuditEvent(
     description: string,
     metadata?: Record<string, any>,
     userId?: string,
-    schoolId?: string
+    schoolId?: string,
+    entityType?: string,
+    entityId?: string
 ) {
     try {
-        // Log to console for now (stdout is captured by cloud providers)
+        // Log to console for observability
         console.log(`[AUDIT] [${type}] ${description}`, {
             userId,
             schoolId,
@@ -28,24 +34,22 @@ export async function logAuditEvent(
             timestamp: new Date().toISOString()
         });
 
-        // If we had an AuditLog table in Prisma, we would write here.
-        // For now, we will simulate or assume the table might not exist yet 
-        // and stick to console + potential future DB write.
-
-        /*
-        await prisma.auditLog.create({
-            data: {
-                type,
-                description,
-                userId,
-                schoolId,
-                metadata: metadata ? JSON.stringify(metadata) : null
-            }
-        });
-        */
-
+        // If we don't have enough data to identify the school/user, fallback to system defaults or skip
+        if (schoolId && userId) {
+            await prisma.auditLog.create({
+                data: {
+                    schoolId,
+                    userId,
+                    action: type,
+                    entityType,
+                    entityId,
+                    details: metadata ? JSON.parse(JSON.stringify({ description, ...metadata })) : { description },
+                    isSuspicious: false,
+                    riskScore: 0
+                }
+            });
+        }
     } catch (error) {
-        console.error("Failed to write audit log:", error);
-        // Fail open - don't block action if logging fails
+        console.error("Failed to write audit log to database:", error);
     }
 }

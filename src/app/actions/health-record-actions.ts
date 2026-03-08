@@ -118,7 +118,7 @@ export async function createHealthRecordAction(
         revalidatePath(`/s/${slug}/students/${studentId}`);
         revalidatePath(`/s/${slug}/students/reports/student/${studentId}`);
 
-        return { success: true, data: record };
+        return { success: true, data: JSON.parse(JSON.stringify(record)) };
     } catch (error: any) {
         console.error("Create Health Record Error:", error);
         return { success: false, error: error.message };
@@ -194,7 +194,7 @@ export async function getHealthRecordsAction(slug: string, studentId: string) {
             };
         });
 
-        return { success: true, data: enhancedRecords };
+        return { success: true, data: JSON.parse(JSON.stringify(enhancedRecords)) };
     } catch (error: any) {
         console.error("Get Health Records Error:", error);
         return { success: false, error: error.message };
@@ -313,7 +313,7 @@ export async function updateHealthRecordAction(
         revalidatePath(`/s/${slug}/students/${existingRecord.studentId}`);
         revalidatePath(`/s/${slug}/students/reports/student/${existingRecord.studentId}`);
 
-        return { success: true, data: record };
+        return { success: true, data: JSON.parse(JSON.stringify(record)) };
     } catch (error: any) {
         console.error("Update Health Record Error:", error);
         return { success: false, error: error.message };
@@ -447,7 +447,7 @@ export async function getAllStudentHealthRecordsAction(slug: string) {
             };
         });
 
-        return { success: true, data: enhancedStudents };
+        return { success: true, data: JSON.parse(JSON.stringify(enhancedStudents)) };
     } catch (error: any) {
         console.error("Get All Students Health Error:", error);
         return { success: false, error: error.message };

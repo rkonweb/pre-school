@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/auth/splash_screen.dart';
 import '../../features/auth/login_screen.dart';
+import '../../features/auth/consent_screen.dart';
 import '../../features/today/presentation/today_screen.dart';
 import '../../features/finance/presentation/finance_screen.dart';
 import '../../features/messages/presentation/messages_screen.dart';
@@ -22,6 +23,7 @@ import '../../features/documents/presentation/documents_screen.dart';
 import '../../features/events/presentation/events_screen.dart';
 import '../../features/alerts/presentation/alerts_screen.dart';
 import '../../features/alerts/presentation/emergency_alarm_screen.dart';
+// CircularsScreen is defined in alerts_screen.dart
 // Phase 3
 import '../../features/ptm/presentation/ptm_screen.dart';
 import '../../features/store/presentation/store_screen.dart';
@@ -31,6 +33,7 @@ import '../../features/canteen/presentation/canteen_screen.dart';
 // Phase 5
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/hostel/presentation/hostel_screen.dart';
+import 'package:bodhi_parent_app/features/extracurricular/presentation/extracurricular_screen.dart';
 import 'app_scaffold.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -47,6 +50,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/consent',
+        builder: (context, state) => const ConsentScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -200,6 +207,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             alertType: extra['alertType'] as String? ?? 'GENERAL',
           );
         },
+      ),
+      GoRoute(
+        path: '/extracurricular',
+        builder: (context, state) => const ExtracurricularScreen(),
       ),
     ],
   );

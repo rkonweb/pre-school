@@ -151,11 +151,11 @@ export default function InventoryPage() {
                             <table className="w-full text-left text-sm">
                                 <thead>
                                     <tr className="border-b border-zinc-100 dark:border-zinc-900">
-                                        <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Item Name</th>
-                                        <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Category</th>
-                                        <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Stock Level</th>
-                                        <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Status</th>
-                                        <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Last Updated</th>
+                                        <th className="px-6 py-4 font-semibold">Item Name</th>
+                                        <th className="px-6 py-4 font-semibold">Category</th>
+                                        <th className="px-6 py-4 font-semibold">Stock Level</th>
+                                        <th className="px-6 py-4 font-semibold">Status</th>
+                                        <th className="px-6 py-4 font-semibold">Last Updated</th>
                                         <th className="px-6 py-4"></th>
                                     </tr>
                                 </thead>
@@ -211,12 +211,12 @@ export default function InventoryPage() {
                         <table className="w-full text-left text-sm">
                             <thead>
                                 <tr className="border-b border-zinc-100 dark:border-zinc-900">
-                                    <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Request ID</th>
-                                    <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Item</th>
-                                    <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Requester</th>
-                                    <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Status</th>
-                                    <th className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-50">Date</th>
-                                    <th className="px-6 py-4 text-right font-semibold text-zinc-900 dark:text-zinc-50">Actions</th>
+                                    <th className="px-6 py-4 font-semibold">Request ID</th>
+                                    <th className="px-6 py-4 font-semibold">Item</th>
+                                    <th className="px-6 py-4 font-semibold">Requester</th>
+                                    <th className="px-6 py-4 font-semibold">Status</th>
+                                    <th className="px-6 py-4 font-semibold">Date</th>
+                                    <th className="px-6 py-4 text-right font-semibold">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-50 dark:divide-zinc-900">

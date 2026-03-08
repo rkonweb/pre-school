@@ -82,7 +82,7 @@ export default function InquiryDashboard() {
                 <div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 text-xs font-bold uppercase tracking-wider mb-4">
                         <Calendar className="h-3 w-3" />
-                        <span>Academic Year 2026-27</span>
+                        <span>Academic Year 2025-26</span>
                     </div>
                     <h1 className="text-4xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
                         Admissions Overview
@@ -115,7 +115,7 @@ export default function InquiryDashboard() {
                     <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-xl shadow-zinc-200/40">
                         <div className="flex items-center justify-between mb-8">
                             <div>
-                                <h3 className="text-lg font-black uppercase tracking-tight">Conversion Funnel</h3>
+                                <h2 className="text-lg font-black uppercase tracking-tight">Conversion Funnel</h2>
                                 <p className="text-xs text-zinc-400 font-medium mt-1">Lead progression from enquiry to enrollment</p>
                             </div>
                             <button className="flex items-center gap-2 text-xs font-bold text-zinc-400 hover:text-brand transition-colors">
@@ -152,10 +152,10 @@ export default function InquiryDashboard() {
                     {/* Live Feed */}
                     <div className="rounded-[32px] border border-zinc-200 bg-white p-8 shadow-xl shadow-zinc-200/40 h-fit max-h-[800px] overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between mb-6 shrink-0">
-                            <h3 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
+                            <h2 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
                                 Live Feed
-                            </h3>
+                            </h2>
                             <Link href="#" className="text-[10px] font-black uppercase text-zinc-400 hover:text-zinc-600">View All</Link>
                         </div>
                         <div className="overflow-y-auto pr-2 -mr-2">
@@ -165,7 +165,7 @@ export default function InquiryDashboard() {
 
                     {/* Top Performers Mini-Widget */}
                     <div className="rounded-[32px] bg-zinc-900 text-white p-8 shadow-xl shadow-zinc-900/20">
-                        <h3 className="text-sm font-black uppercase tracking-widest text-brand mb-6">Top Performers</h3>
+                        <h2 className="text-sm font-black uppercase tracking-widest text-brand mb-6">Top Performers</h2>
                         {stats?.staffPerformance?.map((staff: any, i: number) => (
                             <div key={i} className="flex items-center justify-between mb-4 last:mb-0">
                                 <div className="flex items-center gap-3">

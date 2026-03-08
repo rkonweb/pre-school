@@ -135,7 +135,7 @@ export default function DriversPage() {
                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest italic tracking-[3px]">Mapping personnel data...</p>
                 </div>
             ) : (
-                <div className={cn(tableStyles.container, "bg-white overflow-hidden shadow-xl shadow-zinc-200/40")}>
+                <div style={tableStyles.container} className="bg-white overflow-hidden shadow-xl shadow-zinc-200/40">
                     {drivers.length === 0 ? (
                         <div className="py-24 text-center">
                             <div className="mx-auto h-20 w-20 rounded-[32px] bg-zinc-50 flex items-center justify-center mb-6">
@@ -148,12 +148,12 @@ export default function DriversPage() {
                         <div className="overflow-x-auto">
                             <table className="w-full border-collapse">
                                 <thead>
-                                    <tr className="bg-zinc-50/50 border-b border-zinc-100">
-                                        <th className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-center w-20">Actions</th>
+                                    <tr style={tableStyles.thead}>
+                                        <th style={tableStyles.thNoSort} className="text-center w-20">Actions</th>
                                         {columns.map(col => {
                                             if (!visibleColumns[col.id]) return null;
                                             return (
-                                                <th key={col.id} className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-left">
+                                                <th key={col.id} style={tableStyles.th}>
                                                     {col.label}
                                                 </th>
                                             );
@@ -164,13 +164,10 @@ export default function DriversPage() {
                                     {drivers.map((driver, i) => (
                                         <tr
                                             key={driver.id}
-                                            className={cn(
-                                                "group transition-all duration-200 border-b border-zinc-50 last:border-0",
-                                                i % 2 === 0 ? "bg-white" : "bg-zinc-50/20",
-                                                "hover:bg-amber-50/50"
-                                            )}
+                                            style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
+                                            className="group transition-all duration-200"
                                         >
-                                            <td className="px-6 py-4 text-center">
+                                            <td className="px-6 py-4 text-center" style={tableStyles.td}>
                                                 <RowActions
                                                     onView={`/s/${slug}/transport/fleet/drivers/${driver.id}`}
                                                     viewTooltip="View Pilot Clearance"
@@ -180,7 +177,7 @@ export default function DriversPage() {
                                                 if (!visibleColumns[col.id]) return null;
 
                                                 if (col.id === 'driver') return (
-                                                    <td key={col.id} className="px-6 py-4">
+                                                    <td key={col.id} className="px-6 py-4" style={tableStyles.td}>
                                                         <div className="flex items-center gap-4">
                                                             <div className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 font-black text-lg shrink-0 border border-zinc-200/50 shadow-sm">
                                                                 {driver.name.charAt(0)}
@@ -189,26 +186,26 @@ export default function DriversPage() {
                                                                 <h3 className="font-black text-zinc-900 whitespace-nowrap uppercase tracking-tight text-sm leading-tight">
                                                                     {driver.name}
                                                                 </h3>
-                                                                <div className="flex items-center gap-1 font-bold text-amber-500 text-[10px] uppercase mt-1">
+                                                                <div className="flex items-center gap-1 font-bold text-brand text-[10px] uppercase mt-1">
                                                                     {driver.averageScore ? (driver.averageScore / 20).toFixed(1) : "5.0"}
-                                                                    <Star className="h-2.5 w-2.5 fill-amber-500" />
+                                                                    <Star className="h-2.5 w-2.5 fill-brand" />
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                 );
                                                 if (col.id === 'license') return (
-                                                    <td key={col.id} className="px-6 py-4">
+                                                    <td key={col.id} className="px-6 py-4" style={tableStyles.td}>
                                                         <span className="font-black text-zinc-900 whitespace-nowrap text-xs uppercase tracking-widest bg-zinc-100/50 px-2 py-1 rounded-lg border border-zinc-200/30">{driver.licenseNumber}</span>
                                                     </td>
                                                 );
                                                 if (col.id === 'contact') return (
-                                                    <td key={col.id} className="px-6 py-4">
+                                                    <td key={col.id} className="px-6 py-4" style={tableStyles.td}>
                                                         <span className="font-bold text-zinc-600 whitespace-nowrap text-sm">{driver.phone}</span>
                                                     </td>
                                                 );
                                                 if (col.id === 'status') return (
-                                                    <td key={col.id} className="px-6 py-4">
+                                                    <td key={col.id} className="px-6 py-4" style={tableStyles.td}>
                                                         <StatusChip label="Cleared" />
                                                     </td>
                                                 );

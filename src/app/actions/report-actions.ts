@@ -144,7 +144,7 @@ export async function getTransportDailyReportsAction(schoolSlug: string, filters
             orderBy: { date: 'desc' }
         });
 
-        return { success: true, data: logs };
+        return { success: true, data: JSON.parse(JSON.stringify(logs)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

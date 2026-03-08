@@ -387,7 +387,7 @@ export default function NewVendorPage({ params }: { params: Promise<{ slug: stri
                         <button
                             type="submit"
                             disabled={saving}
-                            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-brand font-black text-white px-8 py-4 transition-all hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/20 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-brand font-black text-[var(--secondary-color)] px-8 py-4 transition-all hover:bg-brand/90 hover:shadow-lg hover:shadow-brand/20 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-12deg)_translateX(-100%)] group-hover:duration-1000 group-hover:[transform:skew(-12deg)_translateX(100%)]">
                                 <div className="relative h-full w-8 bg-white/20" />

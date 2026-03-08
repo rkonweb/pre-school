@@ -30,7 +30,7 @@ export async function getStoreCatalogAction(slug: string, type?: string) {
             include: { inventories: true },
             orderBy: [{ type: "asc" }, { name: "asc" }],
         });
-        return { success: true, data: items };
+        return { success: true, data: JSON.parse(JSON.stringify(items)) };
     } catch (error) {
         console.error("Error fetching store catalog:", error);
         return { success: false, error: "Failed to fetch store catalog" };
@@ -77,7 +77,7 @@ export async function bulkCreateStoreItemsAction(slug: string, rows: {
             } catch { skipped++; }
         }
         revalidatePath(`/s/[slug]/store/catalog`, "page");
-        return { success: true, data: { created, skipped } };
+        return { success: true, data: JSON.parse(JSON.stringify({ created, skipped })) };
     } catch (error) {
         console.error("Bulk import error:", error);
         return { success: false, error: "Bulk import failed" };
@@ -115,7 +115,7 @@ export async function bulkReplaceStoreItemsAction(slug: string, rows: {
             } catch { skipped++; }
         }
         revalidatePath(`/s/[slug]/store/catalog`, "page");
-        return { success: true, data: { created, skipped } };
+        return { success: true, data: JSON.parse(JSON.stringify({ created, skipped })) };
     } catch (error) {
         console.error("Bulk replace error:", error);
         return { success: false, error: "Bulk replace failed" };
@@ -166,7 +166,7 @@ export async function bulkUpdateByNameAction(slug: string, rows: {
             } catch { skipped++; }
         }
         revalidatePath(`/s/[slug]/store/catalog`, "page");
-        return { success: true, data: { updated, created, skipped } };
+        return { success: true, data: JSON.parse(JSON.stringify({ updated, created, skipped })) };
     } catch (error) {
         console.error("Bulk update error:", error);
         return { success: false, error: "Bulk update failed" };
@@ -213,7 +213,7 @@ export async function createStoreItemAction(data: {
         });
 
         revalidatePath(`/s/[slug]/store/catalog`, "page");
-        return { success: true, data: item };
+        return { success: true, data: JSON.parse(JSON.stringify(item)) };
     } catch (error) {
         console.error("Error creating store item:", error);
         return { success: false, error: "Failed to create store item" };
@@ -287,7 +287,7 @@ export async function getStoreInventoryAction(slug: string) {
             include: { item: true },
             orderBy: { updatedAt: "desc" },
         });
-        return { success: true, data: inventories };
+        return { success: true, data: JSON.parse(JSON.stringify(inventories)) };
     } catch (error) {
         console.error("Error fetching inventory:", error);
         return { success: false, error: "Failed to fetch inventory" };
@@ -341,7 +341,7 @@ export async function getStorePackagesAction(slug: string, academicYearId?: stri
             },
             orderBy: [{ gradeLevel: "asc" }, { name: "asc" }],
         });
-        return { success: true, data: packages };
+        return { success: true, data: JSON.parse(JSON.stringify(packages)) };
     } catch (error) {
         console.error("Error fetching packages:", error);
         return { success: false, error: "Failed to fetch packages" };
@@ -390,7 +390,7 @@ export async function createStorePackageAction(data: {
         });
 
         revalidatePath(`/s/[slug]/store/packages`, "page");
-        return { success: true, data: pkg };
+        return { success: true, data: JSON.parse(JSON.stringify(pkg)) };
     } catch (error) {
         console.error("Error creating package:", error);
         return { success: false, error: "Failed to create package" };
@@ -526,7 +526,7 @@ export async function assignPackageToGradeAction(data: {
         revalidatePath(`/s/[slug]/store/orders`, "page");
         return {
             success: true,
-            data: { created, skipped, total: students.length },
+            data: JSON.parse(JSON.stringify({ created, skipped, total: students.length })),
         };
     } catch (error) {
         console.error("Error assigning package:", error);
@@ -566,7 +566,7 @@ export async function getStoreOrdersAction(
             },
             orderBy: { createdAt: "desc" },
         });
-        return { success: true, data: orders };
+        return { success: true, data: JSON.parse(JSON.stringify(orders)) };
     } catch (error) {
         console.error("Error fetching orders:", error);
         return { success: false, error: "Failed to fetch orders" };
@@ -651,7 +651,7 @@ export async function createAdhocOrderAction(data: {
         });
 
         revalidatePath(`/s/[slug]/store/orders`, "page");
-        return { success: true, data: order };
+        return { success: true, data: JSON.parse(JSON.stringify(order)) };
     } catch (error) {
         console.error("Error creating order:", error);
         return { success: false, error: "Failed to create order" };
@@ -792,7 +792,7 @@ export async function getStoreSalesSummaryAction(slug: string, academicYearId?: 
             }
         }
 
-        return { success: true, data: stats };
+        return { success: true, data: JSON.parse(JSON.stringify(stats)) };
     } catch (error) {
         console.error("Error fetching sales summary:", error);
         return { success: false, error: "Failed to fetch sales summary" };
@@ -814,7 +814,7 @@ export async function getStudentStoreOrdersAction(studentId: string, slug: strin
             },
             orderBy: { createdAt: "desc" },
         });
-        return { success: true, data: orders };
+        return { success: true, data: JSON.parse(JSON.stringify(orders)) };
     } catch (error) {
         console.error("Error fetching student orders:", error);
         return { success: false, error: "Failed to fetch orders" };
@@ -848,7 +848,7 @@ export async function getMandatoryPackageForStudentAction(studentId: string, slu
             orderBy: { createdAt: "desc" },
         });
 
-        return { success: true, data: pendingPackageOrder };
+        return { success: true, data: JSON.parse(JSON.stringify(pendingPackageOrder)) };
     } catch (error) {
         console.error("Error fetching mandatory package:", error);
         return { success: false, error: "Failed to fetch package" };
@@ -1001,7 +1001,7 @@ export async function createStoreOrderAction(studentId: string, slug: string, pa
         });
 
         revalidatePath(`/s/[slug]/store/orders`, "page");
-        return { success: true, data: newOrder };
+        return { success: true, data: JSON.parse(JSON.stringify(newOrder)) };
     } catch (error) {
         console.error("Error creating package order:", error);
         return { success: false, error: "Failed to order package" };

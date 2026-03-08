@@ -191,6 +191,42 @@
 .slideRight-anim { animation: slideRight 0.3s ease both; }
 .countUp-anim { animation: countUp 0.6s ease both; }
 
+/* ── Global Branding Utilities ── */
+.bg-brand-gradient {
+  background: var(--school-gradient, linear-gradient(135deg, #F59E0B, #F97316)) !important;
+  color: var(--secondary-color, white) !important;
+}
+
+.bg-clip-text {
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* ── Table Header Branding Standard ── */
+thead {
+  background: var(--school-gradient, linear-gradient(135deg, #F59E0B, #F97316)) !important;
+  border-bottom: 0 !important;
+}
+
+thead th, 
+thead th * {
+  color: var(--secondary-color, white) !important;
+}
+
+.text-brand {
+  color: var(--brand-color, #F59E0B) !important;
+}
+.border-brand {
+  border-color: var(--brand-color, #F59E0B) !important;
+}
+.bg-brand {
+  background-color: var(--brand-color, #F59E0B) !important;
+  color: var(--secondary-color, white) !important;
+}
+.ring-brand {
+  --tw-ring-color: var(--brand-color, #F59E0B) !important;
+}
+
 /* ── Misc ── */
 .animation-delay-2000 { animation-delay: 2s; }
 .animation-delay-4000 { animation-delay: 4s; }

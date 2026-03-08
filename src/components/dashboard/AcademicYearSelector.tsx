@@ -103,13 +103,13 @@ export function AcademicYearSelector() {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 transition-colors text-white active:scale-95 backdrop-blur-sm relative z-[1001]"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 transition-colors text-[var(--secondary-color)] active:scale-95 backdrop-blur-sm relative z-[1001]"
             >
-                <CalendarDays className="h-4 w-4 text-white/70" />
+                <CalendarDays className="h-4 w-4 text-[var(--secondary-color)]/70" />
                 <span className="text-sm font-bold tracking-tight">
                     {selectedYear ? selectedYear.name : "Select Year"}
                 </span>
-                <ChevronDown className={cn("h-4 w-4 transition-transform text-white/70", isOpen && "rotate-180")} />
+                <ChevronDown className={cn("h-4 w-4 transition-transform text-[var(--secondary-color)]/70", isOpen && "rotate-180")} />
             </button>
 
             {isOpen && (

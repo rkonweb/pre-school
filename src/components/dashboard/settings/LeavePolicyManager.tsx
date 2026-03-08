@@ -14,7 +14,10 @@ import { useConfirm } from "@/contexts/ConfirmContext";
 
 // ─── DESIGN TOKENS ─────────────────────────────────────────
 const C = {
-    amber: "#F59E0B", amberD: "#D97706", amberL: "#FEF3C7", amberXL: "#FFFBEB",
+    amber: "var(--brand-color, #F59E0B)", 
+    amberD: "var(--brand-color, #D97706)", 
+    amberL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.12)", 
+    amberXL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)",
     navy: "#1E1B4B", navyM: "#312E81",
     green: "#10B981", greenD: "#059669", greenL: "#D1FAE5", greenXL: "#ECFDF5",
     red: "#EF4444", redD: "#DC2626", redL: "#FEE2E2", redXL: "#FEF2F2",
@@ -268,26 +271,28 @@ export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyM
                 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
             `}</style>
 
-            {/* Top bar: summary + Add button */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-                <div style={{ display: "flex", gap: 12 }}>
-                    {[
-                        { label: "Total Policies", value: policies.length, color: C.navy, bg: "#EDE9FE" },
-                        { label: "Default Active", value: policies.filter(p => p.isDefault).length, color: C.green, bg: C.greenL },
-                    ].map((s, i) => (
-                        <div key={i} style={{ background: "white", borderRadius: 14, padding: "10px 18px", boxShadow: C.sh, border: `1px solid ${C.g100}`, display: "flex", alignItems: "center", gap: 10 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: 10, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <span style={{ fontFamily: "'Sora',sans-serif", fontSize: 16, fontWeight: 800, color: s.color }}>{s.value}</span>
-                            </div>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: C.g500 }}>{s.label}</span>
+            {/* ── STATS BAR ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24, animation: "fadeUp 0.4s ease 0.07s both" }}>
+                {[
+                    { label: "Total Policies", value: policies.length.toString(), color: C.blue, bg: C.blueL, icon: FileText },
+                    { label: "Default Active", value: policies.filter(p => p.isDefault).length > 0 ? "Yes" : "No", color: policies.filter(p => !p.isDefault).length > 0 ? C.green : C.orange, bg: policies.filter(p => !p.isDefault).length > 0 ? C.greenL : C.orangeL, icon: ShieldCheck },
+                    { label: "System Status", value: "Operational", color: C.green, bg: C.greenL, icon: Check },
+                ].map((stat: any, i) => (
+                    <div key={i} style={{ background: "white", borderRadius: 16, padding: "16px 20px", boxShadow: C.sh, border: `1px solid ${C.g100}`, display: "flex", alignItems: "center", gap: 14 }}>
+                        <div style={{ width: 46, height: 46, borderRadius: 13, background: stat.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <stat.icon size={20} color={stat.color} strokeWidth={2.2} />
                         </div>
-                    ))}
-                </div>
-                {!isCreating && (
-                    <Btn icon={Plus} variant="navy" size="md" onClick={() => setIsCreating(true)}>
-                        New Policy
-                    </Btn>
-                )}
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 18, fontWeight: 800, color: stat.color }}>{stat.value}</div>
+                            <div style={{ fontSize: 12, color: C.g400, fontWeight: 600 }}>{stat.label}</div>
+                        </div>
+                        {i === 2 && !isCreating && (
+                            <Btn icon={Plus} variant="primary" size="md" onClick={() => setIsCreating(true)}>
+                                Add Policy
+                            </Btn>
+                        )}
+                    </div>
+                ))}
             </div>
 
             {/* ── POLICY FORM ── */}

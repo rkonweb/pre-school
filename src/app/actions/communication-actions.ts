@@ -15,42 +15,52 @@ export async function sendBulkMessageAction(schoolSlug: string, audience: "EVERY
         if (!school) return { success: false, error: "School not found" };
 
         let pushSubscriptions: any[] = [];
-        let createdNotificationsCount = 0;
+        let targetUsersMap = new Map<string, string>(); // userId -> role
+        let targetStudents: any[] = [];
 
         if (audience === "EVERYONE") {
-            // Find ALL active users in the school (Parents, Students, Staff)
-            const users = await prisma.user.findMany({
+            // Find ALL active staff members directly mapped to the school
+            const staffUsers = await prisma.user.findMany({
                 where: { schoolId: school.id, status: "ACTIVE" }
             });
+            staffUsers.forEach(u => targetUsersMap.set(u.id, u.role));
 
-            // In a real production system, this would be highly optimized or sent to a background worker
-            // For now, chunk the notifications
-            const notificationsToCreate = users.map(user => ({
-                userId: user.id,
-                userType: user.role,
-                title,
-                message,
-                type: 'SYSTEM'
-            }));
+            // Find ALL students in the school
+            targetStudents = await prisma.student.findMany({
+                where: { schoolId: school.id }
+            });
 
-            // Bulk create
-            if (notificationsToCreate.length > 0) {
-                await prisma.notification.createMany({
-                    data: notificationsToCreate
+            const phonesToSearch = new Set<string>();
+            targetStudents.forEach(s => {
+                if (s.parentMobile) {
+                    const cleanPhone = String(s.parentMobile).replace(/\D/g, "");
+                    if (cleanPhone.length >= 5) phonesToSearch.add(cleanPhone.slice(-5));
+                }
+                if (s.emergencyContactPhone) {
+                    const cleanPhone = String(s.emergencyContactPhone).replace(/\D/g, "");
+                    if (cleanPhone.length >= 5) phonesToSearch.add(cleanPhone.slice(-5));
+                }
+            });
+
+            if (phonesToSearch.size > 0) {
+                const parentUsers = await prisma.user.findMany({
+                    where: {
+                        role: "PARENT",
+                        OR: Array.from(phonesToSearch).map(p => ({ mobile: { contains: p } }))
+                    }
                 });
-                createdNotificationsCount = notificationsToCreate.length;
+                parentUsers.forEach(pu => targetUsersMap.set(pu.id, "PARENT"));
             }
         } else {
             // Assume audience is a classroom ID
-            const studentsInClass = await prisma.student.findMany({
+            targetStudents = await prisma.student.findMany({
                 where: { classroomId: audience, schoolId: school.id }
             });
 
-            const targetUsers = new Set<string>();
             const phonesToSearch = new Set<string>();
 
             // Collect student user IDs (if applicable) and parent phones
-            studentsInClass.forEach(s => {
+            targetStudents.forEach(s => {
                 if (s.parentMobile) {
                     const cleanPhone = String(s.parentMobile).replace(/\D/g, "");
                     if (cleanPhone.length >= 5) {
@@ -73,28 +83,94 @@ export async function sendBulkMessageAction(schoolSlug: string, audience: "EVERY
                         OR: Array.from(phonesToSearch).map(p => ({ mobile: { contains: p } }))
                     }
                 });
-                parentUsers.forEach(pu => targetUsers.add(pu.id));
-            }
-
-            const notificationsToCreate = Array.from(targetUsers).map(userId => ({
-                userId,
-                userType: "PARENT",
-                title,
-                message,
-                type: 'SYSTEM'
-            }));
-
-            if (notificationsToCreate.length > 0) {
-                await prisma.notification.createMany({
-                    data: notificationsToCreate
-                });
-                createdNotificationsCount = notificationsToCreate.length;
-
-                // TRIGGER PUSH
-                const userIds = notificationsToCreate.map(n => n.userId);
-                await sendNotificationToGroup(userIds, title, message, { type: 'BROADCAST' });
+                parentUsers.forEach(pu => targetUsersMap.set(pu.id, "PARENT"));
             }
         }
+
+        const notificationsToCreate = Array.from(targetUsersMap.entries()).map(([userId, userType]) => ({
+            userId,
+            userType,
+            title,
+            message,
+            type: 'SYSTEM'
+        }));
+
+        let createdNotificationsCount = 0;
+
+        if (notificationsToCreate.length > 0) {
+            await prisma.notification.createMany({
+                data: notificationsToCreate
+            });
+            createdNotificationsCount = notificationsToCreate.length;
+
+            // TRIGGER PUSH
+            const userIds = notificationsToCreate.map(n => n.userId);
+            await sendNotificationToGroup(userIds, title, message, { type: 'BROADCAST' });
+        }
+
+        // --- NEW: INJECT DIRECTLY INTO CONVERSATIONS SO THEY APPEAR IN Parent APP "MESSAGES" ---
+        const safeUser = auth.user as any;
+        const senderNameStr = safeUser.firstName ? `${safeUser.firstName} (Admin)` : "School Administration";
+
+        if (targetStudents.length > 0) {
+            const studentIds = targetStudents.map(s => s.id);
+
+            // 1. Find existing BROADCAST conversations
+            const existingConvos = await prisma.conversation.findMany({
+                where: {
+                    studentId: { in: studentIds },
+                    type: "BROADCAST",
+                    participantType: "BOTH"
+                },
+                select: { id: true, studentId: true }
+            });
+
+            const existingStudentIds = new Set(existingConvos.map(c => c.studentId));
+            const missingStudentIds = studentIds.filter(id => !existingStudentIds.has(id));
+
+            // 2. Create missing BROADCAST conversations
+            if (missingStudentIds.length > 0) {
+                await prisma.conversation.createMany({
+                    data: missingStudentIds.map(sid => ({
+                        studentId: sid,
+                        type: "BROADCAST",
+                        title: "School Announcements",
+                        participantType: "BOTH"
+                    }))
+                });
+            }
+
+            // 3. Fetch ALL conversations again to get their IDs
+            const allConvos = await prisma.conversation.findMany({
+                where: {
+                    studentId: { in: studentIds },
+                    type: "BROADCAST",
+                    participantType: "BOTH"
+                },
+                select: { id: true }
+            });
+
+            // 4. Create ALL messages in one go
+            if (allConvos.length > 0) {
+                await prisma.message.createMany({
+                    data: allConvos.map(c => ({
+                        conversationId: c.id,
+                        content: `**${title}**\n\n${message}`,
+                        senderType: "ADMIN",
+                        senderId: safeUser.id,
+                        senderName: senderNameStr,
+                        type: "TEXT"
+                    }))
+                });
+
+                // 5. Update lastMessageAt for all conversations
+                await prisma.conversation.updateMany({
+                    where: { id: { in: allConvos.map(c => c.id) } },
+                    data: { lastMessageAt: new Date() }
+                });
+            }
+        }
+        // ---------------------------------------------------------------------------------------
 
         return { success: true, count: createdNotificationsCount };
 
@@ -177,7 +253,7 @@ export async function triggerFeeRemindersAction(schoolSlug: string) {
             }
         }
 
-        return { success: true, count: generated };
+        return { success: true, count: JSON.parse(JSON.stringify(generated)) };
 
     } catch (error: any) {
         console.error("Fee Reminder Trigger Error:", error);
@@ -255,7 +331,7 @@ export async function getPendingBroadcastsAction(schoolSlug: string) {
             orderBy: { createdAt: 'desc' }
         });
 
-        return { success: true, broadcasts };
+        return { success: true, broadcasts: JSON.parse(JSON.stringify(broadcasts)) };
     } catch (error: any) {
         console.error("getPendingBroadcastsAction Error:", error);
         return { success: false, error: error.message };
@@ -284,7 +360,7 @@ export async function updateBroadcastStatusAction(schoolSlug: string, broadcastI
         // Revalidate paths if necessary
         revalidatePath(`/s/${schoolSlug}/communication`);
 
-        return { success: true, broadcast };
+        return { success: true, broadcast: JSON.parse(JSON.stringify(broadcast)) };
     } catch (error: any) {
         console.error("updateBroadcastStatusAction Error:", error);
         return { success: false, error: error.message };

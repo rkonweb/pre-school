@@ -47,7 +47,7 @@ export async function createFeeAction(slug: string, studentId: string, title: st
                 branchId: student.branchId
             }
         });
-        return { success: true, data: fee };
+        return { success: true, data: JSON.parse(JSON.stringify(fee)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -90,7 +90,7 @@ export async function getStudentFeesAction(slug: string, studentId: string, acad
             },
             orderBy: { dueDate: 'asc' }
         });
-        return { success: true, data: fees };
+        return { success: true, data: JSON.parse(JSON.stringify(fees)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -202,7 +202,7 @@ export async function recordPaymentAction(slug: string, feeId: string, amount: n
             }
         }
 
-        return { success: true, data: payment };
+        return { success: true, data: JSON.parse(JSON.stringify(payment)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -379,7 +379,7 @@ export async function syncStudentFeesAction(studentId: string, schoolSlug: strin
         console.log(`[FeeSync] Completed in ${duration}ms for student ${studentId}. Created ${feesToCreate.length} fees.`);
 
         revalidatePath(`/s/${schoolSlug}/students/${studentId}`);
-        return { success: true, message: `Synced ${feesToCreate.length} fees for: ${summaries.join(", ")}` };
+        return { success: true, message: JSON.parse(JSON.stringify(`Synced ${feesToCreate.length} fees for: ${summaries.join(", ")}`)) };
 
     } catch (error: any) {
         console.error("Sync Fee Error:", error);
@@ -397,7 +397,7 @@ export async function getFeeStructuresAction(schoolSlug: string) {
                 components: true
             }
         });
-        return { success: true, data: structures };
+        return { success: true, data: JSON.parse(JSON.stringify(structures)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -429,7 +429,7 @@ export async function updateFeeAction(slug: string, id: string, data: any) {
                 description: data.description
             }
         });
-        return { success: true, data: fee };
+        return { success: true, data: JSON.parse(JSON.stringify(fee)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

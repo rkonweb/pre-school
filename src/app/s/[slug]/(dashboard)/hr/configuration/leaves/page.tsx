@@ -26,23 +26,21 @@ export default function LeavesSettingsPage() {
 
     return (
         <div style={{ animation: "fadeUp 0.45s ease both", maxWidth: 1100 }}>
-            {/* v3 Page Header */}
-            <div style={{ marginBottom: 28, display: "flex", alignItems: "flex-start", gap: 16 }}>
-                <div style={{
-                    width: 52, height: 52, borderRadius: 15,
-                    background: "linear-gradient(135deg,#10B981,#059669)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    boxShadow: "0 6px 20px #10B98145", flexShrink: 0,
-                }}>
-                    <CalendarDays size={24} color="white" strokeWidth={2} />
-                </div>
-                <div style={{ paddingTop: 3 }}>
-                    <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 22, fontWeight: 800, color: "#1E1B4B", margin: 0, lineHeight: 1.2 }}>
-                        Leave &amp; Attendance Policy
-                    </h1>
-                    <p style={{ fontSize: 13.5, color: "#9CA3AF", margin: "5px 0 0", fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
-                        Define entitlements, punctuality grace periods, and short-leave permissions for each staff role.
-                    </p>
+            <style>{`
+                @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+                @keyframes bounceIn{0%{transform:scale(0.3);opacity:0}55%{transform:scale(1.1)}75%{transform:scale(0.95)}100%{transform:scale(1);opacity:1}}
+            `}</style>
+
+            {/* ── PAGE HEADER ── */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 15, background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)", flexShrink: 0 }}>
+                        <CalendarDays size={24} color="var(--secondary-color, white)" strokeWidth={2} />
+                    </div>
+                    <div>
+                        <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 22, fontWeight: 800, color: "#1E1B4B", margin: 0, lineHeight: 1.2 }}>Leave &amp; Attendance Policy</h1>
+                        <p style={{ fontSize: 13.5, color: "#9CA3AF", margin: "5px 0 0", fontWeight: 500 }}>Define entitlements, punctuality grace periods, and permissions for each role.</p>
+                    </div>
                 </div>
             </div>
 

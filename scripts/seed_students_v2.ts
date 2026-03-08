@@ -1,5 +1,5 @@
 
-import { PrismaClient } from '../src/generated/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,7 @@ const lastNames = [
 ];
 
 async function main() {
-    const slug = 'gggggggggg';
+    const slug = 'littlechanakyas';
 
     console.log(`Finding school with slug: ${slug}...`);
     const school = await prisma.school.findUnique({

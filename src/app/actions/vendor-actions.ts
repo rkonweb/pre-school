@@ -29,7 +29,7 @@ export async function getVendorsAction(slug: string, category?: string) {
             },
             orderBy: { name: "asc" }
         });
-        return { success: true, data: vendors };
+        return { success: true, data: JSON.parse(JSON.stringify(vendors)) };
     } catch (error: any) {
         console.error("Error fetching vendors:", error);
         return { success: false, error: error.message || "Failed to fetch vendors" };
@@ -52,7 +52,7 @@ export async function getVendorAction(slug: string, vendorId: string) {
             }
         });
         if (!vendor) return { success: false, error: "Vendor not found" };
-        return { success: true, data: vendor };
+        return { success: true, data: JSON.parse(JSON.stringify(vendor)) };
     } catch (error: any) {
         console.error("Error fetching vendor:", error);
         return { success: false, error: error.message || "Failed to fetch vendor" };
@@ -66,7 +66,7 @@ export async function createVendorAction(slug: string, data: { name: string; con
             data: { ...data, tenantId }
         });
         revalidatePath(`/s/[slug]/vendor/vendors`, "page");
-        return { success: true, data: vendor };
+        return { success: true, data: JSON.parse(JSON.stringify(vendor)) };
     } catch (error: any) {
         console.error("Error creating vendor:", error);
         return { success: false, error: error.message || "Failed to create vendor" };
@@ -82,7 +82,7 @@ export async function updateVendorAction(slug: string, vendorId: string, data: P
         });
         revalidatePath(`/s/[slug]/vendor/vendors`, "page");
         revalidatePath(`/s/[slug]/vendor/vendors/[id]`, "page");
-        return { success: true, data: vendor };
+        return { success: true, data: JSON.parse(JSON.stringify(vendor)) };
     } catch (error: any) {
         console.error("Error updating vendor:", error);
         return { success: false, error: error.message || "Failed to update vendor" };
@@ -118,7 +118,7 @@ export async function getPurchaseOrdersAction(slug: string, status?: string) {
             include: { vendor: true, items: true },
             orderBy: { orderDate: "desc" }
         });
-        return { success: true, data: pos };
+        return { success: true, data: JSON.parse(JSON.stringify(pos)) };
     } catch (error: any) {
         console.error("Error fetching purchase orders:", error);
         return { success: false, error: error.message || "Failed to fetch purchase orders" };
@@ -133,7 +133,7 @@ export async function getPurchaseOrderAction(slug: string, poId: string) {
             include: { vendor: true, items: true }
         });
         if (!po) return { success: false, error: "PO not found" };
-        return { success: true, data: po };
+        return { success: true, data: JSON.parse(JSON.stringify(po)) };
     } catch (error: any) {
         console.error("Error fetching purchase order:", error);
         return { success: false, error: error.message || "Failed to fetch purchase order" };
@@ -176,7 +176,7 @@ export async function createPurchaseOrderAction(slug: string, data: { vendorId: 
         });
 
         revalidatePath(`/s/[slug]/vendor/purchase-orders`, "page");
-        return { success: true, data: po };
+        return { success: true, data: JSON.parse(JSON.stringify(po)) };
     } catch (error: any) {
         console.error("Error creating purchase order:", error);
         return { success: false, error: error.message || "Failed to create purchase order" };
@@ -203,7 +203,7 @@ export async function updatePurchaseOrderStatusAction(slug: string, poId: string
 
         revalidatePath(`/s/[slug]/vendor/purchase-orders`, "page");
         revalidatePath(`/s/[slug]/vendor/purchase-orders/[id]`, "page");
-        return { success: true, data: po };
+        return { success: true, data: JSON.parse(JSON.stringify(po)) };
     } catch (error: any) {
         console.error("Error updating PO status:", error);
         return { success: false, error: error.message || "Failed to update PO status" };
@@ -283,7 +283,7 @@ export async function getQuotationsAction(slug: string, vendorId?: string) {
             include: { vendor: true },
             orderBy: { createdAt: "desc" }
         });
-        return { success: true, data: quotations };
+        return { success: true, data: JSON.parse(JSON.stringify(quotations)) };
     } catch (error: any) {
         console.error("Error fetching quotations:", error);
         return { success: false, error: error.message || "Failed to fetch quotations" };
@@ -298,7 +298,7 @@ export async function uploadQuotationAction(slug: string, data: { vendorId: stri
         });
         revalidatePath(`/s/[slug]/vendor/vendors/[id]`, "page");
         revalidatePath(`/s/[slug]/vendor/quotations`, "page");
-        return { success: true, data: quote };
+        return { success: true, data: JSON.parse(JSON.stringify(quote)) };
     } catch (error: any) {
         console.error("Error uploading quotation:", error);
         return { success: false, error: error.message || "Failed to upload quotation" };
@@ -314,7 +314,7 @@ export async function updateQuotationStatusAction(slug: string, quoteId: string,
         });
         revalidatePath(`/s/[slug]/vendor/vendors/[id]`, "page");
         revalidatePath(`/s/[slug]/vendor/quotations`, "page");
-        return { success: true, data: quote };
+        return { success: true, data: JSON.parse(JSON.stringify(quote)) };
     } catch (error: any) {
         console.error("Error updating quotation status:", error);
         return { success: false, error: error.message || "Failed to update quotation" };

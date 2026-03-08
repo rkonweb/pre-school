@@ -10,11 +10,13 @@ import {
     LucideIcon, NotebookPen, LogOut, Shield, Banknote, Bus,
     FileSpreadsheet, Folder, MapPin, TrendingUp, Sparkles, X,
     PanelLeftClose, PanelLeftOpen, Activity, School, Building2,
-    Palmtree, ShieldCheck, Fingerprint, Zap, CalendarDays, Wallet,
-    Building, Utensils, ShoppingBag, Receipt, Store, Brain,
-    ShieldAlert, MessageSquare, Binary
+    Palmtree, ShieldCheck, UserPlus, Calendar, CheckSquare, 
+    ArrowRightLeft, UserCog, Lightbulb, HelpCircle, MessagesSquare, 
+    Layout, Fingerprint, Zap, CalendarDays, Wallet, Building, 
+    Utensils, ShoppingBag, Receipt, Store, Brain, ShieldAlert, 
+    MessageSquare, Binary, Trophy, CheckCircle
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { clearUserSessionAction } from "@/app/actions/session-actions";
 import { useSidebar } from "@/context/SidebarContext";
 
@@ -26,10 +28,10 @@ type NavItem = {
 };
 
 // ── Design tokens matching UI Kit v3 ──────────────────────────
-const AMBER = "#F59E0B";
-const AMBER_D = "#D97706";
-const AMBER_L = "#FEF3C7";
-const AMBER_XL = "#FFFBEB";
+const AMBER = "var(--brand-color, #F59E0B)";
+const AMBER_D = "var(--brand-color, #D97706)";
+const AMBER_L = "rgba(var(--brand-color-rgb, 245, 158, 11), 0.2)";
+const AMBER_XL = "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)";
 const NAVY = "#1E1B4B";
 const NAVYm = "#312E81";
 const G50 = "#F9FAFB";
@@ -134,6 +136,20 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
             ]
         },
         {
+            name: "Extracurricular", href: `/s/${slug}/extracurricular`, icon: Palmtree,
+            children: [
+                { name: "Programs Dashboard", href: `/s/${slug}/extracurricular`, icon: LayoutDashboard },
+                { name: "Activity Master", href: `/s/${slug}/extracurricular/activities`, icon: Trophy },
+                { name: "Clubs & Academies", href: `/s/${slug}/extracurricular/clubs`, icon: Users },
+                { name: "Student Enrollment", href: `/s/${slug}/extracurricular/enrollment`, icon: FileText },
+                { name: "Activity Timetable", href: `/s/${slug}/extracurricular/timetable`, icon: Clock },
+                { name: "Attendance Tracking", href: `/s/${slug}/extracurricular/attendance`, icon: CheckCircle },
+                { name: "Performance Eval", href: `/s/${slug}/extracurricular/performance`, icon: Zap },
+                { name: "Events & Awards", href: `/s/${slug}/extracurricular/events`, icon: Sparkles },
+                { name: "Equipment & Gear", href: `/s/${slug}/extracurricular/equipment`, icon: Package },
+            ]
+        },
+        {
             name: "Accounts", href: `/s/${slug}/accounts`, icon: Wallet,
             children: [
                 { name: "Financial Dashboard", href: `/s/${slug}/accounts`, icon: LayoutDashboard },
@@ -221,6 +237,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
         { name: "Documents", href: `/s/${slug}/documents`, icon: Folder },
         { name: "Marketing Tools", href: `/s/${slug}/marketing`, icon: Sparkles },
         { name: "Parent Requests", href: `/s/${slug}/parent-requests`, icon: MessageSquare },
+        { name: "User Logs", href: `/s/${slug}/hr/user-logs`, icon: ShieldAlert },
         {
             name: "Settings", href: `/s/${slug}/settings`, icon: Settings,
             children: [
@@ -281,6 +298,13 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
         "Emergency Alerts": "communication",
         "Marketing Tools": "marketing",
         "Parent Requests": "communication",
+        "Extracurricular": "extracurricular",
+        "Transport": "transport",
+        "Library": "library",
+        "Canteen": "canteen",
+        "Hostel Management": "hostel",
+        "School Store": "store",
+        "User Logs": "hr.user-logs",
         "Training Center": "training",
         "Documents": "documents",
         "Settings": "settings",
@@ -293,42 +317,64 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
             enabledModules.some(m => typeof m === 'string' && permissionKey.startsWith(m + "."));
     };
 
-    const navigation = rawNavigation.reduce((acc: NavItem[], item) => {
-        const permKey = navPermissionMap[item.name];
-        if (permKey && !isModuleEnabled(permKey)) return acc;
-        const hasDirectAccess = permKey ? checkAccess(permKey) : false;
-        if (item.children) {
-            const visibleChildren = item.children.filter(child => {
-                let childKey = "";
-                if (child.name === "Attendance" && item.name === "Students") childKey = "students.attendance";
-                else if (child.name === "Attendance" && item.name === "Staff") {
-                    if (user?.role === "STAFF") return true;
-                    childKey = "staff.attendance";
-                } else childKey = navPermissionMap[child.name];
-                if (!isModuleEnabled(childKey)) return false;
-                return checkAccess(childKey);
-            });
-            if (visibleChildren.length > 0) acc.push({ ...item, children: visibleChildren });
-        } else {
-            if (hasDirectAccess) acc.push(item);
-        }
-        return acc;
-    }, []);
+    const navigation = useMemo(() => {
+        return rawNavigation.reduce((acc: NavItem[], item) => {
+            const permKey = navPermissionMap[item.name];
+            if (permKey && !isModuleEnabled(permKey)) return acc;
+            const hasDirectAccess = permKey ? checkAccess(permKey) : false;
+            if (item.children) {
+                const visibleChildren = item.children.filter(child => {
+                    let childKey = "";
+                    if (child.name === "Attendance" && item.name === "Students") childKey = "students.attendance";
+                    else if (child.name === "Attendance" && item.name === "Staff") {
+                        if (user?.role === "STAFF") return true;
+                        childKey = "staff.attendance";
+                    } else childKey = navPermissionMap[child.name];
+                    if (!isModuleEnabled(childKey)) return false;
+                    return checkAccess(childKey);
+                });
+                if (visibleChildren.length > 0) acc.push({ ...item, children: visibleChildren });
+            } else {
+                if (hasDirectAccess) acc.push(item);
+            }
+            return acc;
+        }, []);
+    }, [rawNavigation, user, enabledModules, slug]);
 
+    // Precise tracking of which group is actually active
+    const activeGroupName = useMemo(() => {
+        let bestGroup = "";
+        let longestPrefixLength = -1;
+
+        // Priority 1: Exact match in children
+        for (const item of navigation) {
+            if (item.children?.some(child => pathname === child.href)) {
+                return item.name;
+            }
+        }
+
+        // Priority 2: Longest prefix match on the group itself
+        for (const item of navigation) {
+            if (pathname.startsWith(item.href) && item.href.length > longestPrefixLength) {
+                longestPrefixLength = item.href.length;
+                bestGroup = item.name;
+            }
+        }
+
+        return bestGroup;
+    }, [pathname, navigation]);
+
+    // Only auto-expand the active group when it changes, but do not aggressively close others
     useEffect(() => {
-        setExpandedGroups(prev => {
-            const next = { ...prev };
-            let changed = false;
-            rawNavigation.forEach(item => {
-                if (item.children) {
-                    const isActiveModule = pathname.startsWith(item.href);
-                    if (isActiveModule && !prev[item.name]) { next[item.name] = true; changed = true; }
-                    else if (!isActiveModule && prev[item.name]) { next[item.name] = false; changed = true; }
+        if (activeGroupName) {
+            setExpandedGroups(prev => {
+                if (!prev[activeGroupName]) {
+                    return { ...prev, [activeGroupName]: true };
                 }
+                return prev;
             });
-            return changed ? next : prev;
-        });
-    }, [pathname]);
+        }
+    }, [activeGroupName]); // Removed 'navigation' and removed the restrictive closing logic
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -363,47 +409,46 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
             )}
                 style={{
                     background: "white",
-                    borderRight: `1px solid ${G100}`,
+                    borderRight: "none",
                     boxShadow: "3px 0 20px rgba(0,0,0,0.06)",
                 }}>
                 <div className="flex h-full flex-col">
 
                     {/* ── Logo / Brand Header ── */}
                     <div style={{
-                        padding: isCollapsed ? "18px 12px" : "18px 16px",
-                        borderBottom: `1px solid ${G100}`,
+                        padding: isCollapsed ? "14px 12px" : "14px 16px",
+                        background: "var(--brand-color)",
+                        borderBottom: "none",
                         display: "flex", alignItems: "center",
-                        justifyContent: isCollapsed ? "center" : "space-between",
-                        minHeight: 72,
+                        justifyContent: "center",
+                        height: 72,
                     }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
                             {/* Logo / Icon */}
-                            <div
-                                className="float-anim flex-shrink-0"
-                                style={{
-                                    width: 38, height: 38, borderRadius: 11,
-                                    background: `linear-gradient(135deg, ${AMBER}, ${AMBER_D})`,
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    flexShrink: 0,
-                                    boxShadow: `0 4px 14px rgba(245,158,11,0.35)`,
-                                    overflow: "hidden",
-                                }}
-                            >
-                                {logo ? (
-                                    <img src={logo} alt={displayName} style={{ width: 38, height: 38, objectFit: "cover" }} />
-                                ) : (
-                                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: 14, fontWeight: 800, color: "white" }}>
+                            {logo ? (
+                                <img
+                                    src={logo}
+                                    alt={displayName || "School Logo"}
+                                    style={{
+                                        maxHeight: 54,
+                                        maxWidth: isCollapsed ? 60 : 200,
+                                        objectFit: "contain",
+                                        filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.1))"
+                                    }}
+                                />
+                            ) : (
+                                <div
+                                    className="float-anim"
+                                    style={{
+                                        width: 48, height: 48, borderRadius: 12,
+                                        background: "white",
+                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                        boxShadow: `0 4px 14px rgba(0,0,0,0.15)`,
+                                    }}
+                                >
+                                    <span style={{ fontFamily: "'Sora', sans-serif", fontSize: 18, fontWeight: 800, color: "var(--brand-color)" }}>
                                         {initials}
                                     </span>
-                                )}
-                            </div>
-
-                            {!isCollapsed && (
-                                <div>
-                                    <div style={{ fontFamily: "'Sora', sans-serif", fontSize: 12.5, fontWeight: 800, color: NAVY, lineHeight: 1.2 }}>
-                                        {displayName}
-                                    </div>
-                                    <div style={{ fontSize: 10.5, color: G400, marginTop: 1 }}>School Portal</div>
                                 </div>
                             )}
                         </div>
@@ -412,6 +457,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
                         <button
                             onClick={() => setIsOpen(false)}
                             className="lg:hidden"
+                            aria-label="Close Sidebar"
                             style={{ padding: 6, borderRadius: 8, color: G400, cursor: "pointer", border: "none", background: "transparent" }}
                         >
                             <X style={{ width: 16, height: 16 }} />
@@ -426,14 +472,15 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
                             top: "calc(50% - 200px)",
                             width: 24, height: 24,
                             borderRadius: "50%",
-                            background: `linear-gradient(135deg, ${AMBER}, ${AMBER_D})`,
+                            background: "var(--school-gradient)",
                             border: "none", cursor: "pointer",
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            boxShadow: `0 2px 10px rgba(245,158,11,0.4)`,
-                            color: "white",
+                            boxShadow: `0 2px 10px rgba(0,0,0,0.2)`,
+                            color: "var(--secondary-color)",
                             transition: `all 0.3s ${SPRING}`,
                         }}
                         title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                        aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                     >
                         {isCollapsed
                             ? <ChevronRight style={{ width: 13, height: 13 }} />
@@ -441,7 +488,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
                     </button>
 
                     {/* ── Navigation ── */}
-                    <div className="flex-1 overflow-y-auto scrollbar-thin py-3">
+                    <div className="flex-1 overflow-y-auto scrollbar-thin py-3" style={{ borderRight: `1px solid ${G100}` }}>
                         <nav style={{ padding: "0 8px", display: "flex", flexDirection: "column", gap: 2 }}>
 
                             {!isCollapsed && (
@@ -456,7 +503,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
 
                             {navigation.map((item, navIdx) => {
                                 const isGroup = !!item.children;
-                                const isActive = isGroup ? pathname.startsWith(item.href) : pathname === item.href;
+                                const isActive = isGroup ? activeGroupName === item.name : pathname === item.href;
                                 const isExpanded = expandedGroups[item.name];
                                 const hasActiveChild = item.children?.some(c => pathname === c.href);
 
@@ -479,10 +526,10 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
                                                 textDecoration: "none",
                                                 justifyContent: isCollapsed ? "center" : "flex-start",
                                                 background: isActive
-                                                    ? `linear-gradient(135deg, ${AMBER}, ${AMBER_D})`
+                                                    ? "var(--school-gradient)"
                                                     : "transparent",
                                                 color: isActive ? "white" : G600,
-                                                boxShadow: isActive ? `0 3px 14px rgba(245,158,11,0.4)` : "none",
+                                                boxShadow: isActive ? `0 3px 14px rgba(0,0,0,0.18)` : "none",
                                                 transform: isActive ? "translateX(3px) scale(1.01)" : "none",
                                                 transition: `all 0.35s ${SPRING}`,
                                             }}
@@ -527,10 +574,10 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
                                                 cursor: "pointer",
                                                 border: "none",
                                                 background: (isActive && !isExpanded)
-                                                    ? `linear-gradient(135deg, ${AMBER}, ${AMBER_D})`
+                                                    ? "var(--school-gradient)"
                                                     : "transparent",
                                                 color: (isActive && !isExpanded) ? "white" : G600,
-                                                boxShadow: (isActive && !isExpanded) ? `0 3px 14px rgba(245,158,11,0.4)` : "none",
+                                                boxShadow: (isActive && !isExpanded) ? `0 3px 14px rgba(0,0,0,0.18)` : "none",
                                                 transform: (isActive && !isExpanded) ? "translateX(3px) scale(1.01)" : "none",
                                                 transition: `all 0.35s ${SPRING}`,
                                             }}
@@ -580,33 +627,48 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
                                                             id={isChildActive ? "active-sidebar-item" : undefined}
                                                             key={child.name}
                                                             href={child.href}
-                                                            style={{
-                                                                display: "block",
-                                                                padding: "7px 10px",
-                                                                borderRadius: 8,
-                                                                fontSize: 12.5,
-                                                                fontWeight: isChildActive ? 700 : 500,
-                                                                textDecoration: "none",
-                                                                color: isChildActive ? AMBER_D : G500,
-                                                                background: isChildActive ? AMBER_XL : "transparent",
-                                                                borderLeft: isChildActive ? `2px solid ${AMBER}` : "2px solid transparent",
-                                                                transition: "all 0.2s ease",
-                                                            }}
-                                                            onMouseEnter={e => {
-                                                                if (!isChildActive) {
-                                                                    (e.currentTarget as HTMLElement).style.background = AMBER_XL;
-                                                                    (e.currentTarget as HTMLElement).style.color = AMBER_D;
-                                                                }
-                                                            }}
-                                                            onMouseLeave={e => {
-                                                                if (!isChildActive) {
-                                                                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                                                                    (e.currentTarget as HTMLElement).style.color = G500;
-                                                                }
-                                                            }}
-                                                        >
-                                                            {child.name}
-                                                        </Link>
+                                                                    style={{
+                                                                        display: "block",
+                                                                        padding: "7px 10px",
+                                                                        borderRadius: 8,
+                                                                        fontSize: 12.5,
+                                                                        fontWeight: isChildActive ? 700 : 500,
+                                                                        textDecoration: "none",
+                                                                        color: isChildActive ? AMBER_D : G500,
+                                                                        background: isChildActive ? AMBER_XL : "transparent",
+                                                                        position: "relative",
+                                                                        transition: "all 0.2s ease",
+                                                                    }}
+                                                                    onMouseEnter={e => {
+                                                                        if (!isChildActive) {
+                                                                            (e.currentTarget as HTMLElement).style.background = AMBER_XL;
+                                                                            (e.currentTarget as HTMLElement).style.color = AMBER_D;
+                                                                        }
+                                                                    }}
+                                                                    onMouseLeave={e => {
+                                                                        if (!isChildActive) {
+                                                                            (e.currentTarget as HTMLElement).style.background = "transparent";
+                                                                            (e.currentTarget as HTMLElement).style.color = G500;
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    {isChildActive && (
+                                                                        <div 
+                                                                            style={{
+                                                                                position: "absolute",
+                                                                                left: 0,
+                                                                                top: "20%",
+                                                                                bottom: "20%",
+                                                                                width: 3,
+                                                                                background: "var(--school-gradient)",
+                                                                                borderRadius: "0 4px 4px 0"
+                                                                            }}
+                                                                        />
+                                                                    )}
+                                                                    <span style={isChildActive ? { background: "var(--school-gradient)", backgroundClip: "text", WebkitBackgroundClip: "text", color: "transparent" } : {}}>
+                                                                        {child.name}
+                                                                    </span>
+                                                                </Link>
                                                     );
                                                 })}
                                             </div>
@@ -620,6 +682,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
                     {/* ── User Profile (Bottom) ── */}
                     <div style={{
                         borderTop: `1px solid ${G100}`,
+                        borderRight: `1px solid ${G100}`,
                         padding: isCollapsed ? "12px 8px" : "12px 14px",
                         background: AMBER_XL,
                     }}>
@@ -632,11 +695,11 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
                                 {/* Avatar */}
                                 <div style={{
                                     width: 36, height: 36, borderRadius: "50%",
-                                    background: `linear-gradient(135deg, ${AMBER}, ${AMBER_D})`,
+                                    background: "var(--school-gradient)",
                                     display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: 13, fontWeight: 800, color: "white",
+                                    fontSize: 13, fontWeight: 800, color: "var(--secondary-color)",
                                     flexShrink: 0,
-                                    boxShadow: `0 2px 8px rgba(245,158,11,0.35)`,
+                                    boxShadow: `0 2px 8px rgba(0,0,0,0.18)`,
                                 }}>
                                     {userInitials}
                                 </div>
@@ -662,6 +725,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
                                 <button
                                     onClick={async () => { await clearUserSessionAction(); router.push(`/${slug}`); }}
                                     title="Sign out"
+                                    aria-label="Sign out"
                                     style={{
                                         padding: 7, borderRadius: 8, border: "none",
                                         background: "transparent", cursor: "pointer",

@@ -108,7 +108,7 @@ export function AdmissionBoardCard({ admission, slug }: AdmissionBoardCardProps)
                     <MessageCircle className="h-4 w-4" />
                 </button>
                 <button
-                    className="h-10 w-10 rounded-full bg-brand text-white flex items-center justify-center hover:scale-110 transition-all shadow-lg shadow-brand/20"
+                    className="h-10 w-10 rounded-full bg-brand text-[var(--secondary-color)] flex items-center justify-center hover:scale-110 transition-all shadow-lg shadow-brand/20"
                     title="Call Parent"
                 >
                     <Phone className="h-4 w-4" />

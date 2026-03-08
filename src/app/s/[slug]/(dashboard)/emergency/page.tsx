@@ -35,13 +35,13 @@ const PRIORITY_LEVELS = [
     },
     {
         value: "MEDIUM", label: "Medium", description: "Requires attention",
-        color: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400",
-        dot: "bg-amber-500", ring: "ring-amber-500"
+        color: "bg-brand/10 text-brand border-brand/20 dark:border-brand/30",
+        dot: "bg-brand", ring: "ring-brand"
     },
     {
         value: "HIGH", label: "High", description: "Urgent action needed",
-        color: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20 dark:text-orange-400",
-        dot: "bg-orange-500", ring: "ring-orange-500"
+        color: "bg-brand text-[var(--secondary-color)] border-transparent",
+        dot: "bg-white", ring: "ring-brand"
     },
     {
         value: "CRITICAL", label: "Critical", description: "Immediate response required",
@@ -247,10 +247,10 @@ export default function EmergencyAlertsPage() {
 
             {/* Non-critical active alerts */}
             {activeAlerts.filter(a => a.priority !== "CRITICAL").length > 0 && (
-                <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-[2rem] p-6 space-y-4">
+                <div className="bg-brand/5 dark:bg-brand/10 border border-brand/20 dark:border-brand/30 rounded-[2rem] p-6 space-y-4">
                     <div className="flex items-center gap-3 mb-2">
-                        <Radio className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        <span className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">
+                        <Radio className="h-4 w-4 text-brand" />
+                        <span className="text-xs font-black text-brand uppercase tracking-widest">
                             Active Alerts
                         </span>
                     </div>
@@ -274,7 +274,7 @@ export default function EmergencyAlertsPage() {
                                 <button
                                     onClick={() => handleDeactivate(a.id)}
                                     disabled={deactivatingId === a.id}
-                                    className="shrink-0 text-amber-600 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 border border-amber-200 dark:border-amber-500/20 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest disabled:opacity-50 transition-all"
+                                    className="shrink-0 text-brand bg-brand/10 hover:bg-brand/20 border border-brand/20 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest disabled:opacity-50 transition-all"
                                 >
                                     {deactivatingId === a.id ? "..." : "Deactivate"}
                                 </button>
@@ -414,9 +414,9 @@ export default function EmergencyAlertsPage() {
                     {/* Warning */}
                     <div className={cn("rounded-2xl p-4 mb-6 border", form.priority === "CRITICAL"
                         ? "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20"
-                        : "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20"
+                        : "bg-brand/5 dark:bg-brand/10 border-brand/20 dark:border-brand/30"
                     )}>
-                        <p className={cn("text-xs font-bold", form.priority === "CRITICAL" ? "text-red-700 dark:text-red-400" : "text-amber-700 dark:text-amber-400")}>
+                        <p className={cn("text-xs font-bold", form.priority === "CRITICAL" ? "text-red-700 dark:text-red-400" : "text-brand")}>
                             ⚠️ This will immediately send a <strong>{form.priority}</strong> push notification to{" "}
                             {form.classIds.includes("all")
                                 ? "ALL parents in the school"
@@ -548,10 +548,10 @@ export default function EmergencyAlertsPage() {
                                             <button
                                                 onClick={() => handleDeactivate(a.id)}
                                                 disabled={deactivatingId === a.id}
-                                                className="p-2 rounded-xl text-amber-600 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+                                                className="p-2 rounded-xl text-brand bg-brand/10 hover:bg-brand/20 transition-colors disabled:opacity-50"
                                                 title="Deactivate alert"
                                             >
-                                                {deactivatingId === a.id ? <div className="h-4 w-4 animate-spin border-2 border-amber-500 border-t-transparent rounded-full" /> : <BellOff className="h-4 w-4" />}
+                                                {deactivatingId === a.id ? <div className="h-4 w-4 animate-spin border-2 border-brand border-t-transparent rounded-full" /> : <BellOff className="h-4 w-4" />}
                                             </button>
                                         )}
                                         <button

@@ -35,7 +35,7 @@ export async function getAcademicYearsAction(slug: string) {
             }));
         }
 
-        return { success: true, data: years };
+        return { success: true, data: JSON.parse(JSON.stringify(years)) };
     } catch (error: any) {
         console.error("getAcademicYearsAction Error:", error);
         return { success: false, error: error.message };
@@ -70,7 +70,7 @@ export async function createAcademicYearAction(slug: string, data: { name: strin
         });
 
         revalidatePath(`/s/${slug}/settings`);
-        return { success: true, data: year };
+        return { success: true, data: JSON.parse(JSON.stringify(year)) };
     } catch (error: any) {
         console.error("createAcademicYearAction Error:", error);
         return { success: false, error: error.message };
@@ -146,7 +146,7 @@ export async function updateAcademicYearAction(slug: string, id: string, data: a
 
         revalidatePath(`/s/${slug}/students`);
         revalidatePath(`/s/${slug}/settings`);
-        return { success: true, data: year };
+        return { success: true, data: JSON.parse(JSON.stringify(year)) };
     } catch (error: any) {
         console.error("updateAcademicYearAction Error:", error);
         return { success: false, error: error.message };
@@ -181,7 +181,7 @@ export async function getCurrentAcademicYearAction(slug: string) {
             } : null;
         }
 
-        return { success: true, data: year };
+        return { success: true, data: JSON.parse(JSON.stringify(year)) };
     } catch (error: any) {
         console.error("getCurrentAcademicYearAction Error:", error);
         return { success: false, error: error.message };

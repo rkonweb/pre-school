@@ -65,40 +65,52 @@ export async function getParentHomeDataAction(phone: string) {
             initials: pName.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2)
         };
 
+        // Batch Fetch Attendance for all students today
+        const studentIds = studentsData.map(s => s.id);
+        const allAttendance = await prisma.attendance.findMany({
+            where: {
+                studentId: { in: studentIds },
+                date: { gte: startOfDay, lte: endOfDay }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Batch Fetch Transport Logs for all students today
+        const allTransport = await prisma.transportBoardingLog.findMany({
+            where: {
+                studentId: { in: studentIds },
+                timestamp: { gte: startOfDay, lte: endOfDay }
+            },
+            orderBy: { timestamp: 'desc' }
+        });
+
         // Map students with safety status
-        console.log("[getParentHomeDataAction] Mapping students safety status...");
-        const students = await Promise.all(studentsData.map(async (s: any) => {
+        const students = studentsData.map((s: any) => {
             let safetyStatus = "AT_HOME";
             let safetyStatusTime = null;
 
-            // Check Attendance
-            const attendance = await prisma.attendance.findFirst({
-                where: { studentId: s.id, date: { gte: startOfDay, lte: endOfDay } },
-                orderBy: { createdAt: 'desc' }
-            });
+            // Find latest attendance for this student
+            const studentAttendance = allAttendance.find(a => a.studentId === s.id);
 
-            if (attendance) {
-                if (attendance.status === "PRESENT") {
+            if (studentAttendance) {
+                if (studentAttendance.status === "PRESENT") {
                     safetyStatus = "IN_SCHOOL";
-                } else if (attendance.status === "ABSENT") {
+                } else if (studentAttendance.status === "ABSENT") {
                     safetyStatus = "ABSENT";
                 }
-                safetyStatusTime = attendance.createdAt.toISOString();
+                safetyStatusTime = studentAttendance.createdAt.toISOString();
             }
 
-            // Check Transport Log
-            const transport = await prisma.transportBoardingLog.findFirst({
-                where: { studentId: s.id, timestamp: { gte: startOfDay, lte: endOfDay } },
-                orderBy: { timestamp: 'desc' }
-            });
+            // Find latest transport log for this student
+            const studentTransport = allTransport.find(t => t.studentId === s.id);
 
-            if (transport) {
-                if (!safetyStatusTime || transport.timestamp > new Date(safetyStatusTime)) {
-                    if (transport.type === "PICKUP" && transport.status === "BOARDED") safetyStatus = "IN_TRANSIT";
-                    if (transport.type === "PICKUP" && transport.status === "DROPPED") safetyStatus = "IN_SCHOOL";
-                    if (transport.type === "DROP" && transport.status === "BOARDED") safetyStatus = "IN_TRANSIT";
-                    if (transport.type === "DROP" && transport.status === "DROPPED") safetyStatus = "AT_HOME";
-                    safetyStatusTime = transport.timestamp.toISOString();
+            if (studentTransport) {
+                if (!safetyStatusTime || studentTransport.timestamp > new Date(safetyStatusTime)) {
+                    if (studentTransport.type === "PICKUP" && studentTransport.status === "BOARDED") safetyStatus = "IN_TRANSIT";
+                    if (studentTransport.type === "PICKUP" && studentTransport.status === "DROPPED") safetyStatus = "IN_SCHOOL";
+                    if (studentTransport.type === "DROP" && studentTransport.status === "BOARDED") safetyStatus = "IN_TRANSIT";
+                    if (studentTransport.type === "DROP" && studentTransport.status === "DROPPED") safetyStatus = "AT_HOME";
+                    safetyStatusTime = studentTransport.timestamp.toISOString();
                 }
             }
 
@@ -110,7 +122,7 @@ export async function getParentHomeDataAction(phone: string) {
                 safetyStatusTime,
                 classroomName: s.classroom || "Unassigned"
             };
-        }));
+        });
         console.log("[getParentHomeDataAction] Mapping students safety status complete.");
 
         // Fetch Critical Alerts (e.g. Broadcasts flagged or general unread Conversations)

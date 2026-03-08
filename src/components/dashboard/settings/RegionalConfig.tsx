@@ -129,8 +129,14 @@ export function RegionalConfig({ slug, initialData }: RegionalConfigProps) {
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="text-white px-10 py-4 rounded-[20px] text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:brightness-110 transition-all shadow-xl disabled:opacity-50"
-                            style={{ backgroundColor: 'var(--brand-color)', boxShadow: '0 20px 25px -5px rgba(var(--brand-color-rgb, 0, 0, 0), 0.1), 0 8px 10px -6px rgba(var(--brand-color-rgb, 0, 0, 0), 0.1)' }}
+                            className="px-10 py-4 rounded-[20px] text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all disabled:opacity-50"
+                            style={{ 
+                                background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", 
+                                color: "var(--secondary-color, white)",
+                                boxShadow: "0 20px 25px -5px rgba(var(--brand-color-rgb, 245, 158, 11), 0.2), 0 8px 10px -6px rgba(var(--brand-color-rgb, 245, 158, 11), 0.1)" 
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.filter = "brightness(1.1)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                            onMouseLeave={e => { e.currentTarget.style.filter = "none"; e.currentTarget.style.transform = "none"; }}
                         >
                             {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             Update Operations

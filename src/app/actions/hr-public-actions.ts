@@ -16,7 +16,7 @@ export async function getJobPostingsAction(slug: string) {
             orderBy: { createdAt: "desc" }
         });
 
-        return { success: true, data: postings };
+        return { success: true, data: JSON.parse(JSON.stringify(postings)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -44,7 +44,7 @@ export async function submitApplicationAction(data: any, slug: string) {
         // Revalidate the recruiter's board so the new application appears instantly
         revalidatePath(`/s/${slug}/hr/recruitment`);
 
-        return { success: true, data: application };
+        return { success: true, data: JSON.parse(JSON.stringify(application)) };
     } catch (error: any) {
         console.error("Failed to submit application:", error);
         return { success: false, error: error.message };

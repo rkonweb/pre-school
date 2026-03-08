@@ -250,7 +250,7 @@ export default function EditClassPage() {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="flex-1 h-14 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="flex-1 h-14 bg-brand-gradient text-[var(--secondary-color)] hover:brightness-110 rounded-2xl font-black uppercase tracking-widest shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 border-none"
                         >
                             {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                             {isSaving ? "Saving..." : "Update Class"}

@@ -601,7 +601,12 @@ export function IDCardDesigner({
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
-                    <button onClick={() => onSave?.(allZones, orientation, canvasSettings)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-black text-[12px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all"><Save className="h-4 w-4" /> Save Template</button>
+                    <button 
+                        onClick={() => onSave?.(allZones, orientation, canvasSettings)} 
+                        className="bg-brand-gradient text-[var(--secondary-color)] px-6 py-2.5 rounded-xl font-black text-[12px] uppercase tracking-widest flex items-center gap-2 shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)] hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all border-none"
+                    >
+                        <Save className="h-4 w-4" /> Save Template
+                    </button>
                 </div>
             </div>
 

@@ -316,7 +316,7 @@ export default function NewStudentPage() {
                                 Cancel
                             </button>
                             <button type="submit" disabled={isSaving}
-                                className="flex-[3] h-16 rounded-[24px] bg-brand text-white font-black text-sm hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
+                                className="flex-[3] h-16 rounded-[24px] bg-brand text-[var(--secondary-color)] font-black text-sm hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
                                 {isSaving ? <><Loader2 className="h-5 w-5 animate-spin" /> Creating Student...</> : <><CheckCircle2 className="h-5 w-5" /> Create Student Profile</>}
                             </button>
                         </div>

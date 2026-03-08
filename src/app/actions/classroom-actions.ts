@@ -58,7 +58,7 @@ export async function getClassroomsAction(schoolSlug: string) {
         }
 
         const classrooms = await getClassroomsCached(whereClause);
-        return { success: true, data: classrooms };
+        return { success: true, data: JSON.parse(JSON.stringify(classrooms)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -76,7 +76,7 @@ export async function getClassroomAction(id: string, slug: string) {
                 students: true
             }
         });
-        return { success: true, classroom };
+        return { success: true, classroom: JSON.parse(JSON.stringify(classroom)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -102,7 +102,7 @@ export async function createClassroomAction(schoolSlug: string, name: string, te
 
     revalidatePath(`/s/${schoolSlug}/academics/classes`);
     revalidateTag("classrooms");
-    return { success: true, data: classroom };
+    return { success: true, data: JSON.parse(JSON.stringify(classroom)) };
 }
 
 export async function updateClassroomAction(schoolSlug: string, id: string, data: any) {
@@ -121,7 +121,7 @@ export async function updateClassroomAction(schoolSlug: string, id: string, data
         });
         revalidatePath(`/s/${schoolSlug}/academics/classes`);
         revalidateTag("classrooms");
-        return { success: true, classroom };
+        return { success: true, classroom: JSON.parse(JSON.stringify(classroom)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

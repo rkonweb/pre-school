@@ -50,7 +50,7 @@ export async function getFinancialChartData(schoolSlug: string, financialYearId?
     // Take exactly last 12 active months if too long
     const finalData = sorted.map(m => ({ month: m.month, income: m.income, expense: m.expense }));
 
-    return { success: true, data: finalData };
+    return { success: true, data: JSON.parse(JSON.stringify(finalData)) };
 }
 
 export async function getCategoryExpenses(schoolSlug: string, financialYearId?: string) {
@@ -86,5 +86,5 @@ export async function getCategoryExpenses(schoolSlug: string, financialYearId?: 
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value); // sort descending by value
 
-    return { success: true, data: finalData };
+    return { success: true, data: JSON.parse(JSON.stringify(finalData)) };
 }

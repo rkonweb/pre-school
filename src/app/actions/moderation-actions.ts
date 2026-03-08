@@ -1,12 +1,12 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
+import { validateUserSchoolAction } from "./session-actions";
 import { revalidatePath } from "next/cache";
 
-export async function getFlaggedMessagesAction() {
-    const session = await getSession();
-    if (!session || session.role !== "ADMIN") {
+export async function getFlaggedMessagesAction(schoolSlug: string) {
+    const auth = await validateUserSchoolAction(schoolSlug);
+    if (!auth.success || !auth.user || !auth.user.schoolId) {
         throw new Error("Unauthorized");
     }
 
@@ -19,7 +19,7 @@ export async function getFlaggedMessagesAction() {
                 ],
                 conversation: {
                     student: {
-                        schoolId: session.schoolId
+                        schoolId: auth.user.schoolId
                     }
                 }
             },
@@ -33,16 +33,16 @@ export async function getFlaggedMessagesAction() {
             orderBy: { createdAt: 'desc' }
         });
 
-        return { success: true, messages };
+        return { success: true, messages: JSON.parse(JSON.stringify(messages)) };
     } catch (error) {
         console.error("Get Flagged Messages Error:", error);
         return { success: false, error: "Failed to fetch flagged messages" };
     }
 }
 
-export async function updateMessageModerationStatusAction(messageId: string, status: "SENT" | "REJECTED") {
-    const session = await getSession();
-    if (!session || session.role !== "ADMIN") {
+export async function updateMessageModerationStatusAction(schoolSlug: string, messageId: string, status: "SENT" | "REJECTED") {
+    const auth = await validateUserSchoolAction(schoolSlug);
+    if (!auth.success || !auth.user || !auth.user.schoolId) {
         throw new Error("Unauthorized");
     }
 
@@ -72,7 +72,7 @@ export async function updateMessageModerationStatusAction(messageId: string, sta
             revalidatePath(`/s/${slug}/communication`);
         }
 
-        return { success: true, message };
+        return { success: true, message: JSON.parse(JSON.stringify(message)) };
     } catch (error) {
         console.error("Update Moderation Status Error:", error);
         return { success: false, error: "Failed to update message status" };

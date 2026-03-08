@@ -91,17 +91,18 @@ export function SettingsLoader({ message = "Loading..." }: { message?: string })
             }}>
                 <div style={{
                     position: "absolute", inset: 0,
-                    border: `3px solid ${C.amberL}`,
-                    borderTop: `3px solid ${C.amber}`,
+                    border: `3px solid rgba(var(--brand-color-rgb, 245, 158, 11), 0.15)`,
+                    borderTop: `3px solid var(--brand-color, ${C.amber})`,
                     borderRadius: "50%",
                     animation: "spin 0.8s linear infinite",
                 }} />
                 <div style={{
                     position: "absolute", inset: 8,
                     border: `2px solid transparent`,
-                    borderTop: `2px solid ${C.orange}`,
+                    borderTop: `2px solid var(--brand-color, ${C.orange})`,
                     borderRadius: "50%",
                     animation: "spinReverse 0.6s linear infinite",
+                    opacity: 0.6,
                 }} />
             </div>
             <div style={{
@@ -146,11 +147,11 @@ export function SettingsError({ message, onRetry }: { message: string; onRetry?:
             {onRetry && (
                 <button onClick={onRetry} style={{
                     padding: "9px 22px", borderRadius: 11,
-                    background: `linear-gradient(135deg,${C.amber},${C.orange})`,
-                    color: "white", border: "none", cursor: "pointer",
+                    background: `var(--school-gradient, linear-gradient(135deg,${C.amber},${C.orange}))`,
+                    color: "var(--secondary-color, white)", border: "none", cursor: "pointer",
                     fontFamily: "'Plus Jakarta Sans',sans-serif",
                     fontSize: 13, fontWeight: 700,
-                    boxShadow: `0 4px 14px ${C.amber}40`,
+                    boxShadow: `0 4px 14px rgba(var(--brand-color-rgb, 245, 158, 11), 0.35)`,
                 }}>
                     Retry
                 </button>

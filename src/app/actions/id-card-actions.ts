@@ -21,7 +21,7 @@ interface IDCardTemplateData {
 
 export async function getIDCardTemplatesAction(schoolId: string) {
     try {
-        return await prisma.iDCardTemplate.findMany({
+        const templates = await prisma.iDCardTemplate.findMany({
             where: {
                 OR: [
                     { schoolId },
@@ -35,6 +35,7 @@ export async function getIDCardTemplatesAction(schoolId: string) {
             },
             orderBy: { createdAt: 'desc' }
         });
+        return JSON.parse(JSON.stringify(templates));
     } catch (error) {
         console.error("Failed to fetch ID card templates:", error);
         return [];
@@ -43,9 +44,10 @@ export async function getIDCardTemplatesAction(schoolId: string) {
 
 export async function getIDCardTemplateByIdAction(id: string) {
     try {
-        return await prisma.iDCardTemplate.findUnique({
+        const template = await prisma.iDCardTemplate.findUnique({
             where: { id }
         });
+        return JSON.parse(JSON.stringify(template));
     } catch (error) {
         console.error("Failed to fetch ID card template:", error);
         return null;
@@ -73,7 +75,7 @@ export async function createIDCardTemplateAction(data: IDCardTemplateData, slug:
         });
         revalidatePath(`/s/${slug}/settings/id-cards`);
         revalidatePath(`/s/${slug}/students/id-cards`);
-        return { success: true, data: template };
+        return { success: true, data: JSON.parse(JSON.stringify(template)) };
     } catch (error) {
         console.error("Failed to create ID card template:", error);
         return { success: false, error: "Failed to create template" };
@@ -88,7 +90,7 @@ export async function updateIDCardTemplateAction(id: string, data: Partial<IDCar
         });
         revalidatePath(`/s/${slug}/settings/id-cards`);
         revalidatePath(`/s/${slug}/students/id-cards`);
-        return { success: true, data: template };
+        return { success: true, data: JSON.parse(JSON.stringify(template)) };
     } catch (error) {
         console.error("Failed to update ID card template:", error);
         return { success: false, error: "Failed to update template" };
@@ -113,9 +115,10 @@ export async function deleteIDCardTemplateAction(id: string, slug: string) {
 
 export async function getIDCardSettingsAction(schoolId: string) {
     try {
-        return await prisma.iDCardSettings.findUnique({
+        const settings = await prisma.iDCardSettings.findUnique({
             where: { schoolId }
         });
+        return JSON.parse(JSON.stringify(settings));
     } catch (error) {
         console.error("Failed to fetch ID card settings:", error);
         return null;
@@ -134,7 +137,7 @@ export async function upsertIDCardSettingsAction(schoolId: string, slug: string,
         });
         revalidatePath(`/s/${slug}/settings/id-cards`);
         revalidatePath(`/s/${slug}/students/id-cards`);
-        return { success: true, data: settings };
+        return { success: true, data: JSON.parse(JSON.stringify(settings)) };
     } catch (error) {
         console.error("Failed to save ID card settings:", error);
         return { success: false, error: "Failed to save settings" };
@@ -191,7 +194,7 @@ export async function duplicateIDCardTemplateAction(templateId: string, slug: st
 
         revalidatePath(`/s/${slug}/settings/id-cards`);
         revalidatePath(`/s/${slug}/students/id-cards`);
-        return { success: true, data: duplicate };
+        return { success: true, data: JSON.parse(JSON.stringify(duplicate)) };
     } catch (error) {
         console.error("Failed to duplicate template:", error);
         return { success: false, error: "Failed to duplicate template" };

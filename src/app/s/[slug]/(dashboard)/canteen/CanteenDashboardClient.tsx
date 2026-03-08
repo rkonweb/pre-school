@@ -63,7 +63,7 @@ export default function CanteenDashboardClient({ slug, initialData }: { slug: st
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                        <Activity className="h-6 w-6 text-orange-500" />
+                        <Activity className="h-6 w-6 text-brand" />
                         Canteen Intelligence
                     </h1>
                     <p className="text-slate-500 mt-1 font-medium text-sm text-balance max-w-2xl">
@@ -73,7 +73,7 @@ export default function CanteenDashboardClient({ slug, initialData }: { slug: st
                 <div className="flex flex-wrap items-center gap-3">
                     <Link
                         href={`/s/${slug}/canteen/pos`}
-                        className="h-11 px-6 bg-orange-500 text-white hover:bg-orange-600 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-orange-200 transition-all border-none"
+                        className="h-11 px-6 bg-brand text-[var(--secondary-color)] hover:opacity-90 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-brand/20 transition-all border-none"
                     >
                         <CreditCard className="h-4 w-4" />
                         Open POS
@@ -142,7 +142,7 @@ export default function CanteenDashboardClient({ slug, initialData }: { slug: st
                     value={kpi.lowBalanceWallets}
                     sub="Require top-up"
                     icon={AlertCircle}
-                    colorClass={{ bg: 'bg-orange-100', text: 'text-orange-600' }}
+                    colorClass={{ bg: 'bg-brand/10', text: 'text-brand' }}
                 />
             </div>
 

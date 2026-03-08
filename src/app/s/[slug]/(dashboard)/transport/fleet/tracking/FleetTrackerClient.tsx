@@ -280,31 +280,28 @@ export default function FleetTrackerClient({ apiKey }: FleetTrackerClientProps) 
 
             {/* Main Content: List or Map */}
             {viewMode === "list" ? (
-                <div className={cn(tableStyles.container, "bg-white overflow-hidden shadow-xl shadow-zinc-200/40")}>
+                <div style={tableStyles.container} className="bg-white overflow-hidden shadow-xl shadow-zinc-200/40">
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse">
                             <thead>
-                                <tr className="bg-zinc-50/50 border-b border-zinc-100 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] text-left">
-                                    <th className="px-6 py-5">Registration</th>
-                                    <th className="px-6 py-5">Route</th>
-                                    <th className="px-6 py-5">Driver</th>
-                                    <th className="px-6 py-5">Status</th>
-                                    <th className="px-6 py-5">Delay</th>
-                                    <th className="px-6 py-5">Last Update</th>
-                                    <th className="px-6 py-5">Action</th>
+                                <tr style={tableStyles.thead}>
+                                    <th style={tableStyles.th} className="px-6 py-5">Registration</th>
+                                    <th style={tableStyles.th} className="px-6 py-5">Route</th>
+                                    <th style={tableStyles.th} className="px-6 py-5">Driver</th>
+                                    <th style={tableStyles.th} className="px-6 py-5">Status</th>
+                                    <th style={tableStyles.th} className="px-6 py-5">Delay</th>
+                                    <th style={tableStyles.th} className="px-6 py-5">Last Update</th>
+                                    <th style={tableStyles.thNoSort} className="px-6 py-5">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredVehicles.map((vehicle, i) => (
                                     <tr
                                         key={vehicle.id}
-                                        className={cn(
-                                            "group transition-all duration-200 border-b border-zinc-50 last:border-0",
-                                            i % 2 === 0 ? "bg-white" : "bg-zinc-50/20",
-                                            "hover:bg-amber-50/50"
-                                        )}
+                                        style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
+                                        className="group transition-all duration-200"
                                     >
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4" style={tableStyles.td}>
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-2">
                                                     <div className="h-8 w-8 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-900 border border-zinc-200/50 shadow-sm shrink-0">
@@ -325,14 +322,14 @@ export default function FleetTrackerClient({ apiKey }: FleetTrackerClientProps) 
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4" style={tableStyles.td}>
                                             <span className="text-xs font-black text-zinc-900 uppercase tracking-widest bg-zinc-100/50 px-2 py-1 rounded-lg border border-zinc-200/30">{vehicle.routeName || "No Route"}</span>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4" style={tableStyles.td}>
                                             <span className="text-sm font-bold text-zinc-600">{vehicle.driverName || "Unassigned"}</span>
                                         </td>
-                                        <td className="px-6 py-4">{getStatusBadge(vehicle)}</td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4" style={tableStyles.td}>{getStatusBadge(vehicle)}</td>
+                                        <td className="px-6 py-4" style={tableStyles.td}>
                                             <div className="flex flex-col">
                                                 {vehicle.telemetry && vehicle.telemetry.delayMinutes > 0 ? (
                                                     <>
@@ -344,12 +341,12 @@ export default function FleetTrackerClient({ apiKey }: FleetTrackerClientProps) 
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4" style={tableStyles.td}>
                                             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest bg-zinc-50 border border-zinc-100 px-2 py-0.5 rounded-md">
                                                 {vehicle.telemetry ? getTimeSince(vehicle.telemetry.recordedAt) : "OFFLINE"}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4" style={tableStyles.td}>
                                             <Btn
                                                 size="sm"
                                                 variant="primary"

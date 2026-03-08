@@ -105,7 +105,7 @@ export async function safeSaveReportCardAction(
         }
 
         revalidatePath(`/s/${schoolSlug}/academics/report-cards`);
-        return { success: true, data: reportCard };
+        return { success: true, data: JSON.parse(JSON.stringify(reportCard)) };
 
     } catch (error: any) {
         console.error("Save Report Card Error:", error);
@@ -140,7 +140,7 @@ export async function getReportCardsForClassAction(schoolSlug: string, classroom
             }
         });
 
-        return { success: true, data: reportCards };
+        return { success: true, data: JSON.parse(JSON.stringify(reportCards)) };
     } catch (error: any) {
         console.error("Get Report Cards Error:", error);
         return { success: false, error: error.message };
@@ -163,7 +163,7 @@ export async function toggleReportCardPublishAction(schoolSlug: string, id: stri
         });
 
         revalidatePath(`/s/${schoolSlug}/academics/report-cards`);
-        return { success: true, data: reportCard };
+        return { success: true, data: JSON.parse(JSON.stringify(reportCard)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

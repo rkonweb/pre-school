@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getCookie } from "@/lib/cookies";
 import { useConfirm } from "@/contexts/ConfirmContext";
-import { ErpTabs, SectionHeader, SortIcon, RowActions, StatusChip, Btn } from "@/components/ui/erp-ui";
+import { ErpTabs, SectionHeader, tableStyles, SortIcon, RowActions, StatusChip, Btn } from "@/components/ui/erp-ui";
 import { StudentAvatar, cleanName } from "@/components/dashboard/students/StudentAvatar";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 
@@ -57,8 +57,8 @@ export default function StudentsPage() {
         name: true,
         class: true,
         gender: true,
-        fatherContact: true,
-        motherContact: true,
+        fatherPhone: true,
+        motherPhone: true,
         joiningDate: true,
         status: true,
     });
@@ -72,8 +72,8 @@ export default function StudentsPage() {
         { id: 'name', label: 'Student Name' },
         { id: 'class', label: 'Class' },
         { id: 'gender', label: 'Gender' },
-        { id: 'fatherContact', label: 'Father Contact' },
-        { id: 'motherContact', label: 'Mother Contact' },
+        { id: 'fatherPhone', label: 'Father Contact' },
+        { id: 'motherPhone', label: 'Mother Contact' },
         { id: 'joiningDate', label: 'Joined' },
         { id: 'status', label: 'Status' },
     ]);
@@ -184,7 +184,7 @@ export default function StudentsPage() {
                 const newStudents = res.students || [];
                 setStudents(prev => currentPage === 1 ? newStudents : [...prev, ...newStudents]);
                 const pagination = res.pagination;
-                const moreAvailable = pagination?.page < pagination?.totalPages;
+                const moreAvailable = (pagination?.page ?? 0) < (pagination?.totalPages ?? 0);
                 setHasMore(moreAvailable);
                 hasMoreRef.current = moreAvailable;
             } else {
@@ -353,8 +353,8 @@ export default function StudentsPage() {
                                                                 <div
                                                                     ref={provided.innerRef}
                                                                     {...provided.draggableProps}
-                                                                    className={cn("flex items-center justify-between rounded-lg px-2 py-1.5", snapshot.isDragging ? "bg-amber-50 shadow-[0_4px_16px_rgba(0,0,0,0.1)]" : "bg-transparent shadow-none")}
-                                                                    style={{ ...provided.draggableProps.style }}
+                                                                    className={cn("flex items-center justify-between rounded-lg px-2 py-1.5", snapshot.isDragging ? "bg-brand/10 shadow-[0_4px_16px_rgba(0,0,0,0.1)]" : "bg-transparent shadow-none")}
+                                                                    style={snapshot.isDragging ? { backgroundColor: 'rgba(var(--brand-color-rgb, 245, 158, 11), 0.1)', ...provided.draggableProps.style } : { ...provided.draggableProps.style }}
                                                                 >
                                                                     <div className="flex items-center gap-2">
                                                                         <div {...provided.dragHandleProps} className="cursor-grab text-gray-400 flex">
@@ -363,7 +363,7 @@ export default function StudentsPage() {
                                                                         <button className={cn("bg-none border-none cursor-pointer text-[13px] text-left", visibleColumns[col.id] ? "font-bold text-indigo-950" : "font-medium text-gray-400")} onClick={() => toggleColumn(col.id)}>{col.label}</button>
                                                                     </div>
                                                                     <button onClick={() => toggleColumn(col.id)} className="bg-none border-none cursor-pointer">
-                                                                        {visibleColumns[col.id] && <Check className="w-3.5 h-3.5 text-amber-500" />}
+                                                                        {visibleColumns[col.id] && <Check className="w-3.5 h-3.5 text-brand" style={{ color: 'var(--brand-color)' }} />}
                                                                     </button>
                                                                 </div>
                                                             )}
@@ -381,57 +381,27 @@ export default function StudentsPage() {
                 </div>
             </div>
 
-            <div className={cn(tableStyles.container, "bg-white overflow-hidden rounded-xl border border-gray-200 shadow-sm")}>
+            <div className="bg-white overflow-hidden rounded-xl border border-gray-200 shadow-sm" style={tableStyles.container}>
                 {isLoading ? (
                     <div className="flex h-[240px] flex-col items-center justify-center gap-3">
-                        <div className="w-9 h-9 rounded-full border-[3px] border-gray-100 border-t-amber-500 animate-spin" />
+                        <div className="w-9 h-9 rounded-full border-[3px] border-gray-100 border-t-brand animate-spin" style={{ borderTopColor: 'var(--brand-color)' }} />
                         <p className="text-[13px] font-semibold text-gray-500">Loading students...</p>
                     </div>
                 ) : (
                     <>
                         <div className="overflow-x-auto min-h-[300px]">
                             <table className="w-full border-collapse">
-                                <thead className={cn(tableStyles.thead, "bg-gray-50/80 border-b border-gray-200")}>
+                                <thead>
                                     <tr>
-                                        <th className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold tracking-wider uppercase sticky left-0 z-10 bg-gradient-to-br from-indigo-950 to-indigo-900 text-white">Action</th>
+                                        <th className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold tracking-wider uppercase sticky left-0 z-10">Action</th>
                                         {columns.map(col => {
                                             if (!visibleColumns[col.id]) return null;
 
-                                            if (col.id === 'admissionNumber') return (
-                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold text-gray-500 tracking-wider uppercase bg-transparent" onClick={() => handleSort('admissionNumber')}>
-                                                    <div className="flex items-center gap-1 cursor-pointer select-none">Adm No {renderSortIcon('admissionNumber')}</div>
+                                            return (
+                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold tracking-wider uppercase" onClick={() => handleSort(col.id)}>
+                                                    <div className="flex items-center gap-1 cursor-pointer select-none">{col.label} {renderSortIcon(col.id)}</div>
                                                 </th>
                                             );
-                                            if (col.id === 'name') return (
-                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold text-gray-500 tracking-wider uppercase bg-transparent" onClick={() => handleSort('name')}>
-                                                    <div className="flex items-center gap-1 cursor-pointer select-none">Student Name {renderSortIcon('name')}</div>
-                                                </th>
-                                            );
-                                            if (col.id === 'class') return (
-                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold text-gray-500 tracking-wider uppercase bg-transparent" onClick={() => handleSort('class')}>
-                                                    <div className="flex items-center gap-1 cursor-pointer select-none">Class {renderSortIcon('class')}</div>
-                                                </th>
-                                            );
-                                            if (col.id === 'gender') return (
-                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold text-gray-500 tracking-wider uppercase bg-transparent">Gender</th>
-                                            );
-                                            if (col.id === 'fatherContact') return (
-                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold text-gray-500 tracking-wider uppercase bg-transparent">Father Contact</th>
-                                            );
-                                            if (col.id === 'motherContact') return (
-                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold text-gray-500 tracking-wider uppercase bg-transparent">Mother Contact</th>
-                                            );
-                                            if (col.id === 'joiningDate') return (
-                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold text-gray-500 tracking-wider uppercase bg-transparent" onClick={() => handleSort('joiningDate')}>
-                                                    <div className="flex items-center gap-1 cursor-pointer select-none">Joined {renderSortIcon('joiningDate')}</div>
-                                                </th>
-                                            );
-                                            if (col.id === 'status') return (
-                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold text-gray-500 tracking-wider uppercase bg-transparent" onClick={() => handleSort('status')}>
-                                                    <div className="flex items-center gap-1 cursor-pointer select-none">Status {renderSortIcon('status')}</div>
-                                                </th>
-                                            );
-                                            return null;
                                         })}
                                     </tr>
                                 </thead>
@@ -440,7 +410,8 @@ export default function StudentsPage() {
                                         students.map((student, i) => (
                                             <tr
                                                 key={student.id}
-                                                className={cn("transition-all hover:bg-amber-50 hover:translate-x-[3px]", i % 2 === 0 ? "bg-white" : "bg-gray-50/50")}
+                                                className={cn("transition-all hover:translate-x-[3px]", i % 2 === 0 ? "bg-white" : "bg-gray-50/50")}
+                                                style={{ ['--hover-bg' as any]: 'rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)' }}
                                             >
                                                 <td className="px-6 py-4 border-b border-gray-100 bg-inherit text-left align-middle sticky left-0 z-10">
                                                     <div className="flex items-center gap-2 relative z-20">
@@ -465,7 +436,8 @@ export default function StudentsPage() {
                                                                 <div className="flex flex-col min-w-0">
                                                                     <Link
                                                                         href={`/s/${slug}/students/${student.id}`}
-                                                                        className="font-bold text-gray-800 no-underline overflow-hidden text-ellipsis whitespace-nowrap max-w-[150px] hover:text-amber-600"
+                                                                        className="font-bold text-gray-800 no-underline overflow-hidden text-ellipsis whitespace-nowrap max-w-[150px] hover:text-brand"
+                                                                        style={{ ['--hover-color' as any]: 'var(--brand-color)' }}
                                                                         title={student.name}
                                                                     >
                                                                         {cleanName(student.name)}
@@ -487,7 +459,7 @@ export default function StudentsPage() {
                                                             <span className="text-[11px] font-bold tracking-wide uppercase text-gray-500">{student.gender}</span>
                                                         </td>
                                                     );
-                                                    if (col.id === 'fatherContact') return (
+                                                    if (col.id === 'fatherPhone') return (
                                                         <td key={col.id} className="px-6 py-4 border-b border-gray-100 bg-transparent text-left align-middle whitespace-nowrap">
                                                             {student.fatherPhone ? (
                                                                 <div className="flex items-center gap-2">
@@ -497,7 +469,7 @@ export default function StudentsPage() {
                                                             ) : <span className="text-gray-400">-</span>}
                                                         </td>
                                                     );
-                                                    if (col.id === 'motherContact') return (
+                                                    if (col.id === 'motherPhone') return (
                                                         <td key={col.id} className="px-6 py-4 border-b border-gray-100 bg-transparent text-left align-middle whitespace-nowrap">
                                                             {student.motherPhone ? (
                                                                 <div className="flex items-center gap-2">
@@ -536,7 +508,7 @@ export default function StudentsPage() {
                         <div className="border-t border-gray-100">
                             {isLoadingMore && (
                                 <div className="flex items-center justify-center gap-2 p-4 text-[13px] text-gray-400">
-                                    <div className="w-4 h-4 rounded-full border-2 border-gray-100 border-t-amber-500 animate-spin" />
+                                    <div className="w-4 h-4 rounded-full border-2 border-gray-100 border-t-brand animate-spin" style={{ borderTopColor: 'var(--brand-color)' }} />
                                     <span>Loading more students...</span>
                                 </div>
                             )}

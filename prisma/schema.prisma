@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/client_final"
+  // output   = "../src/generated/client_final"
 }
 
 datasource db {
@@ -49,6 +49,7 @@ model School {
   addonsConfig            String?                 @default("[]")
   academicYearStartMonth  Int?                    @default(4)
   integrationsConfig      String?                 @default("{}")
+  gradientConfig          String?                 @default("{}")
   maxBranches             Int                     @default(1)
   printableLogo           String?
   transportSyncToAccounts Boolean                 @default(false)
@@ -67,6 +68,7 @@ model School {
   diaryEntries            DiaryEntry[]
   emergencyAlerts         EmergencyAlert[]
   exams                   Exam[]
+  auditLogs               AuditLog[]
   feeStructures           FeeStructure[]
   idCardSettings          IDCardSettings?
   idCardTemplates         IDCardTemplate[]
@@ -104,6 +106,16 @@ model School {
   canteenMenuPlans        CanteenMenuPlan[]
   canteenSubscriptions    CanteenSubscription[]
   studentWallets          StudentWallet[]
+  activities              Activity[]
+  clubs                   Club[]
+  activityEnrollments     ActivityEnrollment[]
+  activityTimetables      ActivityTimetable[]
+  activitySessions        ActivitySession[]
+  activityPerformance     ActivityPerformance[]
+  activityEvents          ActivityEvent[]
+  activityAwards          ActivityAward[]
+  activityEquipment       ActivityEquipment[]
+  activityFees            ActivityFee[]
   canteenGstType          String?
   canteenCommonGst        Float?                  @default(0)
 }
@@ -247,6 +259,7 @@ model User {
   avatarAdjustment         String?
   branchId                 String?
   signupStep               String?
+  webAuthnCredentials      WebAuthnCredential[]
   managedAdmissions        Admission[]             @relation("AdmissionCounsellor")
   BlogPost                 BlogPost[]
   approvedBroadcasts       Broadcast[]             @relation("BroadcastApprover")
@@ -278,6 +291,11 @@ model User {
   branch                   Branch?                 @relation(fields: [branchId], references: [id])
   customRole               Role?                   @relation(fields: [customRoleId], references: [id])
   school                   School?                 @relation(fields: [schoolId], references: [id])
+  auditLogs                AuditLog[]
+  coachedActivities       Activity[]              @relation("ActivityCoach")
+  managedClubs            Club[]                  @relation("ClubCoach")
+  timetableCoached        ActivityTimetable[]     @relation("TimetableCoach")
+  sessionsCoached         ActivitySession[]       @relation("SessionCoach")
 
   @@index([role])
   @@index([status])
@@ -481,6 +499,11 @@ model Student {
   boardingLogs          TransportBoardingLog[]
   transportReviewsGiven TransportDriverReview[]
   hostelAllocations     HostelAllocation[]
+  activityEnrollments     ActivityEnrollment[]
+  activityAttendance      ActivityAttendance[]
+  activityPerformance     ActivityPerformance[]
+  activityAwards          ActivityAward[]
+  activityFees            ActivityFee[]
 
   @@index([schoolId])
   @@index([classroomId])
@@ -2770,4 +2793,258 @@ model FoodCategory {
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model WebAuthnCredential {
+  id           String   @id @default(cuid())
+  credentialID String   @unique 
+  publicKey    Bytes    
+  counter      BigInt   
+  transports   String?  
+  fingerName   String?
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  
+  @@index([userId])
+}
+
+// -------------------------------------------------------------------------------------
+// 19. AUDIT & LOGGING
+// -------------------------------------------------------------------------------------
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  schoolId     String
+  school       School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action       String   // e.g., "LOGIN", "LOGOUT", "CREATE_STUDENT", "DELETE_STAFF"
+  entityType   String?  // e.g., "Student", "Staff", "Settings"
+  entityId     String?
+  details      Json?    // Stores changes, IP address, user agent, etc.
+  riskScore    Int      @default(0) // AI assigned risk score (0-100)
+  isSuspicious Boolean  @default(false)
+  aiAnalysis   String?  // Explains why it was flagged
+  createdAt    DateTime @default(now())
+
+  @@index([schoolId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// -------------------------------------------------------------------------------------
+// 20. EXTRACURRICULAR ACTIVITIES
+// -------------------------------------------------------------------------------------
+
+model Activity {
+  id               String       @id @default(cuid())
+  name             String
+  category         String       // Sports, Arts, Club, Skill
+  description      String?
+  ageGroup         String?
+  gender           String?      // Optional gender restriction
+  maxStudents      Int?
+  level            String?      // Beginner, Intermediate, Advanced
+  frequency        String?      // Weekly, Daily, Seasonal, Event-based
+  duration         String?      // e.g., "1 hour"
+  venue            String?
+  coachId          String?
+  coach            User?        @relation("ActivityCoach", fields: [coachId], references: [id])
+  schedule         String?
+  fee              Float?       @default(0)
+  startDate        DateTime?
+  endDate          DateTime?
+  equipment        String?      // Suggested equipment
+  status           String       @default("ACTIVE") // ACTIVE, UPCOMING, CLOSED
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  enrollments      ActivityEnrollment[]
+  timetable        ActivityTimetable[]
+  sessions         ActivitySession[]
+  performanceRecords ActivityPerformance[]
+  awards           ActivityAward[]
+  fees             ActivityFee[]
+
+  @@index([schoolId])
+  @@index([category])
+}
+
+model Club {
+  id               String       @id @default(cuid())
+  name             String
+  description      String?
+  coachId          String?
+  coach            User?        @relation("ClubCoach", fields: [coachId], references: [id])
+  capacity         Int?
+  logo             String?
+  meetingSchedule  String?      // e.g., "Saturdays 10 AM"
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([schoolId])
+}
+
+model ActivityEnrollment {
+  id               String       @id @default(cuid())
+  studentId        String
+  student          Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  activityId       String
+  activity         Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  skillLevel       String?      // Beginner, Developing, Skilled, Advanced
+  medicalRestrictions String?
+  parentApproval   Boolean      @default(false)
+  status           String       @default("PENDING") // PENDING, APPROVED, WAITLISTED
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([studentId, activityId])
+  @@index([schoolId])
+}
+
+model ActivityTimetable {
+  id               String       @id @default(cuid())
+  activityId       String
+  activity         Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  dayOfWeek        String       // MONDAY, TUESDAY, etc.
+  startTime        String
+  endTime          String
+  venue            String?
+  coachId          String?
+  coach            User?        @relation("TimetableCoach", fields: [coachId], references: [id])
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([schoolId])
+  @@index([activityId])
+}
+
+model ActivitySession {
+  id               String       @id @default(cuid())
+  activityId       String
+  activity         Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  date             DateTime
+  coachId          String?
+  coach            User?        @relation("SessionCoach", fields: [coachId], references: [id])
+  location         String?
+  notes            String?
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  attendance       ActivityAttendance[]
+
+  @@index([schoolId])
+  @@index([activityId])
+  @@index([date])
+}
+
+model ActivityAttendance {
+  id               String       @id @default(cuid())
+  sessionId        String
+  session          ActivitySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId        String
+  student          Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status           String       // PRESENT, ABSENT, LATE, EXCUSED
+  notes            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([sessionId, studentId])
+}
+
+model ActivityPerformance {
+  id               String       @id @default(cuid())
+  activityId       String
+  activity         Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  studentId        String
+  student          Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skillRating      Int?         // 1-5
+  comments         String?
+  achievements     String?
+  level            String?      // Current level: Beginner -> Developing -> Skilled -> Advanced
+  coachRemarks     String?
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([schoolId])
+  @@index([activityId])
+  @@index([studentId])
+}
+
+model ActivityEvent {
+  id               String       @id @default(cuid())
+  name             String
+  type             String       // INTERNAL, INTER_SCHOOL, NATIONAL
+  date             DateTime
+  venue            String?
+  participants     Json?        // List of participant IDs
+  results          Json?        // Result documentation
+  certificates     Json?        // Certificate links
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([schoolId])
+}
+
+model ActivityAward {
+  id               String       @id @default(cuid())
+  studentId        String
+  student          Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  activityId       String
+  activity         Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  awardType        String       // TROPHY, MEDAL, CERTIFICATE
+  level            String       // SCHOOL, DISTRICT, STATE, NATIONAL
+  certificateUrl   String?
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([schoolId])
+}
+
+model ActivityEquipment {
+  id               String       @id @default(cuid())
+  name             String
+  quantity         Int
+  location         String?
+  condition        String?      // NEW, GOOD, FAIR, POOR, BROKEN
+  maintenanceSchedule String?
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([schoolId])
+}
+
+model ActivityFee {
+  id               String       @id @default(cuid())
+  activityId       String
+  activity         Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  studentId        String
+  student          Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amount           Float
+  billingFrequency String       // MONTHLY, SEMESTER, ONE_TIME
+  status           String       @default("PENDING") // PENDING, PAID, PARTIAL
+  schoolId         String
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([schoolId])
 }

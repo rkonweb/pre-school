@@ -146,7 +146,7 @@ export default function AutomationControlPage() {
 
     const BANDS = [
         { id: "HOT", label: "HOT Leads", color: "bg-red-50 border-red-100 text-red-600", score: "80-100" },
-        { id: "WARM", label: "WARM Leads", color: "bg-orange-50 border-orange-100 text-orange-600", score: "60-79" },
+        { id: "WARM", label: "WARM Leads", color: "bg-brand/5 border-brand/10 text-brand", score: "60-79" },
         { id: "COOL", label: "COOL Leads", color: "bg-blue-50 border-blue-100 text-blue-600", score: "40-59" },
         { id: "COLD", label: "COLD Leads", color: "bg-zinc-50 border-zinc-100 text-zinc-600", score: "0-39" },
     ];
@@ -197,7 +197,7 @@ export default function AutomationControlPage() {
                 {[
                     { label: "AI Messages Sent", value: stats?.totalSent || 0, icon: MessageSquare, color: "text-blue-600", sub: "Last 30 days" },
                     { label: "Response Rate", value: `${stats?.responseRate || 0}%`, icon: ArrowUpRight, color: "text-green-600", sub: "Direct parent replies" },
-                    { label: "Staff Hours Saved", value: `${stats?.savedHours || 0}h`, icon: Hourglass, color: "text-orange-600", sub: "Manual task avoidance" },
+                    { label: "Staff Hours Saved", value: `${stats?.savedHours || 0}h`, icon: Hourglass, color: "text-brand", sub: "Manual task avoidance" },
                     { label: "Active Rules", value: stats?.activeRules || 0, icon: Zap, color: "text-brand", sub: "Dynamic score bands" },
                 ].map((stat, i) => (
                     <div key={i} className="bg-white p-6 rounded-[32px] border border-zinc-200 shadow-sm transition-all hover:shadow-md">
@@ -215,7 +215,7 @@ export default function AutomationControlPage() {
 
             {/* Quiet Hours Alert */}
             <div className="p-4 bg-orange-50 border border-orange-100 rounded-3xl flex items-center gap-4 transition-all">
-                <div className="h-10 w-10 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600 shadow-lg shadow-orange-200/50">
+                <div className="h-10 w-10 rounded-2xl bg-brand/10 flex items-center justify-center text-brand shadow-lg shadow-brand/10">
                     <Clock className="h-5 w-5" />
                 </div>
                 {isEditingQuietHours ? (
@@ -223,6 +223,7 @@ export default function AutomationControlPage() {
                         <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-black uppercase text-orange-900 tracking-widest">Start Time</label>
                             <input
+                                title="Quiet hours start"
                                 type="time"
                                 value={tempQuietHours.start}
                                 onChange={(e) => setTempQuietHours({ ...tempQuietHours, start: e.target.value })}
@@ -232,6 +233,7 @@ export default function AutomationControlPage() {
                         <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-black uppercase text-orange-900 tracking-widest">End Time</label>
                             <input
+                                title="Quiet hours end"
                                 type="time"
                                 value={tempQuietHours.end}
                                 onChange={(e) => setTempQuietHours({ ...tempQuietHours, end: e.target.value })}
@@ -291,6 +293,7 @@ export default function AutomationControlPage() {
                                     <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Target Score: {band.score}</span>
                                 </div>
                                 <button
+                                    title="Toggle band status"
                                     onClick={() => handleSaveRule(band.id, { isEnabled: !(rule?.isEnabled ?? true) })}
                                     className={cn(
                                         "h-6 w-11 rounded-full flex items-center px-1 transition-colors outline outline-2 outline-transparent hover:outline-brand/20",
@@ -388,7 +391,7 @@ export default function AutomationControlPage() {
                                 disabled={isSaving === band.id}
                                 className={cn(
                                     "w-full mt-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all gap-2 flex items-center justify-center",
-                                    isSaving === band.id ? "bg-zinc-100 text-zinc-400" : "bg-zinc-900 text-white hover:bg-brand shadow-lg hover:shadow-brand/20",
+                                    isSaving === band.id ? "bg-zinc-100 text-zinc-400" : "bg-zinc-900 text-[var(--secondary-color)] hover:bg-brand hover:text-[var(--secondary-color)] shadow-lg hover:shadow-brand/20",
                                     !(rule?.isEnabled ?? true) && "opacity-40 pointer-events-none"
                                 )}
                             >
@@ -416,7 +419,7 @@ export default function AutomationControlPage() {
 
                             return (
                                 <div key={i} className={cn(
-                                    "flex items-center justify-between p-4 rounded-3xl bg-zinc-50 border border-zinc-100 border-l-4 border-l-orange-500 transition-all",
+                                    "flex items-center justify-between p-4 rounded-3xl bg-zinc-50 border border-zinc-100 border-l-4 border-l-brand transition-all",
                                     isPerforming && "opacity-50 pointer-events-none"
                                 )}>
                                     <div className="flex items-center gap-4">
@@ -432,14 +435,16 @@ export default function AutomationControlPage() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
+                                            title="Cancel automation"
                                             onClick={() => handleCancelQueue(item.id)}
                                             className="h-8 w-8 rounded-full bg-white border border-zinc-200 hover:bg-zinc-50 flex items-center justify-center text-zinc-400 shadow-sm transition-colors"
                                         >
                                             <X className="h-3.5 w-3.5" />
                                         </button>
                                         <button
+                                            title="Execute immediately"
                                             onClick={() => handleExecuteQueue(item.id)}
-                                            className="h-8 w-8 rounded-full bg-zinc-900 hover:bg-brand flex items-center justify-center text-white hover:text-[var(--secondary-color)] shadow-sm transition-colors"
+                                            className="h-8 w-8 rounded-full bg-zinc-900 hover:bg-brand flex items-center justify-center text-[var(--secondary-color)] hover:text-[var(--secondary-color)] shadow-sm transition-colors"
                                         >
                                             <Check className="h-3.5 w-3.5" />
                                         </button>

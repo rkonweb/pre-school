@@ -113,11 +113,11 @@ export default function ReportsTab() {
                                     <div className="flex items-center justify-between mb-4">
                                         <span className={cn(
                                             "text-[10px] font-black uppercase tracking-widest",
-                                            expandedExamId === exam.id ? "text-white/60" : "text-zinc-400"
+                                            expandedExamId === exam.id ? "text-[var(--secondary-color)]/60" : "text-zinc-400"
                                         )}>{exam.date}</span>
                                         <div className={cn(
                                             "h-8 w-8 rounded-lg flex items-center justify-center font-black text-[10px] border shadow-sm",
-                                            expandedExamId === exam.id ? "bg-white/10 border-white/20 text-white" : "bg-white border-zinc-100 text-brand"
+                                            expandedExamId === exam.id ? "bg-white/10 border-white/20 text-[var(--secondary-color)]" : "bg-white border-zinc-100 text-brand"
                                         )}>
                                             {exam.percentage.toFixed(0)}%
                                         </div>
@@ -130,7 +130,7 @@ export default function ReportsTab() {
                                         <div
                                             className={cn(
                                                 "h-full rounded-full transition-all",
-                                                expandedExamId === exam.id ? "bg-white" : "bg-brand"
+                                                expandedExamId === exam.id ? "bg-[var(--secondary-color)]" : "bg-brand"
                                             )}
                                             style={{ width: `${exam.percentage}%` }}
                                         />

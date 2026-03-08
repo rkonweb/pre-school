@@ -184,12 +184,12 @@ export default function VendorDirectoryClient({ slug, initialVendors }: { slug: 
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-slate-200 text-left">
-                            <thead className="bg-slate-50">
+                            <thead>
                                 <tr>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider sticky left-0 bg-slate-50 z-10 border-r border-slate-200">Action</th>
+                                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider sticky left-0 z-10 border-r border-slate-200">Action</th>
                                     {columns.map(col => {
                                         if (!visibleColumns[col.id]) return null;
-                                        return <th key={col.id} className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{col.label}</th>;
+                                        return <th key={col.id} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider whitespace-nowrap">{col.label}</th>;
                                     })}
                                 </tr>
                             </thead>

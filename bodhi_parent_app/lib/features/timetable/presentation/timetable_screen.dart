@@ -2,21 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../core/api/api_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/school_brand_provider.dart';
 import '../../dashboard/data/dashboard_provider.dart';
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
-final timetableProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, studentId) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('parent/timetable', queryParameters: {'studentId': studentId});
-  if (response.data['success'] == true) {
-    return Map<String, dynamic>.from(response.data);
-  } else {
-    throw Exception(response.data['error'] ?? 'Failed to load timetable');
-  }
-});
+import '../data/timetable_provider.dart';
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 class TimetableScreen extends ConsumerStatefulWidget {
@@ -59,26 +48,21 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: ref.watch(timetableProvider(studentId)).when(
-        data: (data) {
-          if (data['data'] == null) {
-            return _buildEmptyState(data['message'] ?? 'No timetable configured yet');
+        data: (timetableData) {
+          if (timetableData.schedule.isEmpty) {
+            return _buildEmptyState('No timetable configured yet');
           }
-
-          final timetableData = data['data'] as Map<String, dynamic>;
-          final schedule = timetableData['config'] as Map<String, dynamic>? ?? {};
-          final classroomName = timetableData['classroomName'] as String? ?? 'Class';
-          final timetableName = timetableData['name'] as String? ?? 'Weekly Timetable';
 
           return CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              _buildSliverAppBar(classroomName, timetableName),
+              _buildSliverAppBar('Class', 'Weekly Timetable'),
               SliverToBoxAdapter(
                 child: _buildDaySelector(),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
-                sliver: _buildDaySchedule(schedule, _selectedDay),
+                sliver: _buildDaySchedule(timetableData.schedule, _selectedDay),
               ),
             ],
           );
@@ -242,27 +226,9 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     );
   }
 
-  Widget _buildDaySchedule(Map<String, dynamic> schedule, int dayNum) {
-    final dayKeys = [dayNum.toString(), _dayFull[dayNum - 1], _days[dayNum - 1]];
-    List<dynamic> periods = [];
-    for (final key in dayKeys) {
-      if (schedule.containsKey(key)) {
-        final val = schedule[key];
-        if (val is List) { periods = val; break; }
-      }
-    }
-
-    if (periods.isEmpty) {
-      final nested = schedule['periods'] ?? schedule['schedule'] ?? schedule['days'];
-      if (nested is Map) {
-        for (final key in dayKeys) {
-          if (nested.containsKey(key)) {
-            final val = nested[key];
-            if (val is List) { periods = val; break; }
-          }
-        }
-      }
-    }
+  Widget _buildDaySchedule(Map<String, List<Period>> schedule, int dayNum) {
+    final dayName = _dayFull[dayNum - 1];
+    final periods = schedule[dayName] ?? [];
 
     if (periods.isEmpty) {
       return SliverFillRemaining(
@@ -272,7 +238,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
             children: [
               const Icon(Icons.free_breakfast_outlined, size: 48, color: AppTheme.borderColor),
               const SizedBox(height: 16),
-              Text('No classes on ${_dayFull[dayNum - 1]}', style: GoogleFonts.dmSans(color: AppTheme.textTertiary, fontSize: 15)),
+              Text('No classes on $dayName', style: GoogleFonts.dmSans(color: AppTheme.textTertiary, fontSize: 15)),
             ],
           ),
         ),
@@ -285,12 +251,12 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen> {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (ctx, i) {
-          final period = periods[i] as Map<String, dynamic>? ?? {};
-          final subject = period['subject'] as String? ?? period['name'] as String? ?? 'Period ${i + 1}';
-          final teacher = period['teacher'] as String? ?? period['teacherName'] as String? ?? '';
-          final startTime = period['startTime'] as String? ?? period['start'] as String? ?? '';
-          final endTime = period['endTime'] as String? ?? period['end'] as String? ?? '';
-          final room = period['room'] as String? ?? period['classroom'] as String? ?? '';
+          final period = periods[i];
+          final subject = period.subject;
+          final teacher = period.teacherName;
+          final startTime = period.startTime;
+          final endTime = period.endTime;
+          final room = period.room ?? '';
 
           bool isCurrent = false;
           if (startTime.isNotEmpty && endTime.isNotEmpty && DateTime.now().weekday == dayNum) {

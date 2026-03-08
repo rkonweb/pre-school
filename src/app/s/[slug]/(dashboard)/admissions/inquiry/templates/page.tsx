@@ -128,7 +128,7 @@ export default function TemplateLibraryPage() {
                 </div>
                 <button
                     onClick={() => handleOpenEditor()}
-                    className="h-11 px-6 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-900/10 hover:bg-brand transition-all"
+                    className="h-11 px-6 bg-zinc-900 text-[var(--secondary-color)] rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-900/10 hover:bg-brand transition-all"
                 >
                     <Plus className="h-4 w-4" />
                     New Template
@@ -460,7 +460,7 @@ function TemplateEditorModal({ slug, template, onClose, onSave }: any) {
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="px-8 py-3 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-900/10 hover:bg-brand transition-all disabled:opacity-50"
+                            className="px-8 py-3 bg-zinc-900 text-[var(--secondary-color)] rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-zinc-900/10 hover:bg-brand hover:text-[var(--secondary-color)] transition-all disabled:opacity-50"
                         >
                             {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             Persist Template

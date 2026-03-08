@@ -214,7 +214,7 @@ export default async function TransportDashboard(props: { params: Promise<{ slug
                                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Telemetry Lag</p>
                                 <span className={cn(
                                     "text-lg font-black tabular-nums",
-                                    fleet.delayed > 0 ? "text-amber-500" : "text-emerald-500"
+                                    fleet.delayed > 0 ? "text-brand" : "text-emerald-500"
                                 )}>{fleet.delayed} <span className="text-[10px] tracking-normal font-black opacity-40 ml-1 italic">VHC</span></span>
                             </div>
                             <div className="flex items-center justify-between p-4 bg-white rounded-3xl border border-zinc-100 shadow-sm">

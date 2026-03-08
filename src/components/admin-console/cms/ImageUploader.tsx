@@ -65,7 +65,7 @@ export function ImageUploader({ value, onChange, label, description, aiTitle }: 
 
         setIsGenerating(true);
         try {
-            const res = await generateImageAction(aiTitle);
+            const res = await generateImageAction('littlechanakyas', aiTitle);
             if (res.success && res.url) {
                 onChange(res.url);
                 toast.success("AI Image generated and saved!");

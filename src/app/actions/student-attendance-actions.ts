@@ -35,7 +35,7 @@ export async function getStudentAttendanceStatsAction(studentId: string, month: 
             records: attendance
         };
 
-        return { success: true, data: stats };
+        return { success: true, data: JSON.parse(JSON.stringify(stats)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -51,7 +51,7 @@ export async function getStudentLeaveRequestsAction(studentId: string) {
             where: { studentId },
             orderBy: { createdAt: 'desc' }
         });
-        return { success: true, data: requests };
+        return { success: true, data: JSON.parse(JSON.stringify(requests)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -82,7 +82,7 @@ export async function createStudentLeaveRequestAction(
         });
 
         revalidatePath('/'); // Revalidate broadly or specific path if known
-        return { success: true, data: request };
+        return { success: true, data: JSON.parse(JSON.stringify(request)) };
     } catch (error: any) {
         console.error("Create Leave Request Error:", error);
         return { success: false, error: error.message };

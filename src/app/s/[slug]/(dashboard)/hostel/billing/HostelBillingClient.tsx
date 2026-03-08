@@ -141,7 +141,7 @@ export default function HostelBillingClient({ slug, allocations, recentInvoices 
                         <button
                             onClick={handleGenerate}
                             disabled={isGenerating || selectedAllocationIds.length === 0}
-                            className="w-full py-3 rounded-xl font-bold bg-brand text-white shadow-sm shadow-brand/20 hover:bg-brand/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 flex justify-center items-center gap-2"
+                            className="w-full py-3 rounded-xl font-bold bg-brand text-[var(--secondary-color)] shadow-sm shadow-brand/20 hover:bg-brand/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 flex justify-center items-center gap-2"
                             title={isGenerating ? 'Processing...' : selectedAllocationIds.length === 0 ? 'Select residents to generate invoices' : `Generate ${selectedAllocationIds.length} invoice(s)`}
                         >
                             <FileText className="h-4 w-4" />
@@ -163,7 +163,7 @@ export default function HostelBillingClient({ slug, allocations, recentInvoices 
                                 </div>
                                 <div className="text-right">
                                     <p className="font-black text-brand">{currency}{invoice.amount}</p>
-                                    <p className={cn("text-[10px] font-bold uppercase", invoice.status === 'PENDING' ? 'text-amber-500' : 'text-emerald-500')}>
+                                    <p className={cn("text-[10px] font-bold uppercase", invoice.status === 'PENDING' ? 'text-brand' : 'text-emerald-500')}>
                                         {invoice.status}
                                     </p>
                                 </div>

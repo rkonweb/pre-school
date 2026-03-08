@@ -137,7 +137,7 @@ export async function getRoutesAction(slug: string) {
             orderBy: { name: 'asc' }
         });
 
-        return { success: true, data: routes };
+        return { success: true, data: JSON.parse(JSON.stringify(routes)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -154,7 +154,7 @@ export async function getAllRoutesWithStopsAction(slug: string) {
             orderBy: { name: 'asc' }
         });
 
-        return { success: true, data: routes };
+        return { success: true, data: JSON.parse(JSON.stringify(routes)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -174,7 +174,7 @@ export async function getRouteDetailsAction(routeId: string, slug: string) {
             }
         });
 
-        return { success: true, data: route };
+        return { success: true, data: JSON.parse(JSON.stringify(route)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -231,7 +231,7 @@ export async function searchStudentsForTransportAction(query: string, slug: stri
             }
         });
 
-        return { success: true, data: students };
+        return { success: true, data: JSON.parse(JSON.stringify(students)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -450,7 +450,7 @@ export async function getVehiclesAction(schoolSlug: string) {
             where: { schoolId: school.id },
             orderBy: { createdAt: 'desc' }
         });
-        return { success: true, data: vehicles };
+        return { success: true, data: JSON.parse(JSON.stringify(vehicles)) };
     } catch (error: any) {
         console.error("Error fetching vehicles:", error);
         return { success: false, error: error.message };
@@ -552,7 +552,7 @@ export async function getVehicleByIdAction(vehicleId: string, slug: string) {
         const vehicle = await prisma.transportVehicle.findUnique({
             where: { id: vehicleId, school: { slug } }
         });
-        return { success: true, data: vehicle };
+        return { success: true, data: JSON.parse(JSON.stringify(vehicle)) };
     } catch (error: any) {
         console.error("Error fetching vehicle:", error);
         return { success: false, error: error.message };
@@ -656,7 +656,7 @@ export async function getDriversAction(schoolSlug: string) {
             where: { schoolId: school.id },
             orderBy: { name: 'asc' }
         });
-        return { success: true, data: drivers };
+        return { success: true, data: JSON.parse(JSON.stringify(drivers)) };
     } catch (error: any) {
         console.error("Error fetching drivers:", error);
         return { success: false, error: error.message };
@@ -870,7 +870,7 @@ export async function generateMonthlyTransportFeesAction(schoolSlug: string) {
             }
         }
 
-        return { success: true, count: generatedCount };
+        return { success: true, count: JSON.parse(JSON.stringify(generatedCount)) };
     } catch (e: any) {
         console.error("Monthly Transport Fee Generation Error:", e);
         return { success: false, error: e.message };
@@ -915,7 +915,7 @@ export async function getFleetStudentsAction(schoolSlug: string) {
             }
         });
 
-        return { success: true, data: students };
+        return { success: true, data: JSON.parse(JSON.stringify(students)) };
     } catch (error: any) {
         console.error("Error fetching fleet students:", error);
         return { success: false, error: error.message };

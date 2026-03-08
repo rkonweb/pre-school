@@ -21,7 +21,7 @@ export async function GET(req: Request) {
         // Fetch user + school — fall back to schoolId claim for dev mock tokens
         let user = await prisma.user.findUnique({
             where: { id: payload.sub as string },
-            include: { school: true }
+            include: { school: true, customRole: true }
         });
 
         // Fallback: if sub is a mock ID, lookup school directly via schoolId claim
@@ -37,24 +37,41 @@ export async function GET(req: Request) {
             school = await (prisma as any).school.findFirst({ orderBy: { createdAt: 'asc' } }) ?? null;
         }
 
+        // Convert role permissions to flat string array
+        let permissions: string[] = [];
+        if (user?.customRole?.permissions) {
+            try {
+                const perms = JSON.parse(user.customRole.permissions);
+                perms.forEach((p: any) => {
+                    p.actions.forEach((a: string) => permissions.push(`${p.module}.${a}`));
+                });
+            } catch (e) {
+                console.error("Permission parse error:", e);
+            }
+        }
+
         return NextResponse.json({
             success: true,
             user: user ? {
                 id: user.id,
                 role: user.role,
                 schoolId: user.schoolId,
+                branchId: user.branchId,
                 name: `${user.firstName} ${user.lastName || ''}`.trim(),
                 photo: user.avatar ?? null,
                 schoolName: (school as any)?.name,
                 schoolSlug: (school as any)?.slug,
+                permissions: permissions.length > 0 ? permissions : null
             } : {
                 id: payload.sub,
                 role: payload.role,
                 schoolId: payload.schoolId,
+                branchId: payload.branchId ?? null,
                 name: `${payload.firstName ?? ''} ${payload.lastName ?? ''}`.trim(),
                 photo: null,
                 schoolName: (school as any)?.name ?? 'School',
                 schoolSlug: (school as any)?.slug ?? '',
+                permissions: null
             },
             // Full school branding for the Flutter app's SchoolBrandNotifier
             school: {

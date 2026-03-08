@@ -108,7 +108,7 @@ export async function addTransportExpenseAction(schoolSlug: string, data: any) {
         }
 
         revalidatePath(`/s/${schoolSlug}/transport/expenses`);
-        return { success: true, data: expense };
+        return { success: true, data: JSON.parse(JSON.stringify(expense)) };
     } catch (error: any) {
         console.error("Error adding expense:", error);
         return { success: false, error: error.message };
@@ -179,7 +179,7 @@ export async function updateTransportExpenseAction(schoolSlug: string, expenseId
         });
 
         revalidatePath(`/s/${schoolSlug}/transport/expenses`);
-        return { success: true, data: expense };
+        return { success: true, data: JSON.parse(JSON.stringify(expense)) };
     } catch (error: any) {
         console.error("Error updating expense:", error);
         return { success: false, error: error.message };
@@ -211,7 +211,7 @@ export async function getTransportExpensesAction(schoolSlug: string, filters?: a
             orderBy: { date: 'desc' }
         });
 
-        return { success: true, data: expenses };
+        return { success: true, data: JSON.parse(JSON.stringify(expenses)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

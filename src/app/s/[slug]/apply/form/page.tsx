@@ -128,7 +128,7 @@ export default function ApplicationFormPage({ params }: { params: { slug: string
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="flex flex-col items-center relative z-10">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold border-2 transition-colors
-                            ${step > i ? 'bg-brand text-white border-brand' :
+                            ${step > i ? 'bg-brand text-[var(--secondary-color)] border-brand' :
                                         step === i ? 'border-brand text-brand bg-white dark:bg-slate-900' :
                                             'border-slate-300 text-slate-400 bg-white dark:bg-slate-900'}`}>
                                     {step > i ? <CheckCircle2 className="w-5 h-5" /> : i}
@@ -299,12 +299,12 @@ export default function ApplicationFormPage({ params }: { params: { slug: string
                                 ) : <div></div>} {/* Empty div to keep 'Next' aligned right */}
 
                                 {step < 3 ? (
-                                    <Button type="button" onClick={nextStep} className="bg-brand hover:bg-brand-600 text-white">
+                                    <Button type="button" onClick={nextStep} className="bg-brand hover:bg-brand-600 text-[var(--secondary-color)]">
                                         Next
                                         <ArrowRight className="w-4 h-4 ml-2" />
                                     </Button>
                                 ) : (
-                                    <Button type="submit" disabled={isLoading} className="bg-brand hover:bg-brand-600 text-white shadow-md">
+                                    <Button type="submit" disabled={isLoading} className="bg-brand hover:bg-brand-600 text-[var(--secondary-color)] shadow-md">
                                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <CheckCircle2 className="h-5 w-5 mr-2" />}
                                         Submit Application
                                     </Button>

@@ -77,7 +77,7 @@ export async function generateAccountInsights(schoolSlug: string) {
             prompt: prompt,
         });
 
-        return { success: true, data: object };
+        return { success: true, data: JSON.parse(JSON.stringify(object)) };
 
     } catch (e: any) {
         console.error("AI Insight Error:", e);

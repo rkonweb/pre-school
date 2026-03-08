@@ -159,7 +159,7 @@ export function PayFeeDialog({ fee, isOpen, onClose, onSuccess, currency, slug }
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 py-4 rounded-xl font-black text-xs uppercase tracking-widest bg-brand text-white hover:brightness-110 transition-colors flex items-center justify-center gap-2"
+                            className="flex-1 py-4 rounded-xl font-black text-xs uppercase tracking-widest bg-brand text-[var(--secondary-color)] hover:brightness-110 transition-colors flex items-center justify-center gap-2"
                         >
                             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                             Record Payment

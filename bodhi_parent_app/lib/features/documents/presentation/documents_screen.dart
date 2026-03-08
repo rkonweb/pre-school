@@ -1,215 +1,318 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/api/api_client.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/school_brand_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../ui/components/app_header.dart';
+import '../../dashboard/data/dashboard_provider.dart';
+import '../data/documents_provider.dart';
 
-class DocumentsData {
-  final List<Map<String, dynamic>> feeReceipts;
-  final List<Map<String, dynamic>> reportCards;
-  final List<Map<String, dynamic>> transferCertificates;
-
-  DocumentsData({required this.feeReceipts, required this.reportCards, required this.transferCertificates});
-
-  factory DocumentsData.fromJson(Map<String, dynamic> json) => DocumentsData(
-    feeReceipts: List<Map<String, dynamic>>.from(json['feeReceipts'] ?? []),
-    reportCards: List<Map<String, dynamic>>.from(json['reportCards'] ?? []),
-    transferCertificates: List<Map<String, dynamic>>.from(json['transferCertificates'] ?? []),
-  );
-}
-
-final documentsProvider = FutureProvider<DocumentsData>((ref) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('parent/documents');
-
-  if (response.data['success'] == true) {
-    return DocumentsData.fromJson(response.data['data']);
-  } else {
-    throw Exception(response.data['error'] ?? 'Failed to load documents');
-  }
-});
-
-class DocumentsScreen extends ConsumerWidget {
+class DocumentsScreen extends ConsumerStatefulWidget {
   const DocumentsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final brand = ref.watch(schoolBrandProvider);
-    final docsAsync = ref.watch(documentsProvider);
+  ConsumerState<DocumentsScreen> createState() => _DocumentsScreenState();
+}
+
+class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
+  String _selectedFilter = 'All';
+
+  @override
+  Widget build(BuildContext context) {
+    final dashboardAsync = ref.watch(dashboardDataProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppHeader(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: const AppHeader(
         title: 'Documents',
         subtitle: 'Official school records',
-        bottom: TabBar(
-          indicatorColor: const Color(0xFF2350DD),
-          indicatorWeight: 3,
-          labelColor: const Color(0xFF2350DD),
-          unselectedLabelColor: const Color(0xFF94A3B8),
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-          tabs: const [
-            Tab(text: 'Fee Receipts'),
-            Tab(text: 'Report Cards'),
-            Tab(text: 'Certificates'),
-          ],
-        ),
       ),
-      body: docsAsync.when(
-        data: (docs) => RefreshIndicator(
-          onRefresh: () => ref.refresh(documentsProvider.future),
-          child: DefaultTabController(
-            length: 3,
-            child: TabBarView(
-              children: [
-                _buildFeeReceipts(docs.feeReceipts, brand),
-                _buildReportCards(docs.reportCards, brand),
-                _buildCertificates(docs.transferCertificates, brand),
-              ],
-            ),
-          ),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(err.toString()),
-              ElevatedButton(
-                onPressed: () => ref.refresh(documentsProvider),
-                child: const Text('Retry'),
+      body: Consumer(
+        builder: (context, ref, child) {
+          final activeStudent = ref.watch(activeStudentProvider);
+
+          if (activeStudent == null) {
+            return const Center(child: Text('No students found.'));
+          }
+
+          final studentId = activeStudent['id']?.toString();
+          if (studentId == null) {
+            return const Center(child: Text('Student ID not found.'));
+          }
+
+          final docsAsync = ref.watch(documentsProvider(studentId));
+
+          return docsAsync.when(
+            data: (allDocs) {
+              final docs = _selectedFilter == 'All'
+                  ? allDocs
+                  : allDocs.where((d) => d.type == _selectedFilter).toList();
+
+              return RefreshIndicator(
+                onRefresh: () => ref.refresh(documentsProvider(studentId).future),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: ['All', 'REPORT_CARD', 'FEE_RECEIPT', 'TC', 'CERTIFICATE']
+                              .map((filter) {
+                            final isSelected = _selectedFilter == filter;
+                            return GestureDetector(
+                              onTap: () => setState(() => _selectedFilter = filter),
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFF3B6EF8) : Colors.white,
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFF3B6EF8) : const Color(0xFFE2E8F0),
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  filter == 'All'
+                                      ? 'All'
+                                      : filter
+                                          .replaceAll('_', ' ')
+                                          .split(' ')
+                                          .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+                                          .join(' '),
+                                  style: GoogleFonts.dmSans(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected ? Colors.white : const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      if (docs.isEmpty)
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.folder_open_outlined, size: 64, color: Colors.grey.shade300),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No documents found',
+                                style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 1.0,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
+                          itemCount: docs.length,
+                          itemBuilder: (ctx, i) => _buildDocumentCard(docs[i], i),
+                        ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(err.toString(), textAlign: TextAlign.center),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildFeeReceipts(List<Map<String, dynamic>> receipts, SchoolBrandState brand) {
-    if (receipts.isEmpty) return _emptyState('No fee receipts', Icons.receipt_long);
+  Widget _buildDocumentCard(SchoolDocument doc, int index) {
+    final typeIcon = _getTypeIcon(doc.type);
+    final typeColor = _getTypeColor(doc.type);
+    final dt = DateTime.tryParse(doc.createdAt);
+    final dateStr = dt != null ? '${dt.day}/${dt.month}/${dt.year}' : 'N/A';
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: receipts.length,
-      itemBuilder: (ctx, i) {
-        final r = receipts[i];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            leading: Container(
-              width: 44, height: 44,
-              decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.receipt, color: Colors.green, size: 22),
-            ),
-            title: Text(r['feeTitle'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(r['studentName'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                Text('via ${r['method'] ?? '-'} · ${_formatDate(r['date'])}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-              ],
-            ),
-            trailing: Text(
-              '₹${r['amount']?.toStringAsFixed(0) ?? '-'}',
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildReportCards(List<Map<String, dynamic>> cards, SchoolBrandState brand) {
-    if (cards.isEmpty) return _emptyState('No report cards published', Icons.assignment);
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: cards.length,
-      itemBuilder: (ctx, i) {
-        final rc = cards[i];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            leading: Container(
-              width: 44, height: 44,
-              decoration: BoxDecoration(color: brand.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-              child: Icon(Icons.school, color: brand.primaryColor, size: 22),
-            ),
-            title: Text('Report Card — ${rc['term'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(rc['studentName'] ?? '', style: const TextStyle(fontSize: 12)),
-                if (rc['publishedAt'] != null)
-                  Text('Published ${_formatDate(rc['publishedAt'])}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-              ],
-            ),
-            trailing: const Icon(Icons.download, color: Colors.grey),
-            onTap: () { /* TODO: Download PDF */ },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCertificates(List<Map<String, dynamic>> certs, SchoolBrandState brand) {
-    if (certs.isEmpty) return _emptyState('No certificates', Icons.verified);
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: certs.length,
-      itemBuilder: (ctx, i) {
-        final tc = certs[i];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: ListTile(
-            leading: Container(
-              width: 44, height: 44,
-              decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.verified, color: Colors.orange, size: 22),
-            ),
-            title: Text('Transfer Certificate', style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(tc['studentName'] ?? ''),
-            trailing: const Icon(Icons.download, color: Colors.grey),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _emptyState(String message, IconData icon) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(32),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
+      ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 64, color: Colors.grey.shade300),
-          const SizedBox(height: 16),
-          Text(message, style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: typeColor.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(typeIcon, color: typeColor, size: 26),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        doc.title,
+                        style: GoogleFonts.sora(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1E293B),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        dateStr,
+                        style: GoogleFonts.dmSans(fontSize: 11, color: const Color(0xFF94A3B8)),
+                      ),
+                      if (doc.fileSize != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          doc.fileSize!,
+                          style: GoogleFonts.dmSans(fontSize: 10, color: const Color(0xFFCBD5E1)),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      if (doc.url != null) ...[
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _openDocument(doc.url!),
+                            icon: const Icon(Icons.open_in_new, size: 14),
+                            label: const Text('Open'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: typeColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: () => _shareDocument(doc.title, doc.url!),
+                          icon: const Icon(Icons.share, size: 14),
+                          label: const Text(''),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade200,
+                            foregroundColor: Colors.grey.shade700,
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            elevation: 0,
+                          ),
+                        ),
+                      ] else
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'No URL',
+                            style: GoogleFonts.dmSans(fontSize: 11, color: Colors.grey.shade600),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
-    ),
-  );
+    ).animate().fadeIn(delay: (100 + index * 50).ms).slideY(begin: 0.1);
+  }
 
-  String _formatDate(dynamic iso) {
-    if (iso == null) return '';
+  IconData _getTypeIcon(String type) {
+    switch (type) {
+      case 'REPORT_CARD':
+        return Icons.assignment_outlined;
+      case 'FEE_RECEIPT':
+        return Icons.receipt_long_outlined;
+      case 'TC':
+        return Icons.card_membership_outlined;
+      case 'CERTIFICATE':
+        return Icons.workspace_premium_outlined;
+      default:
+        return Icons.description_outlined;
+    }
+  }
+
+  Color _getTypeColor(String type) {
+    switch (type) {
+      case 'REPORT_CARD':
+        return const Color(0xFF3B6EF8);
+      case 'FEE_RECEIPT':
+        return const Color(0xFF00C9A7);
+      case 'TC':
+        return const Color(0xFFF5A623);
+      case 'CERTIFICATE':
+        return const Color(0xFF8B5CF6);
+      default:
+        return const Color(0xFF64748B);
+    }
+  }
+
+  Future<void> _openDocument(String url) async {
     try {
-      final dt = DateTime.parse(iso.toString());
-      return '${dt.day}/${dt.month}/${dt.year}';
-    } catch (_) {
-      return iso.toString();
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not open document: $e')),
+      );
+    }
+  }
+
+  Future<void> _shareDocument(String title, String url) async {
+    try {
+      await Share.share('Check out this document: $title\n$url');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not share document: $e')),
+      );
     }
   }
 }

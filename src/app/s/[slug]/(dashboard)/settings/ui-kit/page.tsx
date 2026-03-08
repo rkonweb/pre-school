@@ -59,9 +59,9 @@ export default function UIKitPage() {
                         </div>
                     </StandardCard>
 
-                    <StandardCard className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-none">
-                        <h3 className="text-lg font-bold text-white mb-2">Colored Card</h3>
-                        <p className="text-indigo-100 text-sm">Example of a featured or highlighted card style.</p>
+                    <StandardCard className="bg-brand-gradient text-[var(--secondary-color)] border-none">
+                        <h3 className="text-lg font-bold text-[var(--secondary-color)] mb-2">Colored Card</h3>
+                        <p className="text-[var(--secondary-color)]/80 text-sm">Example of a featured or highlighted card style.</p>
                     </StandardCard>
                 </div>
             </section>

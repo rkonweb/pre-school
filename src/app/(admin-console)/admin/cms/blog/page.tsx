@@ -270,7 +270,7 @@ export default function BlogCMSPage() {
                                                     <div className="flex items-center gap-4">
                                                         <div className="h-12 w-12 rounded-lg bg-slate-100 overflow-hidden border flex-shrink-0">
                                                             {post.coverImage ? (
-                                                                <img src={post.coverImage} className="w-full h-full object-cover" />
+                                                                <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
                                                             ) : (
                                                                 <div className="w-full h-full flex items-center justify-center text-slate-300">
                                                                     <ImageIcon className="h-5 w-5" />

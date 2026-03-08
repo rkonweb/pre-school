@@ -406,7 +406,7 @@ export default function CreatePOClient({
                             <button
                                 type="submit"
                                 disabled={isSubmitting || !vendorId || totalAmount === 0}
-                                className="flex items-center justify-center gap-2 px-8 py-3 rounded-2xl bg-brand text-white text-sm font-black hover:bg-brand/90 shadow-lg shadow-brand/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="flex items-center justify-center gap-2 px-8 py-3 rounded-2xl bg-brand text-[var(--secondary-color)] text-sm font-black hover:bg-brand/90 shadow-lg shadow-brand/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             >
                                 {isSubmitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : "Generate Draft PO"}
                             </button>

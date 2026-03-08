@@ -69,7 +69,7 @@ export async function askAuraAction(query: string, slug: string, staffId?: strin
             messages: [{ role: 'user', content: systemPrompt }]
         });
 
-        return { success: true, data: text };
+        return { success: true, data: JSON.parse(JSON.stringify(text)) };
 
     } catch (error: any) {
         console.error("askAuraAction Error:", error);

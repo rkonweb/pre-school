@@ -14,7 +14,7 @@ const C = {
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "success" | "navy" | "soft"
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "success" | "navy" | "soft" | "brand"
     size?: "default" | "sm" | "lg" | "icon"
 }
 
@@ -28,6 +28,7 @@ const variantStyles: Record<string, React.CSSProperties> = {
     success: { background: `linear-gradient(135deg,${C.green},#059669)`, color: "white", boxShadow: `0 4px 14px ${C.green}40`, border: "none" },
     navy: { background: `linear-gradient(135deg,${C.navy},${C.navyM})`, color: "white", boxShadow: `0 4px 14px ${C.navy}40`, border: "none" },
     soft: { background: C.amberL, color: C.amberD, border: "none", boxShadow: "none" },
+    brand: { background: "var(--school-gradient)", color: "var(--secondary-color)", boxShadow: "0 10px 25px -5px rgba(var(--brand-color-rgb), 0.4), 0 8px 10px -6px rgba(var(--brand-color-rgb), 0.2)", border: "none" },
 };
 
 const sizeStyles: Record<string, React.CSSProperties> = {

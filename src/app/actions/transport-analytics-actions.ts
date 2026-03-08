@@ -40,11 +40,11 @@ export async function updatePredictiveMaintenanceAction(vehicleId: string, slug:
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 currentMileage: totalMileage,
                 distanceToService: distanceToService > 0 ? distanceToService : 0,
                 serviceStatus
-            }
+            }))
         };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -102,12 +102,12 @@ export async function getDriverScorecardAction(driverId: string, slug: string) {
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 finalScore,
                 avgReview,
                 totalReviews: reviews.length,
                 avgEfficiencyFromLogs
-            }
+            }))
         };
 
     } catch (e: any) {
@@ -135,7 +135,7 @@ export async function submitDriverReviewAction(slug: string, data: { driverId: s
         // Fire background recalculation
         getDriverScorecardAction(data.driverId, slug).catch(console.error);
 
-        return { success: true, data: review };
+        return { success: true, data: JSON.parse(JSON.stringify(review)) };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -168,11 +168,11 @@ export async function calculateVehicleFuelEfficiencyAction(vehicleId: string, sl
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 totalDistanceKm: totalDistance,
                 estimatedLiters,
                 kmPerLiter: Number(kmPerLiter.toFixed(2))
-            }
+            }))
         };
     } catch (e: any) {
         return { success: false, error: e.message };

@@ -40,6 +40,16 @@ export function OTPLogin({ type, tenantName, brandColor }: OTPLoginProps) {
     }, [router, type]);
 
     useEffect(() => {
+        if (isMounted && !isVerified) {
+            // Short delay to ensure browser readiness after route transition
+            const timer = setTimeout(() => {
+                inputRefs.current[0]?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [isMounted, isVerified]);
+
+    useEffect(() => {
         if (isMounted && resendTimer > 0) {
             const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
             return () => clearTimeout(timer);
@@ -47,18 +57,42 @@ export function OTPLogin({ type, tenantName, brandColor }: OTPLoginProps) {
     }, [resendTimer, isMounted]);
 
     const handleChange = (index: number, value: string) => {
-        const char = value.slice(-1);
-        if (!/^\d*$/.test(char)) return;
-
-        const newOtp = [...otp];
-        newOtp[index] = char;
-        setOtp(newOtp);
-
-        if (char && index < 5) {
-            inputRefs.current[index + 1]?.focus();
+        const cleanVal = value.replace(/\D/g, "");
+        if (!cleanVal) {
+            const newOtp = [...otp];
+            newOtp[index] = "";
+            setOtp(newOtp);
+            return;
         }
 
-        if (char && index === 5) {
+        if (cleanVal.length > 1) {
+            const digits = cleanVal.split("").slice(0, 6 - index);
+            const newOtp = [...otp];
+            digits.forEach((d, idx) => {
+                if (index + idx < 6) newOtp[index + idx] = d;
+            });
+            setOtp(newOtp);
+            
+            const nextIdx = Math.min(index + digits.length, 5);
+            inputRefs.current[nextIdx]?.focus();
+            
+            if (newOtp.every(d => d !== "")) {
+                void handleVerify(newOtp.join(""));
+            }
+            return;
+        }
+
+        const newOtp = [...otp];
+        newOtp[index] = cleanVal;
+        setOtp(newOtp);
+        
+        if (index < 5) {
+            setTimeout(() => {
+                inputRefs.current[index + 1]?.focus();
+            }, 10);
+        }
+
+        if (newOtp.every(d => d !== "")) {
             void handleVerify(newOtp.join(""));
         }
     };
@@ -66,6 +100,9 @@ export function OTPLogin({ type, tenantName, brandColor }: OTPLoginProps) {
     const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
         if (e.key === "Backspace" && !otp[index] && index > 0) {
             inputRefs.current[index - 1]?.focus();
+            const newOtp = [...otp];
+            newOtp[index - 1] = "";
+            setOtp(newOtp);
         }
     };
 
@@ -191,12 +228,13 @@ export function OTPLogin({ type, tenantName, brandColor }: OTPLoginProps) {
                                 ref={(el) => { inputRefs.current[index] = el; }}
                                 type="text"
                                 inputMode="numeric"
-                                maxLength={1}
+                                maxLength={6}
                                 value={digit}
                                 onChange={(e) => handleChange(index, e.target.value)}
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 disabled={isLoading || isVerified}
                                 autoFocus={index === 0}
+                                autoComplete="one-time-code"
                                 className={`w-11 h-16 sm:w-14 sm:h-16 text-center text-3xl font-bold bg-slate-50 border-2 rounded-2xl focus:outline-none transition-all text-slate-900 shadow-inner active:scale-95 ${isVerified
                                     ? 'bg-emerald-50 text-emerald-600 border-emerald-500'
                                     : error

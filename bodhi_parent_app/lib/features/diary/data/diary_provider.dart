@@ -50,16 +50,15 @@ class DiaryProvider extends StateNotifier<DiaryState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final apiClient = _ref.read(apiClientProvider);
-      final dashboardState = _ref.read(dashboardDataProvider);
+      final activeStudentId = _ref.read(activeStudentIdProvider);
 
-      final activeStudentId = dashboardState.value?['activeStudentId'];
       if (activeStudentId == null) {
         state = state.copyWith(isLoading: false, error: "No active student found");
         return;
       }
 
       final dateStr = "${state.selectedDate.year}-${state.selectedDate.month.toString().padLeft(2, '0')}-${state.selectedDate.day.toString().padLeft(2, '0')}";
-      
+
       final response = await apiClient.get('parent/diary-comprehensive', queryParameters: {
         'studentId': activeStudentId,
         'date': dateStr,

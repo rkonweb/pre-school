@@ -174,4 +174,117 @@ class AppTheme {
       ),
     );
   }
+
+  // ── Dark Theme ──────────────────────────────────────────────────────────
+  static ThemeData get darkTheme {
+    final textThemeDark = GoogleFonts.dmSansTextTheme(
+      const TextTheme(
+        headlineLarge: TextStyle(color: Colors.white),
+        headlineMedium: TextStyle(color: Colors.white),
+        titleLarge: TextStyle(color: Colors.white),
+        titleMedium: TextStyle(color: Colors.white),
+        bodyLarge: TextStyle(color: Color(0xFF94A3B8)),
+        bodyMedium: TextStyle(color: Color(0xFF94A3B8)),
+        labelLarge: TextStyle(color: Color(0xFF64748B)),
+      ),
+    ).copyWith(
+      headlineLarge: GoogleFonts.sora(
+        fontSize: 32,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -1,
+        color: Colors.white,
+      ),
+      headlineMedium: GoogleFonts.sora(
+        fontSize: 24,
+        fontWeight: FontWeight.w800,
+        color: Colors.white,
+      ),
+      titleLarge: GoogleFonts.sora(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+      ),
+      titleMedium: GoogleFonts.dmSans(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+      ),
+      bodyLarge: GoogleFonts.dmSans(
+        fontSize: 16,
+        color: const Color(0xFF94A3B8),
+      ),
+      bodyMedium: GoogleFonts.dmSans(
+        fontSize: 14,
+        color: const Color(0xFF94A3B8),
+      ),
+      labelLarge: GoogleFonts.sora(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.2,
+        color: const Color(0xFF64748B),
+      ),
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryColor,
+        brightness: Brightness.dark,
+        primary: primaryColor,
+        secondary: secondaryColor,
+        tertiary: accentColor,
+        error: warningColor,
+        surface: const Color(0xFF1E293B),
+        background: const Color(0xFF0F172A),
+      ),
+      scaffoldBackgroundColor: const Color(0xFF0F172A),
+      appBarTheme: AppBarTheme(
+        backgroundColor: const Color(0xFF1E293B),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: GoogleFonts.sora(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      textTheme: textThemeDark,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          minimumSize: const Size(double.infinity, 56),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          textStyle: GoogleFonts.dmSans(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF1E293B),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFF334155)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFF334155)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: primaryColor, width: 2),
+        ),
+        labelStyle: GoogleFonts.dmSans(color: const Color(0xFF94A3B8)),
+        hintStyle: GoogleFonts.dmSans(color: const Color(0xFF64748B)),
+      ),
+    );
+  }
 }

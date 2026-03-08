@@ -44,7 +44,7 @@ export function AIBlogFormatter({ onSave, onCancel, initialContent = "" }: AIBlo
                 } catch (e) { }
             }
 
-            const res = await generateBlogContentAction(rawText, images, provider);
+            const res = await generateBlogContentAction('littlechanakyas', rawText, images, provider);
 
             if (res.success && res.data) {
                 setGeneratedHTML(res.data);
@@ -54,7 +54,7 @@ export function AIBlogFormatter({ onSave, onCancel, initialContent = "" }: AIBlo
                     // Extract title from <h1> if present
                     const titleMatch = res.data.match(/<h1>(.*?)<\/h1>/);
                     const promptTitle = titleMatch ? titleMatch[1] : rawText.substring(0, 50);
-                    const imgRes = await generateImageAction(promptTitle);
+                    const imgRes = await generateImageAction('littlechanakyas', promptTitle);
                     if (imgRes.success && imgRes.url) {
                         setGeneratedImageUrl(imgRes.url);
                     }
@@ -139,7 +139,7 @@ export function AIBlogFormatter({ onSave, onCancel, initialContent = "" }: AIBlo
                                         <div className="grid grid-cols-2 gap-2 mb-3">
                                             {images.map((img, i) => (
                                                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group">
-                                                    <img src={img} className="w-full h-full object-cover" />
+                                                    <img src={img} alt="Reference note" className="w-full h-full object-cover" />
                                                     <button
                                                         type="button"
                                                         onClick={() => setImages(prev => prev.filter((_, idx) => idx !== i))}
@@ -233,7 +233,7 @@ export function AIBlogFormatter({ onSave, onCancel, initialContent = "" }: AIBlo
                                         {generatedImageUrl ? (
                                             <div className="space-y-3">
                                                 <div className="aspect-video rounded-lg overflow-hidden border border-slate-200">
-                                                    <img src={generatedImageUrl} className="w-full h-full object-cover" />
+                                                    <img src={generatedImageUrl} alt="AI Generated Cover" className="w-full h-full object-cover" />
                                                 </div>
                                                 <Button
                                                     type="button"
@@ -244,7 +244,7 @@ export function AIBlogFormatter({ onSave, onCancel, initialContent = "" }: AIBlo
                                                         const titleMatch = generatedHTML.match(/<h1>(.*?)<\/h1>/);
                                                         const promptTitle = titleMatch ? titleMatch[1] : rawText.substring(0, 50);
                                                         setGeneratedImageUrl("");
-                                                        const res = await generateImageAction(promptTitle);
+                                                        const res = await generateImageAction('littlechanakyas', promptTitle);
                                                         if (res.success && res.url) setGeneratedImageUrl(res.url);
                                                     }}
                                                 >

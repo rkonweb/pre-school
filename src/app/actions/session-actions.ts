@@ -66,6 +66,11 @@ export async function getCurrentUserAction() {
             return { success: false, error: "User not found" };
         }
 
+        // Clean up non-serializable Dates
+        if (user.school?.subscription?.endDate) {
+            (user.school.subscription as any).endDate = (user.school.subscription.endDate as Date).toISOString();
+        }
+
         // Determine effective branch context
         // 1. If user is restricted to a branch, forced to that branch.
         // 2. If user is Admin/SuperAdmin, use cookie or default to null (All)

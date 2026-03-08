@@ -83,7 +83,7 @@ export function TourManager({ slug, leadId, tours, onUpdate }: TourManagerProps)
 
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
-                        <button className="h-10 px-4 bg-brand text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-brand/20 hover:scale-105 transition-all">
+                        <button className="h-10 px-4 bg-brand text-[var(--secondary-color)] rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-brand/20 hover:scale-105 transition-all">
                             <MapPin className="h-3.5 w-3.5" /> Book Tour
                         </button>
                     </DialogTrigger>

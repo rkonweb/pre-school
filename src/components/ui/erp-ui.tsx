@@ -19,7 +19,10 @@ import Link from "next/link";
 
 // ─── DESIGN TOKENS ──────────────────────────────────────────
 export const C = {
-    amber: "#F59E0B", amberD: "#D97706", amberL: "#FEF3C7", amberXL: "#FFFBEB",
+    amber: "var(--brand-color, #F59E0B)", 
+    amberD: "var(--brand-color, #D97706)", 
+    amberL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.12)", 
+    amberXL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)",
     navy: "#1E1B4B", navyM: "#312E81", navyL: "#EDE9FE",
     green: "#10B981", greenD: "#059669", greenL: "#D1FAE5", greenXL: "#ECFDF5",
     red: "#EF4444", redL: "#FEE2E2", redXL: "#FEF2F2",
@@ -40,14 +43,14 @@ export const C = {
 
 // ─── BUTTON ────────────────────────────────────────────────
 const BV: Record<string, { bg: string; color: string; border?: string; sh: string }> = {
-    primary: { bg: `linear-gradient(135deg,${C.amber},${C.orange})`, color: "white", sh: `0 4px 16px ${C.amber}45` },
+    primary: { bg: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", color: "var(--secondary-color)", sh: "0 4px 16px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)" },
     secondary: { bg: "white", color: C.navy, border: `1.5px solid ${C.g200}`, sh: C.sh },
     ghost: { bg: "transparent", color: C.g500, sh: "none" },
     danger: { bg: `linear-gradient(135deg,${C.red},#DC2626)`, color: "white", sh: `0 4px 14px ${C.red}40` },
     success: { bg: `linear-gradient(135deg,${C.green},${C.greenD})`, color: "white", sh: `0 4px 14px ${C.green}40` },
     navy: { bg: `linear-gradient(135deg,${C.navy},${C.navyM})`, color: "white", sh: `0 4px 14px ${C.navy}40` },
-    outline: { bg: "transparent", color: C.amber, border: `1.5px solid ${C.amber}`, sh: "none" },
-    soft: { bg: C.amberL, color: C.amberD, sh: "none" },
+    outline: { bg: "transparent", color: "var(--brand-color, #F59E0B)", border: "1.5px solid var(--brand-color, #F59E0B)", sh: "none" },
+    soft: { bg: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.1)", color: "var(--brand-color, #F59E0B)", sh: "none" },
 };
 const BS: Record<string, { p: string; fs: number; r: number }> = {
     sm: { p: "7px 14px", fs: 12, r: 9 },
@@ -196,11 +199,13 @@ const statusMap: Record<string, { bg: string; color: string }> = {
     Cancelled: { bg: C.redL, color: "#991B1B" },
 };
 
-export const StatusChip = ({ label }: { label: string }) => {
-    const s = statusMap[label] ?? { bg: C.g100, color: C.g600 };
+export const StatusChip = ({ label, variant, color }: { label: string; variant?: "info" | "success" | "warning" | "danger", color?: keyof typeof bcMap }) => {
+    const s = variant 
+        ? (variant === "warning" ? { bg: C.amberL, color: C.amberD } : { bg: C.g100, color: C.g600 })
+        : (color && bcMap[color] ? bcMap[color] : (statusMap[label] ?? { bg: C.g100, color: C.g600 }));
     return (
         <span style={{ ...s, borderRadius: 20, padding: "3px 11px", fontSize: 12, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 5 }}>
-            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "currentColor" }} />
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: (s as any).dot || "currentColor" }} />
             {label}
         </span>
     );
@@ -247,12 +252,73 @@ interface ErpCardProps {
 
 export const ErpCard = ({ children, className, style, noPad, hover }: ErpCardProps) => (
     <div
-        className={`${hover ? "hover-lift" : ""} ${className ?? ""}`}
-        style={{ background: "white", borderRadius: 20, padding: noPad ? 0 : "24px 24px", boxShadow: C.sh, border: `1px solid ${C.g100}`, animation: "fadeUp 0.45s ease both", overflow: noPad ? "hidden" : undefined, ...style }}
+        className={`${hover ? "hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer" : ""} ${className ?? ""}`}
+        style={{ 
+            background: "white", 
+            borderRadius: 20, 
+            padding: noPad ? 0 : "24px 24px", 
+            boxShadow: C.sh, 
+            border: `1px solid ${C.g100}`, 
+            animation: "fadeUp 0.45s ease both", 
+            overflow: noPad ? "hidden" : undefined, 
+            ...style 
+        }}
     >
         {children}
     </div>
 );
+
+// ─── INFO CARD (KPI) ────────────────────────────────────────
+interface InfoCardProps {
+    title: string;
+    value: string | number;
+    icon: LucideIcon;
+    color?: string;
+    trend?: string;
+    isUp?: boolean;
+    description?: string;
+}
+
+export const InfoCard = ({ title, value, icon: Icon, color = C.amber, trend, isUp, description }: InfoCardProps) => {
+    return (
+        <ErpCard hover className="flex flex-col gap-4 relative overflow-hidden group">
+            <div 
+                className="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 opacity-5 group-hover:opacity-10 transition-all" 
+                style={{ color }}
+            >
+                <Icon size={96} strokeWidth={1} />
+            </div>
+            <div className="flex items-center justify-between">
+                <div style={{ background: `${color}15`, borderRadius: 12, padding: 10, display: "flex" }}>
+                    <Icon size={20} color={color} />
+                </div>
+                {trend && (
+                    <div 
+                        style={{ 
+                            background: isUp ? C.greenXL : C.redXL, 
+                            color: isUp ? C.greenD : C.red,
+                            borderRadius: 20,
+                            padding: "3px 10px",
+                            fontSize: 10,
+                            fontWeight: 800,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4
+                        }}
+                    >
+                        {isUp ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
+                        {trend}
+                    </div>
+                )}
+            </div>
+            <div>
+                <p style={{ fontSize: 10.5, fontWeight: 800, color: C.g400, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>{title}</p>
+                <h3 style={{ fontSize: 24, fontWeight: 800, color: C.navy, margin: 0 }}>{value}</h3>
+                {description && <p style={{ fontSize: 10, fontWeight: 600, color: C.g400, marginTop: 4 }}>{description}</p>}
+            </div>
+        </ErpCard>
+    );
+};
 
 // ─── SECTION HEADER ────────────────────────────────────────
 interface SectionHeaderProps {
@@ -284,9 +350,16 @@ export const SectionHeader = ({ icon, title, subtitle, color = C.amber, badge, a
                 )}
                 <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontFamily: "'Sora', sans-serif", fontSize: 17, fontWeight: 800, color: C.navy }}>{title}</span>
+                        <h1 style={{ fontFamily: "'Sora', sans-serif", fontSize: 17, fontWeight: 800, color: C.navy, margin: 0 }}>{title}</h1>
                         {badge && (
-                            <span style={{ background: `linear-gradient(135deg,${C.amber},${C.orange})`, color: "white", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 20 }}>{badge}</span>
+                            <span style={{ 
+                                background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", 
+                                color: "var(--secondary-color)", 
+                                fontSize: 10, 
+                                fontWeight: 800, 
+                                padding: "2px 8px", 
+                                borderRadius: 20 
+                            }}>{badge}</span>
                         )}
                     </div>
                     {subtitle && <p style={{ fontSize: 12.5, color: C.g400, marginTop: 2 }}>{subtitle}</p>}
@@ -342,7 +415,7 @@ export const ErpInput = ({ label, placeholder, type = "text", icon: Icon, state,
                 />
                 {suffix && <span style={{ padding: "0 14px 0 0", fontSize: 13, color: C.g400, fontWeight: 600 }}>{suffix}</span>}
                 {type === "password" && (
-                    <button type="button" onClick={() => setShowPw(v => !v)} style={{ background: "none", border: "none", padding: "0 12px", cursor: "pointer", display: "flex", color: C.g400 }}>
+                    <button type="button" onClick={() => setShowPw(v => !v)} title={showPw ? "Hide password" : "Show password"} aria-label={showPw ? "Hide password" : "Show password"} style={{ background: "none", border: "none", padding: "0 12px", cursor: "pointer", display: "flex", color: C.g400 }}>
                         {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                 )}
@@ -489,6 +562,8 @@ export const ErpModal = ({ open, onClose, title, subtitle, icon: Icon, iconColor
                         </div>
                         <button
                             onClick={onClose}
+                            title="Close modal"
+                            aria-label="Close modal"
                             style={{ width: 32, height: 32, borderRadius: 9, border: `1.5px solid ${C.g200}`, background: C.g50, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
                         >
                             <X size={15} color={C.g500} />
@@ -523,16 +598,16 @@ export const ErpSlideOver = ({ open, onClose, title, subtitle, icon: Icon, child
                 <div style={{ padding: "24px 24px 18px", borderBottom: `1px solid ${C.g100}`, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
                         {Icon && (
-                            <div style={{ width: 38, height: 38, borderRadius: 12, background: `linear-gradient(135deg,${C.amber},${C.orange})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <Icon size={18} color="white" />
+                            <div style={{ width: 38, height: 38, borderRadius: 12, background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Icon size={18} color="var(--secondary-color)" />
                             </div>
                         )}
                         <div>
-                            {title && <div style={{ fontFamily: "'Sora', sans-serif", fontSize: 16, fontWeight: 800, color: C.navy }}>{title}</div>}
+                            {title && <h2 style={{ fontFamily: "'Sora', sans-serif", fontSize: 16, fontWeight: 800, color: C.navy }}>{title}</h2>}
                             {subtitle && <div style={{ fontSize: 12, color: C.g400 }}>{subtitle}</div>}
                         </div>
                     </div>
-                    <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, border: `1.5px solid ${C.g200}`, background: C.g50, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <button onClick={onClose} title="Close slide-over" aria-label="Close slide-over" style={{ width: 30, height: 30, borderRadius: 8, border: `1.5px solid ${C.g200}`, background: C.g50, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <X size={14} color={C.g500} />
                     </button>
                 </div>
@@ -571,7 +646,7 @@ export const ErpDropdownMenu = ({ items, align = "right", trigger }: ErpDropdown
             {trigger ? (
                 <div onClick={() => setOpen(v => !v)} style={{ cursor: "pointer" }}>{trigger}</div>
             ) : (
-                <button onClick={() => setOpen(v => !v)} style={{ width: 34, height: 34, borderRadius: 10, border: `1.5px solid ${C.g200}`, background: open ? C.amberXL : "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: C.tr }}>
+                <button onClick={() => setOpen(v => !v)} title="More options" aria-label="More options" style={{ width: 34, height: 34, borderRadius: 10, border: `1.5px solid ${C.g200}`, background: open ? C.amberXL : "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: C.tr }}>
                     <MoreVertical size={15} color={open ? C.amber : C.g500} />
                 </button>
             )}
@@ -623,10 +698,41 @@ export const ErpTabs = ({ tabs, variant = "pill", active: externalActive, onChan
                 {tabs.map((t, i) => (
                     <button
                         key={i} onClick={() => setActive(i)}
-                        style={{ padding: variant === "underline" ? "10px 18px" : "8px 18px", fontSize: 13.5, fontWeight: i === active ? 700 : 500, color: i === active ? (variant === "underline" ? C.amber : "white") : C.g500, background: i === active ? (variant === "underline" ? "transparent" : `linear-gradient(135deg,${C.amber},${C.orange})`) : "transparent", border: "none", cursor: "pointer", borderRadius: variant === "underline" ? 0 : 10, borderBottom: variant === "underline" ? `2px solid ${i === active ? C.amber : "transparent"}` : "none", marginBottom: variant === "underline" ? -2 : 0, transition: `all 0.35s ${C.spring}`, boxShadow: i === active && variant === "pill" ? `0 3px 12px ${C.amber}40` : "none", display: "flex", alignItems: "center", gap: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                        style={{ 
+                            padding: variant === "underline" ? "10px 18px" : "8px 18px", 
+                            fontSize: 13.5, 
+                            fontWeight: i === active ? 700 : 500, 
+                            color: i === active ? (variant === "underline" ? (i === active ? "var(--brand-color, #F59E0B)" : C.g700) : "var(--secondary-color)") : C.g500, 
+                            background: i === active ? (variant === "underline" ? "transparent" : "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))") : "transparent", 
+                            border: "none", 
+                            cursor: "pointer", 
+                            borderRadius: variant === "underline" ? 0 : 10, 
+                            position: "relative",
+                            transition: `all 0.35s ${C.spring}`, 
+                            boxShadow: i === active && variant === "pill" ? "0 3px 12px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)" : "none", 
+                            display: "flex", 
+                            alignItems: "center", 
+                            gap: 6, 
+                            fontFamily: "'Plus Jakarta Sans', sans-serif" 
+                        }}
                     >
                         {t.icon && <t.icon size={14} />}
-                        {t.label}
+                        <span style={i === active && variant === "underline" ? { background: "var(--school-gradient)", backgroundClip: "text", WebkitBackgroundClip: "text", color: "transparent" } : {}}>
+                            {t.label}
+                        </span>
+                        {variant === "underline" && i === active && (
+                            <div 
+                                style={{
+                                    position: "absolute",
+                                    bottom: 0,
+                                    left: "15%",
+                                    right: "15%",
+                                    height: 3,
+                                    background: "var(--school-gradient)",
+                                    borderRadius: "4px 4px 0 0"
+                                }}
+                            />
+                        )}
                     </button>
                 ))}
             </div>
@@ -638,9 +744,9 @@ export const ErpTabs = ({ tabs, variant = "pill", active: externalActive, onChan
 // ─── TABLE UTILITIES (for use in module pages) ─────────────
 export const tableStyles = {
     container: { borderRadius: 20, border: `1px solid ${C.g100}`, overflow: "hidden" as const, boxShadow: C.sh },
-    thead: { background: `linear-gradient(135deg,${C.navy},${C.navyM})` },
-    th: { padding: "12px 14px", textAlign: "left" as const, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.85)", letterSpacing: 0.6, textTransform: "uppercase" as const, cursor: "pointer", userSelect: "none" as const, whiteSpace: "nowrap" as const },
-    thNoSort: { padding: "12px 14px", textAlign: "left" as const, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.85)", letterSpacing: 0.6, textTransform: "uppercase" as const },
+    thead: { background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))" },
+    th: { padding: "12px 14px", textAlign: "left" as const, fontSize: 11, fontWeight: 700, color: "var(--secondary-color)", letterSpacing: 0.6, textTransform: "uppercase" as const, cursor: "pointer", userSelect: "none" as const, whiteSpace: "nowrap" as const },
+    thNoSort: { padding: "12px 14px", textAlign: "left" as const, fontSize: 11, fontWeight: 700, color: "var(--secondary-color)", letterSpacing: 0.6, textTransform: "uppercase" as const },
     rowEven: { background: "white", borderBottom: `1px solid ${C.g100}`, transition: C.tr },
     rowOdd: { background: C.g50, borderBottom: `1px solid ${C.g100}`, transition: C.tr },
     td: { padding: "11px 14px", fontSize: 13.5, color: C.g700 },
@@ -649,8 +755,8 @@ export const tableStyles = {
 export const SortIcon = ({ col, sortCol, sortDir }: { col: string; sortCol: string; sortDir: string }) => {
     if (col !== sortCol) return <ArrowUpDown size={10} color="rgba(255,255,255,0.35)" style={{ display: "inline", marginLeft: 4 }} />;
     return sortDir === "asc"
-        ? <ArrowUp size={11} color="white" style={{ display: "inline", marginLeft: 4 }} />
-        : <ArrowDown size={11} color="white" style={{ display: "inline", marginLeft: 4 }} />;
+        ? <ArrowUp size={11} color="var(--secondary-color)" style={{ display: "inline", marginLeft: 4 }} />
+        : <ArrowDown size={11} color="var(--secondary-color)" style={{ display: "inline", marginLeft: 4 }} />;
 };
 
 // ─── ACTION BUTTONS (edit / delete row icons) ──────────────
@@ -676,13 +782,18 @@ export const RowActions = ({ onView, onEdit, onDelete, viewTooltip = "View", edi
         const className = `erp-row-action erp-row-action-${type}`;
 
         const content = (
-            <div title={tooltip} className={className} style={{ width: 30, height: 30, borderRadius: 9, border: `1.5px solid ${C.g200}`, background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: C.tr }}>
+            <button 
+                title={tooltip} 
+                aria-label={tooltip}
+                className={className} 
+                style={{ width: 30, height: 30, borderRadius: 9, border: `1.5px solid ${C.g200}`, background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: C.tr }}
+            >
                 <Icon size={13} color={baseColor} />
-            </div>
+            </button>
         );
 
         if (typeof handler === "string") {
-            return <Link href={handler} key={type}>{content}</Link>;
+            return <Link href={handler} key={type} aria-label={tooltip}>{content}</Link>;
         }
         return <div key={type} onClick={handler as () => void}>{content}</div>;
     };

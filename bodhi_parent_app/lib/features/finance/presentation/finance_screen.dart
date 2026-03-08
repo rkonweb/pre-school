@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../../core/api/api_client.dart';
+import '../../../core/payments/payment_service.dart';
 import '../../../core/theme/school_brand_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../ui/components/app_header.dart';
 import '../data/finance_provider.dart';
 import '../../dashboard/data/dashboard_provider.dart';
+import '../../../core/config/app_config.dart';
 
 class FinanceScreen extends ConsumerStatefulWidget {
   const FinanceScreen({super.key});
@@ -19,30 +22,93 @@ class FinanceScreen extends ConsumerStatefulWidget {
 
 class _FinanceScreenState extends ConsumerState<FinanceScreen> {
   String? _payingFeeId;
+  late Razorpay _razorpay;
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    super.dispose();
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Payment successful!'),
+        backgroundColor: Color(0xFF00C9A7),
+      ),
+    );
+    if (mounted) setState(() => _payingFeeId = null);
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(response.message ?? 'Payment failed'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    if (mounted) setState(() => _payingFeeId = null);
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('External wallet: ${response.walletName}'),
+        backgroundColor: Colors.blue,
+      ),
+    );
+    if (mounted) setState(() => _payingFeeId = null);
+  }
 
   Future<void> _initiatePayment(String studentId, String feeId, double amount, String method) async {
     setState(() => _payingFeeId = feeId);
     try {
-      final success = await ref.read(financeSnapshotDataProvider(studentId).notifier).processPayment(studentId, feeId, amount, method);
-      if (mounted) {
-        if (success) {
+      // Step 1: Create order on backend
+      final paymentService = ref.read(paymentServiceProvider);
+      final order = await paymentService.createOrder(
+        studentId: studentId,
+        feeId: feeId,
+        amount: amount,
+      );
+
+      if (order == null) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Payment registered successfully.'),
-              backgroundColor: Color(0xFF00C9A7),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Payment failed'), backgroundColor: Colors.red),
+            const SnackBar(content: Text('Failed to create payment order'), backgroundColor: Colors.red),
           );
         }
+        if (mounted) setState(() => _payingFeeId = null);
+        return;
       }
+
+      // Step 2: Open Razorpay checkout
+      final orderId = order['id'] ?? '';
+      final options = {
+        'key': AppConfig.razorpayKeyId, // Set by school admin in ERP Login Settings
+        'amount': (amount * 100).toInt(),
+        'name': 'LittleChanakyas School',
+        'description': 'School Fee Payment',
+        'order_id': orderId,
+        'prefill': {'contact': '', 'email': ''},
+        'theme': {'color': '#2350DD'},
+      };
+
+      _razorpay.open(options);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Network error'), backgroundColor: Colors.red),
+        );
       }
-    } finally {
       if (mounted) setState(() => _payingFeeId = null);
     }
   }

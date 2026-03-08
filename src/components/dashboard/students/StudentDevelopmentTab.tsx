@@ -398,7 +398,7 @@ function SkillsTab({ domains, assessments, studentId, selectedTerm, onTermChange
                             className={cn(
                                 "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all border",
                                 selectedTerm === t
-                                    ? "bg-brand text-white border-brand"
+                                    ? "bg-brand text-[var(--secondary-color)] border-brand"
                                     : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400"
                             )}
                         >{t}</button>
@@ -407,7 +407,7 @@ function SkillsTab({ domains, assessments, studentId, selectedTerm, onTermChange
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-brand text-[var(--secondary-color)] rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                     Save All
@@ -538,7 +538,7 @@ function PortfolioTab({ entries, domains, studentId, academicYearId, onUpdate }:
                 </div>
                 <button
                     onClick={() => setShowAdd(!showAdd)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-brand text-[var(--secondary-color)] rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all"
                 >
                     <Plus className="h-3.5 w-3.5" />
                     Add Entry
@@ -604,7 +604,7 @@ function PortfolioTab({ entries, domains, studentId, academicYearId, onUpdate }:
                         />
                     </div>
                     <div className="flex gap-3">
-                        <button onClick={handleAdd} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl text-xs font-black hover:brightness-110 transition-all disabled:opacity-50">
+                        <button onClick={handleAdd} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 bg-brand text-[var(--secondary-color)] rounded-xl text-xs font-black hover:brightness-110 transition-all disabled:opacity-50">
                             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                             Save Entry
                         </button>
@@ -733,7 +733,7 @@ function ReportCardTab({ studentId, studentName, studentGrade, domains, mileston
                     {TERMS.map((t) => (
                         <button key={t} onClick={() => onTermChange(t)}
                             className={cn("px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all border",
-                                selectedTerm === t ? "bg-brand text-white border-brand" : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400"
+                                selectedTerm === t ? "bg-brand text-[var(--secondary-color)] border-brand" : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400"
                             )}>{t}</button>
                     ))}
                 </div>

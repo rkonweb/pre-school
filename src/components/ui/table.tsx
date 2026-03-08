@@ -20,7 +20,7 @@ Table.displayName = "Table";
 
 const TableHeader = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
     ({ className, style, ...props }, ref) => (
-        <thead ref={ref} className={cn(className)} style={{ background: `linear-gradient(135deg,${C.navy},${C.navyM})`, ...style }} {...props} />
+        <thead ref={ref} className={cn(className)} style={{ background: "var(--school-gradient)", backgroundSize: "cover", ...style }} {...props} />
     )
 );
 TableHeader.displayName = "TableHeader";
@@ -66,7 +66,7 @@ const TableHead = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<
         <th
             ref={ref}
             className={cn("text-left align-middle font-bold", className)}
-            style={{ padding: "12px 14px", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.85)", letterSpacing: 0.6, textTransform: "uppercase", whiteSpace: "nowrap", userSelect: "none", ...style }}
+            style={{ padding: "12px 14px", fontSize: 11, fontWeight: 700, color: "var(--secondary-color)", letterSpacing: 0.6, textTransform: "uppercase", whiteSpace: "nowrap", userSelect: "none", ...style }}
             {...props}
         />
     )

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/router/app_scaffold.dart';
 
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final Widget? titleWidget;
   final String? subtitle;
   final bool showBackButton;
+  final bool showMenuButton;
   final List<Widget>? actions;
   final Color? backgroundColor;
   final VoidCallback? onBack;
@@ -19,6 +21,7 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
     this.titleWidget,
     this.subtitle,
     this.showBackButton = true,
+    this.showMenuButton = false,
     this.actions,
     this.backgroundColor,
     this.onBack,
@@ -61,6 +64,17 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
                     },
                     style: AppTheme.headerButtonStyle(backgroundColor: AppTheme.surfaceColor),
                     child: const Icon(Icons.chevron_left_rounded, size: 22),
+                  ),
+                ),
+                const SizedBox(width: 14),
+              ] else if (showMenuButton) ...[
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () => appScaffoldKey.currentState?.openDrawer(),
+                    style: AppTheme.headerButtonStyle(backgroundColor: AppTheme.surfaceColor),
+                    child: const Icon(Icons.menu_rounded, size: 22),
                   ),
                 ),
                 const SizedBox(width: 14),

@@ -110,7 +110,7 @@ export default function DailyGuidePage() {
                         <p className="text-[10px] text-zinc-500 uppercase font-semibold">{MOCK_LESSON.day}</p>
                     </div>
                 </div>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/20">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand/10 text-brand">
                     <Info className="h-4 w-4" />
                 </div>
             </div>
@@ -123,7 +123,7 @@ export default function DailyGuidePage() {
                         onClick={() => setActiveTab(tab)}
                         className={cn(
                             "flex-1 py-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2",
-                            activeTab === tab ? "border-blue-600 text-blue-600" : "border-transparent text-zinc-400"
+                            activeTab === tab ? "border-brand text-brand" : "border-transparent text-zinc-400"
                         )}
                     >
                         {tab}
@@ -134,12 +134,12 @@ export default function DailyGuidePage() {
             <div className="flex-1 overflow-y-auto p-4 max-w-lg mx-auto w-full">
                 {activeTab === "preparation" && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                        <div className="rounded-3xl bg-blue-600 p-6 text-white shadow-xl shadow-blue-500/20">
+                        <div className="rounded-3xl bg-brand-gradient p-6 text-[var(--secondary-color)] shadow-xl shadow-brand/20">
                             <h3 className="flex items-center gap-2 font-bold">
                                 <ClipboardCheck className="h-5 w-5" />
                                 Teacher Preparation
                             </h3>
-                            <p className="mt-3 text-sm text-blue-100 leading-relaxed italic">
+                            <p className="mt-3 text-sm opacity-90 leading-relaxed italic text-white">
                                 "{MOCK_LESSON.prep_notes}"
                             </p>
                         </div>
@@ -177,7 +177,7 @@ export default function DailyGuidePage() {
 
                         <button
                             onClick={() => setActiveTab("teaching")}
-                            className="w-full rounded-2xl bg-blue-600 py-4 font-bold text-white transition-active dark:bg-zinc-50 dark:text-zinc-900 flex items-center justify-center gap-2"
+                            className="w-full rounded-2xl bg-brand-gradient py-4 font-bold text-[var(--secondary-color)] transition-active dark:bg-zinc-50 dark:text-zinc-900 flex items-center justify-center gap-2 shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)] border-none"
                         >
                             Start Class Now <ArrowRight className="h-4 w-4" />
                         </button>
@@ -190,7 +190,7 @@ export default function DailyGuidePage() {
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Teaching Flow: {currentStep + 1}/4</span>
                             <div className="flex gap-1">
                                 {MOCK_LESSON.steps.map((_, i) => (
-                                    <div key={i} className={cn("h-1 w-6 rounded-full", i === currentStep ? "bg-blue-600" : "bg-zinc-200 dark:bg-zinc-800")} />
+                                    <div key={i} className={cn("h-1 w-6 rounded-full", i === currentStep ? "bg-brand" : "bg-zinc-200 dark:bg-zinc-800")} />
                                 ))}
                             </div>
                         </div>
@@ -199,8 +199,8 @@ export default function DailyGuidePage() {
                             <div className="rounded-[32px] border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 min-h-[400px] flex flex-col">
                                 <div className={cn(
                                     "mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl",
-                                    MOCK_LESSON.steps[currentStep].color === "blue" ? "bg-blue-50 text-blue-600" :
-                                        MOCK_LESSON.steps[currentStep].color === "indigo" ? "bg-indigo-50 text-indigo-600" :
+                                    MOCK_LESSON.steps[currentStep].color === "blue" ? "bg-brand/10 text-brand" :
+                                        MOCK_LESSON.steps[currentStep].color === "indigo" ? "bg-brand/10 text-brand" :
                                             MOCK_LESSON.steps[currentStep].color === "purple" ? "bg-purple-50 text-purple-600" :
                                                 "bg-zinc-100 text-zinc-600"
                                 )}>
@@ -243,7 +243,7 @@ export default function DailyGuidePage() {
                             </button>
                             <button
                                 onClick={() => currentStep === 3 ? setActiveTab("outcomes") : setCurrentStep(currentStep + 1)}
-                                className="flex-[2] rounded-2xl bg-blue-600 py-4 font-bold text-white shadow-xl shadow-blue-600/20 active:scale-95 transition-all"
+                                className="flex-[2] rounded-2xl bg-brand-gradient py-4 font-bold text-[var(--secondary-color)] shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)] active:scale-95 transition-all border-none"
                             >
                                 {currentStep === 3 ? "Complete Lesson" : "Next Step"}
                             </button>
@@ -301,7 +301,7 @@ export default function DailyGuidePage() {
                             </div>
                         </div>
 
-                        <button className="w-full rounded-2xl bg-blue-600 py-4 font-bold text-white dark:bg-zinc-50 dark:text-zinc-900">
+                        <button className="w-full rounded-2xl bg-brand-gradient py-4 font-bold text-[var(--secondary-color)] dark:bg-zinc-50 dark:text-zinc-900 shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)] border-none">
                             Submit Report & End Day
                         </button>
                     </div>

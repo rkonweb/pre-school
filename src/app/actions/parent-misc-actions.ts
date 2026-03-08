@@ -40,12 +40,12 @@ export async function getParentNotificationsAction(phone: string, page = 1) {
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 notifications,
                 unreadCount,
                 totalPages: Math.ceil(total / limit),
                 currentPage: page,
-            }
+            }))
         };
     } catch (error: any) {
         console.error("getParentNotificationsAction Error:", error);
@@ -105,7 +105,7 @@ export async function submitLeaveRequestAction(
             }
         });
 
-        return { success: true, data: leaveRequest };
+        return { success: true, data: JSON.parse(JSON.stringify(leaveRequest)) };
     } catch (error: any) {
         console.error("submitLeaveRequestAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -136,7 +136,7 @@ export async function getLeaveRequestsAction(studentId: string, phone: string) {
             take: 20,
         });
 
-        return { success: true, data: requests };
+        return { success: true, data: JSON.parse(JSON.stringify(requests)) };
     } catch (error: any) {
         console.error("getLeaveRequestsAction Error:", error);
         return { success: false, error: "Internal server error" };
@@ -182,7 +182,7 @@ export async function getParentDocumentsAction(phone: string) {
 
         return {
             success: true,
-            data: {
+            data: JSON.parse(JSON.stringify({
                 feeReceipts: feePayments.map(p => ({
                     id: p.id,
                     amount: p.amount,
@@ -208,7 +208,7 @@ export async function getParentDocumentsAction(phone: string) {
                     reason: tc.reason,
                     studentName: `${tc.student.firstName} ${tc.student.lastName}`.trim(),
                 })),
-            }
+            }))
         };
     } catch (error: any) {
         console.error("getParentDocumentsAction Error:", error);

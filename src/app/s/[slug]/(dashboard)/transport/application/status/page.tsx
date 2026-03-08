@@ -51,7 +51,7 @@ export default async function TransportStatusPage(
 
     const tabs = [
         { key: "ALL", label: "All", count: total, Icon: Users, color: "text-zinc-600" },
-        { key: "PENDING", label: "Pending", count: pending, Icon: Hourglass, color: "text-amber-600" },
+        { key: "PENDING", label: "Pending", count: pending, Icon: Hourglass, color: "text-brand" },
         { key: "APPROVED", label: "Approved", count: approved, Icon: CheckCircle, color: "text-emerald-600" },
         { key: "REJECTED", label: "Rejected", count: rejected, Icon: XCircle, color: "text-red-600" },
     ];
@@ -172,7 +172,7 @@ export default async function TransportStatusPage(
                                 {profile.status === "APPROVED" && profile.route && (
                                     <div className="mt-6 grid md:grid-cols-3 gap-4">
                                         <div className="bg-amber-50/30 border border-amber-100/50 p-4 rounded-[24px]">
-                                            <p className="text-[10px] font-black text-amber-600/60 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+                                            <p className="text-[10px] font-black text-brand/60 uppercase tracking-widest flex items-center gap-1.5 mb-2">
                                                 <Bus className="h-3.5 w-3.5" /> Route
                                             </p>
                                             <p className="font-black text-zinc-900 uppercase tracking-tight">{profile.route.name}</p>

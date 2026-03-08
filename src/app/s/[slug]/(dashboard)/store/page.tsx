@@ -32,7 +32,7 @@ const QUICK_LINKS = [
         description: "Track stock levels, set alerts, adjust quantities",
         icon: Activity,
         href: (slug: string) => `/s/${slug}/store/inventory`,
-        color: "bg-amber-50 text-amber-600",
+        color: "bg-brand/10 text-brand",
         border: "border-amber-100",
     },
     {
@@ -100,7 +100,7 @@ export default function StoreDashboard() {
             value: recentOrders.filter(o => o.paymentStatus === "UNPAID").length,
             sub: "Awaiting payment",
             icon: Clock,
-            color: "text-amber-600",
+            color: "text-brand",
             bg: "bg-amber-50",
         },
         {
@@ -228,7 +228,7 @@ export default function StoreDashboard() {
                                         <p className="text-sm font-medium text-slate-800">{inv.item?.name}</p>
                                         <p className="text-xs text-slate-400">{inv.item?.type}</p>
                                     </div>
-                                    <span className={`text-sm font-bold ${inv.quantity === 0 ? "text-rose-600" : "text-amber-600"}`}>
+                                    <span className={`text-sm font-bold ${inv.quantity === 0 ? "text-rose-600" : "text-brand"}`}>
                                         {inv.quantity} left
                                     </span>
                                 </li>

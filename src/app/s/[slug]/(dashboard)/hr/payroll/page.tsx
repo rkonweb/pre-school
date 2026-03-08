@@ -391,13 +391,13 @@ export default function PayrollPage() {
                         <div className="overflow-x-auto flex-1">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-zinc-50/50 dark:bg-zinc-950/40 border-b border-zinc-100 dark:border-zinc-800">
-                                        <th className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] whitespace-nowrap">Professional Artifact</th>
-                                        <th className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] whitespace-nowrap">Marking Ratio</th>
-                                        <th className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] whitespace-nowrap text-right">Gross</th>
-                                        <th className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] whitespace-nowrap text-right">Deduction</th>
-                                        <th className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] whitespace-nowrap text-right">Net Liquidity</th>
-                                        <th className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] whitespace-nowrap">Auth State</th>
+                                    <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                                        <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">Professional Artifact</th>
+                                        <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">Marking Ratio</th>
+                                        <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap text-right">Gross</th>
+                                        <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap text-right">Deduction</th>
+                                        <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap text-right">Net Liquidity</th>
+                                        <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap">Auth State</th>
                                         <th className="px-10 py-6"></th>
                                     </tr>
                                 </thead>

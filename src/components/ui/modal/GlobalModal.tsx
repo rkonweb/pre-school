@@ -150,7 +150,7 @@ function InputModal({ title, description, label, placeholder, initialValue = "",
                             <button
                                 type="submit"
                                 disabled={loading || !value.trim()}
-                                className="px-5 py-2 rounded-xl text-sm font-medium text-white bg-brand hover:brightness-110 shadow-lg shadow-brand/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
+                                className="px-5 py-2 rounded-xl text-sm font-medium text-[var(--secondary-color)] bg-brand hover:brightness-110 shadow-lg shadow-brand/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
                             >
                                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                                 {submitText}

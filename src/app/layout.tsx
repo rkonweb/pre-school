@@ -22,13 +22,12 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Bodhi Board | Premium Preschool ERP",
-  description: "Official parent portal for Sun Valley Preschool Academy.",
+  title: "Bodhi Board | Modern Preschool ERP",
+  description: "Enterprise management solution for progressive preschools and child care centers.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "ParentHub",
   },
   formatDetection: {
     telephone: false,
@@ -39,8 +38,6 @@ export const viewport: Viewport = {
   themeColor: "#2563EB",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
 };
 

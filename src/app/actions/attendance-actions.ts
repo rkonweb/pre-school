@@ -112,7 +112,7 @@ export async function getStaffAttendanceAction(schoolSlug: string, date?: string
             };
         });
 
-        return { success: true, data };
+        return { success: true, data: JSON.parse(JSON.stringify(data)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -410,7 +410,7 @@ export async function markStaffAttendanceAction(schoolSlug: string, data: { user
         });
 
         revalidatePath(`/s/${schoolSlug}/hr/attendance`);
-        return { success: true };
+        return { success: true, data: JSON.parse(JSON.stringify({ id: data.userId })) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -475,7 +475,7 @@ export async function getStaffLeaveRequestsAction(schoolSlug: string) {
                 startDate: "desc"
             }
         });
-        return { success: true, data: requests };
+        return { success: true, data: JSON.parse(JSON.stringify(requests)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -502,7 +502,7 @@ export async function createLeaveRequestAction(schoolSlug: string, data: { userI
             }
         });
         revalidatePath(`/s/${schoolSlug}/hr/attendance`);
-        return { success: true, data: request };
+        return { success: true, data: JSON.parse(JSON.stringify(request)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -588,7 +588,7 @@ export async function updateLeaveStatusAction(schoolSlug: string, id: string, st
                 }
             }
 
-            return { success: true, data: updatedRequest };
+            return { success: true, data: JSON.parse(JSON.stringify(updatedRequest)) };
         });
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -678,7 +678,7 @@ export async function getAttendanceAnalyticsAction(schoolSlug: string, month: nu
             avgHours: attendance.length > 0 ? attendance.reduce((acc, curr) => acc + (curr.totalHours || 0), 0) / attendance.length : 0
         };
 
-        return { success: true, data: stats };
+        return { success: true, data: JSON.parse(JSON.stringify(stats)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -704,7 +704,7 @@ export async function getStaffAttendanceHistoryAction(schoolSlug: string, userId
             totalHours: attendance.reduce((acc, curr) => acc + (curr.totalHours || 0), 0)
         };
 
-        return { success: true, data: { attendance, stats } };
+        return { success: true, data: JSON.parse(JSON.stringify({ attendance, stats })) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -719,7 +719,7 @@ export async function getStaffLeaveHistoryAction(schoolSlug: string, userId: str
             where: { userId, user: { school: { slug: schoolSlug } } },
             orderBy: { startDate: "desc" }
         });
-        return { success: true, data: leaves };
+        return { success: true, data: JSON.parse(JSON.stringify(leaves)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -794,7 +794,7 @@ export async function getAttendanceDataAction(schoolSlug: string, classroomId: s
             };
         });
 
-        return { success: true, data: mergedData };
+        return { success: true, data: JSON.parse(JSON.stringify(mergedData)) };
     } catch (error: any) {
         console.error("Student Attendance Fetch Error:", error);
         return { success: false, error: error.message };
@@ -891,7 +891,7 @@ export async function getStudentAttendanceAction(schoolSlug: string, studentId: 
             where: { ...query, student: { schoolId: currentUser.schoolId } },
             orderBy: { date: 'desc' }
         });
-        return { success: true, data: attendance };
+        return { success: true, data: JSON.parse(JSON.stringify(attendance)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

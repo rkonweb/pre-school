@@ -253,8 +253,8 @@ export default function StaffAttendancePage() {
                     title="Late/Half-Day"
                     value={attendance.filter(a => ["LATE", "HALF_DAY"].includes(a.status)).length.toString()}
                     icon={<AlertCircle className="h-5 w-5" />}
-                    color="text-amber-600"
-                    bg="bg-amber-50 dark:bg-amber-950/20"
+                    color="text-brand"
+                    bg="bg-brand/10"
                 />
                 <StatCard
                     title="Active Leaves"
@@ -518,7 +518,7 @@ export default function StaffAttendancePage() {
                                 <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-400 border-l-4 border-brand pl-4 py-1">Attendance Breakdown</h3>
                                 <div className="space-y-6">
                                     <AnalyticsProgress label="Total Presences" value={analytics?.totalPresent || 0} max={25} color="bg-emerald-500" />
-                                    <AnalyticsProgress label="Late Arrivals" value={analytics?.totalLate || 0} max={25} color="bg-amber-500" />
+                                    <AnalyticsProgress label="Late Arrivals" value={analytics?.totalLate || 0} max={25} color="bg-brand" />
                                     <AnalyticsProgress label="Absences" value={analytics?.totalLeaves || 0} max={25} color="bg-red-500" />
                                 </div>
                             </div>
@@ -668,7 +668,7 @@ function StatusBadge({ status }: { status: string }) {
     const styles = {
         PRESENT: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50",
         ABSENT: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50",
-        LATE: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/50",
+        LATE: "bg-brand/10 text-brand border-brand/20 dark:bg-brand/20 dark:text-brand dark:border-brand/40",
         HALF_DAY: "bg-brand/10 text-brand border-brand/20 dark:bg-brand/20 dark:text-brand dark:border-brand/40",
         APPROVED: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20",
         REJECTED: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20",

@@ -190,7 +190,7 @@ export default function EditHomeworkClient({
                             {classrooms.map(c => (
                                 <button key={c.id} type="button" onClick={() => setForm(p => ({ ...p, classroomId: c.id, targetIds: [] }))}
                                     className={cn("px-4 py-2 rounded-xl border text-sm font-bold transition-all",
-                                        form.classroomId === c.id ? "bg-brand text-white border-brand shadow-sm shadow-brand/20" : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400")}>
+                                        form.classroomId === c.id ? "bg-brand text-[var(--secondary-color)] border-brand shadow-sm shadow-brand/20" : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400")}>
                                     {c.name}
                                 </button>
                             ))}
@@ -236,7 +236,7 @@ export default function EditHomeworkClient({
                                                         className={cn("flex items-center justify-between px-3 py-2 rounded-lg border transition-all text-left",
                                                             isSelected ? "border-brand bg-brand/5" : "border-zinc-200 bg-white hover:border-zinc-300")}>
                                                         <span className={cn("text-sm font-medium", isSelected ? "text-brand" : "text-zinc-700")}>{student.firstName} {student.lastName}</span>
-                                                        <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-colors", isSelected ? "border-brand bg-brand text-white" : "border-zinc-300")}>
+                                                        <div className={cn("h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-colors", isSelected ? "border-brand bg-brand text-[var(--secondary-color)]" : "border-zinc-300")}>
                                                             {isSelected && <CheckCircle2 className="h-3 w-3" />}
                                                         </div>
                                                     </button>

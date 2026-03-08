@@ -21,7 +21,7 @@ export async function getBlogAutomationSettingsAction() {
             });
         }
 
-        return { success: true, settings };
+        return { success: true, settings: JSON.parse(JSON.stringify(settings)) };
     } catch (error) {
         return { success: false, error: 'Failed to fetch settings' };
     }
@@ -36,7 +36,7 @@ export async function updateBlogAutomationSettingsAction(data: any) {
             update: data
         });
         revalidatePath('/admin/cms/blog');
-        return { success: true, settings };
+        return { success: true, settings: JSON.parse(JSON.stringify(settings)) };
     } catch (error) {
         return { success: false, error: 'Failed to update settings' };
     }
@@ -168,7 +168,7 @@ export async function triggerAutoBlogGenerationAction(force: boolean = false, cl
             });
             revalidatePath('/blog');
             revalidatePath('/admin/cms/blog');
-            return { success: true, post: res.post };
+            return { success: true, post: JSON.parse(JSON.stringify(res.post)) };
         }
 
         return res;

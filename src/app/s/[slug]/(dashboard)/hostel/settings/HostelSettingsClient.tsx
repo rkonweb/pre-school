@@ -119,7 +119,7 @@ export default function HostelSettingsClient({ slug, initialHostels }: { slug: s
                 <div className="flex gap-4">
                     <button
                         onClick={() => setIsCreatingHostel(true)}
-                        className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-brand/90 transition-colors"
+                        className="bg-brand text-[var(--secondary-color)] px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-brand/90 transition-colors"
                     >
                         <Plus className="h-4 w-4" /> Add Building
                     </button>
@@ -141,7 +141,7 @@ export default function HostelSettingsClient({ slug, initialHostels }: { slug: s
                     </div>
                     <div className="flex justify-end gap-2">
                         <button onClick={() => setIsCreatingHostel(false)} className="px-4 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-900">Cancel</button>
-                        <button onClick={handleCreateHostel} className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-bold">Save Building</button>
+                        <button onClick={handleCreateHostel} className="bg-brand text-[var(--secondary-color)] px-4 py-2 rounded-xl text-sm font-bold">Save Building</button>
                     </div>
                 </div>
             )}
@@ -213,7 +213,7 @@ export default function HostelSettingsClient({ slug, initialHostels }: { slug: s
                                     </div>
                                     <div className="flex justify-end gap-2 pt-2">
                                         <button onClick={() => setEditingHostel(null)} className="px-4 py-2 text-sm font-medium text-zinc-500">Cancel</button>
-                                        <button onClick={handleUpdateHostel} className="bg-brand text-white px-6 py-2 rounded-xl text-sm font-bold shadow-sm">Update Building</button>
+                                        <button onClick={handleUpdateHostel} className="bg-brand text-[var(--secondary-color)] px-6 py-2 rounded-xl text-sm font-bold shadow-sm">Update Building</button>
                                     </div>
                                 </div>
                             )}
@@ -233,7 +233,7 @@ export default function HostelSettingsClient({ slug, initialHostels }: { slug: s
                                     </div>
                                     <div className="flex justify-end gap-2">
                                         <button onClick={() => setIsCreatingRoom(null)} className="px-3 py-1.5 text-xs font-bold text-zinc-500">Cancel</button>
-                                        <button onClick={() => handleCreateRoom(hostel.id)} className="bg-brand text-white px-3 py-1.5 rounded-lg text-xs font-bold">Save Room</button>
+                                        <button onClick={() => handleCreateRoom(hostel.id)} className="bg-brand text-[var(--secondary-color)] px-3 py-1.5 rounded-lg text-xs font-bold">Save Room</button>
                                     </div>
                                 </div>
                             )}
@@ -278,7 +278,7 @@ export default function HostelSettingsClient({ slug, initialHostels }: { slug: s
                                                 </div>
                                                 <div className="flex justify-end gap-2 mt-2">
                                                     <button onClick={() => setEditingRoom(null)} className="text-[10px] font-bold text-zinc-400">Cancel</button>
-                                                    <button onClick={handleUpdateRoom} className="bg-brand text-white px-3 py-1 rounded text-[10px] font-bold">Update</button>
+                                                    <button onClick={handleUpdateRoom} className="bg-brand text-[var(--secondary-color)] px-3 py-1 rounded text-[10px] font-bold">Update</button>
                                                 </div>
                                             </div>
                                         )}

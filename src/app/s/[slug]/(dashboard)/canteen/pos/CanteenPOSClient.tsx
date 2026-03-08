@@ -375,7 +375,7 @@ export default function CanteenPOSClient({
             {/* ── Top Stats Bar ── */}
             <div className="shrink-0 px-4 py-3 border-b border-slate-200 bg-white flex items-center gap-3">
                 <div className="flex-1 flex items-center gap-1.5">
-                    <TrendingUp className="h-4 w-4 text-orange-500" />
+                    <TrendingUp className="h-4 w-4 text-brand" />
                     <span className="text-sm font-bold text-slate-700">Today's Sales</span>
                 </div>
                 <div className="flex items-center gap-4">
@@ -433,7 +433,7 @@ export default function CanteenPOSClient({
                                     onClick={() => setMealFilter(f)}
                                     className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all
                                         ${mealFilter === f
-                                            ? "bg-orange-500 text-white shadow-sm"
+                                            ? "bg-brand text-[var(--secondary-color)] shadow-sm"
                                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                                 >
                                     {f === "ALL" ? "All" : f.charAt(0) + f.slice(1).toLowerCase()}
@@ -457,8 +457,8 @@ export default function CanteenPOSClient({
                                         ${inCart ? "border-orange-400 ring-2 ring-orange-100 shadow-orange-100" : "border-slate-200 hover:border-orange-300"}`}
                                 >
                                     <div className="flex justify-between items-start w-full">
-                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${inCart ? "bg-orange-500" : "bg-orange-50"}`}>
-                                            <Icon className={`h-5 w-5 ${inCart ? "text-white" : "text-orange-500"}`} />
+                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${inCart ? "bg-brand" : "bg-brand/10"}`}>
+                                            <Icon className={`h-5 w-5 ${inCart ? "text-white" : "text-brand"}`} />
                                         </div>
                                         <div className="w-3 h-3 rounded-sm border border-slate-300 flex items-center justify-center bg-white" title={item.dietType}>
                                             <div className={`w-1.5 h-1.5 rounded-full ${DietDot}`} />
@@ -495,7 +495,7 @@ export default function CanteenPOSClient({
                                     <div>
                                         <p className="text-sm font-semibold text-slate-800 leading-tight line-clamp-2">{item.name}</p>
                                         <div className="flex justify-between items-end mt-1">
-                                            <p className="text-base font-black text-orange-600">{fmt(item.price)}</p>
+                                            <p className="text-base font-black text-brand">{fmt(item.price)}</p>
                                         </div>
                                     </div>
 
@@ -505,7 +505,7 @@ export default function CanteenPOSClient({
                                         </Badge>
                                     )}
                                     {inCart && (
-                                        <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-black rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                                        <div className="absolute -top-2 -right-2 bg-brand text-[var(--secondary-color)] text-xs font-black rounded-full w-6 h-6 flex items-center justify-center shadow-md">
                                             {inCart.quantity}
                                         </div>
                                     )}
@@ -619,10 +619,10 @@ export default function CanteenPOSClient({
                                 <button
                                     key={tab.id}
                                     onClick={() => setRightTab(tab.id as any)}
-                                    className={`flex-1 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 border-b-2 transition-all ${rightTab === tab.id ? "border-orange-500 text-orange-600 bg-orange-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
+                                    className={`flex-1 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 border-b-2 transition-all ${rightTab === tab.id ? "border-brand text-brand bg-brand/5" : "border-transparent text-slate-500 hover:text-slate-700"}`}
                                 >
                                     {tab.id === "cart" ? <ShoppingCart className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
-                                    {tab.label} {tab.id === "cart" && cartCount > 0 && <span className="bg-orange-500 text-white text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center">{cartCount}</span>}
+                                    {tab.label} {tab.id === "cart" && cartCount > 0 && <span className="bg-brand text-[var(--secondary-color)] text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center">{cartCount}</span>}
                                 </button>
                             ))}
                         </div>
@@ -648,7 +648,7 @@ export default function CanteenPOSClient({
                                                     <span className="w-5 text-center text-sm font-black text-slate-800">{item.quantity}</span>
                                                     <button
                                                         onClick={() => changeQty(item.id, 1)}
-                                                        className="h-6 w-6 rounded-full bg-orange-500 text-white flex items-center justify-center"
+                                                        className="h-6 w-6 rounded-full bg-brand text-[var(--secondary-color)] flex items-center justify-center"
                                                         title="Increase quantity"
                                                     >
                                                         <Plus className="h-3 w-3" />
@@ -693,7 +693,7 @@ export default function CanteenPOSClient({
                         <Button
                             onClick={handleCheckout}
                             disabled={isPending || cart.length === 0 || !selectedStudent || walletInsufficient}
-                            className="w-full h-11 text-sm font-bold bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-2xl"
+                            className="w-full h-11 text-sm font-bold bg-brand hover:opacity-90 text-[var(--secondary-color)] rounded-2xl"
                         >
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : cart.length === 0 ? "Add items" : !selectedStudent ? "Select student" : `Charge ${fmt(cartTotal)}`}
                         </Button>

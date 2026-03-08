@@ -544,16 +544,16 @@ export default function RolesClient({
                                 </h4>
                                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-950">
                                     <table className="w-full text-sm">
-                                        <thead className="bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+                                        <thead>
                                             <tr>
-                                                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-400">Module</th>
-                                                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-400 w-28">View</th>
-                                                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-400 w-28">Create / Add</th>
-                                                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-400 w-28">Edit</th>
-                                                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-400 w-28">Delete</th>
-                                                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-400 w-28">Manage / Exp</th>
-                                                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-400 w-28">Manage Own</th>
-                                                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-400 w-28">Manage Selected</th>
+                                                <th className="px-4 py-3 text-left font-medium">Module</th>
+                                                <th className="px-4 py-3 text-center font-medium w-28">View</th>
+                                                <th className="px-4 py-3 text-center font-medium w-28">Create / Add</th>
+                                                <th className="px-4 py-3 text-center font-medium w-28">Edit</th>
+                                                <th className="px-4 py-3 text-center font-medium w-28">Delete</th>
+                                                <th className="px-4 py-3 text-center font-medium w-28">Manage / Exp</th>
+                                                <th className="px-4 py-3 text-center font-medium w-28">Manage Own</th>
+                                                <th className="px-4 py-3 text-center font-medium w-28">Manage Selected</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -663,7 +663,7 @@ export default function RolesClient({
 
                     <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-950">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                            <thead>
                                 <tr>
                                     <th className="px-4 py-3 font-medium">Role Name</th>
                                     <th className="px-4 py-3 font-medium">Description</th>
@@ -738,7 +738,7 @@ export default function RolesClient({
                                 >
                                     <div className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden">
                                         {teacher.avatar ? (
-                                            <img src={teacher.avatar} className="h-full w-full object-cover" />
+                                            <img src={teacher.avatar} alt={teacher.firstName} className="h-full w-full object-cover" />
                                         ) : (
                                             <span className="font-bold text-zinc-500">{teacher.firstName?.[0]}</span>
                                         )}
@@ -813,7 +813,7 @@ export default function RolesClient({
                                     ) : (
                                         <>
                                             <table className="w-full text-sm">
-                                                <thead className="sticky top-0 bg-zinc-100 dark:bg-zinc-900 shadow-sm z-10">
+                                                <thead className="sticky top-0 shadow-sm z-10">
                                                     <tr>
                                                         <th className="text-left px-4 py-3 font-medium">Classroom</th>
                                                         <th className="text-center px-2 py-3 w-20">Read</th>

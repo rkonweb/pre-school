@@ -54,7 +54,7 @@ export async function createExamAction(schoolSlug: string, data: {
         // TODO: Calendar Integration
 
         revalidatePath(`/s/${schoolSlug}/students/reports`);
-        return { success: true, data: exam };
+        return { success: true, data: JSON.parse(JSON.stringify(exam)) };
     } catch (error: any) {
         console.error("Create Exam Error:", error);
         return { success: false, error: error.message };
@@ -84,7 +84,7 @@ export async function getExamsAction(schoolSlug: string, category?: string, data
                 }
             }
         });
-        return { success: true, data: exams };
+        return { success: true, data: JSON.parse(JSON.stringify(exams)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -99,7 +99,7 @@ export async function getExamByIdAction(examId: string) {
             }
         });
         if (!exam) return { success: false, error: "Exam not found" };
-        return { success: true, data: exam };
+        return { success: true, data: JSON.parse(JSON.stringify(exam)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -156,7 +156,7 @@ export async function updateExamAction(schoolSlug: string, examId: string, data:
 
         revalidatePath(`/s/${schoolSlug}/students/reports`);
         revalidatePath(`/s/${schoolSlug}/students/reports/${examId}`);
-        return { success: true, data: exam };
+        return { success: true, data: JSON.parse(JSON.stringify(exam)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

@@ -11,9 +11,9 @@ import '../../../core/theme/school_brand_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/routing/rbac.dart';
 import '../../../ui/components/today_timeline_card.dart';
-import '../../../ui/components/quick_action_tile.dart';
 import '../../auth/auth_service.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/router/app_scaffold.dart';
 import '../data/dashboard_provider.dart';
 import 'widgets/ai_summary_card.dart';
 
@@ -32,12 +32,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final rbac = ref.watch(rbacProvider);
     final brand = ref.watch(schoolBrandProvider);
     final dashboardAsync = ref.watch(dashboardDataProvider);
-
     return Scaffold(
-      key: _scaffoldKey,
-      extendBodyBehindAppBar: true,
-      backgroundColor: AppTheme.backgroundColor,
-      drawer: _buildDrawer(context, brand, dashboardAsync, rbac),
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           // ───── Graphical Background ─────
@@ -224,8 +220,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  IconButton(
+                    icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 28),
+                    onPressed: () => appScaffoldKey.currentState?.openDrawer(),
+                  ),
+                  const SizedBox(width: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -246,6 +246,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                     ],
                   ),
+                  const Spacer(),
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: Colors.white.withOpacity(0.28),
@@ -593,304 +594,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildDrawer(BuildContext context, SchoolBrandState brand, AsyncValue<Map<String, dynamic>> dashboardAsync, RBACState rbac) {
-    return Drawer(
-      backgroundColor: AppTheme.surfaceColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.horizontal(right: Radius.circular(24)),
-      ),
-      child: dashboardAsync.when(
-        data: (data) {
-          final students = data['students'] as List? ?? [];
-          final activeStudentId = data['activeStudentId'];
-          final activeStudent = students.firstWhere(
-            (s) => s['id'] == activeStudentId,
-            orElse: () => students.isNotEmpty ? students[0] : {},
-          );
-          
-          final parentDetails = data['parentDetails'] as Map<String, dynamic>?;
-          final parentName = parentDetails?['name'] ?? 'Parent';
-          final parentInitials = parentDetails?['initials'] ?? 'P';
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── sm-hd: Gradient Header ──
-              Container(
-                padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF1A2A6C),
-                      Color(0xFF2350DD),
-                      Color(0xFF00C9A7),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 23,
-                          backgroundColor: Colors.white.withOpacity(0.22),
-                          child: Text(
-                            parentInitials, 
-                            style: GoogleFonts.sora(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              parentName,
-                              style: GoogleFonts.sora(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Parent • EduConnect',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.65),
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.18),
-                        border: Border.all(color: Colors.white.withOpacity(0.15)),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Row(
-                        children: [
-                          _buildStudentAvatar(activeStudent),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              activeStudent['name'] ?? 'Student',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF00E5C0),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'In School',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.65),
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  children: [
-                    _buildDrawerSectionLabel('ACADEMICS'),
-                    _buildDrawerItem(
-                      icon: Icons.menu_book_rounded,
-                      title: 'Diary & Homework',
-                      subtitle: '3 tasks pending today',
-                      color: const Color(0xFF3B6EF8),
-                      backgroundColor: const Color(0xFFEEF3FF),
-                      badge: '3 Due',
-                      badgeColor: const Color(0xFFFF6B3D),
-                      onTap: () {
-                        context.pop();
-                        context.push('/diary');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.analytics_outlined,
-                      title: 'Progress & Reports',
-                      subtitle: 'Q3 report card available',
-                      color: const Color(0xFF00C9A7),
-                      backgroundColor: const Color(0xFFF0FDF9),
-                      badge: 'New',
-                      badgeColor: const Color(0xFF00C9A7),
-                      onTap: () {},
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.stars_rounded,
-                      title: 'Achievements',
-                      subtitle: '2 new badges earned',
-                      color: const Color(0xFFF5A623),
-                      backgroundColor: const Color(0xFFFFFBEB),
-                      onTap: () {},
-                    ),
-                    if (rbac.hasPermission('messages.view')) ...[
-                      const Padding(padding: EdgeInsets.symmetric(horizontal: 18), child: Divider(height: 24)),
-                      _buildDrawerSectionLabel('COMMUNICATION'),
-                      _buildDrawerItem(
-                        icon: Icons.forum_rounded,
-                        title: 'Messages',
-                        subtitle: 'Direct chat with teachers',
-                        color: const Color(0xFF8B5CF6),
-                        backgroundColor: const Color(0xFFF5F0FF),
-                        badge: '2 New',
-                        badgeColor: const Color(0xFF3B6EF8),
-                        onTap: () {
-                          context.pop();
-                          context.push('/messages');
-                        },
-                      ),
-                    ],
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 18), child: Divider(height: 24)),
-                    _buildDrawerSectionLabel('SCHOOL LIFE'),
-                    _buildDrawerItem(
-                      icon: Icons.how_to_reg_rounded,
-                      title: 'Attendance & Leave',
-                      subtitle: '94% this month • Excellent',
-                      color: const Color(0xFFFF6B3D),
-                      backgroundColor: const Color(0xFFFFF5EE),
-                      onTap: () {
-                        context.pop();
-                        context.push('/attendance');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.directions_bus_rounded,
-                      title: 'Transport',
-                      subtitle: 'Bus #7 • ETA 3:50 PM',
-                      color: const Color(0xFF00C9A7),
-                      backgroundColor: const Color(0xFFF0FDF9),
-                      badge: '● Live',
-                      badgeColor: const Color(0xFF00C9A7),
-                      onTap: () {
-                        context.pop();
-                        context.push('/transport');
-                      },
-                    ),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 18), child: Divider(height: 24)),
-                    _buildDrawerSectionLabel('MANAGE'),
-                    _buildDrawerItem(
-                      icon: Icons.account_balance_wallet_rounded,
-                      title: 'Fees & Payments',
-                      subtitle: '₹8,200 due • Nov 25',
-                      color: const Color(0xFFF5A623),
-                      backgroundColor: const Color(0xFFFFFBEB),
-                      badge: 'Due',
-                      badgeColor: const Color(0xFFFF6B3D),
-                      onTap: () {
-                        context.pop();
-                        context.push('/finance');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.fastfood_rounded,
-                      title: 'Canteen & Store',
-                      subtitle: 'Balance: ₹180 • Top up',
-                      color: const Color(0xFF3B6EF8),
-                      backgroundColor: const Color(0xFFEEF3FF),
-                      onTap: () {
-                        context.pop();
-                        context.go('/canteen');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.home_work_rounded,
-                      title: 'Hostel',
-                      subtitle: 'Room A-204 · Block A · Status',
-                      color: const Color(0xFF8B5CF6),
-                      backgroundColor: const Color(0xFFF5F0FF),
-                      badge: '● In School',
-                      badgeColor: const Color(0xFF00C9A7),
-                      onTap: () {
-                        context.pop();
-                        context.push('/hostel');
-                      },
-                    ),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 18), child: Divider(height: 24)),
-                    _buildDrawerSectionLabel('ACCOUNT'),
-                    _buildDrawerItem(
-                      icon: Icons.person_rounded,
-                      title: 'Student Profile',
-                      subtitle: 'View & update student details',
-                      color: const Color(0xFF3B6EF8),
-                      backgroundColor: const Color(0xFFEEF3FF),
-                      onTap: () {
-                        context.pop();
-                        context.push('/profile');
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(border: Border(top: BorderSide(color: Colors.black.withOpacity(0.05)))),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 17,
-                      backgroundColor: const Color(0xFF3B6EF8),
-                      child: Text(parentInitials, style: GoogleFonts.sora(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(parentName, style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textPrimary)),
-                          GestureDetector(onTap: () {}, child: const Text('Edit Profile', style: TextStyle(color: Color(0xFF3B6EF8), fontWeight: FontWeight.bold, fontSize: 11))),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.logout_rounded, color: Color(0xFFFF6B3D), size: 18),
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        try {
-                          await ref.read(authServiceProvider).logout();
-                          if (context.mounted) context.go('/login');
-                        } catch (e) {}
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => const Center(child: Text("Error loading drawer")),
-      ),
-    );
-  }
 
   Widget _buildDrawerSectionLabel(String label) {
     return Padding(
@@ -1144,6 +848,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       color: const Color(0xFFF5A623),
       bgColor: const Color(0xFFFFFBEB),
       onTap: () {},
+    ));
+
+    actions.add(_buildQuickActionBtn(
+      label: 'Clubs',
+      icon: Icons.star_rounded,
+      color: const Color(0xFF6366F1),
+      bgColor: const Color(0xFFEEF3FF),
+      onTap: () => context.push('/extracurricular'),
     ));
 
     return SingleChildScrollView(

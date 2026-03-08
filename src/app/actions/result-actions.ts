@@ -67,7 +67,7 @@ export async function getExamResultsAction(examId: string, classroomId?: string)
                 }
             }
         });
-        return { success: true, data: results };
+        return { success: true, data: JSON.parse(JSON.stringify(results)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -82,7 +82,7 @@ export async function getStudentResultsAction(studentId: string) {
             },
             orderBy: { exam: { date: 'desc' } }
         });
-        return { success: true, data: results };
+        return { success: true, data: JSON.parse(JSON.stringify(results)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

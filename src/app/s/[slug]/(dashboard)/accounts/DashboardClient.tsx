@@ -22,7 +22,7 @@ import { SectionHeader, ErpCard, Btn, StatusChip, tableStyles } from "@/componen
 import { generateAccountInsights } from '@/app/actions/ai-account-actions';
 import { toast } from 'sonner';
 
-const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+const COLORS = ['#10b981', '#ef4444', 'var(--brand-color, #f59e0b)', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
 export default function DashboardClient({
     schoolSlug,
@@ -359,10 +359,10 @@ export default function DashboardClient({
                                         className="group"
                                         style={i % 2 === 0 ? tableStyles.rowEven : tableStyles.rowOdd}
                                         onMouseEnter={e => {
-                                            (e.currentTarget).style.background = flagReason ? "#FFE4E6" : "#FFFBEB";
+                                            (e.currentTarget).style.background = flagReason ? "rgba(254, 228, 230, 0.5)" : "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)";
                                         }}
                                         onMouseLeave={e => {
-                                            (e.currentTarget).style.background = i % 2 === 0 ? (flagReason ? "#FFE4E6" : "white") : (flagReason ? "#FFE4E6" : "#F9FAFB");
+                                            (e.currentTarget).style.background = i % 2 === 0 ? (flagReason ? "rgba(254, 228, 230, 0.5)" : "white") : (flagReason ? "rgba(254, 228, 230, 0.5)" : "#F9FAFB");
                                         }}
                                     >
                                         <td style={tableStyles.td}>

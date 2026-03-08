@@ -121,7 +121,8 @@ export function IDCardGeneratorClient({ slug, templates, students, school }: IDC
                     <Button
                         onClick={handlePrint}
                         disabled={selectedStudentIds.length === 0 || !selectedTemplateId}
-                        className="rounded-2xl h-14 px-8 bg-black hover:bg-zinc-800 text-white font-black uppercase tracking-widest gap-3 shadow-xl"
+                        variant="brand"
+                        className="rounded-2xl h-14 px-8 font-black uppercase tracking-widest gap-3 shadow-xl shadow-brand/20"
                     >
                         <Printer className="h-5 w-5" /> Print {selectedStudentIds.length} Cards
                     </Button>
@@ -156,7 +157,7 @@ export function IDCardGeneratorClient({ slug, templates, students, school }: IDC
                                 className={cn(
                                     "p-6 rounded-[2rem] border-2 transition-all text-left flex flex-col gap-4",
                                     selectedTemplateId === t.id
-                                        ? "border-indigo-600 bg-indigo-50/50 shadow-md ring-4 ring-indigo-500/10"
+                                        ? "border-brand bg-brand/5 shadow-md ring-4 ring-brand/10"
                                         : "border-zinc-100 bg-white hover:border-zinc-200 group shadow-sm hover:shadow-md"
                                 )}
                             >
@@ -174,7 +175,7 @@ export function IDCardGeneratorClient({ slug, templates, students, school }: IDC
                                 <div className="space-y-1">
                                     <div className="flex items-center justify-between">
                                         <p className="text-[11px] font-black text-zinc-900 uppercase tracking-tight">{t.name}</p>
-                                        {selectedTemplateId === t.id && <Check className="h-4 w-4 text-indigo-600" />}
+                                        {selectedTemplateId === t.id && <Check className="h-4 w-4 text-brand" />}
                                     </div>
                                     <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest leading-none">
                                         {t.orientation} • {t.dimensions}mm
@@ -206,7 +207,7 @@ export function IDCardGeneratorClient({ slug, templates, students, school }: IDC
                                     placeholder="Search students..."
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 rounded-2xl border border-zinc-200 focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium"
+                                    className="w-full pl-11 pr-4 py-3 rounded-2xl border border-zinc-200 focus:ring-2 focus:ring-brand/20 text-sm font-medium"
                                 />
                             </div>
                             <select
@@ -236,7 +237,7 @@ export function IDCardGeneratorClient({ slug, templates, students, school }: IDC
                                     <div className="flex items-center gap-4">
                                         <div className={cn(
                                             "h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all",
-                                            selectedStudentIds.includes(student.id) ? "bg-indigo-600 border-indigo-600 text-white" : "border-zinc-200 bg-white"
+                                            selectedStudentIds.includes(student.id) ? "bg-brand border-brand text-[var(--secondary-color)]" : "border-zinc-200 bg-white"
                                         )}>
                                             {selectedStudentIds.includes(student.id) && <Check className="h-4 w-4" />}
                                         </div>

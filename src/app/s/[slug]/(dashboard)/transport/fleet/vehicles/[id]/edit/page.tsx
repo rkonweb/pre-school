@@ -148,7 +148,7 @@ export default function EditVehiclePage() {
                         className={cn(
                             "w-full flex items-center justify-between p-6 rounded-[28px] border-2 transition-all group",
                             activeTab === "BASIC"
-                                ? "border-zinc-900 bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-zinc-200"
+                                ? "border-zinc-900 bg-brand-gradient text-[var(--secondary-color)] shadow-xl shadow-brand/20"
                                 : "border-zinc-100 bg-white text-zinc-400 hover:border-zinc-200"
                         )}
                     >
@@ -164,7 +164,7 @@ export default function EditVehiclePage() {
                         className={cn(
                             "w-full flex items-center justify-between p-6 rounded-[28px] border-2 transition-all group",
                             activeTab === "DOCS"
-                                ? "border-zinc-900 bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-zinc-200"
+                                ? "border-zinc-900 bg-brand-gradient text-[var(--secondary-color)] shadow-xl shadow-brand/20"
                                 : "border-zinc-100 bg-white text-zinc-400 hover:border-zinc-200"
                         )}
                     >
@@ -180,7 +180,7 @@ export default function EditVehiclePage() {
                         className={cn(
                             "w-full flex items-center justify-between p-6 rounded-[28px] border-2 transition-all group",
                             activeTab === "SERVICE"
-                                ? "border-zinc-900 bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-zinc-200"
+                                ? "border-zinc-900 bg-brand-gradient text-[var(--secondary-color)] shadow-xl shadow-brand/20"
                                 : "border-zinc-100 bg-white text-zinc-400 hover:border-zinc-200"
                         )}
                     >
@@ -249,7 +249,7 @@ export default function EditVehiclePage() {
                                                         className={cn(
                                                             "px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm",
                                                             formData.status === s
-                                                                ? "bg-blue-600 text-white hover:bg-blue-700 border-zinc-900 shadow-lg"
+                                                                ? "bg-brand text-[var(--secondary-color)] border-zinc-900 shadow-lg"
                                                                 : "bg-white text-zinc-400 border-zinc-200 hover:border-zinc-900 hover:text-zinc-900"
                                                         )}
                                                     >
@@ -307,7 +307,7 @@ export default function EditVehiclePage() {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="h-14 rounded-2xl bg-blue-600 px-10 text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-zinc-200 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                        className="h-14 rounded-2xl bg-brand-gradient px-10 text-[10px] font-black uppercase tracking-widest text-[var(--secondary-color)] shadow-[0_10px_25px_-5px_rgba(var(--brand-color-rgb),0.4)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 border-none"
                                     >
                                         {submitting ? (
                                             <>
@@ -329,7 +329,7 @@ export default function EditVehiclePage() {
                             <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-10">
                                 <div className="flex items-center justify-between">
                                     <SectionHeading icon={ClipboardList} title="Maintenance Registry" />
-                                    <button className="h-12 px-6 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                    <button className="h-12 px-6 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:bg-brand hover:text-[var(--secondary-color)] transition-all shadow-sm">
                                         <Download className="h-4 w-4" />
                                         Export Datasheet
                                     </button>
@@ -338,8 +338,8 @@ export default function EditVehiclePage() {
                                 {vehicle?.maintenanceLogs?.length > 0 ? (
                                     <div className="grid gap-4">
                                         {vehicle.maintenanceLogs.map((log: any) => (
-                                            <div key={log.id} className="group relative flex items-center gap-6 rounded-3xl bg-zinc-50/50 p-6 border border-zinc-100 hover:bg-white hover:shadow-xl hover:shadow-zinc-200/40 transition-all border-l-4 border-l-blue-600">
-                                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-zinc-100 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                            <div className="group relative flex items-center gap-6 rounded-3xl bg-zinc-50/50 p-6 border border-zinc-100 hover:bg-white hover:shadow-xl hover:shadow-brand/20 transition-all border-l-4 border-l-brand">
+                                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-zinc-100 group-hover:scale-110 group-hover:bg-brand group-hover:text-[var(--secondary-color)] transition-all">
                                                     <Wrench className="h-6 w-6" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -374,7 +374,7 @@ export default function EditVehiclePage() {
     );
 }
 
-function SectionHeading({ icon: Icon, title, color = "bg-blue-600 text-white hover:bg-blue-700" }: { icon: any, title: string, color?: string }) {
+function SectionHeading({ icon: Icon, title, color = "bg-brand-gradient text-[var(--secondary-color)]" }: { icon: any, title: string, color?: string }) {
     return (
         <div className="flex items-center gap-4">
             <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shadow-lg", color)}>

@@ -89,7 +89,7 @@ export async function createStoreItemBySlugAction(
             },
         });
         revalidatePath(`/s/${slug}/school-store`);
-        return { success: true, data: item };
+        return { success: true, data: JSON.parse(JSON.stringify(item)) };
     } catch (error: any) {
         console.error("createStoreItemBySlugAction Error:", error);
         return { success: false, error: "Failed to create item" };

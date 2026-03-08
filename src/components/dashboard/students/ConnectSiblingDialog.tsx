@@ -79,7 +79,7 @@ export function ConnectSiblingDialog({ slug, studentId, currentParentPhone, isOp
                         <button
                             onClick={handleSearch}
                             disabled={isLoading}
-                            className="w-14 bg-brand text-white rounded-2xl flex items-center justify-center hover:brightness-110 transition-colors"
+                            className="w-14 bg-brand text-[var(--secondary-color)] rounded-2xl flex items-center justify-center hover:brightness-110 transition-colors"
                         >
                             {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
                         </button>

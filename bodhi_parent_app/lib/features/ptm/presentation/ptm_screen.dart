@@ -1,70 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/theme/school_brand_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../ui/components/app_header.dart';
-
-// ─── Models ──────────────────────────────────────────────────────────────────
-class PTMSession {
-  final String id;
-  final String title;
-  final String date;
-  final String startTime;
-  final String endTime;
-  final int slotMinutes;
-  final List<Map<String, dynamic>> myBookings;
-
-  PTMSession({required this.id, required this.title, required this.date, required this.startTime, required this.endTime, required this.slotMinutes, required this.myBookings});
-
-  factory PTMSession.fromJson(Map<String, dynamic> json) => PTMSession(
-    id: json['id'] ?? '',
-    title: json['title'] ?? '',
-    date: json['date'] ?? '',
-    startTime: json['startTime'] ?? '09:00',
-    endTime: json['endTime'] ?? '16:00',
-    slotMinutes: json['slotMinutes'] ?? 10,
-    myBookings: List<Map<String, dynamic>>.from(json['bookings'] ?? []),
-  );
-
-  List<String> get availableSlots {
-    final slots = <String>[];
-    final startParts = startTime.split(':');
-    final endParts = endTime.split(':');
-    int current = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
-    final end = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
-    while (current + slotMinutes <= end) {
-      final h = (current ~/ 60).toString().padLeft(2, '0');
-      final m = (current % 60).toString().padLeft(2, '0');
-      slots.add('$h:$m');
-      current += slotMinutes;
-    }
-    return slots;
-  }
-
-  Set<String> get bookedSlots => myBookings.map((b) => b['slotTime'] as String).toSet();
-}
-
-// ─── Providers ───────────────────────────────────────────────────────────────
-final ptmSessionsProvider = FutureProvider<List<PTMSession>>((ref) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('parent/ptm');
-  if (response.data['success'] == true) {
-    return (response.data['data'] as List? ?? []).map((e) => PTMSession.fromJson(e)).toList();
-  } else {
-    throw Exception(response.data['error'] ?? 'Failed to load PTM sessions');
-  }
-});
-
-final myPTMBookingsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final apiClient = ref.read(apiClientProvider);
-  final response = await apiClient.get('parent/ptm', queryParameters: {'view': 'my-bookings'});
-  if (response.data['success'] == true) {
-    return List<Map<String, dynamic>>.from(response.data['data'] ?? []);
-  } else {
-    throw Exception(response.data['error'] ?? 'Failed to load bookings');
-  }
-});
+import '../../dashboard/data/dashboard_provider.dart';
+import '../data/ptm_provider.dart';
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 class PTMScreen extends ConsumerStatefulWidget {
@@ -76,8 +20,6 @@ class PTMScreen extends ConsumerStatefulWidget {
 
 class _PTMScreenState extends ConsumerState<PTMScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String? _bookingSessionId;
-  bool _isBooking = false;
 
   @override
   void initState() {
@@ -91,42 +33,12 @@ class _PTMScreenState extends ConsumerState<PTMScreen> with SingleTickerProvider
     super.dispose();
   }
 
-  Future<void> _bookSlot(String sessionId, String studentId, String slotTime) async {
-    setState(() => _isBooking = true);
-    try {
-      final apiClient = ref.read(apiClientProvider);
-      final response = await apiClient.post('parent/ptm', data: {
-        'sessionId': sessionId,
-        'studentId': studentId,
-        'slotTime': slotTime,
-      });
-      if (response.data['success'] == true) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('✅ Slot $slotTime booked!'), backgroundColor: Colors.green),
-          );
-          setState(() => _bookingSessionId = null);
-          ref.refresh(ptmSessionsProvider);
-          ref.refresh(myPTMBookingsProvider);
-        }
-      } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response.data['error'] ?? 'Booking failed'), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error'), backgroundColor: Colors.red));
-    } finally {
-      if (mounted) setState(() => _isBooking = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final brand = ref.watch(schoolBrandProvider);
+    final dashboardAsync = ref.watch(dashboardDataProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppHeader(
         title: 'Parent-Teacher Meeting',
         subtitle: 'Schedule meetings with teachers',
@@ -134,190 +46,339 @@ class _PTMScreenState extends ConsumerState<PTMScreen> with SingleTickerProvider
           preferredSize: const Size.fromHeight(48),
           child: TabBar(
             controller: _tabController,
-            indicatorColor: const Color(0xFF2350DD),
-            labelColor: const Color(0xFF2350DD),
+            indicatorColor: const Color(0xFF3B6EF8),
+            labelColor: const Color(0xFF3B6EF8),
             unselectedLabelColor: const Color(0xFF64748B),
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            tabs: const [Tab(text: 'Upcoming Sessions'), Tab(text: 'My Bookings')],
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            tabs: const [Tab(text: 'Available Slots'), Tab(text: 'My Bookings')],
           ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // ─── Sessions Tab ─────────────────────────────────────────────
-          ref.watch(ptmSessionsProvider).when(
-            data: (sessions) {
-              if (sessions.isEmpty) {
-                return const Center(
-                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.people_outline, size: 64, color: Color(0xFFDDDDDD)),
-                    SizedBox(height: 16),
-                    Text('No upcoming PTM sessions', style: TextStyle(color: Colors.grey)),
-                  ]),
-                );
-              }
-              return RefreshIndicator(
-                onRefresh: () => ref.refresh(ptmSessionsProvider.future),
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: sessions.length,
-                  itemBuilder: (ctx, i) => _buildSessionCard(sessions[i], brand),
-                ),
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF7B1FA2))),
-            error: (err, _) => Center(child: Text(err.toString())),
-          ),
+      body: Consumer(
+        builder: (context, ref, child) {
+          final activeStudent = ref.watch(activeStudentProvider);
 
-          // ─── My Bookings Tab ──────────────────────────────────────────
-          ref.watch(myPTMBookingsProvider).when(
-            data: (bookings) {
-              if (bookings.isEmpty) {
-                return const Center(
-                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.calendar_today_outlined, size: 64, color: Color(0xFFDDDDDD)),
-                    SizedBox(height: 16),
-                    Text('No bookings yet', style: TextStyle(color: Colors.grey)),
-                  ]),
-                );
-              }
-              return RefreshIndicator(
-                onRefresh: () => ref.refresh(myPTMBookingsProvider.future),
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: bookings.length,
-                  itemBuilder: (ctx, i) => _buildBookingCard(bookings[i]),
-                ),
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => Center(child: Text(err.toString())),
-          ),
-        ],
+          if (activeStudent == null) {
+            return const Center(child: Text('No students found.'));
+          }
+
+          final studentId = activeStudent['id']?.toString();
+          if (studentId == null) {
+            return const Center(child: Text('Student ID not found.'));
+          }
+
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              _buildAvailableSlotsTab(studentId),
+              _buildMyBookingsTab(studentId),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSessionCard(PTMSession session, SchoolBrandState brand) {
-    final dt = DateTime.tryParse(session.date);
-    final isExpanded = _bookingSessionId == session.id;
-    final alreadyBooked = session.myBookings.any((b) => b['status'] == 'CONFIRMED');
+  Widget _buildAvailableSlotsTab(String studentId) {
+    return ref.watch(ptmSlotsProvider(studentId)).when(
+      data: (slots) {
+        if (slots.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.calendar_today_outlined, size: 64, color: Colors.grey.shade300),
+                const SizedBox(height: 16),
+                Text('No available slots', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
+              ],
+            ),
+          );
+        }
 
+        // Group slots by date
+        final slotsByDate = <String, List<PtmSlot>>{};
+        for (var slot in slots) {
+          if (!slotsByDate.containsKey(slot.date)) {
+            slotsByDate[slot.date] = [];
+          }
+          slotsByDate[slot.date]!.add(slot);
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => ref.refresh(ptmSlotsProvider(studentId).future),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
+            children: slotsByDate.entries.map((entry) {
+              final date = entry.key;
+              final dateSlots = entry.value;
+              final dt = DateTime.tryParse(date);
+              final dateStr = dt != null ? DateFormat('EEEE, MMM d, yyyy').format(dt) : date;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  Text(
+                    dateStr,
+                    style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+                  ).animate().fadeIn(delay: 50.ms).slideY(begin: 0.1),
+                  const SizedBox(height: 12),
+                  ...dateSlots.asMap().entries.map((e) {
+                    final idx = e.key;
+                    final slot = e.value;
+                    return _buildSlotCard(slot, studentId, idx).animate().fadeIn(delay: (100 + idx * 50).ms).slideY(begin: 0.1);
+                  }).toList(),
+                ],
+              );
+            }).toList(),
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(err.toString(), textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlotCard(PtmSlot slot, String studentId, int index) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: const Color(0xFF7B1FA2).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: const Icon(Icons.people, color: Color(0xFF7B1FA2), size: 22),
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3B6EF8).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(session.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  if (dt != null) Text(
-                    '${dt.day}/${dt.month}/${dt.year} · ${session.startTime} – ${session.endTime}',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                ])),
-              ]),
-              if (alreadyBooked) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
-                  child: Row(children: [
-                    const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                    const SizedBox(width: 8),
-                    Text('Slot: ${session.myBookings.first['slotTime']} — Confirmed', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 13)),
-                  ]),
+                child: const Icon(Icons.person_outline, color: Color(0xFF3B6EF8), size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      slot.teacherName,
+                      style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+                    ),
+                    Text(
+                      slot.subject,
+                      style: GoogleFonts.dmSans(fontSize: 13, color: const Color(0xFF64748B)),
+                    ),
+                  ],
                 ),
-              ] else ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => setState(() => _bookingSessionId = isExpanded ? null : session.id),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B1FA2), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                    child: Text(isExpanded ? 'Close' : 'Book a Slot'),
-                  ),
-                ),
-              ],
-            ]),
+              ),
+            ],
           ),
-
-          if (isExpanded && !alreadyBooked)
-            Container(
-              decoration: const BoxDecoration(color: Color(0xFFF3E5F5), borderRadius: BorderRadius.vertical(bottom: Radius.circular(20))),
-              padding: const EdgeInsets.all(16),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Select a time slot:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF7B1FA2))),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: session.availableSlots.map((slot) {
-                    final isBooked = session.bookedSlots.contains(slot);
-                    return GestureDetector(
-                      onTap: isBooked || _isBooking ? null : () {
-                        // TODO: Get studentId from dashboard provider
-                        _bookSlot(session.id, 'REPLACE_WITH_STUDENT_ID', slot);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isBooked ? Colors.grey.shade200 : Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: isBooked ? Colors.grey.shade300 : const Color(0xFF7B1FA2), width: 1.5),
-                        ),
-                        child: Text(slot, style: TextStyle(fontWeight: FontWeight.bold, color: isBooked ? Colors.grey : const Color(0xFF7B1FA2), fontSize: 13)),
-                      ),
-                    );
-                  }).toList(),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(Icons.access_time_outlined, size: 16, color: const Color(0xFF94A3B8)),
+              const SizedBox(width: 6),
+              Text(
+                '${slot.startTime} - ${slot.endTime}',
+                style: GoogleFonts.dmSans(fontSize: 13, color: const Color(0xFF64748B)),
+              ),
+              const Spacer(),
+              if (slot.isBooked)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Booked',
+                    style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade600),
+                  ),
+                )
+              else
+                ElevatedButton(
+                  onPressed: () => _bookSlot(slot.id, studentId),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B6EF8),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Book',
+                    style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ]),
-            ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBookingCard(Map<String, dynamic> booking) {
-    final session = booking['session'] as Map<String, dynamic>?;
-    final dt = session != null ? DateTime.tryParse(session['date'] ?? '') : null;
+  Widget _buildMyBookingsTab(String studentId) {
+    return ref.watch(ptmBookingsProvider(studentId)).when(
+      data: (bookings) {
+        if (bookings.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.event_busy_outlined, size: 64, color: Colors.grey.shade300),
+                const SizedBox(height: 16),
+                Text('No bookings yet', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
+              ],
+            ),
+          );
+        }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          width: 48, height: 48,
-          decoration: BoxDecoration(color: const Color(0xFF7B1FA2).withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
-          child: const Center(child: Text('👨‍👩‍👧', style: TextStyle(fontSize: 22))),
-        ),
-        title: Text(session?['title'] ?? 'PTM Session', style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (dt != null) Text('${dt.day}/${dt.month}/${dt.year}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-          Text('Slot: ${booking['slotTime']}', style: const TextStyle(color: Color(0xFF7B1FA2), fontWeight: FontWeight.bold)),
-        ]),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(color: booking['status'] == 'CONFIRMED' ? Colors.green.shade50 : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
-          child: Text(booking['status'] ?? '', style: TextStyle(color: booking['status'] == 'CONFIRMED' ? Colors.green : Colors.grey, fontSize: 11, fontWeight: FontWeight.bold)),
+        return RefreshIndicator(
+          onRefresh: () => ref.refresh(ptmBookingsProvider(studentId).future),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
+            children: bookings.asMap().entries.map((e) {
+              final idx = e.key;
+              final booking = e.value;
+              return _buildBookingCard(booking, idx).animate().fadeIn(delay: (100 + idx * 50).ms).slideY(begin: 0.1);
+            }).toList(),
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(err.toString(), textAlign: TextAlign.center),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildBookingCard(PtmBooking booking, int index) {
+    final statusColor = booking.status == 'CONFIRMED'
+        ? const Color(0xFF00C9A7)
+        : booking.status == 'PENDING'
+            ? const Color(0xFFF5A623)
+            : const Color(0xFFFF6B3D);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              booking.status == 'CONFIRMED' ? Icons.check_circle : Icons.pending_outlined,
+              color: statusColor,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  booking.teacherName,
+                  style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
+                ),
+                Text(
+                  booking.subject,
+                  style: GoogleFonts.dmSans(fontSize: 13, color: const Color(0xFF64748B)),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${booking.date} at ${booking.startTime}',
+                  style: GoogleFonts.dmSans(fontSize: 12, color: const Color(0xFF94A3B8)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              booking.status,
+              style: GoogleFonts.dmSans(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: statusColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _bookSlot(String slotId, String studentId) async {
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.post('parent/ptm/book', data: {
+        'slotId': slotId,
+        'studentId': studentId,
+      });
+
+      if (mounted) {
+        if (response.data['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Slot booked successfully!'),
+              backgroundColor: Color(0xFF00C9A7),
+            ),
+          );
+          ref.refresh(ptmSlotsProvider(studentId));
+          ref.refresh(ptmBookingsProvider(studentId));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response.data['error'] ?? 'Booking failed')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    }
   }
 }

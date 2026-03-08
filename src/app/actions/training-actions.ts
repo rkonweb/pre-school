@@ -42,7 +42,7 @@ export async function getTrainingModulesAction(categoryId?: string, role?: strin
                 }
             }
         });
-        return { success: true, data: modules };
+        return { success: true, data: JSON.parse(JSON.stringify(modules)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -73,7 +73,7 @@ export async function createTrainingModuleAction(title: string, description: str
 
         console.log("[createTrainingModuleAction] Success", module);
         revalidatePath('/admin/training');
-        return { success: true, data: module };
+        return { success: true, data: JSON.parse(JSON.stringify(module)) };
     } catch (error: any) {
         console.error("[createTrainingModuleAction] Error", error);
         return { success: false, error: error.message };
@@ -107,7 +107,7 @@ export async function createTrainingTopicAction(moduleId: string, title: string)
         });
 
         revalidatePath('/admin/training');
-        return { success: true, data: topic };
+        return { success: true, data: JSON.parse(JSON.stringify(topic)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -141,7 +141,7 @@ export async function createTrainingPageAction(topicId: string, title: string) {
         });
 
         revalidatePath('/admin/training');
-        return { success: true, data: page };
+        return { success: true, data: JSON.parse(JSON.stringify(page)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -162,7 +162,7 @@ export async function getTrainingPageAction(id: string) {
                 }
             }
         });
-        return { success: true, data: page };
+        return { success: true, data: JSON.parse(JSON.stringify(page)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -231,7 +231,7 @@ export async function addTrainingAttachmentAction(pageId: string, name: string, 
             }
         });
         revalidatePath('/admin/training');
-        return { success: true, data: attachment };
+        return { success: true, data: JSON.parse(JSON.stringify(attachment)) };
     } catch (error: any) {
         console.error("[DMS] Add Attachment Error:", error);
         return { success: false, error: error.message };
@@ -273,7 +273,7 @@ export async function saveTrainingPageAction(id: string, content: string, title?
         });
 
         revalidatePath('/admin/training');
-        return { success: true, data: page };
+        return { success: true, data: JSON.parse(JSON.stringify(page)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -296,7 +296,7 @@ export async function renameTrainingPageAction(id: string, title: string) {
             data: { title }
         });
         revalidatePath('/admin/training');
-        return { success: true, data: page };
+        return { success: true, data: JSON.parse(JSON.stringify(page)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -309,7 +309,7 @@ export async function renameTrainingTopicAction(id: string, title: string) {
             data: { title }
         });
         revalidatePath('/admin/training');
-        return { success: true, data: topic };
+        return { success: true, data: JSON.parse(JSON.stringify(topic)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
@@ -322,7 +322,7 @@ export async function renameTrainingModuleAction(id: string, title: string) {
             data: { title }
         });
         revalidatePath('/admin/training');
-        return { success: true, data: module };
+        return { success: true, data: JSON.parse(JSON.stringify(module)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

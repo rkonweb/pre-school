@@ -89,7 +89,7 @@ export async function generatePageAction(slug: string, rawText: string, images: 
             cleanText = cleanText.replace(/^```/, "").replace(/```$/, "").trim();
         }
 
-        return { success: true, data: cleanText };
+        return { success: true, data: JSON.parse(JSON.stringify(cleanText)) };
     } catch (error: any) {
         console.error("generatePageAction Error:", error);
         return { success: false, error: error.message };
@@ -163,7 +163,7 @@ export async function generateBlogContentAction(slug: string, rawText: string, i
             cleanText = cleanText.replace(/^```/, "").replace(/```$/, "").trim();
         }
 
-        return { success: true, data: cleanText };
+        return { success: true, data: JSON.parse(JSON.stringify(cleanText)) };
     } catch (error: any) {
         console.error("generateBlogContentAction Error:", error);
         return { success: false, error: error.message };

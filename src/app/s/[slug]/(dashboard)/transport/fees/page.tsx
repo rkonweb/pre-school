@@ -114,7 +114,7 @@ export default function TransportFeesPage() {
                     <h3 className="text-3xl font-black text-white mt-2 relative z-10">
                         {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(totalPending)}
                     </h3>
-                    <div className="mt-4 flex items-center gap-1.5 text-[10px] font-bold text-amber-500 uppercase tracking-widest relative z-10 bg-amber-500/10 w-fit px-3 py-1 rounded-full border border-amber-500/20">
+                    <div className="mt-4 flex items-center gap-1.5 text-[10px] font-bold text-brand uppercase tracking-widest relative z-10 bg-brand/10 w-fit px-3 py-1 rounded-full border border-brand/20">
                         <History className="h-3 w-3" />
                         Awaiting Payment
                     </div>

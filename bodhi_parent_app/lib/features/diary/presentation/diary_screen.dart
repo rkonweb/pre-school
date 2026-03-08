@@ -28,6 +28,8 @@ class _DiaryScreenState extends ConsumerState<DiaryScreen> {
       appBar: AppHeader(
         title: 'Diary',
         subtitle: subtitle,
+        showBackButton: false,
+        showMenuButton: true,
         actions: [
           ElevatedButton(
             onPressed: () {},

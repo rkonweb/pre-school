@@ -11,7 +11,10 @@ import { toast } from "sonner";
 
 // ─── DESIGN TOKENS ─────────────────────────────────────────
 const C = {
-    amber: "#F59E0B", amberD: "#D97706", amberL: "#FEF3C7", amberXL: "#FFFBEB",
+    amber: "var(--brand-color, #F59E0B)", 
+    amberD: "var(--brand-color, #D97706)", 
+    amberL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.12)", 
+    amberXL: "rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)",
     navy: "#1E1B4B", navyM: "#312E81",
     green: "#10B981", greenD: "#059669", greenL: "#D1FAE5", greenXL: "#ECFDF5",
     red: "#EF4444", redD: "#DC2626", redL: "#FEE2E2", redXL: "#FEF2F2",
@@ -33,7 +36,7 @@ function Btn({ variant = "primary", size = "md", icon: Icon, loading, disabled, 
     const [ripples, setRipples] = useState<any[]>([]);
     const ref = useRef<HTMLButtonElement>(null);
     const vs: any = {
-        primary: { bg: `linear-gradient(135deg,${C.amber},${C.orange})`, color: "white", sh: `0 4px 16px ${C.amber}45` },
+        primary: { bg: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", color: "var(--secondary-color, white)", sh: "0 4px 16px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)" },
         navy: { bg: `linear-gradient(135deg,${C.navy},${C.navyM})`, color: "white", sh: `0 4px 14px ${C.navy}40` },
         success: { bg: `linear-gradient(135deg,${C.green},${C.greenD})`, color: "white", sh: `0 4px 14px ${C.green}40` },
         secondary: { bg: "white", color: C.navy, border: `1.5px solid ${C.g200}`, sh: C.sh },
@@ -188,25 +191,25 @@ export function PayrollSettingsManager({ schoolSlug, initialData }: PayrollSetti
             `}</style>
 
             {/* ── PAGE HEADER ── */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 14 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ width: 52, height: 52, borderRadius: 15, background: `linear-gradient(135deg,${C.amber},${C.orange})`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 6px 20px ${C.amber}45`, flexShrink: 0, animation: "fadeUp 0.3s ease" }}>
-                        <CreditCard size={24} color="white" strokeWidth={2} />
+                    <div style={{ width: 52, height: 52, borderRadius: 15, background: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)", flexShrink: 0 }}>
+                        <CreditCard size={24} color="var(--secondary-color, white)" strokeWidth={2} />
                     </div>
-                    <div style={{ animation: "fadeUp 0.35s ease 0.05s both" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                            <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 22, fontWeight: 800, color: C.navy, margin: 0 }}>Payroll Architect</h1>
+                    <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <h1 style={{ fontFamily: "'Sora',sans-serif", fontSize: 22, fontWeight: 800, color: C.navy, margin: 0, lineHeight: 1.2 }}>Payroll Architect</h1>
                             <span style={{ padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: C.blueL, color: C.blue, display: "flex", alignItems: "center", gap: 5 }}>
                                 <span style={{ width: 5, height: 5, borderRadius: "50%", background: C.blue, animation: "pulse 2s ease-in-out infinite" }} />
                                 Engine Online
                             </span>
                         </div>
-                        <p style={{ fontSize: 13.5, color: C.g400, margin: 0, fontWeight: 500 }}>
+                        <p style={{ fontSize: 13.5, color: C.g400, margin: "5px 0 0", fontWeight: 500 }}>
                             Configure incentives, late thresholds, and salary calculation logic.
                         </p>
                     </div>
                 </div>
-                <div style={{ animation: "fadeUp 0.4s ease 0.1s both" }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                     <Btn type="submit" variant="primary" icon={Save} loading={isLoading} size="md">
                         {isLoading ? "Saving..." : "Publish Rules"}
                     </Btn>

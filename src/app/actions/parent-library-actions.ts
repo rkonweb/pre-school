@@ -85,7 +85,7 @@ export async function getParentLibraryAction(studentId: string, phone: string) {
             };
         });
 
-        return { success: true, data: formattedData };
+        return { success: true, data: JSON.parse(JSON.stringify(formattedData)) };
     } catch (error: any) {
         console.error("getParentLibraryAction Error:", error);
         return { success: false, error: "Internal server error" };

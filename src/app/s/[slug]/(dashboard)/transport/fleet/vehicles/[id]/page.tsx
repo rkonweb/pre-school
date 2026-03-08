@@ -162,6 +162,7 @@ export default function EditVehiclePage() {
             {/* Header */}
             <div className="flex items-center gap-4">
                 <button
+                    title="Go back"
                     onClick={() => router.back()}
                     className="p-2 hover:bg-zinc-100 rounded-lg transition-colors"
                 >
@@ -231,6 +232,7 @@ export default function EditVehiclePage() {
                                             <div className="space-y-1.5">
                                                 <label className="text-sm font-medium text-zinc-700">Model / Make</label>
                                                 <input
+                                                    title="Model / Make"
                                                     placeholder="e.g. Tata Marcopolo"
                                                     className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-[var(--brand-color)] focus:border-[var(--brand-color)] outline-none transition-all"
                                                     value={formData.model}
@@ -316,8 +318,9 @@ export default function EditVehiclePage() {
                                             <div className="space-y-1.5">
                                                 <label className="text-sm font-medium text-zinc-700">Certificate Number</label>
                                                 <input
+                                                    title="Certificate Number"
                                                     placeholder="PUC Number"
-                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
                                                     value={formData.pollutionNumber}
                                                     onChange={(e) => setFormData({ ...formData, pollutionNumber: e.target.value })}
                                                 />
@@ -326,7 +329,7 @@ export default function EditVehiclePage() {
                                                 <label className="text-sm font-medium text-zinc-700">Expiry Date</label>
                                                 <input
                                                     type="date"
-                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
+                                                    className="w-full h-10 px-3 rounded-md border border-zinc-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"
                                                     value={formData.pollutionExpiry}
                                                     onChange={(e) => setFormData({ ...formData, pollutionExpiry: e.target.value })}
                                                 />

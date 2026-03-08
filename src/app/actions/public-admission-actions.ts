@@ -192,7 +192,7 @@ export async function getPublicApplicationStatusAction(slug: string, phone: stri
             }
         });
 
-        return { success: true, admissions: existingAdmissions };
+        return { success: true, admissions: JSON.parse(JSON.stringify(existingAdmissions)) };
     } catch (error: any) {
         return { success: false, error: error.message };
     }

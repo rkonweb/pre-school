@@ -60,8 +60,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         // Timeout or error — proceed with cached brand colors
       }
 
-      // 5. Initialize RBAC
-      ref.read(rbacProvider.notifier).initializeWith('TEACHER', [
+      // 5. Initialize RBAC from fetched brandData if available, otherwise use defaults
+      final String role = brandData?['user']?['role'] ?? 'STAFF';
+      final List<dynamic>? backendPermissions = brandData?['user']?['permissions'];
+      
+      final List<String> permissions = backendPermissions?.map((e) => e.toString()).toList() ?? [
         'dashboard.view',
         'tasks.view',
         'communication.view',
@@ -75,7 +78,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         'development.view',
         'health.view',
         'chat.view',
-      ]);
+      ];
+
+      ref.read(rbacProvider.notifier).initializeWith(role, permissions);
 
       // Navigate to Home/Dashboard
       if (mounted) context.go('/home');

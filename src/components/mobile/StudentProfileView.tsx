@@ -139,7 +139,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                     <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 relative overflow-hidden">
                             {teacher?.avatar ? (
-                                <img src={teacher.avatar} className="w-full h-full object-cover" />
+                                <img src={teacher.avatar} alt={teacher.name} className="w-full h-full object-cover" />
                             ) : (
                                 <User className="w-6 h-6" />
                             )}

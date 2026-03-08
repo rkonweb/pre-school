@@ -225,7 +225,7 @@ export async function getStaffTimetableAction(schoolSlug: string, authenticatedU
             });
         });
 
-        return { success: true, data: result };
+        return { success: true, data: JSON.parse(JSON.stringify(result)) };
 
     } catch (error: any) {
         console.error("getStaffTimetableAction Error:", error);

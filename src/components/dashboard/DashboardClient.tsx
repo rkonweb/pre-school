@@ -204,10 +204,12 @@ export function DashboardClient() {
     if (isLoading) {
         return (
             <div className="flex h-[60vh] flex-col items-center justify-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-[0_6px_20px_rgba(245,158,11,0.35)]">
+                <div 
+                    className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-[0_6px_20px_rgba(var(--brand-color-rgb,245,158,11),0.35)] bg-brand-gradient"
+                >
                     <LayoutGrid className="h-5 w-5 text-white" />
                 </div>
-                <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-gray-100 border-t-amber-500" />
+                <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-gray-100 border-t-brand" style={{ borderTopColor: 'var(--brand-color)' }} />
                 <span className="font-sans text-[13px] font-semibold text-gray-400">Loading dashboard...</span>
             </div>
         );
@@ -253,7 +255,7 @@ export function DashboardClient() {
                             {staffId ? "Personnel Console" : (
                                 <>
                                     School{" "}
-                                    <span className="bg-gradient-to-br from-amber-500 to-amber-600 bg-clip-text text-transparent">
+                                    <span className="bg-brand-gradient bg-clip-text text-transparent">
                                         Intelligence
                                     </span>
                                 </>
@@ -273,7 +275,7 @@ export function DashboardClient() {
                             className={cn(
                                 "flex items-center gap-2 rounded-xl px-4 py-2.5 text-[12px] font-bold tracking-[0.06em] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
                                 isConfiguring
-                                    ? "bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-[0_4px_16px_rgba(245,158,11,0.35)]"
+                                    ? "bg-brand-gradient text-[var(--secondary-color)] shadow-[0_4px_16px_rgba(var(--brand-color-rgb,245,158,11),0.35)]"
                                     : "border-[1.5px] border-gray-200 bg-white text-gray-600 shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:border-gray-300"
                             )}
                         >
@@ -318,7 +320,7 @@ export function DashboardClient() {
                                         <div
                                             className={cn(
                                                 "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
-                                                w.enabled ? "border-amber-500 bg-amber-500" : "border-gray-300 bg-transparent"
+                                                w.enabled ? "border-brand bg-brand" : "border-gray-300 bg-transparent"
                                             )}
                                         >
                                             {w.enabled && <Check className="h-[9px] w-[9px] text-white" />}
@@ -449,7 +451,7 @@ function renderWidgetContent(id: string, data: any, analytics: any) {
                                     <div className="font-sora text-[22px] font-extrabold text-[#1E1B4B]">{stats.routesCount || 0} Routes</div>
                                 </div>
                                 <div className="flex h-[42px] w-[42px] items-center justify-center rounded-xl border border-gray-100 bg-white">
-                                    <div className="h-3 w-3 animate-pulse rounded-full bg-emerald-500" />
+                                    <div className="h-3 w-3 animate-pulse rounded-full bg-brand-gradient" />
                                 </div>
                             </div>
                             <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-5 py-[18px]">
@@ -480,7 +482,7 @@ function renderWidgetContent(id: string, data: any, analytics: any) {
                                     data.delayedVehicles.map((v: any, i: number) => (
                                         <div key={i} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="h-2 w-2 rounded-full bg-amber-500" />
+                                                <div className="h-2 w-2 rounded-full bg-brand-gradient" />
                                                 <span className="font-mono text-[12.5px] font-bold text-gray-700">{v.TransportVehicle.registrationNumber}</span>
                                             </div>
                                             <span className="text-[11px] font-bold text-gray-400">Delayed · {v.delayMinutes}m</span>
@@ -506,7 +508,7 @@ function renderWidgetContent(id: string, data: any, analytics: any) {
                             <h3 className="text-xl font-black">Academic Achievement Cluster</h3>
                         </div>
                         <div className="flex gap-2">
-                            <button className="px-5 py-2 rounded-xl bg-brand text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-brand/20 active:scale-95">Detailed Exams</button>
+                            <button className="px-5 py-2 rounded-xl bg-brand text-[var(--secondary-color)] text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-brand/20 active:scale-95">Detailed Exams</button>
                         </div>
                     </div>
 
@@ -542,7 +544,7 @@ function renderWidgetContent(id: string, data: any, analytics: any) {
                     <div className="flex flex-col gap-4">
                         {(data?.recentActivity || []).map((activity: any) => (
                             <div key={activity.id} className="flex items-start gap-3.5">
-                                <div className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500 shadow-[0_0_0_4px_rgba(245,158,11,0.12)]" />
+                                <div className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-brand-gradient shadow-[0_0_0_4px_rgba(var(--brand-color-rgb),0.12)]" />
                                 <div className="flex-1">
                                     <div className="text-[13.5px] font-bold text-gray-800">{activity.name}</div>
                                     <div className="mt-1 text-[11.5px] uppercase tracking-[0.6px] text-gray-400">{activity.type} · {activity.time}</div>
