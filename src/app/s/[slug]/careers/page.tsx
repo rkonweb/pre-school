@@ -6,6 +6,7 @@ import { Briefcase, MapPin, Building2, Clock, CheckCircle2, ChevronRight, X, Spa
 import { getJobPostingsAction, submitApplicationAction } from "@/app/actions/hr-public-actions";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 
 export default function CareersPage() {
     const params = useParams();
@@ -15,6 +16,7 @@ export default function CareersPage() {
     const [jobs, setJobs] = useState<any[]>([]);
     const [selectedJob, setSelectedJob] = useState<any | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [phone, setPhone] = useState("");
 
     useEffect(() => {
         loadJobs();
@@ -270,7 +272,8 @@ export default function CareersPage() {
                                     </div>
                                     <div className="space-y-3">
                                         <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Phone Number *</label>
-                                        <input type="tel" name="phone" required className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold shadow-inner outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all" />
+                                        <PhoneInput value={phone} onChange={setPhone} />
+                                        <input type="hidden" name="phone" value={phone} required />
                                     </div>
                                 </div>
 

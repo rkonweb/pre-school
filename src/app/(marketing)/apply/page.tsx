@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import {
     ArrowRight,
     CheckCircle,
@@ -16,6 +17,7 @@ export default function PublicAdmissionPage() {
     const [step, setStep] = useState(1);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [phone, setPhone] = useState("");
 
     useEffect(() => {
         setIsMounted(true);
@@ -115,9 +117,8 @@ export default function PublicAdmissionPage() {
                                     <div className="grid grid-cols-2 gap-8">
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1">Phone Number</label>
-                                            {isMounted && (
-                                                <input type="tel" required data-lpignore="true" placeholder="+1 (555) 000-0000" className="w-full rounded-2xl border-teal/5 bg-slate-50 px-6 py-4 text-navy font-bold focus:ring-4 focus:ring-teal/10 shadow-inner outline-none transition-all placeholder:text-navy/20" />
-                                            )}
+                                            <PhoneInput value={phone} onChange={setPhone} />
+                                            <input type="hidden" name="phone" value={phone} required />
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1">Email Address</label>

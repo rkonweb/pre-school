@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     Card,
@@ -178,11 +179,11 @@ export default function ApplicationFormPage({ params }: { params: { slug: string
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Mobile Number</label>
-                                            <Input
+                                            <PhoneInput
+                                                label="Mobile Number"
                                                 value={formData.primaryParentPhone}
                                                 readOnly
-                                                className="bg-slate-100 dark:bg-slate-800 text-slate-500"
+                                                className="bg-slate-100 dark:bg-slate-800"
                                             />
                                             <p className="text-[10px] text-muted-foreground mt-1">Verified via OTP</p>
                                         </div>

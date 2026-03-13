@@ -9,6 +9,7 @@ import { logAuditEvent, AuditEventType } from "@/lib/audit-logger";
 
 import { validateBranchAccess } from "@/lib/branch-utils";
 import { validatePhoneUniqueness, validateEmailUniqueness } from "./identity-validation";
+import { normalizeMobile, normalizeEmail } from "@/lib/mobile-utils";
 
 function maskStaffPII(staff: any, isAuthorized: boolean) {
     if (!staff) return staff;
@@ -117,7 +118,8 @@ export async function createStaffAction(schoolSlug: string, formData: FormData) 
         const firstName = formData.get("firstName") as string;
         const lastName = formData.get("lastName") as string;
         const email = formData.get("email") as string;
-        const mobile = formData.get("mobile") as string;
+        const mobileRaw = formData.get("mobile") as string;
+        const mobile = mobileRaw ? normalizeMobile(mobileRaw) : mobileRaw;
         const designation = formData.get("designation") as string;
         const department = formData.get("department") as string;
         const joiningDate = formData.get("joiningDate") as string;
@@ -404,7 +406,8 @@ export async function updateStaffAction(schoolSlug: string, id: string, formData
         const firstName = formData.get("firstName") as string;
         const lastName = formData.get("lastName") as string;
         const email = formData.get("email") as string;
-        const mobile = formData.get("mobile") as string;
+        const mobileRaw = formData.get("mobile") as string;
+        const mobile = mobileRaw ? normalizeMobile(mobileRaw) : mobileRaw;
         const designation = formData.get("designation") as string;
         const department = formData.get("department") as string;
         const joiningDate = formData.get("joiningDate") as string;
@@ -751,29 +754,34 @@ export async function updateStaffClassAccessBulkAction(schoolSlug: string, userI
             await tx.classAccess.deleteMany({
                 where: {
                     userId,
-                    user: { schoolId },
                     classroomId: { notIn: activeClassIds }
                 }
             });
 
-            // 2. Ensure active list exists
+            // 2. Upsert each active class access (avoids stale transaction from findFirst+create)
             for (const classId of activeClassIds) {
-                const existing = await tx.classAccess.findFirst({
-                    where: { userId, classroomId: classId, user: { schoolId } }
-                });
-
-                if (!existing) {
-                    await tx.classAccess.create({
-                        data: {
+                await tx.classAccess.upsert({
+                    where: {
+                        userId_classroomId: {
                             userId,
-                            classroomId: classId,
-                            canRead: true,
-                            canWrite: true,
-                            canEdit: true,
-                            canDelete: true
+                            classroomId: classId
                         }
-                    });
-                }
+                    },
+                    update: {
+                        canRead: true,
+                        canWrite: true,
+                        canEdit: true,
+                        canDelete: true
+                    },
+                    create: {
+                        userId,
+                        classroomId: classId,
+                        canRead: true,
+                        canWrite: true,
+                        canEdit: true,
+                        canDelete: true
+                    }
+                });
             }
         });
 

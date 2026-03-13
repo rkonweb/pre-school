@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner";
 import { useConfirm } from "@/contexts/ConfirmContext";
 import { SettingsLoader } from "@/components/dashboard/settings/SettingsPageHeader";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 
 // ─── DESIGN TOKENS ─────────────────────────────────────────
 const C = {
@@ -149,8 +150,8 @@ function AdminForm({ title, sub, formData, setFormData, onSubmit, onClose, isSub
                             onChange={(e: any) => setFormData({ ...formData, lastName: e.target.value })} />
                     </div>
                     {showMobile && (
-                        <FInput label="Mobile" type="tel" placeholder="10-digit number" value={formData.mobile} required icon={Phone}
-                            onChange={(e: any) => setFormData({ ...formData, mobile: e.target.value })} />
+                        <PhoneInput label="Mobile Number" value={formData.mobile} required
+                            onChange={(val: string) => setFormData({ ...formData, mobile: val })} />
                     )}
                     <FInput label="Email" type="email" placeholder="admin@school.edu" value={formData.email} icon={Mail}
                         onChange={(e: any) => setFormData({ ...formData, email: e.target.value })} />

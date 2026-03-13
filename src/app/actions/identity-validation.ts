@@ -1,6 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { mobileVariants, normalizeEmail } from "@/lib/mobile-utils";
+
+
+// ─── Phone Check ──────────────────────────────────────────────────────────────
 
 /**
  * Check if a phone number exists anywhere in the system.
@@ -15,19 +19,19 @@ export async function checkPhoneExistsAction(
         return { exists: false };
     }
 
-    const normalizedPhone = phone.replace(/\D/g, ''); // Remove non-digits
+    const variants = mobileVariants(phone);
 
-    // Check in User table (mobile field)
+    // Check in User table (mobile field) — search all format variants
     const userExists = await prisma.user.findFirst({
         where: {
-            mobile: normalizedPhone,
+            mobile: { in: variants },
             ...(excludeUserId ? { NOT: { id: excludeUserId } } : {})
         }
     });
     if (userExists) {
         return {
             exists: true,
-            location: `Staff/Admin: ${userExists.firstName || ''} ${userExists.lastName || ''}`.trim(),
+            location: `Staff/Admin: ${userExists.firstName || ''} ${userExists.lastName || ''}`.trim() || 'Unknown user',
             type: 'user',
             entityId: userExists.id
         };
@@ -36,22 +40,22 @@ export async function checkPhoneExistsAction(
     // Check in School table
     const schoolExists = await prisma.school.findFirst({
         where: {
-            phone: normalizedPhone,
+            phone: { in: variants },
             ...(excludeSchoolId ? { NOT: { id: excludeSchoolId } } : {})
         }
     });
     if (schoolExists) {
-        return { exists: true, location: `School Contact: ${schoolExists.name}`, type: 'school', entityId: schoolExists.id };
+        return { exists: true, location: `School: ${schoolExists.name}`, type: 'school', entityId: schoolExists.id };
     }
 
     // Check in Admission table (parent phones)
     const admissionExists = await prisma.admission.findFirst({
         where: {
             OR: [
-                { parentPhone: normalizedPhone },
-                { secondaryPhone: normalizedPhone },
-                { fatherPhone: normalizedPhone },
-                { motherPhone: normalizedPhone }
+                { parentPhone: { in: variants } },
+                { secondaryPhone: { in: variants } },
+                { fatherPhone: { in: variants } },
+                { motherPhone: { in: variants } },
             ]
         }
     });
@@ -68,8 +72,8 @@ export async function checkPhoneExistsAction(
     const studentExists = await prisma.student.findFirst({
         where: {
             OR: [
-                { parentMobile: normalizedPhone },
-                { emergencyContactPhone: normalizedPhone }
+                { parentMobile: { in: variants } },
+                { emergencyContactPhone: { in: variants } },
             ]
         }
     });
@@ -79,7 +83,7 @@ export async function checkPhoneExistsAction(
 
     // Check in TransportDriver table
     const driverExists = await prisma.transportDriver.findFirst({
-        where: { phone: normalizedPhone }
+        where: { phone: { in: variants } }
     });
     if (driverExists) {
         return { exists: true, location: `Transport Driver: ${driverExists.name}`, type: 'driver', entityId: driverExists.id };
@@ -87,7 +91,7 @@ export async function checkPhoneExistsAction(
 
     // Check in JobApplication table
     const jobAppExists = await prisma.jobApplication.findFirst({
-        where: { phone: normalizedPhone }
+        where: { phone: { in: variants } }
     });
     if (jobAppExists) {
         return { exists: true, location: `Job Application: ${jobAppExists.firstName}`, type: 'job_application', entityId: jobAppExists.id };
@@ -95,6 +99,8 @@ export async function checkPhoneExistsAction(
 
     return { exists: false };
 }
+
+// ─── Email Check ──────────────────────────────────────────────────────────────
 
 /**
  * Check if an email address exists anywhere in the system.
@@ -108,7 +114,7 @@ export async function checkEmailExistsAction(
         return { exists: false };
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
 
     // Check in User table
     const userExists = await prisma.user.findFirst({
@@ -118,7 +124,7 @@ export async function checkEmailExistsAction(
         }
     });
     if (userExists) {
-        return { exists: true, location: `Staff/Admin: ${userExists.firstName || ''} ${userExists.lastName || ''}`.trim() };
+        return { exists: true, location: `Staff/Admin: ${userExists.firstName || ''} ${userExists.lastName || ''}`.trim() || 'Unknown user' };
     }
 
     // Check in School table
@@ -129,7 +135,7 @@ export async function checkEmailExistsAction(
         }
     });
     if (schoolExists) {
-        return { exists: true, location: `School Contact: ${schoolExists.name}` };
+        return { exists: true, location: `School: ${schoolExists.name}` };
     }
 
     // Check in Admission table
@@ -165,8 +171,10 @@ export async function checkEmailExistsAction(
     return { exists: false };
 }
 
+// ─── Convenience Validators ───────────────────────────────────────────────────
+
 /**
- * Validate phone uniqueness
+ * Validate phone uniqueness — returns { isValid, error }
  */
 export async function validatePhoneUniqueness(
     phone: string,
@@ -177,7 +185,7 @@ export async function validatePhoneUniqueness(
     if (result.exists) {
         return {
             isValid: false,
-            error: `Phone number ${phone} is already in use by: ${result.location}`,
+            error: `Mobile number is already registered: ${result.location}`,
             type: result.type,
             entityId: result.entityId,
             location: result.location
@@ -187,7 +195,7 @@ export async function validatePhoneUniqueness(
 }
 
 /**
- * Validate email uniqueness
+ * Validate email uniqueness — returns { isValid, error }
  */
 export async function validateEmailUniqueness(
     email: string,
@@ -198,7 +206,7 @@ export async function validateEmailUniqueness(
     if (result.exists) {
         return {
             isValid: false,
-            error: `Email address ${email} is already in use by: ${result.location}`
+            error: `Email address is already registered: ${result.location}`
         };
     }
     return { isValid: true };

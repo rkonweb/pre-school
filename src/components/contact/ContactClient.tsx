@@ -18,6 +18,7 @@ import {
     ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 
 export function ContactClient() {
     const [formData, setFormData] = useState({
@@ -90,8 +91,6 @@ export function ContactClient() {
 
         if (!formData.mobile.trim()) {
             newErrors.mobile = "Mobile number is required";
-        } else if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
-            newErrors.mobile = "Please enter a valid 10-digit mobile number";
         }
 
         if (!formData.interestedIn) {
@@ -231,22 +230,11 @@ export function ContactClient() {
                                         <label htmlFor="mobile" className="block text-sm font-semibold text-slate-700 mb-2">
                                             Mobile Number <span className="text-red-500">*</span>
                                         </label>
-                                        <div className="flex gap-2">
-                                            <div className="w-20 px-4 py-3.5 rounded-xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center font-semibold text-slate-700">
-                                                +91
-                                            </div>
-                                            <input
-                                                type="tel"
-                                                id="mobile"
-                                                name="mobile"
-                                                value={formData.mobile}
-                                                onChange={handleInputChange}
-                                                maxLength={10}
-                                                className={`flex-1 px-4 py-3.5 rounded-xl border-2 ${errors.mobile ? "border-red-300 bg-red-50" : "border-slate-200 bg-white"
-                                                    } focus:border-teal-400 focus:ring-4 focus:ring-teal-100 outline-none transition-all text-slate-900`}
-                                                placeholder="9876543210"
-                                            />
-                                        </div>
+                                        <PhoneInput value={formData.mobile}
+                                            onChange={(val: string) => {
+                                                setFormData(prev => ({ ...prev, mobile: val }));
+                                                if (errors.mobile) setErrors((prev: any) => ({ ...prev, mobile: "" }));
+                                            }} />
                                         {errors.mobile && (
                                             <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
                                                 <span className="font-medium">{errors.mobile}</span>

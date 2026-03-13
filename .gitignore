@@ -46,3 +46,9 @@ next-env.d.ts
 *.sqlite
 *.sqlite3
 page.html
+
+# logs
+*.log
+staff_app_diagnostic.log
+staff_app_web_new.log
+parent_app_web_new.log

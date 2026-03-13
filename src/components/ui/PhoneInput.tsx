@@ -193,50 +193,51 @@ function parsePhone(value: string | null | undefined): { code: string; number: s
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-interface PhoneInputProps {
-    label: string;
+export interface PhoneInputProps {
+    label?: string;
     /** Combined value e.g. "+91 9876543210". onChange returns the same format. */
-    value: string | null | undefined;
-    onChange: (combined: string) => void;
+    value: string;
+    onChange?: (combined: string) => void;
     readOnly?: boolean;
+    disabled?: boolean;
     error?: string | null;
     className?: string;
 }
 
-export function PhoneInput({ label, value, onChange, readOnly = false, error, className }: PhoneInputProps) {
-    const parsed = parsePhone(value);
-    const [code, setCode] = useState(parsed.code);
-    const [number, setNumber] = useState(parsed.number);
+export function PhoneInput({ label, value, onChange, readOnly = false, disabled = false, error, className }: PhoneInputProps) {
+    // Separate value into country code and number
+    const [countryCode, phoneNumber] = value.includes(" ")
+        ? value.split(" ")
+        : ["+91", value.replace(/\D/g, "")];
 
-    // Sync external value → internal state (e.g. when form resets)
-    useEffect(() => {
-        const p = parsePhone(value);
-        setCode(p.code);
-        setNumber(p.number);
-    }, [value]);
-
-    const handleCodeChange = (newCode: string) => {
-        setCode(newCode);
-        onChange(number ? `${newCode} ${number}` : "");
+    const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        if (!readOnly && !disabled && onChange) {
+            onChange(`${e.target.value} ${phoneNumber}`);
+        }
     };
 
-    const handleNumberChange = (raw: string) => {
-        // Strip non-digits, cap at 10
-        const digits = raw.replace(/\D/g, "").slice(0, 10);
-        setNumber(digits);
-        onChange(digits ? `${code} ${digits}` : "");
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!readOnly && !disabled && onChange) {
+            const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+            onChange(`${countryCode} ${digits}`);
+        }
     };
 
-    const countryEntry = COUNTRY_CODES.find(c => c.code === code) ?? COUNTRY_CODES[0];
-    const hasValue = !!number;
+    const countryEntry = COUNTRY_CODES.find(c => c.code === countryCode) ?? COUNTRY_CODES[0];
+    const hasValue = !!phoneNumber;
 
     if (readOnly) {
         return (
             <div className={cn("space-y-2", className)}>
-                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">{label}</label>
+                {label && <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1">{label}</label>}
                 {hasValue ? (
-                    <div className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-zinc-500 opacity-75">
-                        {countryEntry.flag} {code} {number}
+                    <div className="flex gap-3">
+                        <div className="bg-zinc-50 border-0 rounded-2xl py-4 px-4 font-bold text-zinc-500 opacity-75 min-w-[100px] text-center">
+                            {countryEntry.flag} {countryCode}
+                        </div>
+                        <div className="flex-1 bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold text-zinc-500 opacity-75 tracking-widest">
+                            {phoneNumber}
+                        </div>
                     </div>
                 ) : (
                     <div className="w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 text-zinc-300 text-lg font-light select-none">
@@ -249,43 +250,62 @@ export function PhoneInput({ label, value, onChange, readOnly = false, error, cl
 
     return (
         <div className={cn("space-y-2", className)}>
-            <label className={cn("text-[10px] font-black uppercase tracking-widest px-1", error ? "text-red-500" : "text-zinc-400")}>
-                {label}{error ? " *" : ""}
-            </label>
-            <div className={cn(
-                "flex items-center gap-0 rounded-2xl border-2 bg-white overflow-hidden transition-all focus-within:ring-2",
-                error ? "border-red-400 ring-2 ring-red-100 focus-within:ring-red-200" : "border-zinc-100 focus-within:ring-zinc-200"
-            )}>
-                {/* Country code selector */}
-                <select
-                    value={code}
-                    onChange={e => handleCodeChange(e.target.value)}
-                    title="Country code"
-                    className="bg-zinc-50 border-r-2 border-zinc-100 rounded-l-2xl py-4 pl-4 pr-2 font-bold text-zinc-700 text-sm focus:outline-none cursor-pointer min-w-[90px]"
-                >
-                    {COUNTRY_CODES.map(c => (
-                        <option key={`${c.code}-${c.name}`} value={c.code}>
-                            {c.flag} {c.code}
-                        </option>
-                    ))}
-                </select>
-                {/* 10-digit number */}
-                <input
-                    type="tel"
-                    inputMode="numeric"
-                    placeholder="10-digit number"
-                    value={number}
-                    onChange={e => handleNumberChange(e.target.value)}
-                    maxLength={10}
-                    className="flex-1 bg-white py-4 px-4 font-bold text-zinc-900 text-sm focus:outline-none placeholder:text-zinc-300 placeholder:font-normal"
-                />
-                {/* Digit counter */}
-                <span className={cn(
-                    "pr-4 text-[10px] font-black tabular-nums",
-                    number.length === 10 ? "text-emerald-500" : "text-zinc-300"
+            {label && (
+                <label className={cn("text-[10px] font-black uppercase tracking-widest px-1", error ? "text-red-500" : "text-zinc-400")}>
+                    {label}{error ? " *" : ""}
+                </label>
+            )}
+            <div className="flex gap-3">
+                {/* Country code selector - Separate Field */}
+                <div className={cn(
+                    "relative rounded-2xl border-2 bg-white transition-all focus-within:ring-2 min-w-[110px]",
+                    error ? "border-red-400 ring-2 ring-red-100" : "border-zinc-100 focus-within:ring-zinc-200",
+                    (disabled) && "opacity-50 cursor-not-allowed bg-zinc-50"
                 )}>
-                    {number.length}/10
-                </span>
+                    <select
+                        value={countryCode}
+                        onChange={handleCountryChange}
+                        disabled={disabled}
+                        title="Country code"
+                        className="w-full bg-transparent py-4 pl-4 pr-8 font-bold text-zinc-700 text-sm focus:outline-none cursor-pointer appearance-none disabled:cursor-not-allowed"
+                    >
+                        {COUNTRY_CODES.map(c => (
+                            <option key={`${c.code}-${c.name}`} value={c.code}>
+                                {c.flag} {c.code}
+                            </option>
+                        ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M1 1L5 5L9 1" />
+                        </svg>
+                    </div>
+                </div>
+
+                {/* 10-digit number - Separate Field */}
+                <div className={cn(
+                    "flex-1 flex items-center rounded-2xl border-2 bg-white overflow-hidden transition-all focus-within:ring-2",
+                    error ? "border-red-400 ring-2 ring-red-100 focus-within:ring-red-200" : "border-zinc-100 focus-within:ring-zinc-200",
+                    (disabled) && "opacity-50 cursor-not-allowed bg-zinc-50"
+                )}>
+                    <input
+                        type="tel"
+                        inputMode="numeric"
+                        placeholder="10-digit number"
+                        value={phoneNumber}
+                        onChange={handlePhoneChange}
+                        disabled={disabled}
+                        maxLength={10}
+                        className="flex-1 bg-white py-4 px-4 font-bold text-zinc-900 text-sm focus:outline-none placeholder:text-zinc-300 placeholder:font-normal disabled:cursor-not-allowed"
+                    />
+                    {/* Digit counter */}
+                    <span className={cn(
+                        "pr-4 text-[10px] font-black tabular-nums",
+                        phoneNumber.length === 10 ? "text-emerald-500" : "text-zinc-300"
+                    )}>
+                        {phoneNumber.length}/10
+                    </span>
+                </div>
             </div>
             {error && <p className="text-[10px] font-bold text-red-500 px-1">{error}</p>}
         </div>

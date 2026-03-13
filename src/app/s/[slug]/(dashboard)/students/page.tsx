@@ -391,14 +391,14 @@ export default function StudentsPage() {
                     <>
                         <div className="overflow-x-auto min-h-[300px]">
                             <table className="w-full border-collapse">
-                                <thead>
+                                <thead style={tableStyles.thead}>
                                     <tr>
-                                        <th className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold tracking-wider uppercase sticky left-0 z-10">Action</th>
+                                        <th className="px-6 py-4 border-b border-white/10 text-left text-[11px] font-bold tracking-wider uppercase sticky left-0 z-20 bg-[var(--brand-color)] text-[var(--secondary-color)] shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)] after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:bg-white/10">Action</th>
                                         {columns.map(col => {
                                             if (!visibleColumns[col.id]) return null;
 
                                             return (
-                                                <th key={col.id} className="px-6 py-4 border-b border-gray-200 text-left text-[11px] font-bold tracking-wider uppercase" onClick={() => handleSort(col.id)}>
+                                                <th key={col.id} className="px-6 py-4 border-b border-white/10 text-left text-[11px] font-bold tracking-wider uppercase text-[var(--secondary-color)]" onClick={() => handleSort(col.id)}>
                                                     <div className="flex items-center gap-1 cursor-pointer select-none">{col.label} {renderSortIcon(col.id)}</div>
                                                 </th>
                                             );
@@ -410,10 +410,10 @@ export default function StudentsPage() {
                                         students.map((student, i) => (
                                             <tr
                                                 key={student.id}
-                                                className={cn("transition-all hover:translate-x-[3px]", i % 2 === 0 ? "bg-white" : "bg-gray-50/50")}
+                                                className={cn("transition-all hover:translate-x-[3px]", i % 2 === 0 ? "bg-white" : "bg-gray-50")}
                                                 style={{ ['--hover-bg' as any]: 'rgba(var(--brand-color-rgb, 245, 158, 11), 0.05)' }}
                                             >
-                                                <td className="px-6 py-4 border-b border-gray-100 bg-inherit text-left align-middle sticky left-0 z-10">
+                                                <td className="px-6 py-4 border-b border-gray-100 bg-inherit text-left align-middle sticky left-0 z-10 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)] after:content-[''] after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:bg-gray-100">
                                                     <div className="flex items-center gap-2 relative z-20">
                                                         <RowActions
                                                             onEdit={canEdit ? () => router.push(`/s/${slug}/students/${student.id}`) : undefined}

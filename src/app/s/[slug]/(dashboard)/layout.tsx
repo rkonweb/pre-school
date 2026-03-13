@@ -7,6 +7,7 @@ import { getCurrentUserAction } from "@/app/actions/session-actions";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { ConfirmProvider } from "@/contexts/ConfirmContext";
 import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
+import { ClassTeacherProvider } from "@/contexts/ClassTeacherContext";
 import { DashboardLayoutWrapper } from "@/components/dashboard/DashboardLayoutWrapper";
 import { GlobalAuraWrapper } from "@/components/dashboard/GlobalAuraWrapper";
 import { SessionTimeoutListener } from "@/components/dashboard/session/SessionTimeoutListener";
@@ -171,6 +172,7 @@ export default async function DashboardLayout({
                             })()}
                         />
 
+                        <ClassTeacherProvider schoolSlug={slug}>
                         <DashboardLayoutWrapper>
                             <Header
                                 schoolName={school.name}
@@ -187,6 +189,7 @@ export default async function DashboardLayout({
                             {/* STRICT SESSION TIMEOUT: 15 Minutes Idle */}
                             <SessionTimeoutListener timeoutMinutes={15} />
                         </DashboardLayoutWrapper>
+                        </ClassTeacherProvider>
                     </div>
                 </ConfirmProvider>
             </SidebarProvider>

@@ -41,6 +41,7 @@ import {
 import { cn } from "@/lib/utils";
 import { PLAN_FEATURES, ADDONS, calculateMRR, PLAN_PRICES } from "@/config/subscription";
 import { toast } from "sonner";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 
 const CURRENCY_SYMBOLS: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", INR: "₹" };
 const EXCHANGE_RATES: Record<string, number> = { INR: 1, USD: 0.012, EUR: 0.011, GBP: 0.0095 };
@@ -611,13 +612,8 @@ export default function EditTenantPage() {
                                     </div>
                                 </InputField>
                                 <InputField label="School Phone">
-                                    <div className="relative">
-                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                        <input type="tel" value={formData.contactPhone} maxLength={15}
-                                            autoComplete="off"
-                                            onChange={e => { const val = e.target.value.replace(/[^+\d]/g, ""); setFormData({ ...formData, contactPhone: val }); }}
-                                            placeholder="+91 98765 43210" className={iconInputClass} />
-                                    </div>
+                                    <PhoneInput value={formData.contactPhone}
+                                        onChange={(val: string) => setFormData({ ...formData, contactPhone: val })} />
                                 </InputField>
                             </div>
                         </div>
@@ -641,11 +637,7 @@ export default function EditTenantPage() {
                                     placeholder="e.g. Principal, Director" className={inputClass()} />
                             </InputField>
                             <InputField label="Login Phone Number (Read-Only)">
-                                <div className="relative">
-                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                    <input type="tel" id="adminPhone" title="Admin Phone" value={formData.adminPhone} readOnly
-                                        className="w-full rounded-xl border border-zinc-200 bg-zinc-100 py-3 pl-10 pr-3 text-sm font-mono font-bold text-zinc-500 cursor-not-allowed outline-none" />
-                                </div>
+                                <PhoneInput value={formData.adminPhone} readOnly />
                                 <p className="text-[10px] text-amber-600 font-medium mt-1">⚠️ This is the globally unique signup phone. Contact support to change.</p>
                             </InputField>
                             <InputField label="Admin Email (Globally Unique)">
@@ -749,8 +741,9 @@ export default function EditTenantPage() {
                     <SectionCard id="modules" title="Institutional Modules" subtitle="Enable or disable feature modules for this school" icon={Settings}>
                         {(() => {
                             const ALL_MODULES = [
+                                { id: "dashboard", label: "Dashboard", desc: "Main overview & KPIs" },
                                 {
-                                    id: "admissions", label: "Admissions", desc: "Lead tracking & enrollment", sub: [
+                                    id: "admissions", label: "Admissions CRM", desc: "Lead tracking & enrollment pipeline", sub: [
                                         { id: "admissions.applications", label: "Applications" },
                                         { id: "admissions.interviews", label: "Interviews & Tests" }
                                     ]
@@ -759,7 +752,8 @@ export default function EditTenantPage() {
                                     id: "students", label: "Students", desc: "Student profiles & records", sub: [
                                         { id: "students.profiles", label: "Identity & Profiles" },
                                         { id: "students.attendance", label: "Daily Attendance" },
-                                        { id: "students.performance", label: "Performance & Grades" }
+                                        { id: "students.performance", label: "Performance & Grades" },
+                                        { id: "students.health", label: "Health Records" }
                                     ]
                                 },
                                 {
@@ -770,15 +764,28 @@ export default function EditTenantPage() {
                                         { id: "academics.homework", label: "Homework & Assignments" }
                                     ]
                                 },
-                                { id: "diary", label: "Digital Diary", desc: "Daily logs & parent updates" },
+                                { id: "homework", label: "Homework", desc: "Student homework & assignments portal" },
+                                { id: "dairy", label: "Digital Diary", desc: "Daily logs & parent updates" },
                                 { id: "ptm", label: "Parent Teacher Meetings", desc: "Schedule & manage PTMs" },
                                 { id: "parent-requests", label: "Parent Requests", desc: "Manage parent inquiries & support" },
                                 {
-                                    id: "staff", label: "Staff & HR", desc: "Employee management", sub: [
+                                    id: "hr", label: "Human Resources", desc: "HR dashboard, recruitment & roles", sub: [
+                                        { id: "hr.user-logs", label: "User Activity Logs" }
+                                    ]
+                                },
+                                {
+                                    id: "staff", label: "Staff Management", desc: "Employee records & attendance", sub: [
                                         { id: "staff.directory", label: "Staff Directory" },
                                         { id: "staff.attendance", label: "Punch Records" },
                                         { id: "staff.payroll", label: "Payroll Automation" },
                                         { id: "staff.training", label: "Training & PD" }
+                                    ]
+                                },
+                                { id: "training", label: "Training Center", desc: "Staff professional development" },
+                                {
+                                    id: "extracurricular", label: "Extracurricular", desc: "Clubs, activities & sports programs", sub: [
+                                        { id: "extracurricular.clubs", label: "Clubs & Academies" },
+                                        { id: "extracurricular.events", label: "Events & Awards" }
                                     ]
                                 },
                                 {
@@ -800,6 +807,7 @@ export default function EditTenantPage() {
                                         { id: "inventory.store", label: "School Store & Distribution" }
                                     ]
                                 },
+                                { id: "store", label: "School Store", desc: "Student merchandise & academic packages" },
                                 {
                                     id: "transport", label: "Transport & Fleet", desc: "Buses, routes & tracking", sub: [
                                         { id: "transport.routes", label: "Routes & Stops" },
@@ -807,8 +815,11 @@ export default function EditTenantPage() {
                                         { id: "transport.tracking", label: "Live GPS Tracking" }
                                     ]
                                 },
+                                { id: "library", label: "Library", desc: "Book inventory, issue & return" },
+                                { id: "canteen", label: "Canteen", desc: "Point of sale, menu & meal subscriptions" },
+                                { id: "hostel", label: "Hostel Management", desc: "Room allocation & hostel billing" },
                                 {
-                                    id: "facilities", label: "Campus Facilities", desc: "Hostel, Canteen & Library", sub: [
+                                    id: "facilities", label: "Campus Facilities", desc: "Hostel, Canteen & Library (legacy)", sub: [
                                         { id: "facilities.hostel", label: "Hostel Management" },
                                         { id: "facilities.canteen", label: "Canteen POS" },
                                         { id: "facilities.library", label: "Library Management" }

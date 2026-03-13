@@ -25,7 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { format, isSameMonth, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, getMonth, getYear } from "date-fns";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 // Actions
 import { getStaffMemberAction } from "@/app/actions/staff-actions";
@@ -57,13 +57,13 @@ export default function IndividualStaffAttendanceReport() {
         return d.getFullYear() === viewYear;
     }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    function handleExportExcel() {
+    async function handleExportExcel() {
         if (!attendance.length) {
             toast.error("No data to export");
             return;
         }
 
-        const wb = XLSX.utils.book_new();
+        const workbook = new ExcelJS.Workbook();
         const relevantData = reportRange === 'MONTH'
             ? attendance.filter(a => isSameMonth(new Date(a.date), viewMonth))
             : attendance.filter(a => new Date(a.date).getFullYear() === viewYear);
@@ -84,57 +84,50 @@ export default function IndividualStaffAttendanceReport() {
         });
 
         // Create a sheet for each month
-        Object.keys(grouped).forEach(monthKey => {
+        for (const monthKey of Object.keys(grouped)) {
             const monthLogs = grouped[monthKey].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            const worksheet = workbook.addWorksheet(monthKey.substring(0, 31));
 
             // Calculate Summary
             const presentCount = monthLogs.filter(l => ["PRESENT", "LATE", "HALF_DAY"].includes(l.status)).length;
             const absentCount = monthLogs.filter(l => l.status === "ABSENT").length;
 
             const headers = ["DATE", "DAY", "FIRST IN", "LAST OUT", "TOTAL HOURS", "STATUS"];
-            const data = monthLogs.map(log => {
+            worksheet.columns = headers.map(h => ({ header: h, key: h, width: 15 }));
+
+            monthLogs.forEach(log => {
                 const dateObj = new Date(log.date);
                 const firstIn = log.punches?.[0] ? format(new Date(log.punches[0].timestamp), "hh:mm a") : "--";
                 const lastOut = log.punches?.length > 1 && log.punches[log.punches.length - 1].type === "OUT"
                     ? format(new Date(log.punches[log.punches.length - 1].timestamp), "hh:mm a")
                     : "--";
 
-                return [
-                    format(dateObj, "dd-MM-yyyy"),
-                    format(dateObj, "EEEE"),
-                    firstIn,
-                    lastOut,
-                    log.totalHours?.toFixed(2) || "0.00",
-                    log.status
-                ];
+                worksheet.addRow({
+                    DATE: format(dateObj, "dd-MM-yyyy"),
+                    DAY: format(dateObj, "EEEE"),
+                    "FIRST IN": firstIn,
+                    "LAST OUT": lastOut,
+                    "TOTAL HOURS": log.totalHours?.toFixed(2) || "0.00",
+                    STATUS: log.status
+                });
             });
 
-            // Append Summary Rows
-            const summaryStartRow = data.length + 3;
-            // We'll just add blank rows then summary
-            data.push([]);
-            data.push(["SUMMARY", "", "", "", "", ""]);
-            data.push(["Total Present", presentCount.toString(), "", "", "", ""]);
-            data.push(["Total Absent", absentCount.toString(), "", "", "", ""]);
+            // Summary
+            worksheet.addRow([]);
+            worksheet.addRow({ DATE: "SUMMARY" });
+            worksheet.addRow({ DATE: "Total Present", DAY: presentCount.toString() });
+            worksheet.addRow({ DATE: "Total Absent", DAY: absentCount.toString() });
+        }
 
-            // Create Worksheet
-            const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
-
-            // Auto-width columns
-            const wscols = [
-                { wch: 15 }, // Date
-                { wch: 15 }, // Day
-                { wch: 12 }, // First In
-                { wch: 12 }, // Last Out
-                { wch: 12 }, // Hours
-                { wch: 15 }, // Status
-            ];
-            ws['!cols'] = wscols;
-
-            XLSX.utils.book_append_sheet(wb, ws, monthKey.substring(0, 31)); // Sheet name max 31 chars
-        });
-
-        XLSX.writeFile(wb, `Attendance_${staff.firstName}_${reportRange === 'MONTH' ? format(viewMonth, "MMM_yyyy") : viewYear}.xlsx`);
+        const buffer = await workbook.xlsx.writeBuffer();
+        const fileName = `Attendance_${staff.firstName}_${reportRange === 'MONTH' ? format(viewMonth, "MMM_yyyy") : viewYear}.xlsx`;
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
         toast.success("Excel Report Exported");
     }
 

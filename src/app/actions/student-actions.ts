@@ -50,6 +50,11 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
         const currentUser = auth.user as any;
         const schoolId = currentUser.schoolId;
 
+        console.log(">>> [DEBUG] getStudentsAction:", { schoolSlug, schoolId, currentBranchId: currentUser.currentBranchId });
+
+        const totalStudentsInSchool = await prisma.student.count({ where: { schoolId } });
+        console.log(">>> [DEBUG] Total students for schoolID:", schoolId, "Count:", totalStudentsInSchool);
+
         const whereClause: any = {
             schoolId // Direct ID lookup instead of slug join
         };
@@ -57,6 +62,8 @@ export async function getStudentsAction(schoolSlug: string, options: StudentQuer
         const currentBranchId = currentUser.currentBranchId;
         if (currentBranchId) {
             whereClause.branchId = currentBranchId;
+            const branchStudents = await prisma.student.count({ where: { schoolId, branchId: currentBranchId } });
+            console.log(">>> [DEBUG] Students in Branch:", currentBranchId, "Count:", branchStudents);
         }
 
         // If user is STAFF (and not generic ADMIN), enforce class scoping

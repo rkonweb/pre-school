@@ -7,7 +7,7 @@ import {
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog";
-import { PhoneInput } from "@/components/ui/phone-input";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -118,10 +118,9 @@ export function CaptureLeadModal({ slug, isOpen, onOpenChange, onSuccess }: Capt
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Mobile Number</Label>
                             <PhoneInput
-                                required
-                                placeholder="10-digit mobile"
+                                label="Phone Number"
                                 value={formData.mobile}
-                                onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                                onChange={val => setFormData({ ...formData, mobile: val })}
                                 className="h-12 rounded-2xl border-zinc-100 focus:ring-brand"
                             />
                         </div>

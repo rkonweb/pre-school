@@ -30,7 +30,7 @@ import {
     getAllMasterDataForExportAction
 } from "@/app/actions/master-data-actions";
 import Papa from "papaparse";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { Download, Upload, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 
@@ -561,7 +561,7 @@ function BulkActions({ data, selectedType, setSelectedType, parentId, onRefresh 
             }
 
             const allData = res.data;
-            const wb = XLSX.utils.book_new();
+            const workbook = new ExcelJS.Workbook();
 
             const groupedData: Record<string, any[]> = {};
             allData.forEach((item: any) => {
@@ -577,12 +577,25 @@ function BulkActions({ data, selectedType, setSelectedType, parentId, onRefresh 
 
             Object.keys(groupedData).sort().forEach(type => {
                 const sheetName = type.substring(0, 31);
-                const ws = XLSX.utils.json_to_sheet(groupedData[type]);
-                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                const worksheet = workbook.addWorksheet(sheetName);
+                
+                // Add headers
+                const columns = ["Name", "Code", "ID", "ParentID"];
+                worksheet.columns = columns.map(col => ({ header: col, key: col, width: 20 }));
+                
+                // Add rows
+                worksheet.addRows(groupedData[type]);
             });
 
+            const buffer = await workbook.xlsx.writeBuffer();
             const fileName = `FULL_MasterData_${new Date().toISOString().split('T')[0]}.xlsx`;
-            XLSX.writeFile(wb, fileName);
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            window.URL.revokeObjectURL(url);
 
             toast.success(`Export complete! (${allData.length} records)`, { id: toastId });
 
@@ -623,29 +636,47 @@ function BulkActions({ data, selectedType, setSelectedType, parentId, onRefresh 
                         }
                     });
                 } else {
-                    const wb = XLSX.read(bstr, { type: "binary" });
+                    const workbook = new ExcelJS.Workbook();
+                    const arrayBuffer = bstr as ArrayBuffer;
+                    workbook.xlsx.load(arrayBuffer).then(wb => {
+                        // Prefer sheet matching selectedType, else first sheet
+                        let worksheet = wb.worksheets.find(ws => 
+                            ws.name === selectedType ||
+                            ws.name.toUpperCase() === selectedType.toUpperCase() ||
+                            ws.name.replace(/\s+/g, '_').toUpperCase() === selectedType.toUpperCase()
+                        );
 
-                    // Prefer sheet matching selectedType, else first sheet
-                    let wsname = wb.SheetNames.find(name =>
-                        name === selectedType ||
-                        name.toUpperCase() === selectedType.toUpperCase() ||
-                        name.replace(/\s+/g, '_').toUpperCase() === selectedType.toUpperCase()
-                    );
+                        if (!worksheet) worksheet = wb.worksheets[0];
 
-                    if (!wsname) wsname = wb.SheetNames[0];
+                        console.log("Selected Sheet:", worksheet.name);
+                        
+                        const rows: any[] = [];
+                        const headers: string[] = [];
+                        
+                        // Get headers from first row
+                        worksheet.getRow(1).eachCell((cell, colNumber) => {
+                            headers.push(String(cell.value));
+                        });
 
-                    console.log("Selected Sheet:", wsname);
-                    const ws = wb.Sheets[wsname];
-                    parsed = XLSX.utils.sheet_to_json(ws);
+                        // Get data
+                        worksheet.eachRow((row, rowNumber) => {
+                            if (rowNumber === 1) return; // Skip headers
+                            const rowData: any = {};
+                            row.eachCell((cell, colNumber) => {
+                                rowData[headers[colNumber - 1]] = cell.value;
+                            });
+                            rows.push(rowData);
+                        });
 
-                    if (parsed.length > 0) {
-                        headers = Object.keys(parsed[0] as object);
-                    }
-
-                    setPreviewData(parsed);
-                    setFileHeaders(headers);
-                    setShowPreview(true);
-                    setIsImporting(false);
+                        setPreviewData(rows);
+                        setFileHeaders(headers);
+                        setShowPreview(true);
+                        setIsImporting(false);
+                    }).catch(error => {
+                        console.error("XLSX Load Error", error);
+                        toast.error("Failed to read Excel file");
+                        setIsImporting(false);
+                    });
                 }
             } catch (error) {
                 console.error("File Read Error", error);
@@ -657,7 +688,7 @@ function BulkActions({ data, selectedType, setSelectedType, parentId, onRefresh 
         if (file.name.endsWith(".csv")) {
             reader.readAsText(file);
         } else {
-            reader.readAsBinaryString(file);
+            reader.readAsArrayBuffer(file);
         }
         e.target.value = "";
     };

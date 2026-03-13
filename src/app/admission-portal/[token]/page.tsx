@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { getAdmissionByTokenAction, updateComprehensiveAdmissionAction } from "@/app/actions/admission-actions";
 import { SchoolTheme } from "@/components/dashboard/SchoolTheme";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 
 export default function ParentAdmissionPortal() {
     const params = useParams();
@@ -213,22 +214,13 @@ export default function ParentAdmissionPortal() {
                     <div className="bg-white rounded-3xl p-10 border border-zinc-100 shadow-xl shadow-zinc-200/20">
                         <SectionTitle icon={PhoneCall} title="Emergency contingency" />
                         <div className="grid sm:grid-cols-2 gap-8 mt-10">
-                            <InputField
-                                label="Emergency Contact Name"
-                                placeholder="Relationship (e.g. Aunt)"
-                                value={formData.emergencyContactName}
-                                onChange={v => setFormData({ ...formData, emergencyContactName: v })}
-                            />
-                            <InputField
-                                label="Emergency Contact Phone"
-                                placeholder="98765 43210"
-                                type="tel"
-                                value={formData.emergencyContactPhone}
-                                onChange={v => {
-                                    const val = v.replace(/\D/g, "").slice(0, 10);
-                                    setFormData({ ...formData, emergencyContactPhone: val });
-                                }}
-                            />
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest px-1 ml-4 block">Emergency Contact Phone</label>
+                                <PhoneInput
+                                    value={formData.emergencyContactPhone}
+                                    onChange={v => setFormData({ ...formData, emergencyContactPhone: v })}
+                                />
+                            </div>
                         </div>
                     </div>
 

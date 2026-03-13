@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import Link from "next/link";
 import {
     Building2,
@@ -234,12 +235,6 @@ export default function OnboardSchoolPage() {
             contactPhone: "", // Reset phone when country changes
             adminPhone: "" // Reset admin phone too
         }));
-    };
-
-    // Handle phone input with formatting
-    const handlePhoneChange = (value: string, field: "contactPhone" | "adminPhone") => {
-        const formatted = formatPhoneNumber(value, formData.country);
-        setFormData(prev => ({ ...prev, [field]: formatted }));
     };
 
     const handleNext = () => {
@@ -680,24 +675,8 @@ export default function OnboardSchoolPage() {
                                             General Phone <span className="text-red-500">*</span>
                                         </label>
                                         <div className="relative">
-                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                            <input
-                                                type="tel"
-                                                value={formData.contactPhone}
-                                                onChange={e => handlePhoneChange(e.target.value, "contactPhone")}
-                                                placeholder={COUNTRY_CONFIG[formData.country]?.phoneFormat || "+1 (555) 000-0000"}
-                                                required
-                                                maxLength={14} // To accommodate formatting chars like ( ) -
-                                                className={cn(
-                                                    "w-full rounded-xl border bg-zinc-50 py-3 pl-10 pr-3 font-medium focus:ring-2 focus:ring-blue-600",
-                                                    validationErrors.some(e => e.includes("Contact Phone")) ? "border-red-300" : "border-zinc-200"
-                                                )}
-                                            />
-                                            {COUNTRY_CONFIG[formData.country] && (
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">
-                                                    {COUNTRY_CONFIG[formData.country].dialCode}
-                                                </div>
-                                            )}
+                                            <PhoneInput value={formData.contactPhone}
+                                                onChange={(val: string) => setFormData({ ...formData, contactPhone: val })} />
                                         </div>
                                     </div>
                                 </div>
@@ -768,23 +747,8 @@ export default function OnboardSchoolPage() {
                                         Mobile Number <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
-                                        <input
-                                            type="tel"
-                                            value={formData.adminPhone}
-                                            onChange={e => handlePhoneChange(e.target.value, "adminPhone")}
-                                            placeholder={COUNTRY_CONFIG[formData.country]?.phoneFormat || "+1 (555) 000-0000"}
-                                            required
-                                            maxLength={14}
-                                            className={cn(
-                                                "w-full rounded-xl border bg-zinc-50 p-3 font-medium focus:ring-2 focus:ring-blue-600",
-                                                validationErrors.some(e => e.includes("Admin Phone")) ? "border-red-300" : "border-zinc-200"
-                                            )}
-                                        />
-                                        {COUNTRY_CONFIG[formData.country] && (
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">
-                                                {COUNTRY_CONFIG[formData.country].dialCode}
-                                            </div>
-                                        )}
+                                        <PhoneInput value={formData.adminPhone}
+                                            onChange={(val: string) => setFormData({ ...formData, adminPhone: val })} />
                                     </div>
                                 </div>
                             </div>

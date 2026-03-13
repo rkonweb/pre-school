@@ -30,12 +30,21 @@ export async function sendOtpAction(mobile: string, type: "signup" | "login" | "
     try {
         // Robust Phone Number Normalization
         const cleanMobile = validatedMobile.replace(/\D/g, ""); // 9876543210
+        const tenDigits = cleanMobile.slice(-10);
+        
         const mobilePossibilities = [
-            validatedMobile,                    // +919876543210
-            cleanMobile,                        // 9876543210
-            `+91${cleanMobile.slice(-10)}`,     // +919876543210 (ensure +91)
-            cleanMobile.slice(-10)              // 9876543210 (ensure 10 digits)
+            validatedMobile,                    // as entered  e.g. +911111111111
+            cleanMobile,                        // digits only e.g. 911111111111
+            `+91${tenDigits}`,                 // +911111111111
+            tenDigits,                          // 1111111111
+            `+91 ${tenDigits}`,                // +91 1111111111  ← space after code
+            `91${tenDigits}`,                  // 911111111111
         ];
+
+        // Also add the country-code + space + 5-5 split variant (some fields use it)
+        if (tenDigits.length === 10) {
+            mobilePossibilities.push(`${tenDigits.slice(0, 5)} ${tenDigits.slice(5)}`); // 11111 11111
+        }
 
         // Remove duplicates
         const uniqueMobiles = Array.from(new Set(mobilePossibilities));
@@ -430,7 +439,7 @@ export async function registerSchoolAction(data: {
                 // Fallback: no pending user found (shouldn't happen with new flow)
                 user = await tx.user.create({
                     data: {
-                        mobile: validatedData.mobile,
+                        mobile: validatedData.mobile.replace(/\s/g, ""), // Ensure no spaces
                         firstName: validatedData.firstName,
                         lastName: validatedData.lastName,
                         schoolId: school.id,
@@ -486,8 +495,19 @@ export async function loginWithMobileAction(mobile: string) {
         return { success: false, error: "Too many login attempts. Try again later." };
     }
 
-    const user = await prisma.user.findUnique({
-        where: { mobile: parsed.data.mobile },
+    // Build mobile number variants for flexible matching
+    const cleanMobileLogin = parsed.data.mobile.replace(/\D/g, "");
+    const tenDigitsLogin = cleanMobileLogin.slice(-10);
+    const mobileVariantsLogin = Array.from(new Set([
+        parsed.data.mobile,
+        cleanMobileLogin,
+        `+91${tenDigitsLogin}`,
+        tenDigitsLogin,
+        `${tenDigitsLogin.slice(0, 5)} ${tenDigitsLogin.slice(5)}`
+    ]));
+
+    const user = await prisma.user.findFirst({
+        where: { mobile: { in: mobileVariantsLogin } },
         include: {
             school: {
                 include: { subscription: true }
@@ -587,8 +607,19 @@ export async function loginParentGlobalAction(mobile: string) {
         return { success: false, error: "Too many login attempts. Try again later." };
     }
 
-    const user = await prisma.user.findUnique({
-        where: { mobile: parsed.data.mobile },
+    // Build mobile variants for flexible matching
+    const cleanMobilePG = parsed.data.mobile.replace(/\D/g, "");
+    const tenDigitsPG = cleanMobilePG.slice(-10);
+    const mobileVariantsPG = Array.from(new Set([
+        parsed.data.mobile,
+        cleanMobilePG,
+        `+91${tenDigitsPG}`,
+        tenDigitsPG,
+        `${tenDigitsPG.slice(0, 5)} ${tenDigitsPG.slice(5)}`
+    ]));
+
+    const user = await prisma.user.findFirst({
+        where: { mobile: { in: mobileVariantsPG } },
         include: { school: true }
     });
 

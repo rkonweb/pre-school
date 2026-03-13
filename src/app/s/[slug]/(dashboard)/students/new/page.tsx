@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { createStudentAction } from "@/app/actions/student-actions";
 import { getMasterDataAction } from "@/app/actions/master-data-actions";
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { toast } from "sonner";
 
 const SectionTitle = ({ icon: Icon, title }: any) => (
@@ -257,7 +258,7 @@ export default function NewStudentPage() {
                             <SectionTitle icon={PhoneCall} title="Emergency Contact" />
                             <div className="grid md:grid-cols-2 gap-8 mt-10">
                                 <InputField label="Name" value={student.emergencyContactName} onChange={(v: string) => set("emergencyContactName", v)} placeholder="Contact person name" />
-                                <InputField label="Phone" type="tel" value={student.emergencyContactPhone} onChange={(v: string) => set("emergencyContactPhone", v)} placeholder="Emergency phone number" />
+                                <PhoneInput label="Phone" value={student.emergencyContactPhone} onChange={(v: string) => set("emergencyContactPhone", v)} />
                             </div>
                         </div>
 
@@ -274,7 +275,7 @@ export default function NewStudentPage() {
                                     <div className="grid md:grid-cols-2 gap-8">
                                         <InputField label="Father's Name" value={student.fatherName} onChange={(v: string) => set("fatherName", v)} placeholder="Father's full name" />
                                         <InputField label="Occupation" value={student.fatherOccupation} onChange={(v: string) => set("fatherOccupation", v)} placeholder="e.g. Engineer" />
-                                        <InputField label="Phone" type="tel" value={student.fatherPhone} onChange={(v: string) => set("fatherPhone", v)} placeholder="Father's phone" />
+                                        <PhoneInput label="Phone" value={student.fatherPhone} onChange={(v: string) => set("fatherPhone", v)} />
                                         <InputField label="Email" type="email" value={student.fatherEmail} onChange={(v: string) => set("fatherEmail", v)} placeholder="father@example.com" />
                                     </div>
                                 </div>
@@ -288,7 +289,7 @@ export default function NewStudentPage() {
                                     <div className="grid md:grid-cols-2 gap-8">
                                         <InputField label="Mother's Name" value={student.motherName} onChange={(v: string) => set("motherName", v)} placeholder="Mother's full name" />
                                         <InputField label="Occupation" value={student.motherOccupation} onChange={(v: string) => set("motherOccupation", v)} placeholder="e.g. Teacher" />
-                                        <InputField label="Phone" type="tel" value={student.motherPhone} onChange={(v: string) => set("motherPhone", v)} placeholder="Mother's phone" />
+                                        <PhoneInput label="Phone" value={student.motherPhone} onChange={(v: string) => set("motherPhone", v)} />
                                         <InputField label="Email" type="email" value={student.motherEmail} onChange={(v: string) => set("motherEmail", v)} placeholder="mother@example.com" />
                                     </div>
                                 </div>
@@ -373,9 +374,8 @@ export default function NewStudentPage() {
                                         <Phone className="h-4 w-4 text-emerald-600" />
                                     </div>
                                     <div className="flex-1">
-                                        <InputField label="Primary Mobile" type="tel" value={student.parentMobile}
-                                            onChange={(v: string) => set("parentMobile", v.replace(/\D/g, "").slice(0, 10))}
-                                            placeholder="10-digit mobile" required />
+                                        <PhoneInput label="Primary Mobile" value={student.parentMobile}
+                                            onChange={(v: string) => set("parentMobile", v)} />
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
@@ -383,8 +383,8 @@ export default function NewStudentPage() {
                                         <PhoneCall className="h-4 w-4 text-blue-600" />
                                     </div>
                                     <div className="flex-1">
-                                        <InputField label="Secondary Phone" type="tel" value={student.secondaryPhone}
-                                            onChange={(v: string) => set("secondaryPhone", v)} placeholder="Alternate number" />
+                                        <PhoneInput label="Secondary Phone" value={student.secondaryPhone}
+                                            onChange={(v: string) => set("secondaryPhone", v)} />
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">

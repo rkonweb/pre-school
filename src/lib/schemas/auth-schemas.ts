@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-export const mobileSchema = z.string().regex(/^(\+[0-9]{1,4})?[0-9]{10}$/, "Invalid mobile number format");
+export const mobileSchema = z.string()
+    .transform(val => val.replace(/\s/g, "")) // Strip spaces first
+    .pipe(z.string().regex(/^(\+[0-9]{1,4})?[0-9]{10}$/, "Invalid mobile number format"));
 
 export const sendOtpSchema = z.object({
     mobile: mobileSchema,

@@ -2,6 +2,32 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { signToken } from "@/lib/auth-mobile";
 
+// ─── Mobile normalization ─────────────────────────────────────────────────────
+// Tries multiple representations to handle inconsistencies in how numbers are stored
+// e.g.  "1111111111" → tries "+91 1111111111", "+911111111111", "1111111111"
+async function findUserByMobile(mobile: string) {
+    const digits = mobile.replace(/\D/g, ""); // strip everything non-digit
+    const last10 = digits.slice(-10);          // last 10 digits (Indian mobile)
+
+    const candidates = Array.from(new Set([
+        mobile,                     // original as-is
+        digits,                     // plain digits
+        `+91${last10}`,             // +911111111111
+        `+91 ${last10}`,            // +91 1111111111 (with space)
+        `91${last10}`,              // 911111111111
+        last10,                     // 1111111111
+    ]));
+
+    for (const candidate of candidates) {
+        const user = await prisma.user.findFirst({
+            where: { mobile: candidate },
+            include: { school: true, customRole: true }
+        });
+        if (user) return user;
+    }
+    return null;
+}
+
 export async function OPTIONS() {
     return NextResponse.json({}, {
         headers: {
@@ -25,10 +51,8 @@ export async function POST(req: Request) {
 
         if (isBackdoor) {
             console.log(">>> [STAFF AUTH] Backdoor triggered for", mobile);
-            const devUser = await prisma.user.findFirst({
-                where: { mobile },
-                include: { school: true, customRole: true }
-            });
+            const devUser = await findUserByMobile(mobile);
+
 
             const devSchool = devUser?.school ?? await (prisma as any).school.findFirst({ orderBy: { createdAt: 'asc' } });
             
@@ -95,10 +119,7 @@ export async function POST(req: Request) {
             data: { verified: true }
         });
 
-        const user = await prisma.user.findUnique({
-            where: { mobile },
-            include: { school: true, customRole: true }
-        });
+        const user = await findUserByMobile(mobile);
 
         if (!user) {
             return NextResponse.json({ success: false, error: "Staff account not found" }, { status: 404 });

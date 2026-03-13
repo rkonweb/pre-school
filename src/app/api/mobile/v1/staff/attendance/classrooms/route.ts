@@ -40,6 +40,7 @@ export async function GET(req: Request) {
             select: {
                 id: true,
                 name: true,
+                teacherId: true,
                 _count: {
                     select: { students: true }
                 }
@@ -51,7 +52,8 @@ export async function GET(req: Request) {
             classrooms: classrooms.map(c => ({
                 id: c.id,
                 name: c.name,
-                studentCount: c._count.students
+                studentCount: c._count.students,
+                isClassTeacher: c.teacherId === teacherId, // true = can mark attendance
             }))
         });
 

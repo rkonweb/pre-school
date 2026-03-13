@@ -33,7 +33,7 @@ import { useSidebar } from "@/context/SidebarContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useReactToPrint } from "react-to-print";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 // Actions
 import {
@@ -76,8 +76,22 @@ export default function PayrollPage() {
         documentTitle: `Payslip_${selectedPayslip?.user?.firstName}_${selectedPayslip?.month}_${selectedPayslip?.year}`,
     });
 
-    const handleExport = () => {
+    const handleExport = async () => {
         if (!payslips.length) return;
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Payroll");
+
+        const columns = [
+            { header: "Staff", key: "Staff", width: 25 },
+            { header: "Designation", key: "Designation", width: 20 },
+            { header: "Month", key: "Month", width: 20 },
+            { header: "Gross Salary", key: "Gross Salary", width: 15 },
+            { header: "Total Deductions", key: "Total Deductions", width: 15 },
+            { header: "Net Salary", key: "Net Salary", width: 15 },
+            { header: "Status", key: "Status", width: 12 }
+        ];
+        worksheet.columns = columns;
+
         const data = payslips.map(p => ({
             Staff: `${p.user.firstName} ${p.user.lastName}`,
             Designation: p.user.designation || "Staff",
@@ -88,10 +102,17 @@ export default function PayrollPage() {
             Status: p.status
         }));
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Payroll");
-        XLSX.writeFile(wb, `Payroll_${selectedPayroll.month}_${selectedPayroll.year}.xlsx`);
+        worksheet.addRows(data);
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const fileName = `Payroll_${selectedPayroll.month}_${selectedPayroll.year}.xlsx`;
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
     };
 
     useEffect(() => {

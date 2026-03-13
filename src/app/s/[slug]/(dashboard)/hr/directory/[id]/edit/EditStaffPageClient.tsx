@@ -8,6 +8,7 @@ import Link from "next/link";
 import { StaffClassAccess } from "@/components/dashboard/staff/StaffClassAccess";
 import { StaffLibraryHistory } from "@/components/dashboard/staff/StaffLibraryHistory";
 import { StaffBiometricSection } from "@/components/dashboard/staff/StaffBiometricSection";
+import { StaffRolePermissions } from "@/components/dashboard/staff/StaffRolePermissions";
 
 interface EditStaffPageClientProps {
     slug: string;
@@ -18,8 +19,8 @@ interface EditStaffPageClientProps {
     bloodGroups: any[];
     genders: any[];
     subjects: any[];
-    classrooms: any[]; // New prop
-    branches: any[]; // New prop
+    classrooms: any[];
+    branches: any[];
     initialData: any;
     initialAccess: any[];
     staffId: string;
@@ -27,6 +28,7 @@ interface EditStaffPageClientProps {
 
 export function EditStaffPageClient({ slug, roles, designations, departments, employmentTypes, bloodGroups, genders, subjects, classrooms, branches, initialData, initialAccess, staffId }: EditStaffPageClientProps) {
     const router = useRouter();
+    const isAdmin = initialData?.role === "ADMIN" || initialData?.role === "SUPER_ADMIN";
 
     return (
         <div className="mx-auto max-w-4xl p-8">
@@ -66,12 +68,40 @@ export function EditStaffPageClient({ slug, roles, designations, departments, em
                     />
                 </div>
 
-                <StaffClassAccess
-                    staffId={staffId}
-                    schoolSlug={slug}
-                    classrooms={classrooms}
-                    initialAccess={initialAccess}
-                />
+                {/* Roles & Permissions + Class Access — only for non-Admin staff */}
+                {!isAdmin && (
+                    <>
+                        <StaffRolePermissions
+                            staffId={staffId}
+                            schoolSlug={slug}
+                            roles={roles}
+                            initialRoleId={initialData?.customRoleId || null}
+                        />
+
+                        <StaffClassAccess
+                            staffId={staffId}
+                            schoolSlug={slug}
+                            classrooms={classrooms}
+                            initialAccess={initialAccess}
+                        />
+                    </>
+                )}
+
+                {isAdmin && (
+                    <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 dark:border-blue-900/30 dark:bg-blue-900/10">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-blue-900 dark:text-blue-300">Administrator — Full Access</h3>
+                                <p className="mt-1 text-sm text-blue-700 dark:text-blue-400">
+                                    This staff member has Administrator privileges and has complete access to all modules. Role-based restrictions do not apply.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-950">
                     <StaffBiometricSection staffId={staffId} schoolSlug={slug} />
@@ -87,9 +117,10 @@ export function EditStaffPageClient({ slug, roles, designations, departments, em
                 <StaffLibraryHistory
                     staffId={staffId}
                     schoolSlug={slug}
-                    currency={initialData.school?.currency || "USD"} // Assuming initialData usually has school info nested, if not default
+                    currency={initialData.school?.currency || "USD"}
                 />
             </div>
         </div>
     );
 }
+

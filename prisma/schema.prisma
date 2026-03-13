@@ -255,6 +255,7 @@ model User {
   twitter                  String?
   instagram                String?
   customRoleId             String?
+  modulePermissions        String                  @default("{}")
   biometricId              String?                 @unique
   avatarAdjustment         String?
   branchId                 String?
@@ -264,6 +265,7 @@ model User {
   BlogPost                 BlogPost[]
   approvedBroadcasts       Broadcast[]             @relation("BroadcastApprover")
   authoredBroadcasts       Broadcast[]             @relation("BroadcastAuthor")
+  authoredCirculars        SchoolCircular[]        @relation("CircularAuthor")
   classAccesses            ClassAccess[]
   managedClassrooms        Classroom[]             @relation("ClassTeacher")
   recordedDevReports       DevelopmentReport[]
@@ -408,6 +410,7 @@ model Classroom {
   diaryEntries         DiaryEntry[]
   students             Student[]           @relation("CurrentClass")
   promotedStudents     Student[]           @relation("PromotedClass")
+  homework             Homework[]
 
   @@index([schoolId])
   @@index([branchId])
@@ -535,6 +538,7 @@ model TransferCertificate {
 model Fee {
   id             String        @id @default(cuid())
   title          String
+  subject        String?
   amount         Float
   dueDate        DateTime
   status         String        @default("PENDING")
@@ -792,6 +796,7 @@ model SystemSettings {
 model Homework {
   id             String                @id @default(cuid())
   title          String
+  subject        String?
   description    String?
   instructions   String?
   videoUrl       String?
@@ -812,6 +817,7 @@ model Homework {
   updatedAt      DateTime              @updatedAt
   academicYearId String?
   academicYear   AcademicYear?         @relation(fields: [academicYearId], references: [id])
+  classroom      Classroom?            @relation(fields: [classroomId], references: [id])
   readReceipts   HomeworkReadReceipt[]
   submissions    HomeworkSubmission[]
 
@@ -927,6 +933,7 @@ model NotificationSchedule {
   targetUserType String?
   targetGroup    String?
   title          String
+  subject        String?
   message        String
   relatedId      String?
   relatedType    String?
@@ -1022,6 +1029,7 @@ model Broadcast {
 model DiaryEntry {
   id             String           @id @default(cuid())
   title          String
+  subject        String?
   content        String
   type           String
   scheduledFor   DateTime?
@@ -1516,6 +1524,7 @@ model StudentHealthRecord {
 model StudentActivityRecord {
   id             String        @id @default(cuid())
   title          String
+  subject        String?
   category       String
   type           String
   date           DateTime
@@ -1698,6 +1707,7 @@ model JobApplication {
 model JobPosting {
   id             String           @id
   title          String
+  subject        String?
   department     String
   location       String
   type           String
@@ -2193,6 +2203,7 @@ model PortfolioEntry {
   id             String        @id @default(cuid())
   studentId      String
   title          String
+  subject        String?
   description    String?
   type           String        @default("NOTE")
   mediaUrl       String?
@@ -2450,13 +2461,20 @@ model SchoolCircular {
   id             String    @id @default(cuid())
   schoolId       String
   title          String
+  subject        String?
   content        String?
   fileUrl        String?
+  attachments    String?   @default("[]")
   type           String    @default("CIRCULAR")
+  priority       String    @default("NORMAL")
+  category       String?   @default("GENERAL")
   targetClassIds String    @default("[]")
+  targetRoles    String    @default("[]")
   isPublished    Boolean   @default(false)
   publishedAt    DateTime?
-  createdById    String?
+  expiresAt      DateTime?
+  authorId       String?
+  author         User?     @relation("CircularAuthor", fields: [authorId], references: [id])
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   school         School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
@@ -2464,6 +2482,7 @@ model SchoolCircular {
   @@index([schoolId])
   @@index([isPublished])
   @@index([publishedAt])
+  @@index([authorId])
 }
 
 model PTMSession {

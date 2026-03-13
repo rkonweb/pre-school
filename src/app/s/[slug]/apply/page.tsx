@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import {
     Card,
     CardContent,
@@ -103,18 +104,12 @@ export default function ApplyLandingPage({ params }: { params: { slug: string } 
                     {step === "phone" ? (
                         <form onSubmit={handleSendOTP} className="space-y-4">
                             <div className="space-y-2">
-                                <div className="relative">
-                                    <Phone className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                                    <Input
-                                        placeholder="Enter 10-digit mobile number"
-                                        type="tel"
-                                        className="pl-10 h-12 text-lg"
-                                        value={phoneNumber}
-                                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                        disabled={isLoading}
-                                        required
-                                    />
-                                </div>
+                                <PhoneInput
+                                    value={phoneNumber}
+                                    onChange={setPhoneNumber}
+                                    className="h-12"
+                                    disabled={isLoading}
+                                />
                             </div>
                             <Button type="submit" className="w-full h-12 text-lg group" disabled={isLoading}>
                                 {isLoading ? (

@@ -13,6 +13,7 @@ import { sendOtpAction, verifyOtpAction } from "@/app/actions/auth-actions";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
 import { toast } from "sonner";
 import { RefreshCcw } from "lucide-react";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 
 // ─── DESIGN TOKENS ─────────────────────────────────────────
 const C = {
@@ -556,7 +557,7 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                 <div>
                                     <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 5 }}>Current Phone</div>
                                     <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 20, fontWeight: 800, color: currentPhone ? "white" : "rgba(255,255,255,0.4)" }}>
-                                        {currentPhone ? `+91 ${currentPhone}` : "No number registered"}
+                                        {currentPhone || "No number registered"}
                                     </div>
                                 </div>
                                 <Btn icon={Phone} variant="success" size="md" loading={isPhoneLoading} onClick={startPhoneChange} fullWidth={true}>
@@ -591,9 +592,9 @@ export function IdentityForm({ slug, initialData }: IdentityFormProps) {
                                     <span style={{ fontWeight: 700, fontSize: 14, color: "white" }}>Enter New Phone</span>
                                 </div>
                                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                                    <input placeholder="Enter 10-digit number" value={newPhone} type="tel"
-                                        onChange={(e: any) => setNewPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} 
-                                        style={{ width: "100%", border: "1px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.1)", padding: "11px 14px", fontSize: 13.5, color: "white", outline: "none", fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 600, borderRadius: 12 }} />
+                                    <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 4 }}>
+                                        <PhoneInput value={newPhone} onChange={(v: string) => setNewPhone(v)} />
+                                    </div>
                                     <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
                                         <Btn variant="primary" size="md" icon={Phone} loading={isPhoneLoading} disabled={newPhone.length !== 10} onClick={sendNewPhoneOtp} fullWidth={true}>Send OTP</Btn>
                                         <Btn variant="ghost" size="md" onClick={cancelPhoneChange} style={{ color: "rgba(255,255,255,0.7)" }}>Cancel</Btn>

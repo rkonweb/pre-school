@@ -354,6 +354,224 @@ export const MODULES: ModuleDefinition[] = [
         ]
     },
     {
+        key: "accounts",
+        label: "Accounts & Finance",
+        description: "Ledgers, expense tracking and financial reports",
+        permissions: ["view", "create", "edit", "delete", "export", "manage"],
+        subModules: [
+            {
+                key: "accounts.expenses",
+                label: "Expense Management",
+                description: "Track school expenditures",
+                permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "accounts.reports",
+                label: "Financial Reports",
+                description: "Profit, loss and ledger reports",
+                permissions: ["view", "export"]
+            },
+            {
+                key: "accounts.vendors",
+                label: "Vendors & Payees",
+                description: "Manage vendor accounts",
+                permissions: ["view", "create", "edit", "delete"]
+            }
+        ]
+    },
+    {
+        key: "hr",
+        label: "Human Resources",
+        description: "HR dashboard, recruitment and roles management",
+        permissions: ["view", "manage", "create", "edit", "delete"],
+        subModules: [
+            {
+                key: "hr.recruitment",
+                label: "Recruitment (ATS)",
+                description: "Job postings and applicant tracking",
+                permissions: ["view", "create", "edit", "manage"]
+            },
+            {
+                key: "hr.roles",
+                label: "Roles & Permissions",
+                description: "Manage custom staff roles",
+                permissions: ["view", "create", "edit", "delete", "manage"]
+            },
+            {
+                key: "hr.user-logs",
+                label: "User Activity Logs",
+                description: "Audit trail of all user actions",
+                permissions: ["view", "export"]
+            }
+        ]
+    },
+    {
+        key: "extracurricular",
+        label: "Extracurricular",
+        description: "Clubs, sports and activity programs",
+        permissions: ["view", "create", "edit", "delete", "manage"],
+        subModules: [
+            {
+                key: "extracurricular.clubs",
+                label: "Clubs & Academies",
+                description: "Manage clubs and academies",
+                permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "extracurricular.enrollment",
+                label: "Student Enrollment",
+                description: "Enroll students in activities",
+                permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "extracurricular.events",
+                label: "Events & Awards",
+                description: "Competitions and achievement records",
+                permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "extracurricular.attendance",
+                label: "Attendance Tracking",
+                description: "Activity attendance records",
+                permissions: ["view", "mark", "edit"]
+            }
+        ]
+    },
+    {
+        key: "homework",
+        label: "Homework",
+        description: "Student homework and assignment portal",
+        permissions: ["view", "create", "edit", "delete"]
+    },
+    {
+        key: "dairy",
+        label: "Daily Diary",
+        description: "Daily logs and parent communication updates",
+        permissions: ["view", "create", "edit", "delete"]
+    },
+    {
+        key: "ptm",
+        label: "Parent Teacher Meetings",
+        description: "Schedule and manage PTM events",
+        permissions: ["view", "create", "edit", "delete", "manage"]
+    },
+    {
+        key: "parent-requests",
+        label: "Parent Requests",
+        description: "Manage parent inquiries and support tickets",
+        permissions: ["view", "review", "reply", "manage"]
+    },
+    {
+        key: "canteen",
+        label: "Canteen",
+        description: "Point of sale, menu and meal subscriptions",
+        permissions: ["view", "create", "edit", "delete", "manage"],
+        subModules: [
+            {
+                key: "canteen.menu",
+                label: "Menu & Timetable",
+                description: "Manage daily menu and meal plans",
+                permissions: ["view", "create", "edit"]
+            },
+            {
+                key: "canteen.pos",
+                label: "Point of Sale",
+                description: "Billing and sales transactions",
+                permissions: ["view", "create", "manage"]
+            },
+            {
+                key: "canteen.billing",
+                label: "Meal Subscriptions",
+                description: "Student meal package billing",
+                permissions: ["view", "create", "edit", "manage"]
+            }
+        ]
+    },
+    {
+        key: "hostel",
+        label: "Hostel Management",
+        description: "Room allocation, billing and hostel administration",
+        permissions: ["view", "create", "edit", "delete", "manage"],
+        subModules: [
+            {
+                key: "hostel.allocation",
+                label: "Room Allocation",
+                description: "Assign students to rooms",
+                permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "hostel.billing",
+                label: "Hostel Billing",
+                description: "Hostel fee invoices and payments",
+                permissions: ["view", "create", "edit", "manage"]
+            }
+        ]
+    },
+    {
+        key: "store",
+        label: "School Store",
+        description: "Student merchandise, books and academic packages",
+        permissions: ["view", "create", "edit", "delete", "manage"],
+        subModules: [
+            {
+                key: "store.catalog",
+                label: "Catalog",
+                description: "Product listings and pricing",
+                permissions: ["view", "create", "edit", "delete"]
+            },
+            {
+                key: "store.orders",
+                label: "Orders",
+                description: "Student purchase orders",
+                permissions: ["view", "create", "edit", "manage"]
+            },
+            {
+                key: "store.inventory",
+                label: "Store Inventory",
+                description: "Stock management",
+                permissions: ["view", "edit", "manage"]
+            }
+        ]
+    },
+    {
+        key: "training",
+        label: "Training Center",
+        description: "Staff professional development and training programs",
+        permissions: ["view", "create", "edit", "delete", "manage"]
+    },
+    {
+        key: "marketing",
+        label: "Marketing & Growth",
+        description: "Campaigns, analytics and growth tools",
+        permissions: ["view", "create", "edit", "delete", "manage"],
+        subModules: [
+            {
+                key: "marketing.campaigns",
+                label: "Campaigns",
+                description: "Marketing campaign management",
+                permissions: ["view", "create", "edit", "delete", "send"]
+            },
+            {
+                key: "marketing.analytics",
+                label: "Growth Analytics",
+                description: "Lead and conversion analytics",
+                permissions: ["view", "export"]
+            }
+        ]
+    },
+    {
+        key: "events",
+        label: "Events & Calendar",
+        description: "School calendar and event management",
+        permissions: ["view", "create", "edit", "delete", "manage"]
+    },
+    {
+        key: "documents",
+        label: "Document Center",
+        description: "Certificates, forms and file repository",
+        permissions: ["view", "create", "edit", "delete", "manage"]
+    },
+    {
         key: "settings",
         label: "System Settings",
         description: "School configuration and setup",

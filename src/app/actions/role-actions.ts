@@ -84,11 +84,69 @@ export async function assignRoleToUserAction(schoolSlug: string, userId: string,
             data: { customRoleId: roleId }
         });
         revalidatePath(`/s/${schoolSlug}/hr/roles`);
+        revalidatePath(`/s/${schoolSlug}/hr/directory`);
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };
     }
 }
+
+// Per-user module permissions (CRUD overrides on top of their role)
+export interface UserModulePermission {
+    module: string;
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+    manage: boolean;
+}
+
+export async function getUserModulePermissionsAction(userId: string) {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                modulePermissions: true,
+                customRoleId: true,
+                customRole: {
+                    select: { id: true, name: true, permissions: true }
+                }
+            }
+        });
+        if (!user) throw new Error("User not found");
+
+        let perms: Record<string, UserModulePermission> = {};
+        try {
+            perms = JSON.parse(user.modulePermissions || "{}");
+        } catch { perms = {}; }
+
+        return {
+            success: true,
+            permissions: perms,
+            role: user.customRole ? JSON.parse(JSON.stringify(user.customRole)) : null
+        };
+    } catch (error: any) {
+        return { success: false, error: error.message, permissions: {}, role: null };
+    }
+}
+
+export async function updateUserModulePermissionsAction(
+    schoolSlug: string,
+    userId: string,
+    permissions: Record<string, UserModulePermission>
+) {
+    try {
+        await prisma.user.update({
+            where: { id: userId },
+            data: { modulePermissions: JSON.stringify(permissions) }
+        });
+        revalidatePath(`/s/${schoolSlug}/hr/directory`);
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
 
 // ==========================================
 // CLASS ACCESS ACTIONS

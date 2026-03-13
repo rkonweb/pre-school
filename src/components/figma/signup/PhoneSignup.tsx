@@ -86,15 +86,17 @@ export function PhoneSignup() {
               </span>
             </div>
 
-            <div className="flex gap-3">
-              <select
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                className="w-24 px-2 py-3 bg-slate-900 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-teal-500/30 outline-none"
-              >
-                <option value="+91">🇮🇳 +91</option>
-                <option value="+1">🇺🇸 +1</option>
-              </select>
+            <div className="flex gap-4">
+              <div className="w-24">
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="w-full px-2 py-3 bg-slate-900 border border-white/10 text-white rounded-xl focus:ring-2 focus:ring-teal-500/30 outline-none h-14"
+                >
+                  <option value="+91">🇮🇳 +91</option>
+                  <option value="+1">🇺🇸 +1</option>
+                </select>
+              </div>
               <div className="flex-1 relative">
                 <Input
                   type="tel"

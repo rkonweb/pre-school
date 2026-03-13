@@ -98,20 +98,22 @@ export function PhoneLogin({ type, tenantName, brandColor }: PhoneLoginProps) {
                             </span>
                         </div>
 
-                        <div className="flex gap-3">
-                            <select
-                                aria-label="Country Code"
-                                title="Country Code"
-                                value={countryCode}
-                                onChange={(e) => setCountryCode(e.target.value)}
-                                className="w-32 px-2 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 outline-none transition-all cursor-pointer hover:bg-slate-100 font-bold text-sm"
-                            >
-                                {COUNTRY_CODES.map(c => (
-                                    <option key={`${c.code}-${c.name}`} value={c.code}>
-                                        {c.flag} {c.code}
-                                    </option>
-                                ))}
-                            </select>
+                        <div className="flex gap-4">
+                            <div className="w-32">
+                                <select
+                                    aria-label="Country Code"
+                                    title="Country Code"
+                                    value={countryCode}
+                                    onChange={(e) => setCountryCode(e.target.value)}
+                                    className="w-full px-4 py-4 bg-white border-2 border-slate-100 text-slate-900 rounded-xl focus:ring-2 focus:ring-slate-200 outline-none transition-all cursor-pointer hover:bg-slate-50 font-bold text-sm appearance-none shadow-sm h-14"
+                                >
+                                    {COUNTRY_CODES.map(c => (
+                                        <option key={`${c.code}-${c.name}`} value={c.code}>
+                                            {c.flag} {c.code}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                             <div className="flex-1 relative">
                                 <Input
                                     id="parent-phone"
@@ -126,7 +128,7 @@ export function PhoneLogin({ type, tenantName, brandColor }: PhoneLoginProps) {
                                         setPhoneNumber(val);
                                         if (val.length === 10) setError(null);
                                     }}
-                                    className="h-14 text-xl bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl pr-12 font-bold tracking-widest transition-all"
+                                    className="h-14 text-xl bg-white border-2 border-slate-100 text-slate-900 placeholder:text-slate-400 rounded-xl pr-12 font-bold tracking-widest transition-all focus:ring-2 focus:ring-slate-200"
                                 />
                                 {isValid && (
                                     <CheckCircle2 className="absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 animate-in zoom-in duration-300" style={{ color: primaryColor }} />

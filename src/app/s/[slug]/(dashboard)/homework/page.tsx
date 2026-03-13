@@ -63,6 +63,7 @@ export default async function HomeworkPage(props: { params: Promise<{ slug: stri
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: '#F9FAFB' }}>
+            <style>{`.hw-card{transition:box-shadow .2s}.hw-card:hover{box-shadow:0 6px 24px rgba(0,0,0,0.08)!important}`}</style>
             {/* Header */}
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '28px 32px 0' }}>
                 <div>
@@ -145,10 +146,7 @@ export default async function HomeworkPage(props: { params: Promise<{ slug: stri
                             const submittedPct = hw.submissionCount > 0 ? Math.round((hw.submittedCount / hw.submissionCount) * 100) : 0
 
                             return (
-                                <div key={hw.id} style={{ background: 'white', border: '1.5px solid #F3F4F6', borderRadius: 20, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', transition: 'box-shadow 0.2s' }}
-                                    onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 24px rgba(0,0,0,0.08)'}
-                                    onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'}
-                                >
+                                <div key={hw.id} className="hw-card" style={{ background: 'white', border: '1.5px solid #F3F4F6', borderRadius: 20, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
                                     <div style={{ padding: '18px 20px' }}>
                                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                                             <div style={{ flex: 1, paddingRight: 12 }}>

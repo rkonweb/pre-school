@@ -759,13 +759,33 @@ function PhoneInputField({ phone, setPhone, country, setCountry, showCC, setShow
   const [foc, setFoc] = useState(false);
   const bc = phoneErr ? T.red : foc ? C.accent : T.ink10;
   return (
-    <div style={{ display: "flex", borderRadius: 14, border: `2px solid ${bc}`, background: T.white, transition: "border-color .2s, box-shadow .2s", boxShadow: phoneErr ? `0 0 0 4px ${T.red}12` : foc ? `0 0 0 5px ${C.accent}14` : "0 2px 12px rgba(0,0,0,.05)", animation: phoneErr ? "slShake .45s ease" : "none", marginBottom: 4 }} onFocus={() => setFoc(true)} onBlur={() => setFoc(false)}>
-      <div ref={ccRef} style={{ position: "relative", flexShrink: 0 }}>
-        <button type="button" title="Select country code" onClick={() => setShowCC(v => !v)} style={{ display: "flex", alignItems: "center", gap: 9, padding: "0 16px", height: 58, background: T.ink05, borderRight: `1.5px solid ${T.ink10}`, borderRadius: "12px 0 0 12px", minWidth: 112, transition: "background .15s", border: "none", cursor: "pointer" }}
+    <div className="flex gap-4 mb-1">
+      {/* Country selection - Separate Field */}
+      <div 
+        ref={ccRef} 
+        style={{ 
+          position: "relative", 
+          flexShrink: 0,
+          borderRadius: 14, 
+          border: `2px solid ${bc}`, 
+          background: T.white, 
+          transition: "border-color .2s, box-shadow .2s", 
+          boxShadow: phoneErr ? `0 0 0 4px ${T.red}12` : foc ? `0 0 0 5px ${C.accent}14` : "0 2px 12px rgba(0,0,0,.05)",
+          width: 120
+        }}
+      >
+        <button 
+          type="button" 
+          title="Select country code" 
+          onClick={() => setShowCC(v => !v)} 
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 9, padding: "0 16px", height: 58, background: T.ink05, borderRadius: 12, width: "100%", transition: "background .15s", border: "none", cursor: "pointer" }}
           onMouseEnter={e => e.currentTarget.style.background = T.ink10}
-          onMouseLeave={e => e.currentTarget.style.background = T.ink05}>
-          <span style={{ fontSize: 20 }}>{country.flag}</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, fontWeight: 500, color: T.ink }}>{country.code}</span>
+          onMouseLeave={e => e.currentTarget.style.background = T.ink05}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 20 }}>{country.flag}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, fontWeight: 700, color: T.ink }}>{country.code}</span>
+          </div>
           <svg aria-hidden="true" width={9} height={9} viewBox="0 0 10 10" style={{ transform: showCC ? "rotate(180deg)" : "none", transition: "transform .28s", color: T.ink40 }}>
             <path d="M1.5 3.5l4 4 4-4" stroke="currentColor" strokeWidth={1.7} fill="none" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -792,18 +812,34 @@ function PhoneInputField({ phone, setPhone, country, setCountry, showCC, setShow
           </div>
         )}
       </div>
-      <input id="school-phone" type="tel" autoFocus aria-label="Mobile number" placeholder={country.code === "+91" ? "98765 43210" : "Mobile number"} value={phone}
-        onChange={e => { const v = e.target.value.replace(/\D/g, "").slice(0, country.len); setPhone(v); if (phoneErr) setPhoneErr(""); }}
-        onKeyDown={e => e.key === "Enter" && onEnter()}
-        style={{ flex: 1, padding: "0 18px", height: 58, fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "2.5px", fontFamily: "'DM Mono',monospace", caretColor: C.accent, background: "transparent", border: "none", outline: "none" }}
-      />
-      {phone.length === country.len && (
-        <div style={{ display: "flex", alignItems: "center", paddingRight: 16, animation: "slScaleIn .25s cubic-bezier(.34,1.56,.64,1)" }}>
-          <div style={{ width: 24, height: 24, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg aria-hidden="true" width={11} height={11} viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke={T.white} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+
+      {/* Phone input - Separate Field */}
+      <div 
+        className="flex-1 flex items-center pr-4"
+        style={{ 
+          borderRadius: 14, 
+          border: `2px solid ${bc}`, 
+          background: T.white, 
+          transition: "border-color .2s, box-shadow .2s", 
+          boxShadow: phoneErr ? `0 0 0 4px ${T.red}12` : foc ? `0 0 0 5px ${C.accent}14` : "0 2px 12px rgba(0,0,0,.05)",
+          animation: phoneErr ? "slShake .45s ease" : "none"
+        }}
+        onFocus={() => setFoc(true)} 
+        onBlur={() => setFoc(false)}
+      >
+        <input id="school-phone" type="tel" autoFocus aria-label="Mobile number" placeholder={country.code === "+91" ? "98765 43210" : "Mobile number"} value={phone}
+          onChange={e => { const v = e.target.value.replace(/\D/g, "").slice(0, country.len); setPhone(v); if (phoneErr) setPhoneErr(""); }}
+          onKeyDown={e => e.key === "Enter" && onEnter()}
+          style={{ flex: 1, padding: "0 18px", height: 58, fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "2.5px", fontFamily: "'DM Mono',monospace", caretColor: C.accent, background: "transparent", border: "none", outline: "none" }}
+        />
+        {phone.length === country.len && (
+          <div style={{ display: "flex", alignItems: "center", animation: "slScaleIn .25s cubic-bezier(.34,1.56,.64,1)" }}>
+            <div style={{ width: 24, height: 24, borderRadius: "50%", background: T.green, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg aria-hidden="true" width={11} height={11} viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke={T.white} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

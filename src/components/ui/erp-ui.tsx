@@ -244,13 +244,14 @@ export const Alert = ({ type = "info", title, message, dismissible }: AlertErpPr
 // ─── CARD ──────────────────────────────────────────────────
 interface ErpCardProps {
     children: React.ReactNode;
+    title?: string;
     className?: string;
     style?: React.CSSProperties;
     noPad?: boolean;
     hover?: boolean;
 }
 
-export const ErpCard = ({ children, className, style, noPad, hover }: ErpCardProps) => (
+export const ErpCard = ({ children, title, className, style, noPad, hover }: ErpCardProps) => (
     <div
         className={`${hover ? "hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer" : ""} ${className ?? ""}`}
         style={{ 
@@ -264,6 +265,11 @@ export const ErpCard = ({ children, className, style, noPad, hover }: ErpCardPro
             ...style 
         }}
     >
+        {title && (
+            <div className="mb-5 pb-4 border-b border-gray-100">
+                <h3 className="text-[13px] font-bold text-gray-800 uppercase tracking-wider">{title}</h3>
+            </div>
+        )}
         {children}
     </div>
 );

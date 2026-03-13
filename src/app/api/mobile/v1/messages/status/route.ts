@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
-import { getMobileAuth } from "@/lib/auth-mobile";
+import { getMobileAuth, verifyToken } from "@/lib/auth-mobile";
 import { updateMessageReceiptAction } from "@/app/actions/parent-actions";
 
 export async function POST(req: Request) {
     try {
-        const auth = await getMobileAuth(req);
+        // Support both parent (phone-based) and staff (Bearer JWT) auth
+        const authHeader = req.headers.get("Authorization") ?? "";
+        const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+        let auth: any = null;
+        if (token) {
+            auth = await verifyToken(token);
+        }
+        if (!auth) {
+            auth = await getMobileAuth(req);
+        }
         if (!auth) {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }

@@ -437,15 +437,15 @@ export function AddStaffForm({
                 </div>
             </div>
 
-            {/* Role & Permissions */}
+            {/* Account Type & Branch */}
             <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <div className="mb-6 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100/50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
-                        <Shield className="h-5 w-5" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100/50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                        <Users className="h-5 w-5" />
                     </div>
                     <div>
-                        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Roles & Permissions</h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Assign system access level and permissions.</p>
+                        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Account Type</h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">System account level and branch assignment.</p>
                     </div>
                 </div>
 
@@ -488,7 +488,6 @@ export function AddStaffForm({
                                     defaultValue={initialData?.branchId || ""}
                                     className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
                                 >
-                                    {/* Only show "All Branches" if creating an Admin (School Admin) */}
                                     <option value="">{selectedRole === "ADMIN" ? "All Branches (School Level)" : "Main Branch (Default)"}</option>
                                     {branches.map((b) => (
                                         <option key={b.id} value={b.id}>
@@ -502,38 +501,9 @@ export function AddStaffForm({
                             </div>
                         </div>
                     )}
-
-                    {/* Permissions Role (Hidden if Admin?) - Let's keep it but optional for Admin */}
-                    {selectedRole !== "ADMIN" && (
-                        <div className="space-y-2 md:col-span-2">
-                            <label htmlFor="customRoleId" className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                                Access Permissions Profile
-                            </label>
-                            <div className="relative">
-                                <select
-                                    id="customRoleId"
-                                    name="customRoleId"
-                                    defaultValue={initialData?.customRoleId || ""}
-                                    className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium transition-all focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
-                                >
-                                    <option value="">Standard (Restricted Access)</option>
-                                    {roles?.map((role) => (
-                                        <option key={role.id} value={role.id}>
-                                            {role.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-zinc-400">
-                                    <ArrowUpDown className="h-4 w-4" />
-                                </div>
-                            </div>
-                            <p className="text-xs text-zinc-500">
-                                Defines specific module access for non-admin staff. These profiles are managed in the <Link href={`/s/${schoolSlug}/hr/roles`} className="text-brand hover:underline">Roles</Link> section.
-                            </p>
-                        </div>
-                    )}
                 </div>
             </div>
+
 
             {/* 2. Professional Details */}
             <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/50">

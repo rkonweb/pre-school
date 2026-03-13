@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { format, isFuture, isToday, parseISO } from "date-fns";
 import { getSchoolNow } from "@/lib/date-utils";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Play, CheckCircle2, Clock, X } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Play, CheckCircle2, Clock, X, Lock } from "lucide-react";
 import { StandardActionButton } from "@/components/ui/StandardActionButton";
 import { AttendanceCard, AttendanceStatus } from "@/components/dashboard/attendance/AttendanceCard";
 import { getAttendanceDataAction, markAttendanceAction } from "@/app/actions/attendance-actions"; // We will rename/export these
@@ -19,11 +19,15 @@ interface AttendanceClientProps {
     academicYears?: any[];
     currentAcademicYear?: any;
     schoolTimezone?: string;
+    /** True if the logged-in user is Admin or Super Admin */
+    isAdmin?: boolean;
+    /** IDs of classrooms this user is Class Teacher of (empty = not a class teacher) */
+    classTeacherClassroomIds?: string[];
 }
 
-export default function AttendanceClient({ slug, classrooms, academicYears = [], currentAcademicYear, schoolTimezone = "Asia/Kolkata" }: AttendanceClientProps) {
+export default function AttendanceClient({ slug, classrooms, academicYears = [], currentAcademicYear, schoolTimezone = "Asia/Kolkata", isAdmin = false, classTeacherClassroomIds = [] }: AttendanceClientProps) {
     const { role } = useRolePermissions();
-    const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+    const isAdminUser = isAdmin || role === "ADMIN" || role === "SUPER_ADMIN";
 
     const [date, setDate] = useState("");
 
@@ -100,7 +104,13 @@ export default function AttendanceClient({ slug, classrooms, academicYears = [],
 
     const schoolNow = getSchoolNow(schoolTimezone);
     const todayStr = `${schoolNow.getFullYear()}-${String(schoolNow.getMonth() + 1).padStart(2, '0')}-${String(schoolNow.getDate()).padStart(2, '0')}`;
-    const isDateEditable = isAdmin || date === todayStr;
+
+    // Class Teacher can only mark attendance for their assigned class(es), and only for today
+    const isClassTeacherOfSelected = classTeacherClassroomIds.includes(selectedClassId);
+    const canMarkAttendance = isAdminUser
+        ? date === todayStr  // Admins: today only (unless they want to allow past edits)
+        : isClassTeacherOfSelected && date === todayStr; // Teachers: only their class + today
+    const isDateEditable = canMarkAttendance;
 
     // Stats
     const stats = {
@@ -158,7 +168,7 @@ export default function AttendanceClient({ slug, classrooms, academicYears = [],
                         )}
                     </select>
 
-                    {/* Start Attendance Button (Only for Today) */}
+                    {/* Start Attendance Button (Only for Class Teacher of selected class + today) */}
                     {isDateEditable && students.length > 0 && (
                         <StandardActionButton
                             onClick={startFocusMode}
@@ -167,6 +177,14 @@ export default function AttendanceClient({ slug, classrooms, academicYears = [],
                             label={unmarkedCount > 0 ? "Take Attendance" : "Review Attendance"}
                             permission={{ module: 'attendance', action: 'mark' }}
                         />
+                    )}
+
+                    {/* Lock notice for non-class-teachers */}
+                    {!isAdminUser && !isClassTeacherOfSelected && classrooms.length > 0 && (
+                        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:border-amber-800/50 dark:bg-amber-900/20 dark:text-amber-400">
+                            <Lock className="h-3.5 w-3.5" />
+                            You are not the Class Teacher for this class
+                        </div>
                     )}
                 </div>
             </div>

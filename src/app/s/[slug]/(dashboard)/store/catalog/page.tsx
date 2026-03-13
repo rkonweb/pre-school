@@ -19,31 +19,68 @@ function getTypeInfo(type: string) {
 
 // ─── Export helper ────────────────────────────────────────────────────────────
 async function exportItems(items: any[], format: "csv" | "xlsx") {
-    const { utils, writeFile } = await import("xlsx");
+    if (format === "csv") {
+        const Papa = (await import("papaparse")).default;
+        const HEADERS = ["Name", "Type", "Category", "Grade", "Price", "TaxPercentage", "Stock", "LowStockAlert", "HSNCode", "Description", "IsActive", "CreatedAt"];
+        const dataRows = items.map(i => ({
+            Name: i.name,
+            Type: i.type,
+            Category: i.category || "",
+            Grade: i.gradeLevel || "All",
+            Price: i.price,
+            TaxPercentage: i.taxPercentage,
+            Stock: i.inventories?.[0]?.quantity ?? 0,
+            LowStockAlert: i.inventories?.[0]?.lowStockAlert ?? 10,
+            HSNCode: i.hsnCode || "",
+            Description: i.description || "",
+            IsActive: i.isActive ? "Yes" : "No",
+            CreatedAt: i.createdAt ? new Date(i.createdAt).toLocaleDateString("en-IN") : "",
+        }));
+        const csv = Papa.unparse({ fields: HEADERS, data: dataRows });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `store-catalog-${new Date().toISOString().slice(0, 10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+    }
+
+    const ExcelJS = (await import("exceljs")).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Catalog");
 
     const HEADERS = ["Name", "Type", "Category", "Grade", "Price", "TaxPercentage", "Stock", "LowStockAlert", "HSNCode", "Description", "IsActive", "CreatedAt"];
+    worksheet.columns = HEADERS.map(h => ({ header: h, key: h, width: 20 }));
 
-    const dataRows = items.map(i => [
-        i.name,
-        i.type,
-        i.category || "",
-        i.gradeLevel || "All",
-        i.price,
-        i.taxPercentage,
-        i.inventories?.[0]?.quantity ?? 0,
-        i.inventories?.[0]?.lowStockAlert ?? 10,
-        i.hsnCode || "",
-        i.description || "",
-        i.isActive ? "Yes" : "No",
-        i.createdAt ? new Date(i.createdAt).toLocaleDateString("en-IN") : "",
-    ]);
+    items.forEach(i => {
+        worksheet.addRow({
+            Name: i.name,
+            Type: i.type,
+            Category: i.category || "",
+            Grade: i.gradeLevel || "All",
+            Price: i.price,
+            TaxPercentage: i.taxPercentage,
+            Stock: i.inventories?.[0]?.quantity ?? 0,
+            LowStockAlert: i.inventories?.[0]?.lowStockAlert ?? 10,
+            HSNCode: i.hsnCode || "",
+            Description: i.description || "",
+            IsActive: i.isActive ? "Yes" : "No",
+            CreatedAt: i.createdAt ? new Date(i.createdAt).toLocaleDateString("en-IN") : "",
+        });
+    });
 
-    // aoa_to_sheet (array-of-arrays) guarantees headers are always written
-    const ws = utils.aoa_to_sheet([HEADERS, ...dataRows]);
-    ws["!cols"] = [{ wch: 30 }, { wch: 12 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 14 }, { wch: 8 }, { wch: 14 }, { wch: 12 }, { wch: 35 }, { wch: 10 }, { wch: 12 }];
-    const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, "Catalog");
-    writeFile(wb, `store-catalog-${new Date().toISOString().slice(0, 10)}.${format}`, { bookType: format === "csv" ? "csv" : "xlsx" });
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `store-catalog-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    a.click();
+    window.URL.revokeObjectURL(url);
 }
 
 // ─── Import Modes ─────────────────────────────────────────────────────────────
@@ -91,14 +128,28 @@ function ImportModal({ slug, onClose, onSuccess }: { slug: string; onClose: () =
         setError("");
         setRows([]);
         try {
-            const { read, utils } = await import("xlsx");
             const buf = await file.arrayBuffer();
-            const wb = read(buf, { type: "array", cellDates: true, raw: false });
-            const ws = wb.Sheets[wb.SheetNames[0]];
-            // sheet_to_json with raw:false converts numbers/dates to strings consistently
-            const data: any[] = utils.sheet_to_json(ws, { defval: "", raw: false });
+            const ExcelJS = (await import("exceljs")).default;
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(buf);
+            const worksheet = workbook.worksheets[0];
+            
+            const data: any[] = [];
+            const headers: string[] = [];
+            worksheet.getRow(1).eachCell((cell) => {
+                headers.push(String(cell.value));
+            });
+
+            worksheet.eachRow((row, rowNumber) => {
+                if (rowNumber === 1) return;
+                const rowData: any = {};
+                row.eachCell((cell, colNumber) => {
+                    rowData[headers[colNumber - 1]] = cell.value;
+                });
+                data.push(rowData);
+            });
+
             if (!data.length) { setError("File appears to be empty or has no data rows."); return; }
-            const headers = Object.keys(data[0] || {});
             const hasName = headers.some(h => h.toLowerCase().replace(/[\s_]/g, "").includes("name"));
             const hasPrice = headers.some(h => h.toLowerCase().replace(/[\s_]/g, "").includes("price"));
             if (!hasName || !hasPrice) {
@@ -116,17 +167,27 @@ function ImportModal({ slug, onClose, onSuccess }: { slug: string; onClose: () =
     };
 
     const handleDownloadTemplate = async () => {
-        const { utils, writeFile } = await import("xlsx");
+        const ExcelJS = (await import("exceljs")).default;
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Template");
+
         const sample = [
             { Name: "Grade 5 Math Textbook", Type: "BOOK", Category: "Academic", Grade: "Grade 5", Price: 250, TaxPercentage: 0, Stock: 100, LowStockAlert: 10, HSNCode: "4901", Description: "NCERT Mathematics Grade 5", IsActive: "Yes" },
             { Name: "Summer Uniform Shirt", Type: "UNIFORM", Category: "Uniform", Grade: "All", Price: 350, TaxPercentage: 5, Stock: 200, LowStockAlert: 20, HSNCode: "6205", Description: "White cotton shirt", IsActive: "Yes" },
             { Name: "A4 Notebook 200 Pages", Type: "STATIONERY", Category: "Stationery", Grade: "All", Price: 60, TaxPercentage: 12, Stock: 500, LowStockAlert: 50, HSNCode: "4820", Description: "200-page ruled notebook", IsActive: "Yes" },
         ];
-        const ws = utils.json_to_sheet(sample);
-        ws["!cols"] = [{ wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 8 }, { wch: 14 }, { wch: 8 }, { wch: 14 }, { wch: 8 }, { wch: 35 }, { wch: 10 }];
-        const wb = utils.book_new();
-        utils.book_append_sheet(wb, ws, "Template");
-        writeFile(wb, "store-catalog-template.xlsx");
+
+        worksheet.columns = Object.keys(sample[0]).map(key => ({ header: key, key: key, width: 20 }));
+        worksheet.addRows(sample);
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "store-catalog-template.xlsx";
+        a.click();
+        window.URL.revokeObjectURL(url);
     };
 
     const handleImport = () => {

@@ -1,33 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'core/theme/app_theme.dart';
-import 'core/routing/app_router.dart';
-import 'sync/background.dart';
+import 'src/features/hybrid/presentation/screens/hybrid_dashboard_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Background Sync Engine for offline pushes
-  initializeBackgroundSync();
-
-  runApp(
-    const ProviderScope(
-      child: BodhiStaffApp(),
-    ),
-  );
+void main() {
+  runApp(const MyApp());
 }
 
-class BodhiStaffApp extends StatelessWidget {
-  const BodhiStaffApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Bodhi Board Staff',
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      // Router configuration matching our shared-axis transitions
-      routerConfig: AppRouter.router,
+      title: 'Bodhi Staff App',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      home: const HybridDashboardScreen(),
     );
   }
 }

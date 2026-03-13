@@ -190,6 +190,7 @@ export async function createHomeworkAction(slug: string, data: {
 // ============================================
 export async function updateHomeworkAction(slug: string, id: string, data: {
     title?: string;
+    subject?: string;
     description?: string;
     instructions?: string;
     videoUrl?: string;
@@ -209,6 +210,7 @@ export async function updateHomeworkAction(slug: string, id: string, data: {
 
         const updateData: any = {};
         if (data.title !== undefined) updateData.title = data.title;
+        if (data.subject !== undefined) updateData.subject = data.subject;
         if (data.description !== undefined) updateData.description = data.description;
         if (data.instructions !== undefined) updateData.instructions = data.instructions;
         if (data.videoUrl !== undefined) updateData.videoUrl = data.videoUrl;
