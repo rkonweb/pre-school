@@ -276,7 +276,5 @@ export async function POST(req: Request) {
     } catch (error: any) {
         console.error("Transport Apply Error:", error);
         return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
     }
 }

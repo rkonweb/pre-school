@@ -33,5 +33,9 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSLocationUsageDescription</key>
+	<string>EduSphere needs your location to set your pickup address for school transport.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>EduSphere needs your location to set your pickup address for school transport.</string>
 </dict>
 </plist>

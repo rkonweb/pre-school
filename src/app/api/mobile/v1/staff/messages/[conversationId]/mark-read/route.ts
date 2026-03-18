@@ -64,7 +64,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ convers
     } catch (error: any) {
         console.error("Staff Mark Read Mobile API Error:", error);
         return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
     }
 }

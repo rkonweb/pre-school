@@ -73,8 +73,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ conversa
     } catch (error: any) {
         console.error("Conversation API Error:", error);
         return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
     }
 }
 
