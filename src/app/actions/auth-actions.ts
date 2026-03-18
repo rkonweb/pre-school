@@ -110,7 +110,9 @@ export async function sendOtpAction(mobile: string, type: "signup" | "login" | "
                     where: {
                         OR: [
                             { parentMobile: { contains: cleanMobile.slice(-10) } },
-                            { emergencyContactPhone: { contains: cleanMobile.slice(-10) } }
+                            { emergencyContactPhone: { contains: cleanMobile.slice(-10) } },
+                            { fatherPhone: { contains: cleanMobile.slice(-10) } },
+                            { motherPhone: { contains: cleanMobile.slice(-10) } }
                         ]
                     }
                 });

@@ -4,6 +4,9 @@ import { getMobileAuth } from "@/lib/auth-mobile";
 import { generateText } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // GET all messages in a specific conversation
 export async function GET(req: Request, { params }: { params: Promise<{ conversationId: string }> | { conversationId: string } }) {
     try {
@@ -32,25 +35,33 @@ export async function GET(req: Request, { params }: { params: Promise<{ conversa
         // Disabled automatic "READ" marking on GET - this is now handled explicitly by the /mark-read endpoint
 
         // Fetch messages
-        const messages = await prisma.message.findMany({
+        const rawMessages = await prisma.message.findMany({
             where: { conversationId },
             orderBy: { createdAt: 'asc' }
         });
+        
+        // Filter flagged messages from receivers
+        const messages = rawMessages.filter(m => {
+           if (m.isFlagged && m.senderType !== 'PARENT') return false;
+           // If it's a parent, they only see their own flagged messages
+           if (m.isFlagged && m.senderType === 'PARENT' && m.senderId !== phone) return false;
+           return true; 
+        });
+
+        const typingThreshold = new Date(Date.now() - 5000); // 5 seconds
+        const isTyping = conversation.staffTypingAt && conversation.staffTypingAt > typingThreshold;
 
         return NextResponse.json({
             success: true,
+            isTyping: isTyping,
             messages: messages
-                .filter((m: any) => {
-                    // Hide flagged messages sent by others (staff sent something flagged → parent can't see it)
-                    if (m.isFlagged && m.senderType !== 'PARENT') return false;
-                    return true;
-                })
                 .map((m: any) => ({
                     id: m.id,
                     content: m.content,
                     type: m.type,
                     senderType: m.senderType,
                     senderName: m.senderName,
+                    isMe: m.senderType === 'PARENT' && m.senderId === phone,
                     isRead: m.isRead,
                     deliveryStatus: m.deliveryStatus,
                     isFlagged: m.isFlagged,
@@ -97,9 +108,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ convers
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
         }
 
-        const parentName = student.fatherPhone === phone ? (student.fatherName || 'Father')
-            : student.motherPhone === phone ? (student.motherName || 'Mother')
-                : 'Guardian';
+        let parentName = `${student.firstName} (G)`;
+        if (student.fatherPhone === phone) parentName = `${student.firstName} (F)`;
+        else if (student.motherPhone === phone) parentName = `${student.firstName} (M)`;
 
         // --- Moderation Checks ---
         const { moderateMessage } = await import('@/lib/chat-moderator');
@@ -127,6 +138,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ convers
                 content: finalContent,
                 type: "TEXT",
                 senderType: "PARENT",
+                senderId: phone,
                 senderName: parentName,
                 isFlagged: isFlagged,
                 flaggedReason: flaggedReason,

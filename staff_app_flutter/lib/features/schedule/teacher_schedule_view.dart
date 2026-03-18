@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../../core/state/auth_state.dart';
+import '../../shared/components/module_popup_shell.dart';
 
 // ─── CSS var equivalents ──────────────────────────────────────────────────────
 const _ink   = Color(0xFF140E28);
@@ -218,10 +219,14 @@ class _TeacherScheduleViewState extends ConsumerState<TeacherScheduleView> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(scheduleDataProvider);
-    return Scaffold(
+    return ModulePopupShell(
+      title: 'Timetable',
+      subtitle: _active == _todayKey() ? 'Today\'s schedule' : _dayFulls[_dayKeys.indexOf(_active)],
+      actionIcon: Icons.refresh_rounded,
+      onActionIcon: () => ref.invalidate(scheduleDataProvider),
       backgroundColor: const Color(0xFFF7F8FC),
       body: Column(children: [
-        _Header(active: _active, async: async, onDaySwitch: (d) => setState(() => _active = d)),
+        _WeekMiniGrid(active: _active, async: async, onDaySwitch: (d) => setState(() => _active = d)),
         Expanded(child: _PeriodsBody(active: _active, async: async, onDaySwitch: (d) => setState(() => _active = d))),
       ]),
     );
@@ -316,6 +321,62 @@ class _Header extends StatelessWidget {
               }).toList(),
             ))),
       ])),
+    );
+  }
+}
+// ─── Week Mini-Grid (extracted from former gradient header) ───────────────────
+class _WeekMiniGrid extends StatelessWidget {
+  final String active;
+  final AsyncValue<Map<String, dynamic>> async;
+  final void Function(String) onDaySwitch;
+  const _WeekMiniGrid({required this.active, required this.async, required this.onDaySwitch});
+
+  @override
+  Widget build(BuildContext context) {
+    final data = async.value ?? {};
+    final days = _parseDays(data);
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+        decoration: BoxDecoration(
+          color: _tSoft,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: _dayKeys.asMap().entries.map((e) {
+            final dk  = e.key;
+            final day = e.value;
+            final isCur = day == active;
+            final pds   = (days[day] ?? []).where((p) => !p.isBreak && !p.isFree).toList();
+            return Expanded(child: GestureDetector(
+              onTap: () => onDaySwitch(day),
+              child: Column(children: [
+                Text(_dayShorts[dk], style: TextStyle(
+                  fontFamily: 'Satoshi', fontSize: 9, fontWeight: FontWeight.w800,
+                  color: isCur ? _tA : _ink3)),
+                const SizedBox(height: 4),
+                Column(children: pds.take(6).map((p) {
+                  final c = _colorFor(p.subj);
+                  return Container(
+                    height: 5, margin: const EdgeInsets.only(bottom: 2),
+                    decoration: BoxDecoration(
+                      color: isCur ? _hexColor(c.bar) : _ink3.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(3)),
+                  );
+                }).toList()),
+                if (pds.isEmpty)
+                  Container(height: 5, decoration: BoxDecoration(
+                    color: _ink3.withOpacity(0.15), borderRadius: BorderRadius.circular(3))),
+                if (isCur)
+                  Container(margin: const EdgeInsets.only(top: 4), width: 4, height: 4,
+                    decoration: BoxDecoration(color: _tA, shape: BoxShape.circle)),
+              ]),
+            ));
+          }).toList(),
+        ),
+      ),
     );
   }
 }

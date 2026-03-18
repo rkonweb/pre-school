@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { getMobileAuth } from "@/lib/auth-mobile";
 import { getFamilyStudentsAction } from "@/app/actions/parent-actions";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // GET all conversations for a student
 export async function GET(req: Request) {
     try {
@@ -21,25 +24,36 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const studentId = searchParams.get('studentId');
 
-        if (!studentId) {
-            return NextResponse.json({ success: false, error: "Student ID is required" }, { status: 400 });
+        // Get parent's students
+        const familyResult = await getFamilyStudentsAction(phone);
+        if (!familyResult.success || !familyResult.students || familyResult.students.length === 0) {
+            return NextResponse.json({ success: false, conversations: [], unreadCount: 0 });
         }
 
-        // Security check: ensure this parent is linked to this student
-        const familyResult = await getFamilyStudentsAction(phone);
-        const hasAccess = familyResult.success && familyResult.students.some((s: any) => s.id === studentId);
-        if (!hasAccess) {
-            console.log("Messages GET Auth Failed. studentId:", studentId, "familyResult students:", familyResult.students?.map((s:any)=>s.id));
-            return NextResponse.json({ success: false, error: "Unauthorized access to student data" }, { status: 403 });
+        const allowedStudentIds = familyResult.students.map((s: any) => s.id);
+
+        let queryStudentIds = allowedStudentIds;
+        if (studentId) {
+            if (!allowedStudentIds.includes(studentId)) {
+                return NextResponse.json({ success: false, error: "Unauthorized access to student data" }, { status: 403 });
+            }
+            queryStudentIds = [studentId];
         }
 
         // Fetch conversations with the latest message snippet
-        const conversations = await prisma.conversation.findMany({
+        const conversationsRaw = await prisma.conversation.findMany({
             where: {
-                studentId,
+                studentId: { in: queryStudentIds },
             },
             include: {
+                student: { select: { firstName: true, lastName: true } },
                 messages: {
+                    where: {
+                        OR: [
+                            { isFlagged: false },
+                            { senderType: 'PARENT' }
+                        ]
+                    },
                     orderBy: { createdAt: 'desc' },
                     take: 1
                 }
@@ -51,28 +65,57 @@ export async function GET(req: Request) {
 
         const unreadCount = await prisma.message.count({
             where: {
-                conversation: { studentId },
+                conversation: { studentId: { in: queryStudentIds } },
                 isRead: false,
                 senderType: { not: 'PARENT' }
             }
         });
 
+        const conversations = await Promise.all(
+            conversationsRaw.map(async (c: any) => {
+                // Determine true title by finding the STAFF sender name
+                const staffMsg = await prisma.message.findFirst({
+                    where: { conversationId: c.id, senderType: 'STAFF' },
+                    orderBy: { createdAt: 'desc' }
+                });
+                
+                let staffAvatar: string | null = null;
+                if (staffMsg && staffMsg.senderId) {
+                    const staffUser = await prisma.user.findUnique({
+                        where: { id: staffMsg.senderId },
+                        select: { avatar: true }
+                    });
+                    if (staffUser) {
+                        staffAvatar = staffUser.avatar;
+                    }
+                }
+                
+                const dynamicTitle = staffMsg?.senderName || c.title || 'Teacher Conversation';
+
+                return {
+                    id: c.id,
+                    title: dynamicTitle,
+                    avatar: staffAvatar,
+                    studentName: `${c.student?.firstName || ''} ${c.student?.lastName || ''}`.trim(),
+                    type: c.type,
+                    participantType: c.participantType,
+                    lastMessageAt: c.lastMessageAt.toISOString(),
+                    latestMessage: c.messages.length > 0 ? {
+                        content: c.messages[0].content,
+                        senderName: c.messages[0].senderName,
+                        senderType: c.messages[0].senderType,
+                        createdAt: c.messages[0].createdAt.toISOString(),
+                        isRead: c.messages[0].isRead,
+                        isFlagged: c.messages[0].isFlagged
+                    } : null
+                };
+            })
+        );
+
         return NextResponse.json({
             success: true,
             unreadCount,
-            conversations: conversations.map((c: any) => ({
-                id: c.id,
-                title: c.title || 'Teacher Conversation',
-                type: c.type,
-                participantType: c.participantType,
-                lastMessageAt: c.lastMessageAt.toISOString(),
-                latestMessage: c.messages.length > 0 ? {
-                    content: c.messages[0].content,
-                    senderName: c.messages[0].senderName,
-                    createdAt: c.messages[0].createdAt.toISOString(),
-                    isRead: c.messages[0].isRead
-                } : null
-            }))
+            conversations
         });
 
     } catch (error: any) {

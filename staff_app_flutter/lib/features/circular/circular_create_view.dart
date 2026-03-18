@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../core/state/auth_state.dart';
 import '../../core/theme/app_theme.dart';
 import 'circular_provider.dart';
+import '../../shared/components/top_nav_bell.dart';
 
 class CircularCreateView extends ConsumerStatefulWidget {
   const CircularCreateView({super.key});
@@ -97,6 +98,8 @@ class _CircularCreateViewState extends ConsumerState<CircularCreateView> {
               onPressed: _submit,
               child: const Text('Post', style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF7C3AED))),
             ),
+          const TopNavBell(badgeText: '3'),
+          const SizedBox(width: 8),
         ],
       ),
       body: Form(

@@ -8,18 +8,208 @@ import '../../shared/components/period_chip.dart';
 import '../../shared/components/class_attendance_hero.dart';
 import '../../shared/components/pending_assignments_card.dart';
 import '../../shared/components/notice_card.dart';
+import '../circular/circular_provider.dart';
+import '../../core/registry/module_registry.dart';
+import '../../core/state/quick_actions_provider.dart';
+import '../../core/state/auth_state.dart';
+import '../../shared/components/all_modules_overlay.dart';
+import '../../shared/components/customise_quick_actions_sheet.dart';
+import '../schedule/teacher_schedule_view.dart';
+import '../attendance/teacher_attendance_view.dart';
+import '../profile/teacher_profile_view.dart';
+import '../attendance/self_attendance_view.dart';
+import '../diary/teacher_diary_view.dart';
+import '../homework/teacher_homework_view.dart';
+import '../leave/teacher_leave_view.dart';
+import '../../shared/components/module_popup_shell.dart';
+import '../ptm/staff_ptm_view.dart';
+
+// Placeholder empty views
+Widget _mockView(String title) => Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: Text(title)),
+      body: Center(child: Text('Popup View for $title')),
+    );
+
+final hasSeenTeacherHintProvider = StateProvider<bool>((ref) => false);
 
 class TeacherDashboardView extends ConsumerWidget {
   const TeacherDashboardView({super.key});
 
+  void _showAllModulesMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const AllModulesOverlay(),
+    );
+  }
+
+  void _handleNavigation(BuildContext context, String route) {
+    Widget? targetView;
+    switch (route) {
+      case '/profile':
+        targetView = const TeacherProfileView();
+        break;
+      case '/attendance':
+        targetView = const TeacherAttendanceView();
+        break;
+      case '/homework':
+        targetView = TeacherHomeworkView();
+        break;
+      case '/schedule':
+      case '/timetable':
+        targetView = TeacherScheduleView();
+        break;
+      case '/leave':
+        targetView = TeacherLeaveView();
+        break;
+      case '/self-attendance':
+        targetView = const StaffSelfAttendanceView();
+        break;
+      case '/diary':
+        targetView = TeacherDiaryView();
+        break;
+      case '/ptm':
+        targetView = const StaffPTMView();
+        break;
+      default:
+        context.push(route);
+        return;
+    }
+
+    if (targetView != null) {
+      showModulePopup(context, targetView);
+    }
+  }
+
+  bool _canAccessModule(String moduleKey, UserProfile? user, String activeRole) {
+    if (user == null) return false;
+    final role = activeRole.toUpperCase();
+    if (role == 'ADMIN' || role == 'SUPER_ADMIN') return true;
+    
+    if (user.permissions.isEmpty) {
+      if (role == 'TEACHER' || role == 'STAFF') {
+        const teacherModules = ['dashboard', 'attendance', 'self_attendance', 'homework', 'schedule', 'communication', 'leave', 'diary', 'ptm'];
+        return teacherModules.contains(moduleKey);
+      }
+      if (role == 'DRIVER') {
+        const driverModules = ['dashboard', 'transport', 'communication', 'leave'];
+        return driverModules.contains(moduleKey);
+      }
+      return ['dashboard', 'leave', 'communication'].contains(moduleKey);
+    }
+    
+    return user.permissions.any((p) => p.startsWith('$moduleKey.'));
+  }
+
+  List<Widget> _buildTodaysPeriods(Map<String, dynamic> data) {
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    final dayName = dayNames[DateTime.now().weekday - 1];
+    
+    final mySchedule = (data['mySchedule'] as Map?)?.map((k, v) => MapEntry(k.toString(), v)) ?? {};
+    final rawPeriods = mySchedule[dayName] as List? ?? [];
+    
+    if (rawPeriods.isEmpty) {
+      return const [
+        Center(child: Text("No periods scheduled for today.", style: TextStyle(color: Color(0xFF7B7291), fontSize: 13, fontFamily: 'Satoshi')))
+      ];
+    }
+
+    final periods = rawPeriods.where((p) => (p['type'] ?? 'CLASS') != 'BREAK').toList();
+    if (periods.isEmpty) {
+      return const [
+        Center(child: Text("No active classes today.", style: TextStyle(color: Color(0xFF7B7291), fontSize: 13, fontFamily: 'Satoshi')))
+      ];
+    }
+
+    int mins(String t) {
+      if (t.isEmpty) return 0;
+      final parts = t.split(':');
+      return int.parse(parts[0]) * 60 + (parts.length > 1 ? int.parse(parts[1]) : 0);
+    }
+    
+    String fmtTime(String t) {
+      if (t.isEmpty) return '';
+      final parts = t.split(':');
+      final h = int.parse(parts[0]);
+      final m = parts.length > 1 ? int.parse(parts[1]) : 0;
+      final suffix = h >= 12 ? 'pm' : 'am';
+      final h12 = h > 12 ? h - 12 : (h == 0 ? 12 : h);
+      return '$h12:${m.toString().padLeft(2, '0')}$suffix';
+    }
+
+    final now = DateTime.now();
+    final curMin = now.hour * 60 + now.minute;
+    
+    List<Widget> chips = [];
+    bool foundLive = false;
+    bool foundNext = false;
+
+    for (var i = 0; i < periods.length; i++) {
+        final m = Map<String, dynamic>.from(periods[i] as Map);
+        final start = (m['startTime'] ?? m['start'] ?? '') as String;
+        final end   = (m['endTime']   ?? m['end']   ?? '') as String;
+        final st = mins(start);
+        final en = mins(end);
+        
+        final subj = ((m['subject'] ?? '') as String).trim();
+        final cls  = ((m['className'] ?? m['class'] ?? '') as String).trim();
+        
+        PeriodStatus status = PeriodStatus.later;
+        if (curMin >= en) {
+            status = PeriodStatus.done;
+        } else if (curMin >= st && curMin < en) {
+            status = PeriodStatus.active;
+            foundLive = true;
+        } else if (curMin < st && !foundNext) {
+            status = PeriodStatus.next;
+            foundNext = true;
+        }
+        
+        chips.add(PeriodChip(
+            subject: subj.isEmpty ? 'Free' : subj, 
+            className: cls.isEmpty ? '--' : cls,
+            time: '${fmtTime(start)}–${fmtTime(end)}',
+            status: status
+        ));
+        
+        if (i < periods.length - 1) {
+            chips.add(const SizedBox(width: 10));
+        }
+    }
+    
+    return chips;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!ref.read(hasSeenTeacherHintProvider)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('New: Access all your modules easily via "All Modules" quick action!'),
+            action: SnackBarAction(label: 'GOT IT', textColor: Colors.white, onPressed: () {}),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+        ref.read(hasSeenTeacherHintProvider.notifier).state = true;
+      }
+      ref.read(quickActionsProvider.notifier).loadDefaultsForRole('TEACHER');
+    });
+
+    final activeQuickActionKeys = ref.watch(quickActionsProvider);
+    final allModulesMap = {for (var m in ModuleRegistry.allModules) m.key: m};
+    final user = ref.watch(userProfileProvider);
+    final activeRole = ref.watch(activeRoleProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // ── Today's Attendance (TOP) ─────────────────────────────────────────
         Padding(
-          padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
+          padding: const EdgeInsets.only(bottom: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -62,135 +252,56 @@ class TeacherDashboardView extends ConsumerWidget {
         const SizedBox(height: 18),
 
         // ── Stat Tiles ───────────────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Expanded(
-                child: const StatTile(
-                  icon: Icons.access_time_rounded,
-                  numText: '6',
-                  label: 'Periods',
-                  chText: 'Today',
-                  chColor: Color(0xFFFF5733),
-                  hoverGradient: AppTheme.teacherTheme,
-                  iconGradient: AppTheme.iconSchedule,
-                ),
+        Row(
+          children: [
+            Expanded(
+              child: const StatTile(
+                icon: Icons.access_time_rounded,
+                numText: '6',
+                label: 'Periods',
+                chText: 'Today',
+                chColor: Color(0xFFFF5733),
+                hoverGradient: AppTheme.teacherTheme,
+                iconGradient: AppTheme.iconSchedule,
+
               ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: const StatTile(
-                  icon: Icons.error_outline_rounded,
-                  numText: '3',
-                  label: 'Pending',
-                  chText: 'Homework',
-                  chColor: Color(0xFFF59E0B),
-                  hoverGradient: AppTheme.teacherTheme,
-                  iconGradient: AppTheme.iconHomework,
-                ),
+            ),
+            const SizedBox(width: 9),
+            Expanded(
+              child: const StatTile(
+                icon: Icons.error_outline_rounded,
+                numText: '3',
+                label: 'Pending',
+                chText: 'Homework',
+                chColor: Color(0xFFF59E0B),
+                hoverGradient: AppTheme.teacherTheme,
+                iconGradient: AppTheme.iconHomework,
               ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: const StatTile(
-                  icon: Icons.star_outline_rounded,
-                  numText: '74%',
-                  label: 'Avg Score',
-                  chText: '↑ 3.1%',
-                  chColor: Color(0xFF16A34A),
-                  hoverGradient: AppTheme.teacherTheme,
-                  iconGradient: AppTheme.iconAttend,
-                ),
+            ),
+            const SizedBox(width: 9),
+            Expanded(
+              child: const StatTile(
+                icon: Icons.star_outline_rounded,
+                numText: '74%',
+                label: 'Avg Score',
+                chText: '↑ 3.1%',
+                chColor: Color(0xFF16A34A),
+                hoverGradient: AppTheme.teacherTheme,
+                iconGradient: AppTheme.iconAttend,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         const SizedBox(height: 14),
 
         // Section header Quick Actions
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          child: Text(
-            'Quick Actions',
-            style: const TextStyle(
-              fontFamily: 'Cabinet Grotesk',
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF140E28),
-              letterSpacing: -0.3,
-            ),
-          ),
-        ),
-        
-        QuickActionGrid(
-          actions: [
-            QuickActionItem(
-              label: 'Attend.',
-              icon: Icons.fact_check_outlined, 
-              baseColor: const Color(0xFF140E28),
-              iconGradient: AppTheme.iconAttend,
-              onTap: () {},
-            ),
-            QuickActionItem(
-              label: 'Marks',
-              icon: Icons.edit_note_rounded, 
-              baseColor: const Color(0xFF140E28),
-              iconGradient: AppTheme.iconMarks,
-              onTap: () {},
-            ),
-            QuickActionItem(
-              label: 'Homework',
-              icon: Icons.menu_book_rounded, 
-              baseColor: const Color(0xFF140E28),
-              iconGradient: AppTheme.iconHomework,
-              onTap: () => context.push('/homework'),
-            ),
-            QuickActionItem(
-              label: 'Leave',
-              icon: Icons.umbrella_rounded, 
-              baseColor: const Color(0xFF140E28),
-              iconGradient: AppTheme.iconLeave,
-              onTap: () => context.push('/leave'),
-            ),
-            QuickActionItem(
-              label: 'Circular',
-              icon: Icons.settings_input_antenna_rounded, 
-              baseColor: const Color(0xFF140E28),
-              iconGradient: AppTheme.iconCircular,
-              onTap: () => context.push('/circular'),
-            ),
-            QuickActionItem(
-              label: 'Parents',
-              icon: Icons.chat_bubble_outline_rounded, 
-              baseColor: const Color(0xFF140E28),
-              iconGradient: AppTheme.iconParents,
-              onTap: () {},
-            ),
-            QuickActionItem(
-              label: 'Schedule',
-              icon: Icons.calendar_today_rounded, 
-              baseColor: const Color(0xFF140E28),
-              iconGradient: AppTheme.iconSchedule,
-              onTap: () => context.push('/schedule'),
-            ),
-            QuickActionItem(
-              label: 'Reports',
-              icon: Icons.timeline_rounded, 
-              baseColor: const Color(0xFF140E28),
-              iconGradient: AppTheme.iconReports,
-              onTap: () {},
-            ),
-          ],
-        ),
-        
-        const SizedBox(height: 18),
-        // Section header Today's Timetable
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "Today's Timetable",
+                'Quick Actions',
                 style: TextStyle(
                   fontFamily: 'Cabinet Grotesk',
                   fontSize: 15,
@@ -199,19 +310,13 @@ class TeacherDashboardView extends ConsumerWidget {
                   letterSpacing: -0.3,
                 ),
               ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: AppTheme.teacherTheme.colors.first.withOpacity(0.05),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                onPressed: () {},
+              GestureDetector(
+                onTap: () => CustomiseQuickActionsSheet.show(context),
                 child: Text(
-                  'View all',
+                  'Customise',
                   style: TextStyle(
                     fontFamily: 'Satoshi',
-                    fontSize: 11.5,
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.teacherTheme.colors.first,
                   ),
@@ -220,26 +325,118 @@ class TeacherDashboardView extends ConsumerWidget {
             ],
           ),
         ),
+        
+        QuickActionGrid(
+          onReorder: (oldIndex, newIndex) {
+            if (oldIndex == 0 || newIndex == 0) return;
+            final actualOld = oldIndex - 1;
+            final actualNew = newIndex - 1;
+            
+            final activeKeys = activeQuickActionKeys
+                .where((k) => allModulesMap.containsKey(k) && _canAccessModule(k, user, activeRole))
+                .toList();
+                
+            final keys = List<String>.from(ref.read(quickActionsProvider));
+            
+            if (actualOld >= 0 && actualOld < activeKeys.length && actualNew >= 0 && actualNew < activeKeys.length) {
+                final oldKey = activeKeys[actualOld];
+                final newKey = activeKeys[actualNew];
+                
+                final realOld = keys.indexOf(oldKey);
+                final realNew = keys.indexOf(newKey);
+                
+                if (realOld != -1 && realNew != -1) {
+                  final temp = keys[realOld];
+                  keys[realOld] = keys[realNew];
+                  keys[realNew] = temp;
+                  ref.read(quickActionsProvider.notifier).saveActions(keys);
+                }
+            }
+          },
+          actions: [
+            QuickActionItem(
+              label: 'All Modules',
+              icon: Icons.apps_rounded,
+              baseColor: const Color(0xFF140E28),
+              iconGradient: AppTheme.teacherTheme,
+              onTap: () => _showAllModulesMenu(context),
+              isDraggable: false,
+            ),
+            ...activeQuickActionKeys
+              .where((k) => allModulesMap.containsKey(k) && _canAccessModule(k, user, activeRole))
+              .map((key) {
+              final module = allModulesMap[key]!;
+              return QuickActionItem(
+                label: module.label,
+                icon: module.icon,
+                baseColor: const Color(0xFF140E28),
+                iconGradient: LinearGradient(
+                  colors: [module.color.withOpacity(0.5), module.color],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () {
+                  if (module.route.isNotEmpty) {
+                    _handleNavigation(context, module.route);
+                  }
+                },
+              );
+            }),
+          ],
+        ),
+        
+        const SizedBox(height: 18),
+        // Section header Today's Timetable
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Today's Timetable",
+              style: TextStyle(
+                fontFamily: 'Cabinet Grotesk',
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF140E28),
+                letterSpacing: -0.3,
+              ),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: AppTheme.teacherTheme.colors.first.withOpacity(0.05),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              onPressed: () => _handleNavigation(context, '/timetable'),
+              child: Text(
+                'View all',
+                style: TextStyle(
+                  fontFamily: 'Satoshi',
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.teacherTheme.colors.first,
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         
-        // Horizontal Scroll for Periods
+        // Horizontal Scroll for Periods linked to the provider
         SizedBox(
-          height: 130,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-            children: const [
-              PeriodChip(subject: 'Maths', className: '7-B', time: '8:00–8:45', status: PeriodStatus.done),
-              SizedBox(width: 10),
-              PeriodChip(subject: 'Maths', className: '6-A', time: '8:45–9:30', status: PeriodStatus.done),
-              SizedBox(width: 10),
-              PeriodChip(subject: 'Maths', className: '8-A', time: '9:30–10:15', status: PeriodStatus.active),
-              SizedBox(width: 10),
-              PeriodChip(subject: 'Maths', className: '9-C', time: '10:30–11:15', status: PeriodStatus.next),
-              SizedBox(width: 10),
-              PeriodChip(subject: 'Maths', className: '10-A', time: '11:15–12:00', status: PeriodStatus.later),
-            ],
-          ),
+          height: 140, // Increased to 140px to solve overflow Renderflex bounds.
+          child: Consumer(builder: (context, ref, _) {
+            final activeSchedule = ref.watch(scheduleDataProvider);
+            return activeSchedule.when(
+              data: (data) => ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(bottom: 14),
+                children: _buildTodaysPeriods(data),
+              ),
+              loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFFF5733))),
+              error: (e, st) => const Center(child: Text('Failed to load schedule', style: TextStyle(color: Colors.red))),
+            );
+          }),
         ),
 
         const SizedBox(height: 18),

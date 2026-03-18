@@ -63,10 +63,10 @@ export async function generateAccountInsights(slug: string, financialYearId?: st
             type: t.type,
             amount: t.amount,
             date: t.date.toISOString().split('T')[0],
-            method: t.paymentMethod,
-            category: t.category.name,
+            method: t.reference || 'N/A',
+            category: t.category?.name || 'Uncategorized',
             vendor: t.vendor?.name || 'N/A',
-            title: t.title
+            title: t.description
         }));
 
         const prompt = `You are an expert financial auditor and AI analyst for a school management system.

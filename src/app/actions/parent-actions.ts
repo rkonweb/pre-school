@@ -402,7 +402,7 @@ export async function getParentDashboardDataAction(schoolSlug: string, parentPho
         }
 
         const students = familyResult.students;
-        const studentIds = students.map(s => s.id);
+        const studentIds = students.map((s: any) => s.id);
 
         // Count unread messages (real-time)
         const unreadMessages = await prisma.message.count({

@@ -1,36 +1,52 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { getMobileAuth } from "@/lib/auth-mobile";
-import { getParentDiaryAction } from "@/app/actions/parent-diary-actions";
 
 export async function GET(req: Request) {
     try {
-        const auth = await getMobileAuth(req);
-        if (!auth) {
+        const authResult = await getMobileAuth(req);
+        if (!authResult) {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
-        const phone = (auth as any).phone;
-        const { searchParams } = new URL(req.url);
-        const studentId = searchParams.get("studentId");
-
-        // Optional filters for calendar
-        const date = searchParams.get("date") || undefined;
-        const month = searchParams.get("month") || undefined;
-        const type = searchParams.get("type") || undefined;
+        const url = new URL(req.url);
+        const studentId = url.searchParams.get('studentId');
 
         if (!studentId) {
-            return NextResponse.json({ success: false, error: "Student ID missing" }, { status: 400 });
+             return NextResponse.json({ success: false, error: "studentId is required" }, { status: 400 });
         }
 
-        const result = await getParentDiaryAction(studentId, phone, { date, month, type });
+        const entries = await prisma.diaryEntry.findMany({
+             where: {
+                 recipients: {
+                      some: { studentId }
+                 }
+             },
+             orderBy: { createdAt: 'desc' },
+             include: {
+                 author: { select: { firstName: true, lastName: true, avatar: true, role: true } },
+                 school: { select: { name: true } }
+             }
+        });
 
-        if (!result.success) {
-            return NextResponse.json({ success: false, error: result.error }, { status: 400 });
-        }
+        const formatted = entries.map(e => ({
+            id: e.id,
+            title: e.title,
+            content: e.content,
+            date: e.createdAt,
+            teacherName: `${e.author.firstName} ${e.author.lastName}`,
+            teacherAvatar: e.author.avatar,
+            category: e.type,
+            isImportant: e.priority === "HIGH"
+        }));
 
-        return NextResponse.json(result);
-    } catch (error: any) {
-        console.error("Mobile Parent Diary API Error:", error);
+        return NextResponse.json({
+            success: true,
+            data: formatted
+        });
+
+    } catch (error) {
+        console.error("Parent Diary Error:", error);
         return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
     }
 }

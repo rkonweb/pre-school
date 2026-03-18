@@ -265,7 +265,7 @@ export async function triggerFeeRemindersAction(schoolSlug: string) {
  * Fetches all conversations across the school for admin monitoring.
  * Includes messages with moderation details.
  */
-export async function getChatHistoryAction(schoolSlug: string) {
+export async function getChatHistoryAction(schoolSlug: string, academicYearId: string = "") {
     try {
         const school = await prisma.school.findUnique({
             where: { slug: schoolSlug }
@@ -273,9 +273,27 @@ export async function getChatHistoryAction(schoolSlug: string) {
 
         if (!school) return { success: false, error: "School not found" };
 
+        // Build date filter from academic year if provided
+        let dateFilter: any = {};
+        if (academicYearId) {
+            const ay = await prisma.academicYear.findFirst({
+                where: { id: academicYearId, schoolId: school.id },
+                select: { startDate: true, endDate: true }
+            });
+            if (ay) {
+                dateFilter = {
+                    lastMessageAt: {
+                        gte: ay.startDate,
+                        lte: ay.endDate
+                    }
+                };
+            }
+        }
+
         const conversations = await prisma.conversation.findMany({
             where: {
-                student: { schoolId: school.id }
+                student: { schoolId: school.id },
+                ...dateFilter
             },
             include: {
                 student: {

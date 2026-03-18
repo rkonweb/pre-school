@@ -1,4 +1,4 @@
-import { PrismaClient } from "../src/generated/client_final";
+import { PrismaClient } from "@prisma/client";
 import {
     sendApplicationOTPAction,
     verifyApplicationOTPAction,
@@ -220,7 +220,7 @@ async function runTests() {
 
             // Run approval transaction (simulate approveAdmissionAction without cookies)
             let studentId: string | undefined;
-            await prisma.$transaction(async (tx) => {
+            await prisma.$transaction(async (tx: any) => {
                 await (tx as any).admission.update({
                     where: { id: admission.id },
                     data: { stage: "ENROLLED" }

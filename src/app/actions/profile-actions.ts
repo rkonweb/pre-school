@@ -180,3 +180,191 @@ export async function getProfileDataAction(slug: string) {
         };
     }
 }
+
+/**
+ * Get the full admin profile for the dedicated profile page.
+ * Returns complete user data with all fields for editing.
+ */
+export async function getFullAdminProfileAction(slug: string) {
+    try {
+        const userRes = await getCurrentUserAction();
+        if (!userRes.success || !userRes.data) {
+            return { success: false, error: "Not authenticated" };
+        }
+
+        const currentUser = userRes.data as any;
+
+        // Get full user data from DB
+        const user = await prisma.user.findUnique({
+            where: { id: currentUser.id },
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                mobile: true,
+                avatar: true,
+                avatarAdjustment: true,
+                gender: true,
+                dateOfBirth: true,
+                bloodGroup: true,
+                role: true,
+                designation: true,
+                department: true,
+                employmentType: true,
+                joiningDate: true,
+                qualifications: true,
+                experience: true,
+                subjects: true,
+                status: true,
+                address: true,
+                addressCity: true,
+                addressState: true,
+                addressZip: true,
+                addressCountry: true,
+                emergencyContactName: true,
+                emergencyContactPhone: true,
+                emergencyContactRelation: true,
+                bankName: true,
+                bankAccountNo: true,
+                bankIfsc: true,
+                facebook: true,
+                linkedin: true,
+                twitter: true,
+                instagram: true,
+                modulePermissions: true,
+                createdAt: true,
+                updatedAt: true,
+                school: {
+                    select: {
+                        name: true,
+                        slug: true,
+                        logo: true,
+                        currency: true,
+                    }
+                },
+                branch: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                customRole: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                managedClassrooms: {
+                    select: {
+                        id: true,
+                        name: true,
+                        _count: { select: { students: true } }
+                    }
+                },
+                _count: {
+                    select: {
+                        leaveRequests: true,
+                        staffAttendance: true,
+                        createdExams: true,
+                        diaryEntries: true,
+                    }
+                }
+            }
+        });
+
+        if (!user) {
+            return { success: false, error: "User not found" };
+        }
+
+        // Calculate staff stats
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const [attendanceCount, presentCount] = await Promise.all([
+            prisma.staffAttendance.count({
+                where: { userId: user.id, date: { gte: thirtyDaysAgo } }
+            }),
+            prisma.staffAttendance.count({
+                where: { userId: user.id, date: { gte: thirtyDaysAgo }, status: 'PRESENT' }
+            })
+        ]);
+
+        const attendanceRate = attendanceCount > 0
+            ? Math.round((presentCount / attendanceCount) * 100)
+            : 100;
+
+        return {
+            success: true,
+            data: {
+                ...user,
+                dateOfBirth: user.dateOfBirth?.toISOString() || null,
+                joiningDate: user.joiningDate?.toISOString() || null,
+                createdAt: user.createdAt.toISOString(),
+                updatedAt: user.updatedAt.toISOString(),
+                stats: {
+                    attendanceRate,
+                    classroomsManaged: user.managedClassrooms.length,
+                    totalStudents: user.managedClassrooms.reduce((acc, c) => acc + c._count.students, 0),
+                    leavesTaken: user._count.leaveRequests,
+                    examsCreated: user._count.createdExams,
+                    diaryEntries: user._count.diaryEntries,
+                }
+            }
+        };
+    } catch (error: any) {
+        console.error("Error fetching full admin profile:", error);
+        return { success: false, error: `Failed to fetch profile: ${error.message}` };
+    }
+}
+
+/**
+ * Update admin profile fields.
+ */
+export async function updateAdminProfileAction(slug: string, data: Record<string, any>) {
+    try {
+        const userRes = await getCurrentUserAction();
+        if (!userRes.success || !userRes.data) {
+            return { success: false, error: "Not authenticated" };
+        }
+
+        const currentUser = userRes.data as any;
+
+        // Allowed fields for update
+        const allowedFields = [
+            'firstName', 'lastName', 'email', 'gender', 'dateOfBirth', 'bloodGroup',
+            'designation', 'department', 'employmentType', 'qualifications', 'experience', 'subjects',
+            'address', 'addressCity', 'addressState', 'addressZip', 'addressCountry',
+            'emergencyContactName', 'emergencyContactPhone', 'emergencyContactRelation',
+            'bankName', 'bankAccountNo', 'bankIfsc',
+            'facebook', 'linkedin', 'twitter', 'instagram',
+            'avatar', 'avatarAdjustment'
+        ];
+
+        // Filter only allowed fields
+        const updateData: Record<string, any> = {};
+        for (const field of allowedFields) {
+            if (data[field] !== undefined) {
+                if (field === 'dateOfBirth' && data[field]) {
+                    updateData[field] = new Date(data[field]);
+                } else {
+                    updateData[field] = data[field];
+                }
+            }
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            return { success: false, error: "No valid fields to update" };
+        }
+
+        await prisma.user.update({
+            where: { id: currentUser.id },
+            data: updateData
+        });
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error updating admin profile:", error);
+        return { success: false, error: `Failed to update profile: ${error.message}` };
+    }
+}

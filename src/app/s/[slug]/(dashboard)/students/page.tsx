@@ -1,13 +1,13 @@
 "use client";
 
-import { Plus, Filter, ArrowUpDown, Edit3, Trash2, Loader2, ChevronUp, ChevronDown, Phone, Settings2, Check, User as UserIcon, GripVertical } from "lucide-react";
+import { Plus, Filter, ArrowUpDown, Edit3, Trash2, Loader2, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Phone, Settings2, Check, User as UserIcon, GripVertical, Users, UserCheck, UserMinus, BookOpen } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { useParams, useRouter } from "next/navigation";
 import { SearchInput } from "@/components/ui/SearchInput";
-import { getStudentsAction, deleteStudentAction } from "@/app/actions/student-actions";
+import { getStudentsAction, deleteStudentAction, getStudentOverviewAction } from "@/app/actions/student-actions";
 import { searchStudentsElasticAction } from "@/app/actions/search-actions";
 import { getClassroomsAction } from "@/app/actions/classroom-actions";
 import { toast } from "sonner";
@@ -37,16 +37,16 @@ export default function StudentsPage() {
         direction: "desc"
     });
 
-    // Progressive loading state
+    // Pagination state
     const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const sentinelRef = useRef<HTMLDivElement>(null);
-    const isLoadingMoreRef = useRef(false);
-    const hasMoreRef = useRef(true);
+    const [pageSize, setPageSize] = useState(30);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const [isPaginating, setIsPaginating] = useState(false);
 
     const [students, setStudents] = useState<any[]>([]);
     const [classrooms, setClassrooms] = useState<any[]>([]);
+    const [overview, setOverview] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [mounted, setMounted] = useState(false);
     const [showColumnToggle, setShowColumnToggle] = useState(false);
@@ -89,15 +89,15 @@ export default function StudentsPage() {
     useEffect(() => {
         setMounted(true);
         loadClassrooms();
+        loadOverview();
     }, [slug]);
 
     // Reset list when filters/search/tab change — do a fresh page-1 load
     useEffect(() => {
         setPage(1);
         setStudents([]);
-        setHasMore(true);
-        hasMoreRef.current = true;
-    }, [slug, statusFilter, classFilter, genderFilter, sortConfig, activeTab, searchTerm]);
+        setTotalPages(1);
+    }, [slug, statusFilter, classFilter, genderFilter, sortConfig, activeTab, searchTerm, pageSize]);
 
     // Trigger load whenever page changes
     useEffect(() => {
@@ -112,7 +112,7 @@ export default function StudentsPage() {
 
         if (searchTerm && searchTerm.length >= 2) {
             setIsLoading(page === 1);
-            if (page === 1) setIsLoadingMore(false);
+            if (page > 1) setIsPaginating(true);
             const timer = setTimeout(() => { if (!cancelled) run(); }, 400);
             return () => { cancelled = true; clearTimeout(timer); };
         } else {
@@ -120,24 +120,9 @@ export default function StudentsPage() {
             run();
             return () => { cancelled = true; };
         }
-    }, [page, slug, statusFilter, classFilter, genderFilter, sortConfig, activeTab, searchTerm]);
+    }, [page, slug, statusFilter, classFilter, genderFilter, sortConfig, activeTab, searchTerm, pageSize]);
 
-    // Intersection Observer — triggers loading next page when sentinel is visible
-    useEffect(() => {
-        const sentinel = sentinelRef.current;
-        if (!sentinel) return;
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && !isLoadingMoreRef.current && hasMoreRef.current) {
-                    setPage(prev => prev + 1);
-                }
-            },
-            { rootMargin: "200px" }
-        );
-        observer.observe(sentinel);
-        return () => observer.disconnect();
-    }, [mounted]);
 
     const loadClassrooms = async () => {
         const res = await getClassroomsAction(slug);
@@ -146,10 +131,16 @@ export default function StudentsPage() {
         }
     };
 
+    const loadOverview = async () => {
+        const res = await getStudentOverviewAction(slug);
+        if (res?.success) {
+            setOverview(res.data);
+        }
+    };
+
     const loadData = async (currentPage: number, cancelled?: boolean) => {
         if (currentPage > 1) {
-            isLoadingMoreRef.current = true;
-            setIsLoadingMore(true);
+            setIsPaginating(true);
         }
         try {
             const filters: any = {};
@@ -172,7 +163,7 @@ export default function StudentsPage() {
 
             const res = await getStudentsAction(slug, {
                 page: currentPage,
-                limit: 30,
+                limit: pageSize,
                 search: searchTerm,
                 filters,
                 sort: sortConfig
@@ -182,11 +173,10 @@ export default function StudentsPage() {
 
             if (res.success) {
                 const newStudents = res.students || [];
-                setStudents(prev => currentPage === 1 ? newStudents : [...prev, ...newStudents]);
+                setStudents(newStudents);
                 const pagination = res.pagination;
-                const moreAvailable = (pagination?.page ?? 0) < (pagination?.totalPages ?? 0);
-                setHasMore(moreAvailable);
-                hasMoreRef.current = moreAvailable;
+                setTotalPages(pagination?.totalPages || 1);
+                setTotalItems(pagination?.total || 0);
             } else {
                 toast.error(res.error || "Failed to load students");
             }
@@ -196,8 +186,7 @@ export default function StudentsPage() {
         } finally {
             if (!cancelled) {
                 setIsLoading(false);
-                setIsLoadingMore(false);
-                isLoadingMoreRef.current = false;
+                setIsPaginating(false);
             }
         }
     };
@@ -267,6 +256,48 @@ export default function StudentsPage() {
                     </div>
                 }
             />
+
+            {/* Overview Cards */}
+            {overview && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <Users size={24} />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-500">Total Students</p>
+                            <h3 className="text-2xl font-bold text-gray-900">{overview.totalStudents}</h3>
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <UserCheck size={24} />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-500">Active Students</p>
+                            <h3 className="text-2xl font-bold text-gray-900">{overview.activeStudents}</h3>
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center">
+                            <UserMinus size={24} />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-500">Inactive Students</p>
+                            <h3 className="text-2xl font-bold text-gray-900">{overview.inactiveStudents}</h3>
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <BookOpen size={24} />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-500">Total Classes</p>
+                            <h3 className="text-2xl font-bold text-gray-900">{overview.totalClasses}</h3>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <ErpTabs
                 tabs={[
@@ -504,20 +535,71 @@ export default function StudentsPage() {
                                 </tbody>
                             </table>
                         </div>
-                        {/* Progressive load sentinel + status */}
-                        <div className="border-t border-gray-100">
-                            {isLoadingMore && (
-                                <div className="flex items-center justify-center gap-2 p-4 text-[13px] text-gray-400">
-                                    <div className="w-4 h-4 rounded-full border-2 border-gray-100 border-t-brand animate-spin" style={{ borderTopColor: 'var(--brand-color)' }} />
-                                    <span>Loading more students...</span>
+                        {/* Pagination footer */}
+                        <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-100 bg-gray-50/50 px-6 py-4 gap-4">
+                            <div className="flex flex-wrap items-center gap-4 text-[13px] font-medium text-gray-500">
+                                <span className="whitespace-nowrap">
+                                    Total: <strong className="text-gray-900">{totalItems}</strong> students
+                                </span>
+                                <div className="h-4 w-px bg-gray-300 hidden sm:block" />
+                                <div className="flex items-center gap-2">
+                                    <span className="whitespace-nowrap">Rows per page:</span>
+                                    <select
+                                        title="Rows per page"
+                                        value={pageSize}
+                                        onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                                        className="rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 outline-none cursor-pointer hover:border-brand"
+                                        disabled={isPaginating || isLoading}
+                                        style={{ '--tw-border-opacity': 1, 'borderColor': 'var(--brand-color, #e5e7eb)' } as any}
+                                    >
+                                        <option value={10}>10</option>
+                                        <option value={30}>30</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
                                 </div>
-                            )}
-                            {!hasMore && students.length > 0 && !isLoadingMore && (
-                                <p className="p-3 text-center text-[12px] text-gray-400 font-semibold">
-                                    All {students.length} students loaded ✓
-                                </p>
-                            )}
-                            <div ref={sentinelRef} className="h-1" />
+                            </div>
+                            
+                            <div className="flex items-center gap-6">
+                                <div className="text-[13px] font-semibold text-gray-500 hidden sm:block">
+                                    Page {page} of {totalPages || 1}
+                                    {isPaginating && <span className="ml-2 text-brand">Loading...</span>}
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <button 
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-white disabled:cursor-not-allowed transition-colors"
+                                        onClick={() => setPage(1)}
+                                        disabled={page === 1 || isPaginating}
+                                        title="First Page"
+                                    >
+                                        <ChevronsLeft className="w-4 h-4" />
+                                    </button>
+                                    <button 
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-white disabled:cursor-not-allowed transition-colors"
+                                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                                        disabled={page === 1 || isPaginating}
+                                        title="Previous Page"
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </button>
+                                    <button 
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-white disabled:cursor-not-allowed transition-colors"
+                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={page >= totalPages || isPaginating}
+                                        title="Next Page"
+                                    >
+                                        <ChevronRight className="w-4 h-4" />
+                                    </button>
+                                    <button 
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-white disabled:cursor-not-allowed transition-colors"
+                                        onClick={() => setPage(totalPages)}
+                                        disabled={page >= totalPages || isPaginating}
+                                        title="Last Page"
+                                    >
+                                        <ChevronsRight className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </>
                 )}

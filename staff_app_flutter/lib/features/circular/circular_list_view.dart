@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/state/auth_state.dart';
 import '../../shared/components/notice_card.dart';
 import 'circular_provider.dart';
 import 'circular_model.dart';
+import '../../shared/components/module_popup_shell.dart';
+
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+
+const _bg2  = Color(0xFFF5F3FF);
 
 class CircularListView extends ConsumerWidget {
   const CircularListView({super.key});
@@ -14,25 +21,14 @@ class CircularListView extends ConsumerWidget {
     final user = ref.watch(userProfileProvider);
     final canPost = user?.role == 'PRINCIPAL' || user?.role == 'ADMIN';
     
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F3FF),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'School Circulars',
-          style: TextStyle(
-            fontFamily: 'Cabinet Grotesk',
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF140E28),
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF140E28)),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+    return ModulePopupShell(
+      title: 'Circulars',
+      subtitle: 'View notices and announcements',
+      actionLabel: canPost ? '+ Post' : null,
+      onAction: canPost ? () => context.push('/circular/create') : null,
+      actionIcon: canPost ? null : Icons.refresh_rounded,
+      onActionIcon: canPost ? null : () => ref.invalidate(circularListProvider),
+      backgroundColor: _bg2,
       body: circularsAsync.when(
         data: (circulars) {
           if (circulars.isEmpty) {
@@ -58,13 +54,8 @@ class CircularListView extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(child: Text('Error: \$err')),
       ),
-      floatingActionButton: canPost ? FloatingActionButton(
-        onPressed: () => context.push('/circular/create'),
-        backgroundColor: const Color(0xFF7C3AED),
-        child: const Icon(Icons.add_rounded, color: Colors.white),
-      ) : null,
     );
   }
 
@@ -73,6 +64,6 @@ class CircularListView extends ConsumerWidget {
     final diff = now.difference(date);
     if (diff.inDays == 0) return 'Today';
     if (diff.inDays == 1) return 'Yesterday';
-    return '${date.day}/${date.month}/${date.year}';
+    return '\${date.day}/\${date.month}/\${date.year}';
   }
 }

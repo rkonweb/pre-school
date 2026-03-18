@@ -62,6 +62,7 @@ export async function submitJobApplicationAction(formData: FormData) {
         // Save to DB
         await prisma.jobApplication.create({
             data: {
+                id: Math.random().toString(36).substr(2, 9),
                 jobId,
                 firstName,
                 lastName,
@@ -69,7 +70,8 @@ export async function submitJobApplicationAction(formData: FormData) {
                 phone,
                 linkedin,
                 portfolio,
-                resumeUrl
+                resumeUrl,
+                updatedAt: new Date()
             }
         });
 

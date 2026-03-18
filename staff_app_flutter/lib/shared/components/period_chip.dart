@@ -51,7 +51,7 @@ class PeriodChip extends StatelessWidget {
       opacity: opacity,
       child: Container(
         width: 126,
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(22),

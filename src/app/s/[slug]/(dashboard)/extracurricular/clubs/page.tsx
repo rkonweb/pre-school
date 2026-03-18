@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { 
     Plus, Palmtree, Users, Edit3, 
     Trash2, Search, Shield 
@@ -105,10 +106,9 @@ export default function ClubsPage() {
                 subtitle="Manage specialized student organizations and interest-based clubs."
                 icon={Palmtree}
                 action={
-                    <Btn 
-                        icon={Plus} 
-                        onClick={handleAdd}
-                    >Create Club</Btn>
+                    <Link href={`/s/${slug}/extracurricular/clubs/create`}>
+                        <Btn icon={Plus}>Create Club</Btn>
+                    </Link>
                 }
             />
 
@@ -217,11 +217,9 @@ export default function ClubsPage() {
                         <h2 className="text-2xl font-black text-zinc-300 uppercase tracking-tighter">No Clubs Found</h2>
                         <p className="text-zinc-400 font-bold max-w-xs mx-auto mt-2 italic">Be the pioneer and start the first specialized club in your school community.</p>
                     </div>
-                    <Btn 
-                        variant="primary" 
-                        icon={Plus}
-                        onClick={handleAdd} 
-                    >Add New Club</Btn>
+                    <Link href={`/s/${slug}/extracurricular/clubs/create`}>
+                        <Btn variant="primary" icon={Plus}>Add New Club</Btn>
+                    </Link>
                 </div>
             )}
 

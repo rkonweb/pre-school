@@ -98,7 +98,7 @@ export async function escalateMissedTasksAction(schoolId: string) {
         for (const task of overdueTasks) {
             // Check for escalation (e.g., 2 missed follow-ups)
             // Implementation detail: check lead interactions for missed attempts
-            console.log(`[ESCALATION] Task ${task.id} for lead ${task.lead.parentName} is overdue.`);
+            console.log(`[ESCALATION] Task ${task.id} for lead ${task.lead?.parentName || 'Unknown'} is overdue.`);
 
             // Trigger Manager alert (Simulated)
             await prisma.leadInteraction.create({

@@ -134,7 +134,7 @@ export async function getReportCardsForClassAction(schoolSlug: string, classroom
                         firstName: true,
                         lastName: true,
                         avatar: true,
-                        rollNo: true
+                        enrollmentNumber: true
                     }
                 }
             }

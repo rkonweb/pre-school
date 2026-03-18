@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getChatHistoryAction } from "@/app/actions/communication-actions";
+import { getAcademicYearsAction } from "@/app/actions/academic-year-actions";
+import { getCookie } from "@/lib/cookies";
 import {
     MessageSquare,
     Search,
@@ -26,16 +28,36 @@ export default function AdminChatHistoryPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showOnlyFlagged, setShowOnlyFlagged] = useState(false);
     const [selectedConvoId, setSelectedConvoId] = useState<string | null>(null);
+    const [academicYearId, setAcademicYearId] = useState("");
+
+    // Read academic year cookie on mount
+    useEffect(() => {
+        async function resolveAcademicYear() {
+            const cookieId = getCookie(`academic_year_${slug}`);
+            if (cookieId) {
+                setAcademicYearId(cookieId);
+            } else {
+                // Fallback: find current academic year
+                const res = await getAcademicYearsAction(slug);
+                if (res.success && res.data) {
+                    const current = res.data.find((y: any) => y.isCurrent) || res.data[0];
+                    if (current) setAcademicYearId(current.id);
+                }
+            }
+        }
+        resolveAcademicYear();
+    }, [slug]);
 
     useEffect(() => {
+        if (academicYearId === "") return;
         loadData();
-        const interval = setInterval(() => loadData(true), 5000); // 5 sec realtime polling
+        const interval = setInterval(() => loadData(true), 5000);
         return () => clearInterval(interval);
-    }, [slug]);
+    }, [slug, academicYearId]);
 
     async function loadData(silent = false) {
         if (!silent) setIsLoading(true);
-        const res = await getChatHistoryAction(slug);
+        const res = await getChatHistoryAction(slug, academicYearId);
         if (res.success && res.data) {
             setConversations(res.data);
             setSelectedConvoId(prev => {

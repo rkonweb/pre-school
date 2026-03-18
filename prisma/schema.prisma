@@ -29,6 +29,7 @@ model School {
   linkedin                String?
   logo                    String?
   longitude               String?
+  attendanceRadius        Float?                  @default(25.0)
   motto                   String?
   state                   String?
   timezone                String?                 @default("UTC")
@@ -118,6 +119,9 @@ model School {
   activityFees            ActivityFee[]
   canteenGstType          String?
   canteenCommonGst        Float?                  @default(0)
+  schoolHolidays          SchoolHoliday[]
+  calendarNotes           CalendarNote[]
+  calendarDayStatuses     CalendarDayStatus[]
 }
 
 model AcademicYear {
@@ -471,6 +475,7 @@ model Student {
   fatherEmail           String?
   motherOccupation      String?
   motherEmail           String?
+  religion              String?
   enrollmentNumber      String?                  @unique
   attendance            Attendance[]
   conversations         Conversation[]
@@ -1450,30 +1455,57 @@ model LibrarySettings {
 }
 
 model Exam {
-  id               String        @id @default(cuid())
+  id               String              @id @default(cuid())
   title            String
   description      String?
   date             DateTime
-  type             String        @default("TERM")
-  category         String        @default("ACADEMIC")
-  classrooms       String        @default("[]")
-  subjects         String        @default("[]")
-  maxMarks         Float         @default(100)
-  gradingSystem    String        @default("MARKS")
+  startDate        DateTime?
+  endDate          DateTime?
+  type             String              @default("TERM")
+  category         String              @default("ACADEMIC")
+  classrooms       String              @default("[]")
+  subjects         String              @default("[]")
+  maxMarks         Float               @default(100)
+  gradingSystem    String              @default("MARKS")
   schoolId         String
   createdById      String
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
   academicYearId   String?
-  minMarks         Float         @default(0)
+  minMarks         Float               @default(0)
   questionPaperUrl String?
-  academicYear     AcademicYear? @relation(fields: [academicYearId], references: [id])
-  createdBy        User          @relation(fields: [createdById], references: [id])
-  school           School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  rosterConfig     String?
+  academicYear     AcademicYear?       @relation(fields: [academicYearId], references: [id])
+  createdBy        User                @relation(fields: [createdById], references: [id])
+  school           School              @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   results          ExamResult[]
+  scheduleEntries  ExamScheduleEntry[]
 
   @@index([schoolId])
   @@index([academicYearId])
+}
+
+model ExamScheduleEntry {
+  id           String   @id @default(cuid())
+  examId       String
+  subject      String
+  date         DateTime
+  startTime    String   @default("09:00")
+  endTime      String   @default("12:00")
+  maxMarks     Float    @default(100)
+  room         String?
+  invigilator  String?
+  instructions String?
+  syllabus     String?
+  sortOrder    Int      @default(0)
+  isGapDay     Boolean  @default(false)
+  gapLabel     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  exam         Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@index([examId])
+  @@index([date])
 }
 
 model ExamResult {
@@ -3067,3 +3099,54 @@ model ActivityFee {
 
   @@index([schoolId])
 }
+
+model SchoolHoliday {
+  id            String   @id @default(cuid())
+  name          String
+  date          DateTime
+  type          String   @default("HOLIDAY")
+  recurring     Boolean  @default(false)
+  isHoliday     Boolean  @default(true)
+  isAISuggested Boolean  @default(false)
+  notes         String?
+  schoolId      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([schoolId, date])
+  @@index([schoolId])
+}
+
+model CalendarNote {
+  id                 String   @id @default(cuid())
+  date               DateTime
+  title              String   @default("")
+  note               String
+  color              String   @default("#6366F1")
+  reminder           Boolean  @default(false)
+  reminderDaysBefore Int      @default(1)
+  reminderType       String   @default("NOTIFICATION")
+  reminderSent       Boolean  @default(false)
+  schoolId           String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  school             School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId, date])
+  @@index([schoolId])
+}
+
+model CalendarDayStatus {
+  id        String   @id @default(cuid())
+  date      DateTime
+  status    String   @default("WORKING")
+  schoolId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([schoolId, date])
+  @@index([schoolId])
+}
+

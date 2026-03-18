@@ -15,6 +15,9 @@ export async function signToken(payload: any) {
 export async function verifyToken(token: string) {
     try {
         const { payload } = await jwtVerify(token, SECRET);
+        if (payload && payload.role === "PARENT" && payload.sub && payload.sub.startsWith("parent_")) {
+            (payload as any).phone = payload.sub.replace("parent_", "");
+        }
         return payload;
     } catch (e) {
         return null;

@@ -761,7 +761,8 @@ export default function EditTenantPage() {
                                         { id: "academics.curriculum", label: "Curriculum Manager" },
                                         { id: "academics.timetable", label: "Timetable & Rotations" },
                                         { id: "academics.classes", label: "Classroom Allocation" },
-                                        { id: "academics.homework", label: "Homework & Assignments" }
+                                        { id: "academics.homework", label: "Homework & Assignments" },
+                                        { id: "academics.exams", label: "Examination Scheduler" }
                                     ]
                                 },
                                 { id: "homework", label: "Homework", desc: "Student homework & assignments portal" },
@@ -839,6 +840,7 @@ export default function EditTenantPage() {
                                     ]
                                 },
                                 { id: "events", label: "Events & Calendar", desc: "School calendar & activities" },
+                                { id: "calendar", label: "School Calendar", desc: "Academic calendar, holidays & day statuses" },
                                 { id: "documents", label: "Document Center", desc: "Certificates & files repository" },
                                 { id: "settings", label: "System Config", desc: "Roles & global settings" }
                             ];

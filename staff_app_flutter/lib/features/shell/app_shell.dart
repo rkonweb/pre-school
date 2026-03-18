@@ -5,25 +5,56 @@ import '../../core/theme/app_theme.dart';
 import '../../core/state/auth_state.dart';
 import '../../shared/components/all_modules_overlay.dart';
 import '../../shared/components/floating_shapes_background.dart';
+import '../../core/state/alert_state.dart';
+import '../../core/services/alert_engine.dart';
+import '../chat/teacher_chat_view.dart';
+import '../attendance/teacher_attendance_view.dart';
+import '../profile/teacher_profile_view.dart';
+import '../notifications/notifications_view.dart';
 
-class AppShell extends ConsumerWidget {
+class AppShell extends ConsumerStatefulWidget {
   final Widget child;
   static final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   const AppShell({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
+  int? _activeBottomSheetIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
+    // Initialize Alert Engine for Admin
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(alertEngineProvider).start();
+    });
+
+    // Listen for new alerts to show prompts
+    ref.listen<List<SchoolAlert>>(alertsProvider, (previous, next) {
+      if (next.isNotEmpty && (previous == null || next.length > previous.length)) {
+        final newAlert = next.first;
+        if (!newAlert.isRead && context.mounted) {
+          _showInAppPrompt(context, newAlert);
+        }
+      }
+    });
+
     // Current route to highlight the correct sub-menu
     final String location = GoRouterState.of(context).uri.path;
     
-    int currentIndex = 0;
-    if (location.startsWith('/attendance')) currentIndex = 1;
-    if (location.startsWith('/messages')) currentIndex = 2;
-    if (location.startsWith('/profile')) currentIndex = 4;
+    int baseIndex = 0;
+    if (location.startsWith('/attendance')) baseIndex = 1;
+    if (location.startsWith('/messages')) baseIndex = 2;
+    if (location.startsWith('/profile')) baseIndex = 4;
+
+    int currentIndex = _activeBottomSheetIndex ?? baseIndex;
 
     return Scaffold(
-      key: scaffoldKey,
+      key: AppShell.scaffoldKey,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
@@ -32,12 +63,13 @@ class AppShell extends ConsumerWidget {
             child: FloatingShapesBackground(
               child: Column(
                 children: [
-                  // Custom iOS Status Bar Replacement
-                  _buildStatBar(context, ref, location),
+                  if (location != '/profile')
+                    // Custom iOS Status Bar Replacement
+                    _buildStatBar(context, ref, location),
                   
                   // Main content
                   Expanded(
-                    child: child,
+                    child: widget.child,
                   ),
                   
                   // Custom Bottom Nav Replacement
@@ -127,7 +159,7 @@ class AppShell extends ConsumerWidget {
           ),
             
             // Header Content: Greet & Name on Left, Avatar on Right
-            if (location != '/messages/thread' && !location.startsWith('/homework'))
+            if (['/dashboard', '/attendance', '/messages', '/profile', '/route'].contains(location))
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -208,7 +240,19 @@ class AppShell extends ConsumerWidget {
                   // Right actions (Bell and Avatar)
                   Row(
                     children: [
-                      _buildTopBtnWithBadge(Icons.notifications_none_outlined, '3'),
+                      GestureDetector(
+                        onTap: () => _showBottomSheet(context, const NotificationsView(), 3),
+                        child: Consumer(
+                          builder: (context, ref, _) {
+                            final notifsAsync = ref.watch(staffNotificationsProvider);
+                            final unread = notifsAsync.valueOrNull?.where((n) => !n.read).length ?? 0;
+                            return _buildTopBtnWithBadge(
+                              Icons.notifications_none_outlined,
+                              unread > 0 ? '$unread' : '',
+                            );
+                          },
+                        ),
+                      ),
                       const SizedBox(width: 12),
                       InkWell(
                         onTap: () => context.go('/profile'),
@@ -298,29 +342,30 @@ class AppShell extends ConsumerWidget {
       clipBehavior: Clip.none,
       children: [
         _buildTopBtn(icon),
-        Positioned(
-          top: -4,
-          right: -4,
-          child: Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF3264),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFFAFBFE), width: 2.5),
-            ),
-            child: Center(
-              child: Text(
-                badge,
-                style: const TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
+        if (badge.isNotEmpty)
+          Positioned(
+            top: -4,
+            right: -4,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF3264),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFFAFBFE), width: 2.5),
+              ),
+              child: Center(
+                child: Text(
+                  badge,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -338,22 +383,66 @@ class AppShell extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(context, 0, currentIndex, Icons.home_filled, 'Home', '/dashboard'),
+          _buildNavItem(context, 0, currentIndex, Icons.home_filled, 'Home', const SizedBox()),
           if (roleValue == 'DRIVER')
-            _buildNavItem(context, 1, currentIndex, Icons.map_outlined, 'Route', '/route')
+            _buildNavItem(context, 1, currentIndex, Icons.map_outlined, 'Route', const SizedBox())
           else if (roleValue == 'ADMIN')
-            _buildNavItem(context, 1, currentIndex, Icons.analytics_outlined, 'Reports', '/reports')
+            _buildNavItem(
+              context, 
+              1, 
+              currentIndex, 
+              Icons.grid_view_rounded, 
+              'Modules', 
+              const SizedBox(),
+              onTapOverride: () {
+                setState(() => _activeBottomSheetIndex = 1);
+                showAllModulesMenu(context).then((_) {
+                  if (mounted && _activeBottomSheetIndex == 1) setState(() => _activeBottomSheetIndex = null);
+                });
+              },
+            )
           else
-            _buildNavItem(context, 1, currentIndex, Icons.fact_check_outlined, 'Attend.', '/attendance'),
+            _buildNavItem(context, 1, currentIndex, Icons.fact_check_outlined, 'Attend.', const TeacherAttendanceView()),
           const SizedBox(width: 56),
-          _buildNavItem(context, 2, currentIndex, Icons.chat_bubble_outline_rounded, 'Chat', '/messages', badgeText: '5'),
-          _buildNavItem(context, 4, currentIndex, Icons.person_outline_rounded, 'Me', '/profile'),
+          _buildNavItem(
+            context, 
+            2, 
+            currentIndex, 
+            Icons.chat_bubble_outline_rounded, 
+            'Chat', 
+            const TeacherChatView(), 
+            badgeText: '5',
+          ),
+          _buildNavItem(context, 4, currentIndex, Icons.person_outline_rounded, 'Me', const TeacherProfileView()),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(BuildContext context, int index, int currentIndex, IconData icon, String label, String route, {String? badgeText}) {
+  void _showBottomSheet(BuildContext context, Widget child, int index) {
+    setState(() => _activeBottomSheetIndex = index);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 40),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: Container(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: child,
+          ),
+        ),
+      ),
+    ).then((_) {
+      if (mounted && _activeBottomSheetIndex == index) {
+        setState(() => _activeBottomSheetIndex = null);
+      }
+    });
+  }
+
+  Widget _buildNavItem(BuildContext context, int index, int currentIndex, IconData icon, String label, Widget view, {String? badgeText, VoidCallback? onTapOverride}) {
     final isSelected = index == currentIndex;
     
     Widget iconWidget = Icon(
@@ -391,7 +480,14 @@ class AppShell extends ConsumerWidget {
     }
 
     return GestureDetector(
-      onTap: () => context.go(route),
+      onTap: onTapOverride ?? () {
+        if (index == 0) {
+          setState(() => _activeBottomSheetIndex = null);
+          context.go('/dashboard');
+        } else {
+          _showBottomSheet(context, view, index);
+        }
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 8),
         decoration: BoxDecoration(
@@ -414,6 +510,77 @@ class AppShell extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showInAppPrompt(BuildContext context, SchoolAlert alert) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        content: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: alert.severity == AlertSeverity.critical 
+              ? const Color(0xFFDC2626) 
+              : const Color(0xFF1E1B4B),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  alert.severity == AlertSeverity.warning ? Icons.warning_rounded : Icons.notifications_active_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      alert.title,
+                      style: const TextStyle(
+                        fontFamily: 'Satoshi',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      alert.message,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Satoshi',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -19,12 +19,23 @@ export async function getEnforcedScope(userId: string, role: string): Promise<Ac
 
     // 2. STAFF are restricted by ClassAccess
     if (role === "STAFF") {
+        // Base access items
         const accessItems = await prisma.classAccess.findMany({
             where: { userId, canRead: true },
             select: { classroomId: true }
         });
 
-        const allowedIds = accessItems.map((i: any) => i.classroomId);
+        const allowedSet = new Set(accessItems.map((i: any) => i.classroomId));
+
+        // Also include any classrooms where this user is the Class Teacher
+        const managedClassrooms = await prisma.classroom.findMany({
+            where: { teacherId: userId },
+            select: { id: true }
+        });
+
+        managedClassrooms.forEach((c: any) => allowedSet.add(c.id));
+
+        const allowedIds = Array.from(allowedSet);
 
         // Even if list is empty, restriction is TRUE (they are restricted to "nothing")
         return { restriction: true, allowedIds };

@@ -23,10 +23,29 @@ interface AIInsight {
     message: string;
 }
 
-export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slug: string, staffId?: string }) {
+export function AuraAI({
+    insights,
+    slug,
+    staffId,
+    isExternalOpen,
+    onExternalToggle
+}: {
+    insights: AIInsight[],
+    slug: string,
+    staffId?: string,
+    isExternalOpen?: boolean,
+    onExternalToggle?: () => void
+}) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
-    const [isExpanded, setIsExpanded] = useState(false);
+
+    // Use external state if provided, otherwise manage locally
+    const isExpanded = isExternalOpen ?? false;
+    const toggleExpanded = () => {
+        if (onExternalToggle) {
+            onExternalToggle();
+        }
+    };
 
     // AI Interaction State
     const [query, setQuery] = useState("");
@@ -111,11 +130,11 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                                             Aura Assistant
                                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                         </h3>
-                                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Active Node Cluster</p>
+                                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-tight">Full Portal Access • All Modules</p>
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => setIsExpanded(false)}
+                                    onClick={toggleExpanded}
                                     className="h-10 w-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all border border-slate-100"
                                 >
                                     <X className="h-5 w-5" />
@@ -127,7 +146,7 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                                 {/* Current Live Insights */}
                                 {insights.length > 0 && (
                                     <div className="space-y-3">
-                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Critical Vectors</h4>
+                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Live Insights</h4>
                                         {insights.map((insight) => (
                                             <motion.div
                                                 key={insight.id}
@@ -157,7 +176,10 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
 
                                 {/* Chat / Analysis Zone */}
                                 <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Intel Inquiry</h4>
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ask Aura Anything</h4>
+                                    <div className="text-[10px] text-slate-400 font-medium leading-relaxed -mt-2">
+                                        Ask about fees, attendance, students, staff, transport, homework, admissions, events, library, canteen, and more.
+                                    </div>
                                     <div className="relative group">
                                         <div 
                                             className="absolute -inset-0.5 rounded-2xl opacity-10 group-hover:opacity-20 transition-opacity blur-sm bg-brand-gradient"
@@ -169,14 +191,14 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                                                         <Zap className="h-3 w-3 text-brand" />
                                                         <span className="text-[10px] font-black text-brand uppercase tracking-widest">Aura Synthesis</span>
                                                     </div>
-                                                    <p className="text-sm font-semibold text-slate-700 leading-relaxed italic">
+                                                    <p className="text-sm font-semibold text-slate-700 leading-relaxed whitespace-pre-wrap">
                                                         {aiResponse}
                                                     </p>
                                                     <button
                                                         onClick={() => setAiResponse(null)}
                                                         className="mt-4 text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase underline decoration-slate-200 underline-offset-4"
                                                     >
-                                                        Clear Buffer
+                                                        Clear
                                                     </button>
                                                 </div>
                                             )}
@@ -187,7 +209,7 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
                                                     value={query}
                                                     onChange={(e) => setQuery(e.target.value)}
                                                     onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-                                                    placeholder="Query the node..."
+                                                    placeholder="Ask about any module..."
                                                     className="flex-1 bg-transparent border-none px-4 py-3 text-sm font-bold text-slate-900 placeholder-slate-300 focus:ring-0"
                                                     disabled={isAnalyzing}
                                                 />
@@ -210,7 +232,7 @@ export function AuraAI({ insights, slug, staffId }: { insights: AIInsight[], slu
 
             {/* The Floating Orb */}
             <motion.button
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={toggleExpanded}
                 className="pointer-events-auto relative group active:scale-90 transition-transform"
                 whileHover={{ scale: 1.1 }}
                 initial={{ opacity: 0, scale: 0.5 }}

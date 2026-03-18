@@ -1,0 +1,253 @@
+  Types of property 'GET' are incompatible.
+    Type '(request: Request, { params }: { params: { module: string; }; }) => Promise<NextResponse<{ success: boolean; error: string; }> | NextResponse<{ success: boolean; data: any[]; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ module: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ module: string; }>; }' is not assignable to type '{ params: { module: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'module' is missing in type 'Promise<{ module: string; }>' but required in type '{ module: string; }'.
+  Types of property 'PUT' are incompatible.
+    Type '(req: Request, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ success: boolean; error: any; }> | NextResponse<{ success: boolean; data: any; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+  Types of property 'GET' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { vehicleId: string; }; }) => Promise<NextResponse<{ success: boolean; error: any; }> | NextResponse<{ success: boolean; data: { vehicle: { ...; }; route: { ...; } | null; telemetry: any; } | undefined; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ vehicleId: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ vehicleId: string; }>; }' is not assignable to type '{ params: { vehicleId: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'vehicleId' is missing in type 'Promise<{ vehicleId: string; }>' but required in type '{ vehicleId: string; }'.
+  Types of property 'default' are incompatible.
+    Type '({ children, params, }: { children: ReactNode; params: { slug: string; }; }) => Element' is not assignable to type 'ComponentType<LayoutProps<"/s/[slug]/accounts">> | ((props: LayoutProps<"/s/[slug]/accounts">) => void | Promise<void> | ReactNode | Promise<...>)'.
+      Type '({ children, params, }: { children: ReactNode; params: { slug: string; }; }) => Element' is not assignable to type 'FunctionComponent<LayoutProps<"/s/[slug]/accounts">>'.
+        Types of parameters '__0' and 'props' are incompatible.
+          Type 'LayoutProps<"/s/[slug]/accounts">' is not assignable to type '{ children: ReactNode; params: { slug: string; }; }'.
+            Types of property 'params' are incompatible.
+              Property 'slug' is missing in type 'Promise<{ slug: string; }>' but required in type '{ slug: string; }'.
+  Types of property 'default' are incompatible.
+    Type '({ children, params, }: { children: ReactNode; params: { slug: string; id: string; }; }) => Promise<Element>' is not assignable to type 'ComponentType<LayoutProps<"/s/[slug]/students/[id]">> | ((props: LayoutProps<"/s/[slug]/students/[id]">) => void | Promise<void> | ReactNode | Promise<...>)'.
+      Type '({ children, params, }: { children: ReactNode; params: { slug: string; id: string; }; }) => Promise<Element>' is not assignable to type 'FunctionComponent<LayoutProps<"/s/[slug]/students/[id]">>'.
+        Types of parameters '__0' and 'props' are incompatible.
+          Type 'LayoutProps<"/s/[slug]/students/[id]">' is not assignable to type '{ children: ReactNode; params: { slug: string; id: string; }; }'.
+            Types of property 'params' are incompatible.
+              Type 'Promise<{ slug: string; id: string; }>' is missing the following properties from type '{ slug: string; id: string; }': slug, id
+check_school_config.ts(2,30): error TS2307: Cannot find module './src/generated/client' or its corresponding type declarations.
+enable_all_modules.ts(2,30): error TS2307: Cannot find module './src/generated/client' or its corresponding type declarations.
+enable_transport_module.ts(2,30): error TS2307: Cannot find module './src/generated/client' or its corresponding type declarations.
+src/app/(admin-console)/admin/cms/blog/page.tsx(25,26): error TS2307: Cannot find module '@/generated/client' or its corresponding type declarations.
+src/app/(admin-console)/admin/curriculum/page.tsx(524,61): error TS2339: Property 'worksheets' does not exist on type 'AcademicDay'.
+src/app/(admin-console)/admin/curriculum/page.tsx(524,86): error TS2339: Property 'worksheets' does not exist on type 'AcademicDay'.
+src/app/(admin-console)/admin/curriculum/page.tsx(524,127): error TS2339: Property 'worksheets' does not exist on type 'AcademicDay'.
+src/app/(admin-console)/admin/curriculum/page.tsx(524,145): error TS2339: Property 'worksheets' does not exist on type 'AcademicDay'.
+src/app/(admin-console)/admin/marketing/new/page.tsx(82,50): error TS2339: Property 'url' does not exist on type '{ success: boolean; url?: string | undefined; error?: string | undefined; } | { success: boolean; error: any; }'.
+  Property 'url' does not exist on type '{ success: boolean; error: any; }'.
+src/app/(admin-console)/admin/marketing/new/page.tsx(82,71): error TS2339: Property 'url' does not exist on type '{ success: boolean; url?: string | undefined; error?: string | undefined; } | { success: boolean; error: any; }'.
+  Property 'url' does not exist on type '{ success: boolean; error: any; }'.
+src/app/(admin-console)/admin/settings/apis/page.tsx(201,108): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(203,121): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(204,117): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(206,107): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(207,123): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(242,90): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(253,88): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(275,52): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(281,52): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(287,52): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(307,120): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(308,128): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(321,136): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(322,126): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(353,123): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(354,121): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(355,121): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(361,116): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(362,118): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(388,122): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(393,125): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(394,122): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(406,114): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(413,110): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(413,139): error TS2322: Type '{ accountId: any; clientId?: string | undefined; clientSecret?: string | undefined; }' is not assignable to type '{ accountId: string; clientId: string; clientSecret: string; }'.
+  Types of property 'clientId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/app/(admin-console)/admin/settings/apis/page.tsx(414,108): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(414,137): error TS2322: Type '{ clientId: any; accountId?: string | undefined; clientSecret?: string | undefined; }' is not assignable to type '{ accountId: string; clientId: string; clientSecret: string; }'.
+  Types of property 'accountId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/app/(admin-console)/admin/settings/apis/page.tsx(415,116): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/(admin-console)/admin/settings/apis/page.tsx(415,145): error TS2322: Type '{ clientSecret: any; accountId?: string | undefined; clientId?: string | undefined; }' is not assignable to type '{ accountId: string; clientId: string; clientSecret: string; }'.
+  Types of property 'accountId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/app/(marketing)/pricing/page.tsx(11,28): error TS2322: Type '{ features: any; includedModules: any; addonUserTiers: any; limits: { maxStudents: number; maxStaff: number; maxStorageGB: number; }; id: string; name: string; slug: string; currency: string; description: string | null; ... 7 more ...; isPopular: boolean; }[]' is not assignable to type 'SubscriptionPlan[]'.
+  Type '{ features: any; includedModules: any; addonUserTiers: any; limits: { maxStudents: number; maxStaff: number; maxStorageGB: number; }; id: string; name: string; slug: string; currency: string; description: string | null; ... 7 more ...; isPopular: boolean; }' is missing the following properties from type 'SubscriptionPlan': additionalStaffPrice, isActive, sortOrder, createdAt
+src/app/actions/student-analytics-actions.ts(43,22): error TS2353: Object literal may only specify known properties, and 'student' does not exist in type 'UserWhereInput'.
+src/app/actions/teacher-dashboard-actions.ts(236,42): error TS2339: Property 'firstName' does not exist on type '{ currentBranchId: string | null; school: { subscription: { status: string; id: string; endDate: Date | null; planId: string; } | null; id: string; name: string; slug: string; maxBranches: number; branches: { ...; }[]; } | null; ... 6 more ...; customRole: { ...; } | null; }'.
+src/app/actions/teacher-dashboard-actions.ts(236,67): error TS2339: Property 'lastName' does not exist on type '{ currentBranchId: string | null; school: { subscription: { status: string; id: string; endDate: Date | null; planId: string; } | null; id: string; name: string; slug: string; maxBranches: number; branches: { ...; }[]; } | null; ... 6 more ...; customRole: { ...; } | null; }'.
+src/app/actions/transport-fee-actions.ts(171,28): error TS2322: Type 'string | null' is not assignable to type 'string | StringFilter<"Student"> | undefined'.
+  Type 'null' is not assignable to type 'string | StringFilter<"Student"> | undefined'.
+src/app/api/mobile/v1/parent/timetable/route.ts(30,16): error TS18047: 'student.classroom' is possibly 'null'.
+src/app/api/mobile/v1/parent/timetable/route.ts(31,41): error TS18047: 'student.classroom' is possibly 'null'.
+src/app/api/seed-design/route.ts(26,13): error TS2322: Type '{ sectionKey: string; title: string; subtitle: string; content: string; isEnabled: true; sortOrder: number; }' is not assignable to type '(Without<HomepageContentCreateInput, HomepageContentUncheckedCreateInput> & HomepageContentUncheckedCreateInput) | (Without<...> & HomepageContentCreateInput)'.
+  Type '{ sectionKey: string; title: string; subtitle: string; content: string; isEnabled: true; sortOrder: number; }' is not assignable to type 'Without<HomepageContentUncheckedCreateInput, HomepageContentCreateInput> & HomepageContentCreateInput'.
+    Type '{ sectionKey: string; title: string; subtitle: string; content: string; isEnabled: true; sortOrder: number; }' is missing the following properties from type 'HomepageContentCreateInput': id, updatedAt
+src/app/api/seed-design/route.ts(92,13): error TS2322: Type '{ sectionKey: string; title: string; subtitle: string; content: string; isEnabled: true; sortOrder: number; }' is not assignable to type '(Without<HomepageContentCreateInput, HomepageContentUncheckedCreateInput> & HomepageContentUncheckedCreateInput) | (Without<...> & HomepageContentCreateInput)'.
+  Type '{ sectionKey: string; title: string; subtitle: string; content: string; isEnabled: true; sortOrder: number; }' is not assignable to type 'Without<HomepageContentUncheckedCreateInput, HomepageContentCreateInput> & HomepageContentCreateInput'.
+    Type '{ sectionKey: string; title: string; subtitle: string; content: string; isEnabled: true; sortOrder: number; }' is missing the following properties from type 'HomepageContentCreateInput': id, updatedAt
+src/app/api/seed-design/route.ts(157,13): error TS2322: Type '{ sectionKey: string; title: string; subtitle: string; content: string; isEnabled: true; sortOrder: number; }' is not assignable to type '(Without<HomepageContentCreateInput, HomepageContentUncheckedCreateInput> & HomepageContentUncheckedCreateInput) | (Without<...> & HomepageContentCreateInput)'.
+  Type '{ sectionKey: string; title: string; subtitle: string; content: string; isEnabled: true; sortOrder: number; }' is not assignable to type 'Without<HomepageContentUncheckedCreateInput, HomepageContentCreateInput> & HomepageContentCreateInput'.
+    Type '{ sectionKey: string; title: string; subtitle: string; content: string; isEnabled: true; sortOrder: number; }' is missing the following properties from type 'HomepageContentCreateInput': id, updatedAt
+src/app/s/[slug]/(dashboard)/academics/report-cards/page.tsx(81,41): error TS2345: Argument of type 'string' is not assignable to parameter of type 'StudentQueryOptions'.
+src/app/s/[slug]/(dashboard)/academics/report-cards/page.tsx(86,41): error TS2339: Property 'data' does not exist on type '{ success: boolean; students: any; pagination: { total: number; page: number; limit: number; totalPages: number; }; error?: undefined; } | { success: boolean; error: any; students: never[]; pagination?: undefined; }'.
+  Property 'data' does not exist on type '{ success: boolean; students: any; pagination: { total: number; page: number; limit: number; totalPages: number; }; error?: undefined; }'.
+src/app/s/[slug]/(dashboard)/academics/report-cards/page.tsx(93,29): error TS2339: Property 'data' does not exist on type '{ success: boolean; students: any; pagination: { total: number; page: number; limit: number; totalPages: number; }; error?: undefined; } | { success: boolean; error: any; students: never[]; pagination?: undefined; }'.
+  Property 'data' does not exist on type '{ success: boolean; students: any; pagination: { total: number; page: number; limit: number; totalPages: number; }; error?: undefined; }'.
+src/app/s/[slug]/(dashboard)/accounts/page.tsx(16,35): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/accounts/transactions/new/page.tsx(104,55): error TS2554: Expected 2 arguments, but got 3.
+src/app/s/[slug]/(dashboard)/admissions/inquiry/templates/page.tsx(283,30): error TS7006: Parameter 'newTemplate' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/admissions/inquiry/templates/page.tsx(310,21): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/canteen/billing/CanteenBillingClient.tsx(347,81): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/canteen/billing/CanteenBillingClient.tsx(375,84): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/canteen/packages/CanteenPackagesClient.tsx(143,77): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/canteen/packages/page.tsx(19,13): error TS2322: Type 'never[] | { id: string; createdAt: Date; updatedAt: Date; name: string; schoolId: string; description: string | null; isActive: boolean; monthlyFee: number; includedMeals: string; yearlyFee: number; packageType: string; }[]' is not assignable to type 'Pkg[]'.
+  Type '{ id: string; createdAt: Date; updatedAt: Date; name: string; schoolId: string; description: string | null; isActive: boolean; monthlyFee: number; includedMeals: string; yearlyFee: number; packageType: string; }[]' is not assignable to type 'Pkg[]'.
+    Type '{ id: string; createdAt: Date; updatedAt: Date; name: string; schoolId: string; description: string | null; isActive: boolean; monthlyFee: number; includedMeals: string; yearlyFee: number; packageType: string; }' is not assignable to type 'Pkg'.
+      Types of property 'description' are incompatible.
+        Type 'string | null' is not assignable to type 'string | undefined'.
+          Type 'null' is not assignable to type 'string | undefined'.
+src/app/s/[slug]/(dashboard)/curriculum/page.tsx(130,44): error TS7006: Parameter 'date' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/homework/page.tsx(47,41): error TS7006: Parameter 'hw' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/homework/page.tsx(53,47): error TS7006: Parameter 'h' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/homework/page.tsx(54,43): error TS7006: Parameter 'h' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/homework/page.tsx(55,50): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/homework/page.tsx(55,55): error TS7006: Parameter 'h' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/homework/page.tsx(145,39): error TS7006: Parameter 'hw' implicitly has an 'any' type.
+src/app/s/[slug]/(dashboard)/hostel/allocation/page.tsx(62,21): error TS2322: Type '{ slug: string; hostels: any; initialStudents: any; availableGrades: string[]; availableSections: string[]; currency: string | null; }' is not assignable to type 'IntrinsicAttributes & { slug: string; hostels: Hostel[]; initialStudents: Student[]; availableGrades: string[]; availableSections: string[]; }'.
+  Property 'currency' does not exist on type 'IntrinsicAttributes & { slug: string; hostels: Hostel[]; initialStudents: Student[]; availableGrades: string[]; availableSections: string[]; }'.
+src/app/s/[slug]/(dashboard)/hostel/billing/page.tsx(46,17): error TS2322: Type '{ slug: string; allocations: any; recentInvoices: any; currency: string; }' is not assignable to type 'IntrinsicAttributes & { slug: string; allocations: any[]; recentInvoices: any[]; }'.
+  Property 'currency' does not exist on type 'IntrinsicAttributes & { slug: string; allocations: any[]; recentInvoices: any[]; }'.
+src/app/s/[slug]/(dashboard)/hr/attendance/page.tsx(810,27): error TS18048: 'minGapMins' is possibly 'undefined'.
+src/app/s/[slug]/(dashboard)/hr/directory/page.tsx(241,50): error TS2322: Type '{ children: Element[]; align: string; className: string; }' is not assignable to type 'IntrinsicAttributes & { children: ReactNode; className?: string | undefined; }'.
+  Property 'align' does not exist on type 'IntrinsicAttributes & { children: ReactNode; className?: string | undefined; }'.
+src/app/s/[slug]/(dashboard)/hr/roles/RolesClient.tsx(308,60): error TS2339: Property 'created' does not exist on type '{ success: boolean; error?: undefined; } | { success: boolean; error: any; }'.
+  Property 'created' does not exist on type '{ success: boolean; error?: undefined; }'.
+src/app/s/[slug]/(dashboard)/hr/roles/RolesClient.tsx(308,84): error TS2339: Property 'updated' does not exist on type '{ success: boolean; error?: undefined; } | { success: boolean; error: any; }'.
+  Property 'updated' does not exist on type '{ success: boolean; error?: undefined; }'.
+src/app/s/[slug]/(dashboard)/marketing/customize/[id]/page.tsx(134,73): error TS18048: 'sRes.school' is possibly 'undefined'.
+src/app/s/[slug]/(dashboard)/marketing/customize/[id]/page.tsx(135,79): error TS18048: 'sRes.school' is possibly 'undefined'.
+src/app/s/[slug]/(dashboard)/marketing/customize/[id]/page.tsx(135,100): error TS18048: 'sRes.school' is possibly 'undefined'.
+src/app/s/[slug]/(dashboard)/marketing/customize/[id]/page.tsx(136,74): error TS18048: 'sRes.school' is possibly 'undefined'.
+src/app/s/[slug]/(dashboard)/school-store/page.tsx(99,17): error TS2554: Expected 1 arguments, but got 0.
+src/app/s/[slug]/(dashboard)/settings/academic-years/page.tsx(36,17): error TS2554: Expected 1 arguments, but got 0.
+src/app/s/[slug]/(dashboard)/settings/admin/page.tsx(153,83): error TS2322: Type '{ label: string; value: any; required: true; onChange: (val: string) => any; }' is not assignable to type 'IntrinsicAttributes & PhoneInputProps'.
+  Property 'required' does not exist on type 'IntrinsicAttributes & PhoneInputProps'.
+src/app/s/[slug]/(dashboard)/students/[id]/page.tsx(431,21): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: ConnectSiblingDialogProps, context?: any): string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | ... 4 more ... | undefined', gave the following error.
+    Type '{ isOpen: true; onClose: () => void; studentId: string; schoolSlug: string; currentParentPhone: any; }' is not assignable to type 'IntrinsicAttributes & ConnectSiblingDialogProps'.
+      Property 'schoolSlug' does not exist on type 'IntrinsicAttributes & ConnectSiblingDialogProps'.
+  Overload 2 of 2, '(props: ConnectSiblingDialogProps): string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | ... 4 more ... | undefined', gave the following error.
+    Type '{ isOpen: true; onClose: () => void; studentId: string; schoolSlug: string; currentParentPhone: any; }' is not assignable to type 'IntrinsicAttributes & ConnectSiblingDialogProps'.
+      Property 'schoolSlug' does not exist on type 'IntrinsicAttributes & ConnectSiblingDialogProps'.
+src/app/s/[slug]/(dashboard)/students/promote/page.tsx(220,41): error TS17001: JSX elements cannot have multiple attributes with the same name.
+src/app/s/[slug]/(dashboard)/students/reports/[examId]/edit/page.tsx(420,33): error TS2322: Type '{ type: "submit"; variant: "primary"; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; ... 4 more ...; permission: { ...; }; }' is not assignable to type 'IntrinsicAttributes & StandardActionButtonProps & RefAttributes<HTMLButtonElement>'.
+  Property 'loadingLabel' does not exist on type 'IntrinsicAttributes & StandardActionButtonProps & RefAttributes<HTMLButtonElement>'.
+src/app/s/[slug]/(dashboard)/students/reports/create/page.tsx(360,25): error TS2322: Type '{ type: "submit"; variant: "primary"; label: string; loading: boolean; loadingLabel: string; className: string; permission: { module: string; action: string; }; }' is not assignable to type 'IntrinsicAttributes & StandardActionButtonProps & RefAttributes<HTMLButtonElement>'.
+  Property 'loadingLabel' does not exist on type 'IntrinsicAttributes & StandardActionButtonProps & RefAttributes<HTMLButtonElement>'.
+src/app/s/[slug]/(dashboard)/students/reports/page.tsx(200,30): error TS2322: Type '{ children: Element; value: string; className: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+src/app/s/[slug]/(dashboard)/students/reports/page.tsx(290,30): error TS2322: Type '{ children: Element; value: string; className: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+src/app/s/[slug]/(dashboard)/students/reports/student/[studentId]/page.tsx(155,30): error TS2322: Type '{ children: Element[]; value: string; className: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+src/app/s/[slug]/(dashboard)/students/reports/student/[studentId]/page.tsx(178,115): error TS2322: Type '{ value: number; className: string; indicatorClassName: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { value?: number | undefined; indicatorColor?: string | undefined; } & RefAttributes<...>'.
+  Property 'indicatorClassName' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { value?: number | undefined; indicatorColor?: string | undefined; } & RefAttributes<...>'.
+src/app/s/[slug]/(dashboard)/students/reports/student/[studentId]/page.tsx(255,30): error TS2322: Type '{ children: Element; value: string; className: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+src/app/s/[slug]/(dashboard)/students/reports/student/[studentId]/page.tsx(300,30): error TS2322: Type '{ children: Element; value: string; className: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & RefAttributes<HTMLDivElement>'.
+src/app/s/[slug]/(dashboard)/transport/application/apply/TransportApplication.tsx(22,27): error TS2554: Expected 3 arguments, but got 2.
+src/components/analytics/AcademicCharts.tsx(3,10): error TS2305: Module '"@/app/actions/student-analytics-actions"' has no exported member 'SubjectPerformance'.
+src/components/analytics/ActivitiesTimeline.tsx(3,10): error TS2305: Module '"@/app/actions/student-analytics-actions"' has no exported member 'ActivitySummary'.
+src/components/analytics/ActivitiesTimeline.tsx(53,45): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/components/analytics/ActivitiesTimeline.tsx(65,43): error TS7006: Parameter 'activity' implicitly has an 'any' type.
+src/components/analytics/AIInsightsSection.tsx(3,10): error TS2305: Module '"@/app/actions/student-analytics-actions"' has no exported member 'AIInsight'.
+src/components/analytics/AIInsightsSection.tsx(48,34): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ strength: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; weakness: ForwardRefExoticComponent<...>; improvement: ForwardRefExoticComponent<...>; concern: ForwardRefExoticComponent<...>; achievement: ForwardRefExoticComponent<...>; }'.
+src/components/analytics/AIInsightsSection.tsx(49,40): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ strength: string; weakness: string; improvement: string; concern: string; achievement: string; }'.
+src/components/analytics/AIInsightsSection.tsx(50,39): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ strength: string; weakness: string; improvement: string; concern: string; achievement: string; }'.
+src/components/analytics/AttendanceWidget.tsx(3,10): error TS2305: Module '"@/app/actions/student-analytics-actions"' has no exported member 'AttendanceStats'.
+src/components/analytics/HealthSummary.tsx(3,10): error TS2305: Module '"@/app/actions/student-analytics-actions"' has no exported member 'HealthMetrics'.
+src/components/analytics/HealthSummary.tsx(40,46): error TS7006: Parameter 'alert' implicitly has an 'any' type.
+src/components/analytics/HealthSummary.tsx(40,53): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/analytics/StudentAnalyticsPage.tsx(126,37): error TS2322: Type '"IMPROVING" | "DECLINING" | "STABLE" | "INSUFFICIENT_DATA"' is not assignable to type '"stable" | "improving" | "declining"'.
+  Type '"IMPROVING"' is not assignable to type '"stable" | "improving" | "declining"'. Did you mean '"improving"'?
+src/components/analytics/SubjectRadarChart.tsx(3,10): error TS2305: Module '"@/app/actions/student-analytics-actions"' has no exported member 'SubjectPerformance'.
+src/components/curriculum/AIPageBuilder.tsx(45,59): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'string'.
+src/components/dashboard/ai/WhatsAppTemplates.tsx(47,27): error TS2554: Expected 3 arguments, but got 2.
+src/components/dashboard/circulars/CircularForm.tsx(146,102): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/components/dashboard/leads/FollowUpManager.tsx(67,33): error TS2304: Cannot find name 'confirmDialog'.
+src/components/dashboard/settings/FeeStructureManager.tsx(348,163): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/dashboard/settings/FeeStructureManager.tsx(362,159): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/dashboard/settings/FeeStructureManager.tsx(394,179): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/dashboard/settings/FeeStructureManager.tsx(475,64): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/dashboard/settings/LeavePolicyManager.tsx(278,256): error TS2551: Property 'orangeL' does not exist on type '{ amber: string; amberD: string; amberL: string; amberXL: string; navy: string; navyM: string; green: string; greenD: string; greenL: string; greenXL: string; red: string; redD: string; redL: string; redXL: string; ... 18 more ...; spring: string; }'. Did you mean 'orange'?
+src/components/dashboard/staff/SalaryPackageSection.tsx(115,27): error TS2554: Expected 3 arguments, but got 2.
+src/components/dashboard/staff/SalaryPackageSection.tsx(140,27): error TS2554: Expected 2 arguments, but got 1.
+src/components/dashboard/staff/StaffRolePermissions.tsx(45,27): error TS7053: Element implicitly has an 'any' type because expression of type '"__global__"' can't be used to index type 'Record<string, UserModulePermission> | {}'.
+  Property '__global__' does not exist on type 'Record<string, UserModulePermission> | {}'.
+src/components/dashboard/student/HealthRecordManager.tsx(332,96): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/components/dashboard/student/HealthRecordManager.tsx(356,96): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/components/dashboard/student/HealthRecordManager.tsx(387,92): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/components/dashboard/student/HealthRecordManager.tsx(465,89): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/components/dashboard/student/HealthRecordManager.tsx(481,88): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/components/dashboard/students/AddStudentForm.tsx(45,17): error TS2353: Object literal may only specify known properties, and 'age' does not exist in type '{ firstName: string; lastName: string; gender?: string | undefined; dateOfBirth?: string | undefined; admissionNumber?: string | undefined; joiningDate?: string | undefined; classroomId?: string | undefined; ... 23 more ...; branchId?: string | undefined; }'.
+src/components/dashboard/students/CreateFeeDialog.tsx(80,17): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/components/dashboard/students/PayFeeDialog.tsx(85,92): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/dashboard/students/PayFeeDialog.tsx(89,91): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/dashboard/students/PayFeeDialog.tsx(108,52): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/dashboard/students/PromoteStudentDialog.tsx(191,33): error TS2322: Type '{ children: Element | Element[]; align: string; sideOffset: number; className: string; }' is not assignable to type 'IntrinsicAttributes & { children: ReactNode; className?: string | undefined; }'.
+  Property 'align' does not exist on type 'IntrinsicAttributes & { children: ReactNode; className?: string | undefined; }'.
+src/components/dashboard/students/PromoteStudentDialog.tsx(245,33): error TS2322: Type '{ children: Element | Element[]; align: string; sideOffset: number; className: string; }' is not assignable to type 'IntrinsicAttributes & { children: ReactNode; className?: string | undefined; }'.
+  Property 'align' does not exist on type 'IntrinsicAttributes & { children: ReactNode; className?: string | undefined; }'.
+src/components/diary/DiaryEntryModal.tsx(85,35): error TS2554: Expected 2 arguments, but got 1.
+src/components/figma/AboutUsPage.tsx(21,29): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+src/components/figma/CurriculumTrainingPage.tsx(43,29): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+src/components/figma/PricingPage.tsx(24,29): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+src/components/figma/ProductPage.tsx(39,29): error TS2307: Cannot find module 'react-router-dom' or its corresponding type declarations.
+src/components/figma/signup/OTPVerification.tsx(82,11): error TS1117: An object literal cannot have multiple properties with the same name.
+src/components/mobile/academic/AcademicDashboardClient.tsx(10,10): error TS2305: Module '"@/app/actions/parent-actions"' has no exported member 'getStudentAcademicDataAction'.
+src/components/mobile/ActivityCard.tsx(20,10): error TS2305: Module '"@/app/actions/parent-actions"' has no exported member 'acknowledgeDiaryEntryAction'.
+src/components/mobile/ActivityCard.tsx(208,46): error TS2304: Cannot find name 'Eye'.
+src/components/mobile/MobileShell.tsx(30,52): error TS2322: Type '{ slug: string; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'slug' does not exist on type 'IntrinsicAttributes'.
+src/components/mobile/ParentChatView.tsx(18,10): error TS2305: Module '"@/app/actions/parent-actions"' has no exported member 'getApprovedBroadcastsAction'.
+src/components/mobile/TransportPayment.tsx(5,10): error TS2305: Module '"@/app/actions/parent-actions"' has no exported member 'payTransportFeeAction'.
+src/components/training/SimpleDocumentUploader.tsx(181,94): error TS2322: Type '{ value: number; className: string; indicatorClassName: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { value?: number | undefined; indicatorColor?: string | undefined; } & RefAttributes<...>'.
+  Property 'indicatorClassName' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLDivElement> & { value?: number | undefined; indicatorColor?: string | undefined; } & RefAttributes<...>'.
+src/components/ui/calendar.tsx(54,17): error TS2353: Object literal may only specify known properties, and 'IconLeft' does not exist in type 'Partial<CustomComponents>'.
+src/contexts/AdminAuthContext.tsx(62,40): error TS2339: Property 'user' does not exist on type '{ success: boolean; data: { currentBranchId: string | null; school: { subscription: { id: string; status: string; endDate: Date | null; planId: string; } | null; id: string; name: string; slug: string; maxBranches: number; branches: { ...; }[]; } | null; ... 6 more ...; customRole: { ...; } | null; }; error?: undefi...'.
+  Property 'user' does not exist on type '{ success: boolean; data: { currentBranchId: string | null; school: { subscription: { id: string; status: string; endDate: Date | null; planId: string; } | null; id: string; name: string; slug: string; maxBranches: number; branches: { ...; }[]; } | null; ... 6 more ...; customRole: { ...; } | null; }; error?: undefi...'.
+src/contexts/AdminAuthContext.tsx(62,52): error TS2339: Property 'user' does not exist on type '{ success: boolean; data: { currentBranchId: string | null; school: { subscription: { id: string; status: string; endDate: Date | null; planId: string; } | null; id: string; name: string; slug: string; maxBranches: number; branches: { ...; }[]; } | null; ... 6 more ...; customRole: { ...; } | null; }; error?: undefi...'.
+  Property 'user' does not exist on type '{ success: boolean; data: { currentBranchId: string | null; school: { subscription: { id: string; status: string; endDate: Date | null; planId: string; } | null; id: string; name: string; slug: string; maxBranches: number; branches: { ...; }[]; } | null; ... 6 more ...; customRole: { ...; } | null; }; error?: undefi...'.
+src/contexts/AdminAuthContext.tsx(63,35): error TS2339: Property 'user' does not exist on type '{ success: boolean; data: { currentBranchId: string | null; school: { subscription: { id: string; status: string; endDate: Date | null; planId: string; } | null; id: string; name: string; slug: string; maxBranches: number; branches: { ...; }[]; } | null; ... 6 more ...; customRole: { ...; } | null; }; error?: undefi...'.
+  Property 'user' does not exist on type '{ success: boolean; data: { currentBranchId: string | null; school: { subscription: { id: string; status: string; endDate: Date | null; planId: string; } | null; id: string; name: string; slug: string; maxBranches: number; branches: { ...; }[]; } | null; ... 6 more ...; customRole: { ...; } | null; }; error?: undefi...'.
+src/contexts/AdminAuthContext.tsx(158,61): error TS2345: Argument of type '"school-login"' is not assignable to parameter of type '"signup" | "login" | undefined'.
+src/lib/subscriptions/store.ts(9,5): error TS2741: Property 'addonUserTiers' is missing in type '{ id: string; name: string; slug: string; price: number; billingPeriod: "monthly"; currency: string; description: string; features: string[]; limits: { maxStudents: number; maxStaff: number; maxStorageGB: number; }; ... 6 more ...; additionalStaffPrice: number; }' but required in type 'SubscriptionPlan'.
+src/lib/subscriptions/store.ts(27,5): error TS2741: Property 'addonUserTiers' is missing in type '{ id: string; name: string; slug: string; price: number; billingPeriod: "monthly"; currency: string; description: string; features: string[]; limits: { maxStudents: number; maxStaff: number; maxStorageGB: number; }; ... 7 more ...; additionalStaffPrice: number; }' but required in type 'SubscriptionPlan'.
+src/lib/subscriptions/store.ts(46,5): error TS2741: Property 'addonUserTiers' is missing in type '{ id: string; name: string; slug: string; price: number; billingPeriod: "monthly"; currency: string; description: string; features: string[]; limits: { maxStudents: number; maxStaff: number; maxStorageGB: number; }; ... 6 more ...; additionalStaffPrice: number; }' but required in type 'SubscriptionPlan'.
+src/lib/tenants/store.ts(10,5): error TS2741: Property 'staff' is missing in type '{ id: string; name: string; subdomain: string; brandColor: string; adminName: string; email: string; plan: string; status: "ACTIVE"; students: number; mrr: number; joinedDate: string; region: string; lastActive: string; customDomain: string; }' but required in type 'Tenant'.
+src/lib/tenants/store.ts(26,5): error TS2741: Property 'staff' is missing in type '{ id: string; name: string; subdomain: string; brandColor: string; adminName: string; email: string; plan: string; status: "ACTIVE"; students: number; mrr: number; joinedDate: string; region: string; lastActive: string; }' but required in type 'Tenant'.
+src/lib/tenants/store.ts(41,5): error TS2741: Property 'staff' is missing in type '{ id: string; name: string; subdomain: string; brandColor: string; adminName: string; email: string; plan: string; status: "ACTIVE"; students: number; mrr: number; joinedDate: string; region: string; lastActive: string; customDomain: string; }' but required in type 'Tenant'.
+src/lib/tenants/store.ts(75,15): error TS2741: Property 'staff' is missing in type '{ students: number; mrr: number; status: "TRIAL"; joinedDate: string; lastActive: string; name: string; address?: string | undefined; city?: string | undefined; country?: string | undefined; state?: string | undefined; zip?: string | undefined; email: string; ... 30 more ...; id: string; }' but required in type 'Tenant'.
+test-api.ts(1,19): error TS7016: Could not find a declaration file for module 'node-fetch'. '/Users/rk/Bodhi-Board/pre-school/node_modules/node-fetch/lib/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/node-fetch` if it exists or add a new declaration (.d.ts) file containing `declare module 'node-fetch';`
+test-db.ts(7,36): error TS2339: Property 'parent' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+tests/run-admission-tests.ts(1,30): error TS2307: Cannot find module '../src/generated/client_final' or its corresponding type declarations.
+tests/run-admission-tests.ts(223,46): error TS7006: Parameter 'tx' implicitly has an 'any' type.

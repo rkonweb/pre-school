@@ -89,11 +89,12 @@ export async function getAdmissionsReportAction(slug: string, timeframe: string 
         const staffMetrics = await Promise.all(staffInteractions.map(async (item: any) => {
             const staff = await prisma.user.findUnique({
                 where: { id: item.staffId },
-                select: { name: true, image: true }
+                select: { firstName: true, lastName: true, avatar: true }
             });
+            const fullName = staff ? `${staff.firstName || ''} ${staff.lastName || ''}`.trim() : null;
             return {
-                name: staff?.name || "System/Bot",
-                image: staff?.image,
+                name: fullName || "System/Bot",
+                image: staff?.avatar,
                 interactions: item._count._all
             };
         }));

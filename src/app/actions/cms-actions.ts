@@ -5,8 +5,8 @@ import { revalidatePath } from "next/cache"
 
 interface CMSUpsertData {
     sectionKey: string;
-    title?: string;
-    subtitle?: string;
+    title?: string | null;
+    subtitle?: string | null;
     content: string;
     isEnabled?: boolean;
     sortOrder?: number;
@@ -255,8 +255,8 @@ export async function getHomepageSectionAction(sectionKey: string) {
 
 export async function upsertHomepageSectionAction(data: {
     sectionKey: string;
-    title?: string;
-    subtitle?: string;
+    title?: string | null;
+    subtitle?: string | null;
     content: string;
     isEnabled?: boolean;
     sortOrder?: number;
@@ -265,19 +265,22 @@ export async function upsertHomepageSectionAction(data: {
         const section = await prisma.homepageContent.upsert({
             where: { sectionKey: data.sectionKey },
             create: {
+                id: Math.random().toString(36).substr(2, 9),
                 sectionKey: data.sectionKey,
-                title: data.title,
-                subtitle: data.subtitle,
+                title: data.title ?? null,
+                subtitle: data.subtitle ?? null,
                 content: data.content,
                 isEnabled: data.isEnabled ?? true,
-                sortOrder: data.sortOrder ?? 0
+                sortOrder: data.sortOrder ?? 0,
+                updatedAt: new Date()
             },
             update: {
-                title: data.title,
-                subtitle: data.subtitle,
+                title: data.title ?? null,
+                subtitle: data.subtitle ?? null,
                 content: data.content,
                 isEnabled: data.isEnabled,
-                sortOrder: data.sortOrder
+                sortOrder: data.sortOrder,
+                updatedAt: new Date()
             }
         });
         revalidatePath('/');
@@ -330,8 +333,8 @@ export async function getFeaturesSectionAction(sectionKey: string) {
 
 export async function upsertFeaturesSectionAction(data: {
     sectionKey: string;
-    title?: string;
-    subtitle?: string;
+    title?: string | null;
+    subtitle?: string | null;
     content: string;
     isEnabled?: boolean;
     sortOrder?: number;
@@ -340,19 +343,22 @@ export async function upsertFeaturesSectionAction(data: {
         const section = await prisma.featuresPageContent.upsert({
             where: { sectionKey: data.sectionKey },
             create: {
+                id: Math.random().toString(36).substr(2, 9),
                 sectionKey: data.sectionKey,
-                title: data.title,
-                subtitle: data.subtitle,
+                title: data.title ?? null,
+                subtitle: data.subtitle ?? null,
                 content: data.content,
                 isEnabled: data.isEnabled ?? true,
-                sortOrder: data.sortOrder ?? 0
+                sortOrder: data.sortOrder ?? 0,
+                updatedAt: new Date()
             },
             update: {
-                title: data.title,
-                subtitle: data.subtitle,
+                title: data.title ?? null,
+                subtitle: data.subtitle ?? null,
                 content: data.content,
                 isEnabled: data.isEnabled,
-                sortOrder: data.sortOrder
+                sortOrder: data.sortOrder,
+                updatedAt: new Date()
             }
         });
         revalidatePath('/features');
@@ -400,19 +406,22 @@ export async function upsertPricingSectionAction(data: CMSUpsertData) {
         const section = await prisma.pricingPageContent.upsert({
             where: { sectionKey: data.sectionKey },
             create: {
+                id: Math.random().toString(36).substr(2, 9),
                 sectionKey: data.sectionKey,
                 title: data.title ?? null,
                 subtitle: data.subtitle ?? null,
                 content: data.content,
                 isEnabled: data.isEnabled ?? true,
-                sortOrder: data.sortOrder ?? 0
+                sortOrder: data.sortOrder ?? 0,
+                updatedAt: new Date()
             },
             update: {
-                title: data.title,
-                subtitle: data.subtitle,
+                title: data.title ?? null,
+                subtitle: data.subtitle ?? null,
                 content: data.content,
                 isEnabled: data.isEnabled,
-                sortOrder: data.sortOrder
+                sortOrder: data.sortOrder,
+                updatedAt: new Date()
             }
         });
         revalidatePath('/pricing');
@@ -443,14 +452,23 @@ export async function upsertCareersSectionAction(data: CMSUpsertData) {
         await prisma.careersPageContent.upsert({
             where: { sectionKey: data.sectionKey },
             create: {
+                id: Math.random().toString(36).substr(2, 9),
                 sectionKey: data.sectionKey,
                 title: data.title ?? null,
                 subtitle: data.subtitle ?? null,
                 content: data.content,
                 isEnabled: data.isEnabled ?? true,
-                sortOrder: data.sortOrder ?? 0
+                sortOrder: data.sortOrder ?? 0,
+                updatedAt: new Date()
             },
-            update: { ...data }
+            update: {
+                title: data.title ?? null,
+                subtitle: data.subtitle ?? null,
+                content: data.content,
+                isEnabled: data.isEnabled,
+                sortOrder: data.sortOrder,
+                updatedAt: new Date()
+            }
         });
         revalidatePath('/careers');
         revalidatePath('/admin/cms/careers');
@@ -478,14 +496,23 @@ export async function upsertBlogSectionAction(data: CMSUpsertData) {
         await prisma.blogPageContent.upsert({
             where: { sectionKey: data.sectionKey },
             create: {
+                id: Math.random().toString(36).substr(2, 9),
                 sectionKey: data.sectionKey,
                 title: data.title ?? null,
                 subtitle: data.subtitle ?? null,
                 content: data.content,
                 isEnabled: data.isEnabled ?? true,
-                sortOrder: data.sortOrder ?? 0
+                sortOrder: data.sortOrder ?? 0,
+                updatedAt: new Date()
             },
-            update: { ...data }
+            update: {
+                title: data.title ?? null,
+                subtitle: data.subtitle ?? null,
+                content: data.content,
+                isEnabled: data.isEnabled,
+                sortOrder: data.sortOrder,
+                updatedAt: new Date()
+            }
         });
         revalidatePath('/blog');
         revalidatePath('/admin/cms/blog');
@@ -504,14 +531,23 @@ export async function upsertContactSectionAction(data: CMSUpsertData) {
         await prisma.contactPageContent.upsert({
             where: { sectionKey: data.sectionKey },
             create: {
+                id: Math.random().toString(36).substr(2, 9),
                 sectionKey: data.sectionKey,
                 title: data.title ?? null,
                 subtitle: data.subtitle ?? null,
                 content: data.content,
                 isEnabled: data.isEnabled ?? true,
-                sortOrder: data.sortOrder ?? 0
+                sortOrder: data.sortOrder ?? 0,
+                updatedAt: new Date()
             },
-            update: { ...data }
+            update: {
+                title: data.title ?? null,
+                subtitle: data.subtitle ?? null,
+                content: data.content,
+                isEnabled: data.isEnabled,
+                sortOrder: data.sortOrder,
+                updatedAt: new Date()
+            }
         });
         revalidatePath('/contact');
         revalidatePath('/admin/cms/contact');

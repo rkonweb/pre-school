@@ -228,6 +228,7 @@ export async function generateDailyReportAction(schoolSlug: string) {
         const auth = await validateUserSchoolAction(schoolSlug);
         if (!auth.success || !auth.user) return { success: false, error: auth.error };
         const schoolId = auth.user.schoolId;
+        if (!schoolId) return { success: false, error: "School ID not found" };
 
         const today = startOfDay(new Date());
         const tomorrow = endOfDay(today);
@@ -350,7 +351,6 @@ export async function createReportCardAction(
                 term,
                 marks: JSON.stringify(marks),
                 comments,
-                academicYearId,
                 academicYearId,
                 published: true, // Auto-publish for now
             }

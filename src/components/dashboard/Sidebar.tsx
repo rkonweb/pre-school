@@ -99,6 +99,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
             children: [
                 { name: "Classes & Sections", href: `/s/${slug}/academics/classes`, icon: Layers },
                 { name: "Timetable", href: `/s/${slug}/academics/timetable`, icon: Clock },
+                { name: "Examinations", href: `/s/${slug}/academics/exams`, icon: FileSpreadsheet },
                 { name: "Curriculum", href: `/s/${slug}/curriculum`, icon: FileText },
                 { name: "Diary", href: `/s/${slug}/diary`, icon: NotebookPen },
                 { name: "Homework", href: `/s/${slug}/homework`, icon: NotebookPen },
@@ -172,6 +173,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
             ]
         },
         { name: "Circular", href: `/s/${slug}/circulars`, icon: FileText },
+        { name: "School Calendar", href: `/s/${slug}/calendar`, icon: CalendarDays },
         {
             name: "Transport", href: `/s/${slug}/transport`, icon: Bus,
             children: [
@@ -288,6 +290,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
         "Worksheets": "academics.classes",
         "Classes & Sections": "academics.classes",
         "Timetable": "academics.timetable",
+        "Examinations": "academics.exams",
         "Diary": "dairy",
         "Homework": "homework",
         "Curriculum": "academics.curriculum",
@@ -322,6 +325,7 @@ export function Sidebar({ schoolName, logo, user, enabledModules = [] }: {
         "Communication Center": "communication.messages",
         "Chat History": "communication.messages",
         "Circular": "communication.circulars",
+        "School Calendar": "calendar",
         "Events & Calendar": "communication.events",
         "PTM Scheduler": "communication.ptm",
         "Emergency Alerts": "communication.emergency",

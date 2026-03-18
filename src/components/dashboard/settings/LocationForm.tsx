@@ -417,7 +417,7 @@ function PlacesAutocomplete({ onAddressSelect }: { onAddressSelect: (address: an
                     style={{ width: "100%", height: 52, background: focused ? C.blueXL : C.g50, border: `1.5px solid ${focused ? C.blue : C.g200}`, borderRadius: 14, padding: "0 16px 0 46px", fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 13.5, fontWeight: 600, color: C.g800, outline: "none", boxSizing: "border-box", transition: C.tr, boxShadow: focused ? `0 0 0 4px ${C.blue}20` : "none" }} />
             </div>
             {status === "OK" && (
-                <ul style={{ position: "absolute", left: 0, right: 0, top: "calc(100% + 8px)", background: "white", border: `1px solid ${C.g100}`, borderRadius: 16, boxShadow: C.shM, overflow: "hidden", listStyle: "none", margin: 0, padding: 0, animation: "slideDown 0.2s ease" }}
+                <ul style={{ position: "absolute", left: 0, right: 0, top: "calc(100% + 8px)", background: "white", border: `1px solid ${C.g100}`, borderRadius: 16, boxShadow: C.sh, overflow: "hidden", listStyle: "none", margin: 0, padding: 0, animation: "slideDown 0.2s ease" }}
                     onMouseDown={e => e.preventDefault()}>
                     {data.map(({ place_id, description }) => (
                         <li key={place_id} onClick={() => handleSelect(description)}

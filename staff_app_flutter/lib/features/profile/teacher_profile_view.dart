@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../../core/state/auth_state.dart';
+import '../../shared/components/module_popup_shell.dart';
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
 const _ink  = Color(0xFF140E28);
@@ -166,11 +167,14 @@ class _State extends ConsumerState<TeacherProfileView>
         child: const Text('Sign Out', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800))),
     ]));
 
-  // ── BUILD ──────────────────────────────────────────────────────────────────
   @override Widget build(BuildContext context) {
     final localUser = ref.watch(userProfileProvider);
     final async = ref.watch(_profileProvider);
-    return Scaffold(
+    return ModulePopupShell(
+      title: 'My Profile',
+      subtitle: 'View and manage your details',
+      actionIcon: Icons.refresh_rounded,
+      onActionIcon: () => ref.invalidate(_profileProvider),
       backgroundColor: _bg,
       body: async.when(
         loading: () => _shell(
@@ -186,7 +190,6 @@ class _State extends ConsumerState<TeacherProfileView>
   }
 
   Widget _errorScreen(String msg) => SafeArea(child: Column(children: [
-    _cover('!', '', '', ''),
     Expanded(child: Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(
       mainAxisSize: MainAxisSize.min, children: [
       const Icon(Icons.wifi_off_rounded, size: 48, color: _ink3),
@@ -203,13 +206,12 @@ class _State extends ConsumerState<TeacherProfileView>
     ])))),
   ]));
 
-  // ── Shell: hero + tabs + body ──────────────────────────────────────────────
+  // ── Shell: top header + tabs + body ─────────────────────────────────────────
   Widget _shell(String initials, String name, String role, String school,
       StaffProfile? p, {required bool isLoading}) {
     return NestedScrollView(
       headerSliverBuilder: (_, __) => [
-        SliverToBoxAdapter(child: _cover(initials, name, role, school)),
-        if (!isLoading && p != null) SliverToBoxAdapter(child: _nameRow(p)),
+        SliverToBoxAdapter(child: _profileHeader(initials, name, role, school, p)),
         if (!isLoading && p != null) SliverToBoxAdapter(child: _statsBar(p)),
         if (!isLoading && p != null) SliverToBoxAdapter(child: _tabBar()),
       ],
@@ -225,87 +227,60 @@ class _State extends ConsumerState<TeacherProfileView>
     );
   }
 
-  // ── Cover ─────────────────────────────────────────────────────────────────
-  Widget _cover(String initials, String name, String role, String school) =>
-    Stack(clipBehavior: Clip.none, children: [
-      // Gradient bg
-      Container(height: 160, decoration: const BoxDecoration(gradient: _tGrad),
-        child: Stack(children: [
-          Container(decoration: const BoxDecoration(gradient: RadialGradient(
-            center: Alignment(-0.6, 0), radius: 1.2,
-            colors: [Color(0x20FFFFFF), Color(0x00FFFFFF)]))),
-          SafeArea(bottom: false, child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Row(children: [
-              GestureDetector(
-                onTap: () { HapticFeedback.lightImpact(); context.pop(); },
-                child: Container(width: 32, height: 32,
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(.25),
-                    borderRadius: BorderRadius.circular(10)),
-                  child: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 20))),
-              const SizedBox(width: 10),
-              const Text('My Profile', style: TextStyle(fontFamily: 'Clash Display',
-                fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -.3)),
-              const Spacer(),
-              GestureDetector(
-                onTap: () => ref.invalidate(_profileProvider),
-                child: Container(width: 32, height: 32,
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(.25),
-                    borderRadius: BorderRadius.circular(10)),
-                  child: const Icon(Icons.refresh_rounded, color: Colors.white, size: 16))),
-            ]))),
-        ])),
-      // Avatar
-      Positioned(left: 22, bottom: -38, child: _avatar(initials)),
-    ]);
+  // ── Profile Header ────────────────────────────────────────────────────────
+  Widget _profileHeader(String initials, String name, String role, String school, StaffProfile? p) => Container(
+    color: Colors.white,
+    padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+    child: Column(
+      children: [
+        Center(child: _avatar(initials)),
+        const SizedBox(height: 16),
+        Text(name, 
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontFamily: 'Cabinet Grotesk', fontSize: 24, fontWeight: FontWeight.w900, color: _ink, letterSpacing: -.5)),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(color: _tSoft, border: Border.all(color: _tBdr), borderRadius: BorderRadius.circular(100)),
+              child: Text(role.toUpperCase(), style: const TextStyle(fontFamily: 'Satoshi', fontSize: 11, fontWeight: FontWeight.w800, color: _tA))),
+            if (p?.department != null) ...[
+              const SizedBox(width: 8),
+              Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(color: _mist, border: Border.all(color: _line), borderRadius: BorderRadius.circular(100)),
+                child: Text(p!.department!, style: const TextStyle(fontFamily: 'Satoshi', fontSize: 11, fontWeight: FontWeight.w700, color: _ink3))),
+            ],
+          ]
+        ),
+        if (p?.schoolName != null && p!.schoolName.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.school_rounded, size: 14, color: _ink4),
+              const SizedBox(width: 4),
+              Text(p.schoolName, style: const TextStyle(fontFamily: 'Satoshi', fontSize: 12, fontWeight: FontWeight.w600, color: _ink3)),
+            ],
+          ),
+        ]
+      ],
+    ),
+  );
 
   Widget _avatar(String initials) => Container(
-    width: 76, height: 76,
+    width: 96, height: 96,
     decoration: const BoxDecoration(shape: BoxShape.circle, gradient: _tGrad,
-      boxShadow: [BoxShadow(color: Color(0x44FF5733), blurRadius: 20, offset: Offset(0,6))]),
+      boxShadow: [BoxShadow(color: Color(0x33FF5733), blurRadius: 16, offset: Offset(0, 4))]),
     child: Stack(children: [
       Center(child: Text(initials, style: const TextStyle(fontFamily: 'Cabinet Grotesk',
-        fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white))),
+        fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white))),
       Positioned.fill(child: Container(decoration: BoxDecoration(
-        shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 3)))),
-      Positioned(bottom: 4, right: 4, child: Container(width: 14, height: 14,
+        shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 4)))),
+      Positioned(bottom: 2, right: 8, child: Container(width: 18, height: 18,
         decoration: BoxDecoration(color: const Color(0xFF22C55E), shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2.5),
+          border: Border.all(color: Colors.white, width: 3),
           boxShadow: const [BoxShadow(color: Color(0x5022C55E), blurRadius: 6)]))),
-    ]));
-
-  // ── Name row ──────────────────────────────────────────────────────────────
-  Widget _nameRow(StaffProfile p) => Container(
-    color: Colors.white,
-    padding: const EdgeInsets.fromLTRB(22, 48, 22, 14),
-    child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(p.name, style: const TextStyle(fontFamily: 'Cabinet Grotesk',
-          fontSize: 22, fontWeight: FontWeight.w900, color: _ink, letterSpacing: -.6)),
-        const SizedBox(height: 3),
-        Row(children: [
-          Text(p.designation ?? fmtRole(p.role),
-            style: const TextStyle(fontFamily: 'Satoshi', fontSize: 13,
-              fontWeight: FontWeight.w600, color: _ink3)),
-          if (p.department != null) ...[
-            const Text(' · ', style: TextStyle(color: _ink4)),
-            Text(p.department!, style: const TextStyle(fontFamily: 'Satoshi', fontSize: 13, color: _ink4)),
-          ],
-        ]),
-        const SizedBox(height: 6),
-        Row(children: [
-          Container(width: 7, height: 7, decoration: const BoxDecoration(
-            color: Color(0xFF22C55E), shape: BoxShape.circle)),
-          const SizedBox(width: 5),
-          const Text('Online', style: TextStyle(fontFamily: 'Satoshi',
-            fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF16A34A))),
-        ]),
-      ])),
-      Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-        decoration: BoxDecoration(color: _tSoft,
-          border: Border.all(color: _tBdr), borderRadius: BorderRadius.circular(100)),
-        child: Text(fmtRole(p.role), style: const TextStyle(
-          fontFamily: 'Satoshi', fontSize: 11, fontWeight: FontWeight.w800, color: _tA))),
     ]));
 
   // ── Stats bar ─────────────────────────────────────────────────────────────

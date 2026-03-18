@@ -65,66 +65,70 @@ class StatTile extends StatelessWidget {
             ),
           ),
           
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              (iconGradient != null
-                  ? ShaderMask(
-                      blendMode: BlendMode.srcIn,
-                      shaderCallback: (bounds) => iconGradient!.createShader(
-                        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                      ),
-                      child: Icon(
-                        icon,
-                        key: const ValueKey('icon_gradient'),
-                        color: Colors.white,
-                        size: 24,
-                        shadows: [
-                          Shadow(
-                            color: iconGradient!.colors.first.withOpacity(0.4),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                    )
-                  : Icon(icon, key: const ValueKey('icon_plain'), color: const Color(0xFF140E28), size: 24))
-                .animate(onPlay: (controller) => controller.repeat(reverse: true))
-                .slideY(begin: 0, end: -0.15, duration: 1.5.seconds, curve: Curves.easeInOut),
-              const SizedBox(height: 7),
-              Text(
-                numText,
-                style: const TextStyle(
-                  fontFamily: 'Clash Display',
-                  fontSize: 23,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF140E28),
-                  letterSpacing: -1,
-                  height: 1,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                (iconGradient != null
+                    ? ShaderMask(
+                        blendMode: BlendMode.srcIn,
+                        shaderCallback: (bounds) => iconGradient!.createShader(
+                          Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                        ),
+                        child: Icon(
+                          icon,
+                          key: const ValueKey('icon_gradient'),
+                          color: Colors.white,
+                          size: 24,
+                          shadows: [
+                            Shadow(
+                              color: iconGradient!.colors.first.withOpacity(0.4),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                      )
+                    : Icon(icon, key: const ValueKey('icon_plain'), color: const Color(0xFF140E28), size: 24))
+                  .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                  .slideY(begin: 0, end: -0.15, duration: 1.5.seconds, curve: Curves.easeInOut),
+                const SizedBox(height: 7),
+                Text(
+                  numText,
+                  style: const TextStyle(
+                    fontFamily: 'Clash Display',
+                    fontSize: 23,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF140E28),
+                    letterSpacing: -1,
+                    height: 1,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                label.toUpperCase(),
-                style: const TextStyle(
-                  fontFamily: 'Satoshi',
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF7B7291),
-                  letterSpacing: 0.5,
+                const SizedBox(height: 5),
+                Text(
+                  label.toUpperCase(),
+                  style: const TextStyle(
+                    fontFamily: 'Satoshi',
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF7B7291),
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                chText,
-                style: TextStyle(
-                  fontFamily: 'Satoshi',
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: chColor,
+                const SizedBox(height: 5),
+                Text(
+                  chText,
+                  style: TextStyle(
+                    fontFamily: 'Satoshi',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: chColor,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

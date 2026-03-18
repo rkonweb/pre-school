@@ -557,3 +557,30 @@ export async function disconnectSiblingAction(schoolSlug: string, studentId: str
         return { success: false, error: e.message };
     }
 }
+
+export async function getStudentOverviewAction(schoolSlug: string) {
+    try {
+        const auth = await validateUserSchoolAction(schoolSlug);
+        if (!auth.success || !auth.user) return { success: false, error: auth.error };
+
+        const schoolId = (auth.user as any).schoolId;
+        const branchId = (auth.user as any).currentBranchId;
+
+        const whereClause: any = { schoolId };
+        if (branchId) whereClause.branchId = branchId;
+
+        const [totalStudents, activeStudents, inactiveStudents, totalClasses] = await Promise.all([
+            prisma.student.count({ where: whereClause }),
+            prisma.student.count({ where: { ...whereClause, status: "ACTIVE" } }),
+            prisma.student.count({ where: { ...whereClause, status: "INACTIVE" } }),
+            prisma.classroom.count({ where: whereClause })
+        ]);
+
+        return {
+            success: true,
+            data: { totalStudents, activeStudents, inactiveStudents, totalClasses }
+        };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}

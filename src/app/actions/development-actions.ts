@@ -195,32 +195,39 @@ export async function upsertMilestoneRecordAction(
 ) {
     try {
         const user = await getCurrentUserAction();
-        const recordedById = user?.success ? user.user?.id : undefined;
+        const recordedById = user?.success ? user.data?.id : undefined;
 
-        const record = await prisma.milestoneRecord.upsert({
+        let record = await prisma.milestoneRecord.findFirst({
             where: {
-                studentId_milestoneId_academicYearId: {
-                    studentId,
-                    milestoneId,
-                    academicYearId: academicYearId || null,
-                },
-            },
-            create: {
                 studentId,
                 milestoneId,
-                status,
-                notes,
                 academicYearId: academicYearId || null,
-                recordedById,
-                achievedDate: status === "ACHIEVED" ? new Date() : null,
-            },
-            update: {
-                status,
-                notes,
-                recordedById,
-                achievedDate: status === "ACHIEVED" ? new Date() : null,
             },
         });
+
+        if (record) {
+            record = await prisma.milestoneRecord.update({
+                where: { id: record.id },
+                data: {
+                    status,
+                    notes,
+                    recordedById,
+                    achievedDate: status === "ACHIEVED" ? new Date() : null,
+                },
+            });
+        } else {
+            record = await prisma.milestoneRecord.create({
+                data: {
+                    studentId,
+                    milestoneId,
+                    status,
+                    notes,
+                    academicYearId: academicYearId || null,
+                    recordedById,
+                    achievedDate: status === "ACHIEVED" ? new Date() : null,
+                },
+            });
+        }
         return { success: true, data: JSON.parse(JSON.stringify(record)) };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -255,28 +262,35 @@ export async function upsertSkillAssessmentAction(
 ) {
     try {
         const user = await getCurrentUserAction();
-        const recordedById = user?.success ? user.user?.id : undefined;
+        const recordedById = user?.success ? user.data?.id : undefined;
 
-        const assessment = await prisma.skillAssessment.upsert({
+        let assessment = await prisma.skillAssessment.findFirst({
             where: {
-                studentId_skillId_term_academicYearId: {
-                    studentId,
-                    skillId,
-                    term,
-                    academicYearId: academicYearId || null,
-                },
-            },
-            create: {
                 studentId,
                 skillId,
-                rating,
                 term,
-                notes,
                 academicYearId: academicYearId || null,
-                recordedById,
             },
-            update: { rating, notes, recordedById },
         });
+
+        if (assessment) {
+            assessment = await prisma.skillAssessment.update({
+                where: { id: assessment.id },
+                data: { rating, notes, recordedById },
+            });
+        } else {
+            assessment = await prisma.skillAssessment.create({
+                data: {
+                    studentId,
+                    skillId,
+                    rating,
+                    term,
+                    notes,
+                    academicYearId: academicYearId || null,
+                    recordedById,
+                },
+            });
+        }
         return { success: true, data: JSON.parse(JSON.stringify(assessment)) };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -291,31 +305,38 @@ export async function bulkUpsertSkillAssessmentsAction(
 ) {
     try {
         const user = await getCurrentUserAction();
-        const recordedById = user?.success ? user.user?.id : undefined;
+        const recordedById = user?.success ? user.data?.id : undefined;
 
         const results = await Promise.all(
-            assessments.map((a) =>
-                prisma.skillAssessment.upsert({
+            assessments.map(async (a) => {
+                let assessment = await prisma.skillAssessment.findFirst({
                     where: {
-                        studentId_skillId_term_academicYearId: {
-                            studentId,
-                            skillId: a.skillId,
-                            term,
-                            academicYearId: academicYearId || null,
-                        },
-                    },
-                    create: {
                         studentId,
                         skillId: a.skillId,
-                        rating: a.rating,
                         term,
-                        notes: a.notes,
                         academicYearId: academicYearId || null,
-                        recordedById,
                     },
-                    update: { rating: a.rating, notes: a.notes, recordedById },
-                })
-            )
+                });
+
+                if (assessment) {
+                    return prisma.skillAssessment.update({
+                        where: { id: assessment.id },
+                        data: { rating: a.rating, notes: a.notes, recordedById },
+                    });
+                } else {
+                    return prisma.skillAssessment.create({
+                        data: {
+                            studentId,
+                            skillId: a.skillId,
+                            rating: a.rating,
+                            term,
+                            notes: a.notes,
+                            academicYearId: academicYearId || null,
+                            recordedById,
+                        },
+                    });
+                }
+            })
         );
         return { success: true, data: JSON.parse(JSON.stringify(results)) };
     } catch (error: any) {
@@ -356,7 +377,7 @@ export async function createPortfolioEntryAction(
 ) {
     try {
         const user = await getCurrentUserAction();
-        const recordedById = user?.success ? user.user?.id : undefined;
+        const recordedById = user?.success ? user.data?.id : undefined;
 
         const entry = await prisma.portfolioEntry.create({
             data: {
@@ -418,25 +439,32 @@ export async function saveDevelopmentReportAction(
 ) {
     try {
         const user = await getCurrentUserAction();
-        const recordedById = user?.success ? user.user?.id : undefined;
+        const recordedById = user?.success ? user.data?.id : undefined;
 
-        const report = await prisma.developmentReport.upsert({
+        let report = await prisma.developmentReport.findFirst({
             where: {
-                studentId_term_academicYearId: {
-                    studentId,
-                    term,
-                    academicYearId: academicYearId || null,
-                },
-            },
-            create: {
                 studentId,
                 term,
-                ...data,
                 academicYearId: academicYearId || null,
-                recordedById,
             },
-            update: { ...data, recordedById },
         });
+
+        if (report) {
+            report = await prisma.developmentReport.update({
+                where: { id: report.id },
+                data: { ...data, recordedById },
+            });
+        } else {
+            report = await prisma.developmentReport.create({
+                data: {
+                    studentId,
+                    term,
+                    ...data,
+                    academicYearId: academicYearId || null,
+                    recordedById,
+                },
+            });
+        }
         return { success: true, data: JSON.parse(JSON.stringify(report)) };
     } catch (error: any) {
         return { success: false, error: error.message };

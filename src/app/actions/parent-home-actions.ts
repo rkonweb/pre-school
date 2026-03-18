@@ -66,7 +66,7 @@ export async function getParentHomeDataAction(phone: string) {
         };
 
         // Batch Fetch Attendance for all students today
-        const studentIds = studentsData.map(s => s.id);
+        const studentIds = studentsData.map((s: any) => s.id);
         const allAttendance = await prisma.attendance.findMany({
             where: {
                 studentId: { in: studentIds },

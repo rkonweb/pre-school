@@ -10,6 +10,7 @@ import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
 import { ClassTeacherProvider } from "@/contexts/ClassTeacherContext";
 import { DashboardLayoutWrapper } from "@/components/dashboard/DashboardLayoutWrapper";
 import { GlobalAuraWrapper } from "@/components/dashboard/GlobalAuraWrapper";
+import { AuraProvider } from "@/context/AuraContext";
 import { SessionTimeoutListener } from "@/components/dashboard/session/SessionTimeoutListener";
 import { Metadata } from "next";
 
@@ -136,6 +137,7 @@ export default async function DashboardLayout({
 
     return (
         <AdminAuthProvider>
+            <AuraProvider>
             <SidebarProvider currency={school.currency || "INR"}>
                 <ConfirmProvider>
                     <div
@@ -193,6 +195,7 @@ export default async function DashboardLayout({
                     </div>
                 </ConfirmProvider>
             </SidebarProvider>
+            </AuraProvider>
         </AdminAuthProvider>
     );
 }

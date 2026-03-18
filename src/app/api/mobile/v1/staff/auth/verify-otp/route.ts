@@ -99,16 +99,31 @@ export async function POST(req: Request) {
             }, { headers: { 'Access-Control-Allow-Origin': '*' } });
         }
 
-        // Regular verification
-        const record = await prisma.otp.findFirst({
-            where: {
-                mobile,
-                code,
-                verified: false,
-                expiresAt: { gt: new Date() }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
+        // Regular verification – look up OTP trying all mobile format variants
+        const digits = mobile.replace(/\D/g, "");
+        const last10 = digits.slice(-10);
+        const mobileCandidates = Array.from(new Set([
+            mobile,
+            digits,
+            `+91${last10}`,
+            `+91 ${last10}`,
+            `91${last10}`,
+            last10,
+        ]));
+
+        let record = null;
+        for (const candidate of mobileCandidates) {
+            record = await prisma.otp.findFirst({
+                where: {
+                    mobile: candidate,
+                    code,
+                    verified: false,
+                    expiresAt: { gt: new Date() }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            if (record) break;
+        }
 
         if (!record) {
             return NextResponse.json({ success: false, error: "Invalid or expired OTP" }, { status: 401 });

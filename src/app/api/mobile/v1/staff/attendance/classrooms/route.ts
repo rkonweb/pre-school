@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { jwtVerify } from "jose";
 
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+    return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
 export async function GET(req: Request) {
     try {
         const authHeader = req.headers.get("Authorization") ?? "";
@@ -21,22 +31,35 @@ export async function GET(req: Request) {
         }
 
         const teacherId = payload.sub;
-
-        // Fetch classrooms where user is class teacher OR has explicit access
-        const classAccesses = await (prisma as any).classAccess.findMany({
-            where: { userId: teacherId, canRead: true },
-            select: { classroomId: true }
+        
+        const user = await prisma.user.findUnique({
+            where: { id: teacherId },
+            select: { role: true, schoolId: true }
         });
 
-        const accessIds = (classAccesses as any[]).map((c: any) => c.classroomId);
+        if (!user) {
+            return NextResponse.json({ success: false, error: "User not found" }, { status: 401 });
+        }
+
+        const { getEnforcedScope } = await import("@/lib/access-control");
+        const scope = await getEnforcedScope(teacherId, user.role);
+
+        let whereClause: any = { schoolId: user.schoolId };
+
+        if (scope.restriction) {
+            if (scope.allowedIds.length > 0) {
+                // To allow class teachers to see their own class, even without explicit ClassAccess
+                whereClause.OR = [
+                    { id: { in: scope.allowedIds } },
+                    { teacherId: teacherId }
+                ];
+            } else {
+                whereClause.teacherId = teacherId;
+            }
+        }
 
         const classrooms = await prisma.classroom.findMany({
-            where: {
-                OR: [
-                    { teacherId: teacherId },
-                    { id: { in: accessIds } }
-                ]
-            },
+            where: whereClause,
             select: {
                 id: true,
                 name: true,
@@ -53,12 +76,12 @@ export async function GET(req: Request) {
                 id: c.id,
                 name: c.name,
                 studentCount: c._count.students,
-                isClassTeacher: c.teacherId === teacherId, // true = can mark attendance
+                isClassTeacher: c.teacherId === teacherId,
             }))
-        });
+        }, { headers: corsHeaders });
 
     } catch (error: any) {
         console.error("Staff Classrooms API Error:", error);
-        return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500, headers: corsHeaders });
     }
 }

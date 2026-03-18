@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { validateUserSchoolAction } from '@/app/actions/session-actions'
 import { redirect } from 'next/navigation'
 import CreateHomeworkClient from './CreateHomeworkClient'
+import { getSelectedAcademicYearId } from '@/lib/getSelectedAcademicYear'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,16 +16,13 @@ export default async function NewHomeworkPage(props: { params: Promise<{ slug: s
         redirect(`/s/${slug}/homework`)
     }
 
-    const [classrooms, academicYear, students] = await Promise.all([
+    const [classrooms, academicYearId, students] = await Promise.all([
         prisma.classroom.findMany({
             where: { schoolId: auth.user.schoolId },
             select: { id: true, name: true },
             orderBy: { name: 'asc' }
         }),
-        prisma.academicYear.findFirst({
-            where: { schoolId: auth.user.schoolId, isCurrent: true },
-            select: { id: true }
-        }),
+        getSelectedAcademicYearId(slug, auth.user.schoolId),
         prisma.student.findMany({
             where: { schoolId: auth.user.schoolId, status: 'ACTIVE' },
             select: { id: true, firstName: true, lastName: true, classroomId: true },
@@ -38,7 +36,7 @@ export default async function NewHomeworkPage(props: { params: Promise<{ slug: s
             classrooms={classrooms}
             students={students}
             currentUserId={auth.user.id}
-            academicYearId={academicYear?.id}
+            academicYearId={academicYearId}
         />
     )
 }

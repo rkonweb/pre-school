@@ -77,10 +77,16 @@ export function ProfileMenu({
         router.push(`/${slug}`);
     };
 
+    // Handle profile page navigation
+    const handleMyProfile = () => {
+        setIsOpen(false);
+        router.push(`/s/${slug}/settings/profile`);
+    };
+
     // Handle settings navigation
     const handleSettings = () => {
         setIsOpen(false);
-        router.push(`/s/${slug}/settings/profile`);
+        router.push(`/s/${slug}/settings/identity`);
     };
 
     // Handle upgrade
@@ -319,6 +325,13 @@ export function ProfileMenu({
 
                             {/* Menu Items */}
                             <div className="p-2">
+                                <button
+                                    onClick={handleMyProfile}
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left"
+                                >
+                                    <User className="h-4 w-4 text-zinc-500" />
+                                    <span className="font-semibold text-zinc-700 dark:text-zinc-300">My Profile</span>
+                                </button>
                                 <button
                                     onClick={handleSettings}
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left"

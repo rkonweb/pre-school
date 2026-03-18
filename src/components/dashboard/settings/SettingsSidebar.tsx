@@ -12,7 +12,8 @@ import {
     Coins,
     Fingerprint,
     Sparkles,
-    Binary
+    Binary,
+    User
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -23,6 +24,12 @@ export function SettingsSidebar() {
     const slug = params.slug as string;
 
     const navItems = [
+        {
+            label: "My Profile",
+            href: `/s/${slug}/settings/profile`,
+            icon: User,
+            desc: "Personal Info"
+        },
         {
             label: "Identity",
             href: `/s/${slug}/settings/identity`,

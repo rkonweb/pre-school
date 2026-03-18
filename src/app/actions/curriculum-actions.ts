@@ -19,7 +19,7 @@ export async function getAcademicMonthsAction(curriculumId: string) {
             where: { curriculumId },
             orderBy: { monthNumber: 'asc' },
             include: {
-                days: {
+                AcademicDay: {
                     orderBy: { dayNumber: 'asc' },
                     select: {
                         id: true,
@@ -52,7 +52,7 @@ export async function getAcademicMonthAction(curriculumId: string, monthNumber: 
                 }
             },
             include: {
-                days: {
+                AcademicDay: {
                     orderBy: { dayNumber: 'asc' }
                 }
             }
@@ -116,6 +116,7 @@ export async function saveAcademicDayAction(
                 }
             },
             create: {
+                id: Math.random().toString(36).substr(2, 9),
                 monthId,
                 dayNumber,
                 title,
@@ -123,7 +124,8 @@ export async function saveAcademicDayAction(
                 blocks: JSON.stringify(blocks),
                 worksheets: JSON.stringify(worksheets),
                 notes,
-                isCompleted: blocks.length > 0 || worksheets.length > 0
+                isCompleted: blocks.length > 0 || worksheets.length > 0,
+                updatedAt: new Date()
             },
             update: {
                 title,
@@ -165,13 +167,15 @@ export async function copyAcademicDayAction(fromDayId: string, toMonthId: string
                 }
             },
             create: {
+                id: Math.random().toString(36).substr(2, 9),
                 monthId: toMonthId,
                 dayNumber: toDayNumber,
                 title: sourceDay.title,
                 theme: sourceDay.theme,
                 blocks: sourceDay.blocks,
                 notes: `Copied from Day ${sourceDay.dayNumber}`,
-                isCompleted: false
+                isCompleted: false,
+                updatedAt: new Date()
             },
             update: {
                 title: sourceDay.title,
@@ -196,7 +200,7 @@ export async function initializeAcademicStructureAction(curriculumId: string) {
     try {
         const curriculum = await prisma.curriculum.findUnique({
             where: { id: curriculumId },
-            include: { academicMonths: true }
+            include: { AcademicMonth: true }
         });
 
         if (!curriculum) {
@@ -204,7 +208,7 @@ export async function initializeAcademicStructureAction(curriculumId: string) {
         }
 
         // Check if already initialized
-        if (curriculum.academicMonths.length > 0) {
+        if (curriculum.AcademicMonth && curriculum.AcademicMonth.length > 0) {
             return { success: true, message: "Already initialized" };
         }
 
@@ -225,11 +229,13 @@ export async function initializeAcademicStructureAction(curriculumId: string) {
         for (let monthNum = 1; monthNum <= 10; monthNum++) {
             const month = await prisma.academicMonth.create({
                 data: {
+                    id: Math.random().toString(36).substr(2, 9),
                     curriculumId,
                     monthNumber: monthNum,
                     title: monthTitles[monthNum - 1],
                     description: `Academic month ${monthNum} for ${curriculum.name}`,
-                    theme: `Month ${monthNum} Theme`
+                    theme: `Month ${monthNum} Theme`,
+                    updatedAt: new Date()
                 }
             });
 
@@ -239,10 +245,12 @@ export async function initializeAcademicStructureAction(curriculumId: string) {
                 dayPromises.push(
                     prisma.academicDay.create({
                         data: {
+                            id: Math.random().toString(36).substr(2, 9),
                             monthId: month.id,
                             dayNumber: dayNum,
                             title: `Day ${dayNum}`,
-                            blocks: "[]"
+                            blocks: "[]",
+                            updatedAt: new Date()
                         }
                     })
                 );

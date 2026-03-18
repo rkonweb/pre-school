@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../../shared/app_calendar.dart';
 import '../../core/state/auth_state.dart';
+import '../../shared/components/module_popup_shell.dart';
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 
@@ -225,42 +226,19 @@ class _TeacherHomeworkViewState extends ConsumerState<TeacherHomeworkView> {
   Widget build(BuildContext context) {
     final homeworkAsync   = ref.watch(homeworkListProvider);
     final classroomsAsync = ref.watch(homeworkClassroomsProvider);
-    return Scaffold(
+    return ModulePopupShell(
+      title: 'Homework',
+      subtitle: 'Manage assignments for your classes',
+      actionLabel: '+ Create',
+      onAction: () => _openSheet(),
       backgroundColor: _bg2,
-      appBar: _buildAppBar(),
       body: Column(children: [
         _buildFilterStrip(classroomsAsync),
         _buildSummaryRow(homeworkAsync),
         Expanded(child: _buildBody(homeworkAsync)),
       ]),
-      floatingActionButton: _buildFab(),
     );
   }
-
-  PreferredSizeWidget _buildAppBar() => AppBar(
-    backgroundColor: Colors.white, elevation: 0, surfaceTintColor: Colors.transparent,
-    leading: GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
-      child: const Padding(padding: EdgeInsets.all(10),
-        child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: _ink)),
-    ),
-    title: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Homework', style: TextStyle(fontFamily: 'Cabinet Grotesk', fontSize: 18,
-          fontWeight: FontWeight.w800, color: _ink, letterSpacing: -0.4)),
-      Text('Manage assignments for your classes',
-          style: TextStyle(fontFamily: 'Satoshi', fontSize: 11, color: _ink3, fontWeight: FontWeight.w500)),
-    ]),
-    titleSpacing: 0,
-    actions: [
-      GestureDetector(
-        onTap: () => ref.invalidate(homeworkListProvider),
-        child: Container(margin: const EdgeInsets.only(right: 16), width: 38, height: 38,
-          decoration: BoxDecoration(color: _bg2, borderRadius: BorderRadius.circular(12), border: Border.all(color: _line)),
-          child: const Icon(Icons.refresh_rounded, size: 18, color: _tA)),
-      ),
-    ],
-    bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(color: _line, height: 1)),
-  );
 
   Widget _buildFilterStrip(AsyncValue<List<Map<String, dynamic>>> classroomsAsync) {
     final classrooms = classroomsAsync.value ?? [];

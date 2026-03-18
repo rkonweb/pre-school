@@ -3,6 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/state/auth_state.dart';
+import '../../core/registry/module_registry.dart';
+import '../../features/attendance/teacher_attendance_view.dart';
+import '../../features/profile/teacher_profile_view.dart';
+import '../../features/attendance/self_attendance_view.dart';
+import '../../features/diary/teacher_diary_view.dart';
+import '../../features/homework/teacher_homework_view.dart';
+import '../../features/leave/teacher_leave_view.dart';
+import '../../features/schedule/teacher_schedule_view.dart';
+import '../../features/ptm/staff_ptm_view.dart';
+import 'module_popup_shell.dart';
+
+// Placeholder empty views for not-yet-fetched modules so the app doesn't crash
+Widget _mockView(String title) => Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: Text(title)),
+      body: Center(child: Text('Popup View for $title')),
+    );
 
 class AllModulesOverlay extends ConsumerWidget {
   const AllModulesOverlay({super.key});
@@ -40,7 +57,7 @@ class AllModulesOverlay extends ConsumerWidget {
                     const SizedBox(height: 32),
                     _buildSectionHeader(Icons.electric_bolt_rounded, 'QUICK ACTIONS', const Color(0xFFFFD60A)),
                     const SizedBox(height: 16),
-                    _buildQuickActionsRow(),
+                    _buildQuickActionsRow(context),
                     const SizedBox(height: 32),
                     _buildSectionHeader(Icons.menu_book_rounded, 'TEACHING', const Color(0xFF6366F1)),
                     const SizedBox(height: 16),
@@ -49,6 +66,12 @@ class AllModulesOverlay extends ConsumerWidget {
                     _buildSectionHeader(Icons.window_rounded, 'MODULES', const Color(0xFF94A3B8), showAll: true),
                     const SizedBox(height: 16),
                     _buildModulesMiniRow(),
+                    if (ref.watch(activeRoleProvider).toUpperCase().trim() == 'ADMIN') ...[
+                      const SizedBox(height: 32),
+                      _buildSectionHeader(Icons.admin_panel_settings_rounded, 'ADMINISTRATOR', const Color(0xFF140E28)),
+                      const SizedBox(height: 16),
+                      _buildAdminModulesGrid(),
+                    ],
                   ],
                 ),
                 
@@ -166,6 +189,47 @@ class AllModulesOverlay extends ConsumerWidget {
     );
   }
 
+  void _handleNavigation(BuildContext context, String route) {
+    Navigator.pop(context); // close the overlay first
+    
+    Widget? targetView;
+    switch (route) {
+      case '/profile':
+        targetView = const TeacherProfileView();
+        break;
+      case '/attendance':
+        targetView = const TeacherAttendanceView();
+        break;
+      case '/homework':
+        targetView = TeacherHomeworkView();
+        break;
+      case '/schedule':
+      case '/timetable':
+        targetView = TeacherScheduleView();
+        break;
+      case '/leave':
+        targetView = TeacherLeaveView();
+        break;
+      case '/self-attendance':
+        targetView = const StaffSelfAttendanceView();
+        break;
+      case '/diary':
+        targetView = TeacherDiaryView();
+        break;
+      case '/ptm':
+        targetView = const StaffPTMView();
+        break;
+      default:
+        // For unknown routes, just push as temporary fallback
+        context.push(route);
+        return;
+    }
+
+    if (targetView != null) {
+      showModulePopup(context, targetView);
+    }
+  }
+
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -230,31 +294,34 @@ class AllModulesOverlay extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickActionsRow() {
+  Widget _buildQuickActionsRow(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
       child: Row(
         children: [
-          _buildQuickActionItem('Attendance', Icons.calendar_today_rounded, const Color(0xFF10B981)),
-          _buildQuickActionItem('Marks', Icons.description_rounded, const Color(0xFF8B5CF6)),
-          _buildQuickActionItem('Homework', Icons.book_rounded, const Color(0xFFF59E0B)),
-          _buildQuickActionItem('Quiz/Test', Icons.assignment_turned_in_rounded, const Color(0xFF3B82F6)),
-          _buildQuickActionItem('Leave', Icons.check_circle_outline_rounded, const Color(0xFFF97316)),
+          _buildQuickActionItem('Attendance', Icons.calendar_today_rounded, const Color(0xFF10B981), () => _handleNavigation(context, '/attendance')),
+          _buildQuickActionItem('Marks', Icons.description_rounded, const Color(0xFF8B5CF6), () { Navigator.pop(context); }),
+          _buildQuickActionItem('Homework', Icons.book_rounded, const Color(0xFFF59E0B), () => _handleNavigation(context, '/homework')),
+          _buildQuickActionItem('Quiz/Test', Icons.assignment_turned_in_rounded, const Color(0xFF3B82F6), () { Navigator.pop(context); }),
+          _buildQuickActionItem('Leave', Icons.check_circle_outline_rounded, const Color(0xFFF97316), () => _handleNavigation(context, '/leave')),
+          _buildQuickActionItem('PTM', Icons.people_alt_rounded, const Color(0xFF7C3AED), () => _handleNavigation(context, '/ptm')),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActionItem(String label, IconData icon, Color color) {
-    return Container(
-      width: 80,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+  Widget _buildQuickActionItem(String label, IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 80,
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFF1F5F9)),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF140E28).withOpacity(0.03),
@@ -285,23 +352,27 @@ class AllModulesOverlay extends ConsumerWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildTeachingList() {
     return Builder(builder: (context) => Column(
       children: [
         GestureDetector(
-          onTap: () { Navigator.pop(context); context.push('/schedule'); },
+          onTap: () => _handleNavigation(context, '/schedule'),
           child: _buildTeachingTile('My Timetable', 'Tap to view your weekly schedule', Icons.calendar_month_rounded, const Color(0xFFF59E0B)),
         ),
         GestureDetector(
-          onTap: () { Navigator.pop(context); context.push('/homework'); },
+          onTap: () => _handleNavigation(context, '/homework'),
           child: _buildTeachingTile('Homework Tracker', '3 pending corrections · 2 overdue', Icons.book_outlined, const Color(0xFFFB923C), badge: '3'),
         ),
         _buildTeachingTile('Tests & Quizzes', 'Next test: Fri 14 Mar', Icons.assignment_rounded, const Color(0xFF8B5CF6)),
         _buildTeachingTile('Top Performers', '3 students above 90% this week', Icons.workspace_premium_rounded, const Color(0xFFFCD34D), badge: '3'),
         _buildTeachingTile('Class Analytics', 'Avg 74.2% · ↑2.1% vs last week', Icons.analytics_rounded, const Color(0xFF6366F1)),
+        GestureDetector(
+          onTap: () => _handleNavigation(context, '/ptm'),
+          child: _buildTeachingTile('PTM Scheduler', 'Manage parent-teacher meetings', Icons.people_alt_rounded, const Color(0xFF7C3AED)),
+        ),
       ],
     ));
   }
@@ -423,6 +494,111 @@ class AllModulesOverlay extends ConsumerWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  bool _canAccessModule(ModuleItem m, UserProfile? user, String activeRole) {
+    if (user == null) return false;
+    final role = activeRole.toUpperCase();
+    if (role == 'ADMIN' || role == 'SUPER_ADMIN') return true;
+    
+    if (user.permissions.isEmpty) {
+      if (role == 'TEACHER' || role == 'STAFF') {
+        const teacherModules = ['dashboard', 'attendance', 'self_attendance', 'homework', 'schedule', 'communication', 'leave', 'diary'];
+        return teacherModules.contains(m.key);
+      }
+      if (role == 'DRIVER') {
+        const driverModules = ['dashboard', 'transport', 'communication', 'leave'];
+        return driverModules.contains(m.key);
+      }
+      return ['dashboard', 'leave', 'communication'].contains(m.key);
+    }
+    
+    return user.permissions.any((p) => p.startsWith('${m.key}.'));
+  }
+
+  Widget _buildAdminModulesGrid() {
+    return Consumer(builder: (context, ref, child) {
+      final user = ref.watch(userProfileProvider);
+      final activeRole = ref.watch(activeRoleProvider);
+      final modules = ModuleRegistry.allModules.where((m) => _canAccessModule(m, user, activeRole)).toList();
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.85,
+        ),
+        itemCount: modules.length,
+        itemBuilder: (context, index) {
+          final module = modules[index];
+          return _buildAdminModuleItem(context, module);
+        },
+      );
+    });
+  }
+
+  Widget _buildAdminModuleItem(BuildContext context, ModuleItem module) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF140E28).withOpacity(0.02),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (module.route.isNotEmpty) {
+              // we don't pop context explicitly here, as _handleNavigation does it, 
+              // BUT it might throw error if context is not valid anymore... 
+              // Better let _handleNavigation handle the pop.
+              _handleNavigation(context, module.route);
+            }
+          },
+          borderRadius: BorderRadius.circular(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: module.color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(module.icon, size: 24, color: module.color),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  module.label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Satoshi',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF140E28),
+                    height: 1.1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -552,8 +728,8 @@ class AllModulesOverlay extends ConsumerWidget {
 }
 
 // Helper specific to showing this modal
-void showAllModulesMenu(BuildContext context) {
-  showModalBottomSheet(
+Future<void> showAllModulesMenu(BuildContext context) {
+  return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

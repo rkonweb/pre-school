@@ -5,6 +5,15 @@ import 'package:http/http.dart' as http;
 import '../../core/state/auth_state.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/app_calendar.dart';
+import '../../shared/components/module_popup_shell.dart';
+
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+
+const _ink  = Color(0xFF140E28);
+const _ink3 = Color(0xFF7B7291);
+const _line = Color(0x12140E28);
+const _bg2  = Color(0xFFF5F3FF);
+const _tA   = Color(0xFFFF5733);
 
 // ─── Models ──────────────────────────────────────────────────────────────────
 
@@ -179,6 +188,9 @@ class _TeacherAttendanceViewState extends ConsumerState<TeacherAttendanceView> {
   bool _loadingStudents = false;
   String? _error;
 
+  bool _isMarkingMode = false;
+  int _currentMarkIndex = 0;
+
   String get _dateStr =>
       '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
 
@@ -267,6 +279,42 @@ class _TeacherAttendanceViewState extends ConsumerState<TeacherAttendanceView> {
     }
   }
 
+  void _startMarkingMode(List<AttendanceEntry> entries) {
+    if (entries.isEmpty || _allSubmitted) return;
+    int firstUnmarked = entries.indexWhere((e) => e.status.isEmpty);
+    setState(() {
+      _currentMarkIndex = firstUnmarked >= 0 ? firstUnmarked : 0;
+      _isMarkingMode = true;
+    });
+  }
+
+  void _stopMarkingMode() {
+    setState(() {
+      _isMarkingMode = false;
+    });
+  }
+
+  void _markInMode(AttendanceEntry entry, String value) {
+    if (entry.isSaving) return;
+    _autoSave(entry, value);
+    _nextCard();
+  }
+
+  void _nextCard() {
+    final entries = _entries;
+    if (_currentMarkIndex < entries.length - 1) {
+      setState(() {
+        _currentMarkIndex++;
+      });
+    } else {
+      _stopMarkingMode();
+    }
+  }
+
+  void _skipCard() {
+    _nextCard();
+  }
+
 
   Future<void> _loadStudents() async {
     if (_selectedClass == null) return;
@@ -300,13 +348,13 @@ class _TeacherAttendanceViewState extends ConsumerState<TeacherAttendanceView> {
             entries: list,
           );
           ref.read(attendanceStateProvider.notifier).setSession(_sessionKey, session);
-          setState(() { _loadingStudents = false; });
+          setState(() { _loadingStudents = false; _isMarkingMode = false; });
           return;
         }
       }
-      setState(() { _error = 'Failed to load students'; _loadingStudents = false; });
+      setState(() { _error = 'Failed to load students'; _loadingStudents = false; _isMarkingMode = false; });
     } catch (e) {
-      setState(() { _error = 'Connection error'; _loadingStudents = false; });
+      setState(() { _error = 'Connection error'; _loadingStudents = false; _isMarkingMode = false; });
     }
   }
 
@@ -375,8 +423,6 @@ class _TeacherAttendanceViewState extends ConsumerState<TeacherAttendanceView> {
     }
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final classrooms = ref.watch(_classroomsProvider);
@@ -384,30 +430,34 @@ class _TeacherAttendanceViewState extends ConsumerState<TeacherAttendanceView> {
     final session = sessions[_sessionKey];
     final entries = session?.entries ?? [];
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        // Class + Date row
-        Row(
-          children: [
-            Expanded(child: _buildClassPicker(classrooms)),
-            const SizedBox(width: 10),
-            _buildDateChip(),
+    return ModulePopupShell(
+      title: 'Attendance',
+      subtitle: 'Manage daily student presence',
+      actionIcon: Icons.refresh_rounded,
+      onActionIcon: () => _loadStudents(),
+      backgroundColor: _bg2,
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (!_isMarkingMode) ...[
+            // Class + Date row
+          Row(
+            children: [
+              Expanded(child: _buildClassPicker(classrooms)),
+              const SizedBox(width: 10),
+              _buildDateChip(),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Permission badge
+          if (_selectedClass != null) _buildPermissionBadge(),
+          const SizedBox(height: 12),
+
+          if (entries.isNotEmpty) ...[
+            _buildStatsRow(entries),
+            const SizedBox(height: 14),
           ],
-        ),
-        const SizedBox(height: 12),
-
-        // Permission badge
-        if (_selectedClass != null) _buildPermissionBadge(),
-        const SizedBox(height: 12),
-
-        // Stats
-        if (entries.isNotEmpty) ...[
-          _buildStatsRow(entries),
-          const SizedBox(height: 4),
-          // Auto-save progress line
-          _buildSaveProgress(entries),
-          const SizedBox(height: 14),
         ],
 
         // Content
@@ -423,18 +473,56 @@ class _TeacherAttendanceViewState extends ConsumerState<TeacherAttendanceView> {
           // Submitted banner
           if (_allSubmitted) _buildSubmittedBanner(),
 
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color.fromRGBO(20, 14, 40, 0.07), width: 1.5),
+          if (_canMark && !_allSubmitted)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isMarkingMode ? Colors.white : AppTheme.teacherTheme.colors.first,
+                        foregroundColor: _isMarkingMode ? const Color(0xFF140E28) : Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: _isMarkingMode ? const BorderSide(color: Color.fromRGBO(20, 14, 40, 0.1)) : BorderSide.none,
+                        ),
+                        elevation: _isMarkingMode ? 0 : 2,
+                      ),
+                      icon: Icon(_isMarkingMode ? Icons.list_rounded : Icons.play_arrow_rounded),
+                      label: Text(
+                        _isMarkingMode ? 'Show List View' : 'Start Marking',
+                        style: const TextStyle(fontFamily: 'Satoshi', fontWeight: FontWeight.w800, fontSize: 14),
+                      ),
+                      onPressed: () {
+                        if (_isMarkingMode) {
+                          _stopMarkingMode();
+                        } else {
+                          _startMarkingMode(entries);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Column(
-              children: entries.asMap().entries.map((e) =>
-                _buildStudentRow(e.value, isLast: e.key == entries.length - 1)
-              ).toList(),
+
+          if (_isMarkingMode && entries.isNotEmpty)
+            _buildFlashcardView(entries)
+          else
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: const Color.fromRGBO(20, 14, 40, 0.07), width: 1.5),
+              ),
+              child: Column(
+                children: entries.asMap().entries.map((e) =>
+                  _buildStudentRow(e.value, isLast: e.key == entries.length - 1)
+                ).toList(),
+              ),
             ),
-          ),
           const SizedBox(height: 20),
 
           if (_canMark && !_allSubmitted) _buildSubmitButton(entries),
@@ -443,7 +531,7 @@ class _TeacherAttendanceViewState extends ConsumerState<TeacherAttendanceView> {
         ],
         const SizedBox(height: 80),
       ],
-    );
+    ));
   }
 
   // ── Sub-widgets ───────────────────────────────────────────────────────────
@@ -672,6 +760,124 @@ class _TeacherAttendanceViewState extends ConsumerState<TeacherAttendanceView> {
     );
   }
 
+  Widget _buildFlashcardView(List<AttendanceEntry> entries) {
+    if (_currentMarkIndex >= entries.length) return const SizedBox.shrink();
+    final entry = entries[_currentMarkIndex];
+    final initials = entry.studentName.isNotEmpty
+        ? entry.studentName.split(' ').map((w) => w.isNotEmpty ? w[0] : '').take(2).join().toUpperCase()
+        : '?';
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color.fromRGBO(20, 14, 40, 0.07), width: 1.5),
+        boxShadow: const [BoxShadow(color: Color.fromRGBO(20, 14, 40, 0.05), blurRadius: 12, offset: Offset(0, 4))],
+      ),
+      child: Column(
+        children: [
+          // Index indicator
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Student ${_currentMarkIndex + 1} of ${entries.length}',
+                style: const TextStyle(fontFamily: 'Satoshi', fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF7B7291))),
+              if (entry.status.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: entry.status == 'PRESENT' ? const Color(0xFF16A34A) : entry.status == 'ABSENT' ? const Color(0xFFDC2626) : const Color(0xFFD97706),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(entry.status, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Avatar
+          if (entry.avatar != null && entry.avatar!.isNotEmpty)
+            Container(
+              width: 80, height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: NetworkImage(
+                    entry.avatar!.startsWith('/') ? 'http://localhost:3000${entry.avatar}' : entry.avatar!,
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            )
+          else
+            Container(
+              width: 80, height: 80,
+              decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppTheme.teacherTheme),
+              child: Center(
+                child: Text(initials,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 28, fontFamily: 'Cabinet Grotesk')),
+              ),
+            ),
+          const SizedBox(height: 12),
+          // Name and Roll
+          Text(entry.studentName,
+            style: const TextStyle(fontFamily: 'Cabinet Grotesk', fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF140E28)),
+            textAlign: TextAlign.center),
+          const SizedBox(height: 2),
+          if (entry.rollNo != null)
+            Text('Roll #${entry.rollNo}',
+              style: const TextStyle(fontFamily: 'Satoshi', fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF7B7291))),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(8)),
+            child: Text(_selectedClass?.name ?? '', style: const TextStyle(fontFamily: 'Satoshi', fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF140E28))),
+          ),
+          const SizedBox(height: 24),
+          // Actions
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _bigActionBtn('PRESENT', Icons.check_rounded, const Color(0xFF16A34A), const Color(0xFFF0FDF4), () => _markInMode(entry, 'PRESENT')),
+              _bigActionBtn('LATE', Icons.access_time_rounded, const Color(0xFFD97706), const Color(0xFFFFFBEB), () => _markInMode(entry, 'LATE')),
+              _bigActionBtn('ABSENT', Icons.close_rounded, const Color(0xFFDC2626), const Color(0xFFFEF2F2), () => _markInMode(entry, 'ABSENT')),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () => _skipCard(),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF7B7291)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text('Skip for now', style: TextStyle(fontFamily: 'Satoshi', fontWeight: FontWeight.w700, fontSize: 14)),
+                SizedBox(width: 4),
+                Icon(Icons.arrow_forward_rounded, size: 16),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bigActionBtn(String label, IconData icon, Color color, Color bg, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 56, height: 56,
+            decoration: BoxDecoration(color: bg, shape: BoxShape.circle, border: Border.all(color: color.withOpacity(0.3), width: 2)),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(height: 6),
+          Text(label, style: TextStyle(fontFamily: 'Satoshi', fontWeight: FontWeight.w800, fontSize: 11, color: color)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStudentRow(AttendanceEntry entry, {required bool isLast}) {
     final initials = entry.studentName.isNotEmpty
         ? entry.studentName.split(' ').map((w) => w.isNotEmpty ? w[0] : '').take(2).join().toUpperCase()
@@ -691,14 +897,30 @@ class _TeacherAttendanceViewState extends ConsumerState<TeacherAttendanceView> {
       child: Row(
         children: [
           // Avatar
-          Container(
-            width: 38, height: 38,
-            decoration: BoxDecoration(gradient: AppTheme.teacherTheme, borderRadius: BorderRadius.circular(10)),
-            child: Center(
-              child: Text(initials,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12)),
+          if (entry.avatar != null && entry.avatar!.isNotEmpty)
+            Container(
+              width: 38, height: 38,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                image: DecorationImage(
+                  image: NetworkImage(
+                    entry.avatar!.startsWith('/')
+                        ? 'http://localhost:3000${entry.avatar}'
+                        : entry.avatar!,
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            )
+          else
+            Container(
+              width: 38, height: 38,
+              decoration: BoxDecoration(gradient: AppTheme.teacherTheme, borderRadius: BorderRadius.circular(10)),
+              child: Center(
+                child: Text(initials,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12)),
+              ),
             ),
-          ),
           const SizedBox(width: 12),
 
           // Name + save indicator

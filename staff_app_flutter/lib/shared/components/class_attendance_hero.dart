@@ -124,10 +124,7 @@ class _ClassAttendanceHeroState extends ConsumerState<ClassAttendanceHero> {
       data: (list) {
         if (list.isEmpty) return _buildEmpty();
         if (list.length == 1) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _buildCard(list[0]),
-          );
+          return _buildCard(list[0]);
         }
 
         // Carousel for multiple classes — swipe only, no auto-play
@@ -137,10 +134,11 @@ class _ClassAttendanceHeroState extends ConsumerState<ClassAttendanceHero> {
               height: 164,
               child: PageView.builder(
                 controller: _pageController,
+                padEnds: false,
                 itemCount: list.length,
                 onPageChanged: (i) => setState(() => _currentPage = i),
                 itemBuilder: (_, i) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  padding: EdgeInsets.only(right: i < list.length - 1 ? 12 : 0),
                   child: _buildCard(list[i]),
                 ),
               ),

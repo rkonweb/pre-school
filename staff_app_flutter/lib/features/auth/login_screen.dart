@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/state/auth_state.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/config/api_config.dart';
 import '../../shared/components/phone_input.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -67,7 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final fullPhone = '${_selectedCountry['code']} $_phoneNumber';
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:3000/api/mobile/v1/staff/auth/request-otp'),
+        Uri.parse('$apiBase/api/mobile/v1/staff/auth/request-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobile': fullPhone}),
       ).timeout(const Duration(seconds: 10));
@@ -135,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final fullPhone = '${_selectedCountry['code']} $phone';
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:3000/api/mobile/v1/staff/auth/request-otp'),
+        Uri.parse('$apiBase/api/mobile/v1/staff/auth/request-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobile': fullPhone}),
       ).timeout(const Duration(seconds: 10));
@@ -155,13 +156,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         HapticFeedback.vibrate();
       }
     } catch (e) {
+      debugPrint('OTP Request Error: $e');
       setState(() { _isSendingOtp = false;
-        _phoneError = 'Network error. Is the server running?'; });
+        _phoneError = 'Network error. Is the server running? $e'; });
       HapticFeedback.vibrate();
     }
   }
 
   void _handleSuccess(UserProfile profile) {
+    if (profile.role == 'ADMIN' || profile.role == 'SUPER_ADMIN') {
+      _showSnack('Administrators must use the Administrator App to login.');
+      // Keep state at OTP panel so they don't enter dashboard
+      return;
+    }
     setState(() => _currentPanel = 2);
     Future.delayed(const Duration(milliseconds: 2600), () {
       ref.read(userProfileProvider.notifier).state = profile;
@@ -181,7 +188,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final fullPhone = '${_selectedCountry['code']} $_phoneNumber';
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:3000/api/mobile/v1/staff/auth/verify-otp'),
+        Uri.parse('$apiBase/api/mobile/v1/staff/auth/verify-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobile': fullPhone, 'code': otp}),
       ).timeout(const Duration(seconds: 10));
@@ -212,7 +219,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } catch (e) {
       HapticFeedback.vibrate();
-      _showSnack('Connection error. Is the server running on port 3000?');
+      debugPrint('OTP Verify Error: $e  URL: $apiBase/api/mobile/v1/staff/auth/verify-otp');
+      _showSnack('Connection error: $e');
     }
   }
 
@@ -237,7 +245,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final fullPhone = '${_selectedCountry['code']} $_phoneNumber';
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:3000/api/mobile/v1/staff/auth/request-otp'),
+        Uri.parse('$apiBase/api/mobile/v1/staff/auth/request-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobile': fullPhone}),
       ).timeout(const Duration(seconds: 10));

@@ -11,6 +11,7 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { searchGlobalAction } from "@/app/actions/search-actions";
 import { useParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useAura } from "@/context/AuraContext";
 
 const AMBER = "var(--brand-color, #F59E0B)";
 const AMBER_D = "var(--brand-color, #D97706)";
@@ -29,6 +30,7 @@ export function Header({
     currentBranchId?: string;
 }) {
     const { toggleSidebar, isAppFullscreen, toggleFullscreen } = useSidebar();
+    const { toggleAura, isAuraOpen } = useAura();
     const [currentTime, setCurrentTime] = useState("");
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -116,14 +118,19 @@ export function Header({
                 <AcademicYearSelector />
             </div>
 
-            {/* ── Right: Bell + Fullscreen + Profile ── */}
+            {/* ── Right: Aura AI + Fullscreen + Profile ── */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {/* Notification Bell */}
+                {/* AI Aura Toggle */}
                 <button
+                    onClick={toggleAura}
+                    title="AI Aura Assistant"
+                    aria-label="Toggle AI Aura Assistant"
+                    className="group"
                     style={{
                         position: "relative", padding: 8, borderRadius: 10,
-                        border: "1.5px solid rgba(255,255,255,0.2)",
-                        background: "rgba(255,255,255,0.1)", cursor: "pointer",
+                        border: isAuraOpen ? "1.5px solid rgba(255,255,255,0.5)" : "1.5px solid rgba(255,255,255,0.2)",
+                        background: isAuraOpen ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
+                        cursor: "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         transition: "all 0.22s ease",
                     }}
@@ -133,17 +140,17 @@ export function Header({
                     >
                         <Sparkles size={20} className="animate-pulse" />
                     </div>
-                    {/* Amber pulse dot */}
+                    {/* Active pulse dot */}
                     <span
                         className="pulse-anim"
                         style={{
                             position: "absolute", top: 7, right: 7,
                             width: 7, height: 7, borderRadius: "50%",
-                            background: "#F59E0B",
+                            background: isAuraOpen ? "#10B981" : "#F59E0B",
                             boxShadow: "0 0 0 2px white",
                         }}
                     />
-                    <span className="sr-only">Notifications</span>
+                    <span className="sr-only">AI Aura Assistant</span>
                 </button>
 
                 {/* Fullscreen toggle */}

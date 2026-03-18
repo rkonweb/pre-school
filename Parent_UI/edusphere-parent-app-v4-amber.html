@@ -1,0 +1,2511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EduSphere — Parent Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TOKENS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root{
+  --bg:#FFFBF0; --bg2:#FFF3D4; --bg3:#FFE9B0;
+  --glass:rgba(255,255,255,.78); --glass2:rgba(255,255,255,.9); --glass3:rgba(255,255,255,.97);
+  --gb:rgba(245,158,11,.18); --gb2:rgba(245,158,11,.32);
+  --e1:#F59E0B; --e2:#F97316; --e3:#D97706;
+  --eg:linear-gradient(135deg,#F59E0B,#F97316);
+  --gold:#D97706; --goldd:#B45309; --gold-soft:rgba(245,158,11,.14);
+  --jade:#059669; --jade-soft:rgba(5,150,105,.12);
+  --sky:#0284C7; --sky-soft:rgba(2,132,199,.12);
+  --rose:#E11D48; --rose-soft:rgba(225,29,72,.12);
+  --orange:#EA580C; --orange-soft:rgba(234,88,12,.12);
+  --t1:#1C0A00; --t2:#7C2D12; --t3:#78716C; --t4:#A8A29E;
+  --r1:8px; --r2:14px; --r3:20px; --r4:28px; --r5:36px;
+  --shadow:0 8px 32px rgba(245,158,11,.18);
+  --shadow2:0 16px 56px rgba(245,158,11,.25);
+  --glow-e:0 4px 20px rgba(245,158,11,.4);
+  --glow-gold:0 4px 16px rgba(217,119,6,.35);
+  --glow-jade:0 4px 16px rgba(5,150,105,.25);
+  --font-d:'Plus Jakarta Sans',sans-serif;
+  --font-b:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:var(--font-b);background:var(--bg);color:var(--t1)}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AURORA BACKGROUND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aurora{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.aurora-blob{position:absolute;border-radius:50%;filter:blur(90px);mix-blend-mode:multiply;animation:blobDrift var(--dur,20s) ease-in-out infinite;opacity:.35}
+.ab1{width:700px;height:700px;top:-200px;left:-150px;background:radial-gradient(circle,rgba(251,191,36,.55) 0%,transparent 70%);--dur:22s}
+.ab2{width:600px;height:600px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(252,211,77,.45) 0%,transparent 70%);--dur:28s;animation-delay:-8s}
+.ab3{width:500px;height:500px;top:30%;left:40%;background:radial-gradient(circle,rgba(249,168,37,.35) 0%,transparent 70%);--dur:18s;animation-delay:-4s}
+.ab4{width:400px;height:400px;bottom:10%;left:20%;background:radial-gradient(circle,rgba(254,243,199,.7) 0%,transparent 70%);--dur:32s;animation-delay:-12s}
+@keyframes blobDrift{
+  0%,100%{transform:translate(0,0) scale(1)}
+  25%{transform:translate(60px,-40px) scale(1.08)}
+  50%{transform:translate(-30px,60px) scale(.95)}
+  75%{transform:translate(40px,30px) scale(1.05)}
+}
+
+/* Grid overlay */
+.grid-overlay{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(245,158,11,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(245,158,11,.07) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SHELL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.shell{
+  position:relative;z-index:1;
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px;gap:32px;flex-wrap:wrap;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SIDEBAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.sidebar{
+  width:260px;flex-shrink:0;
+  display:flex;flex-direction:column;gap:12px;
+  animation:sidebarIn .8s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes sidebarIn{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
+
+/* Logo */
+.s-logo{
+  background:linear-gradient(135deg,#F59E0B 0%,#F97316 60%,#EA580C 100%);
+  border-radius:var(--r3);padding:0;
+  position:relative;overflow:hidden;
+  box-shadow:0 8px 32px rgba(249,115,22,.35),0 2px 8px rgba(249,115,22,.2);
+  border:1px solid rgba(255,255,255,.25);
+}
+.s-logo::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 30%,rgba(255,255,255,.18),transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 80%,rgba(234,88,12,.3),transparent 60%);
+  pointer-events:none;
+}
+.s-logo::after{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);
+  background-size:20px 20px;
+  pointer-events:none;
+}
+.s-logo-inner{padding:20px 22px;position:relative;z-index:1;display:flex;flex-direction:column;gap:14px;}
+.s-logo-top{display:flex;align-items:center;justify-content:space-between}
+.s-logo-mark{
+  width:46px;height:46px;border-radius:15px;
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.3);
+  border:1px solid rgba(255,255,255,.25);
+  flex-shrink:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.s-logo:hover .s-logo-mark{transform:rotate(-8deg) scale(1.08)}
+.s-logo-badge{
+  background:rgba(255,255,255,.22);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.3);border-radius:20px;
+  padding:4px 10px;font-size:9.5px;font-weight:800;color:#fff;
+  letter-spacing:.4px;text-transform:uppercase;
+  display:flex;align-items:center;gap:5px;
+}
+.s-logo-badge-dot{width:6px;height:6px;border-radius:50%;background:#4ADE80;box-shadow:0 0 6px rgba(74,222,128,.6);animation:dotPulse 2s infinite}
+.s-logo-name{font-family:var(--font-d);font-size:26px;font-weight:900;color:#fff;letter-spacing:-.8px;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.1)}
+.s-logo-tagline{display:flex;align-items:center;justify-content:space-between}
+.s-logo-tag{font-size:11px;color:rgba(255,255,255,.8);font-weight:600;letter-spacing:.3px}
+.s-logo-stats{display:flex;gap:8px}
+.s-logo-stat{
+  background:rgba(255,255,255,.18);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.25);border-radius:8px;
+  padding:4px 9px;text-align:center;
+}
+.s-logo-stat-v{font-family:var(--font-d);font-size:13px;font-weight:800;color:#fff;line-height:1}
+.s-logo-stat-l{font-size:8px;color:rgba(255,255,255,.7);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+
+/* Child cards */
+.s-children{
+  background:rgba(255,255,255,.92);backdrop-filter:blur(20px);
+  border:1px solid var(--gb);border-radius:var(--r3);padding:16px;
+}
+.s-section-label{
+  font-size:9.5px;font-weight:700;color:#9CA3AF;
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;
+}
+.child-card{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 12px;border-radius:var(--r2);
+  cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  border:1.5px solid transparent;position:relative;overflow:hidden;
+  margin-bottom:6px;
+}
+.child-card:last-child{margin-bottom:0}
+.child-card::before{
+  content:'';position:absolute;inset:0;border-radius:var(--r2);
+  background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(249,115,22,.05));
+  opacity:0;transition:opacity .25s ease;
+}
+.child-card.active{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.07)}
+.child-card.active::before{opacity:1}
+.child-card:not(.active):hover{background:rgba(245,158,11,.06);border-color:var(--gb)}
+.child-av{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:800;flex-shrink:0;
+  font-family:var(--font-d);
+  box-shadow:0 4px 12px rgba(0,0,0,.3);
+  position:relative;z-index:1;
+}
+.child-av-ring{
+  position:absolute;inset:-3px;border-radius:50%;
+  background:linear-gradient(135deg,transparent 40%,var(--e1),transparent);
+  opacity:0;transition:opacity .25s ease;
+}
+.child-card.active .child-av-ring{opacity:1;animation:ringRotate 3s linear infinite}
+@keyframes ringRotate{to{transform:rotate(360deg)}}
+.child-info{flex:1;min-width:0;position:relative;z-index:1}
+.child-name{font-size:13px;font-weight:700;color:#1E1B4B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.child-class{font-size:10.5px;color:#6B7280;font-weight:500;margin-top:1px}
+.child-grade-badge{
+  font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:20px;
+  position:relative;z-index:1;
+}
+.child-card.active .child-grade-badge{background:var(--eg);color:#fff;box-shadow:var(--glow-e)}
+
+/* Stats grid */
+.s-stats{
+  background:rgba(255,255,255,.92);backdrop-filter:blur(20px);
+  border:1px solid var(--gb);border-radius:var(--r3);padding:16px;
+}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-cell{
+  background:rgba(255,248,230,.8);border-radius:var(--r2);
+  padding:13px 10px;text-align:center;
+  border:1px solid var(--gb);
+  transition:all .2s ease;cursor:default;
+  position:relative;overflow:hidden;
+}
+.stat-cell::before{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  border-radius:0 0 var(--r2) var(--r2);
+}
+.stat-cell.c-e::before{background:linear-gradient(90deg,#F59E0B,#F97316)}
+.stat-cell.c-j::before{background:linear-gradient(90deg,var(--jade),#34D399)}
+.stat-cell.c-g::before{background:linear-gradient(90deg,var(--gold),#FBBF24)}
+.stat-cell.c-o::before{background:linear-gradient(90deg,var(--orange),#FB923C)}
+.stat-cell:hover{transform:translateY(-2px);background:rgba(255,255,255,1)}
+.stat-num{
+  font-family:var(--font-d);font-size:22px;font-weight:800;line-height:1;
+  transition:all .3s ease;
+}
+.stat-lbl{font-size:9px;font-weight:600;color:#9CA3AF;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+
+/* Quick nav */
+.s-nav{
+  background:rgba(255,255,255,.92);backdrop-filter:blur(20px);
+  border:1px solid var(--gb);border-radius:var(--r3);padding:14px;
+}
+.s-link{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:var(--r1);
+  cursor:pointer;transition:all .2s ease;
+  font-size:12.5px;font-weight:600;color:#D97706;
+  margin-bottom:2px;position:relative;overflow:hidden;
+}
+.s-link:hover{background:rgba(245,158,11,.1);color:#1C0A00}
+.s-link-ico{
+  width:30px;height:30px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.s-link-arrow{margin-left:auto;color:#D1D5DB;font-size:12px;transition:transform .2s ease}
+.s-link:hover .s-link-arrow{transform:translateX(3px);color:#D97706}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PHONE OUTER / PHONE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.phone-outer{
+  position:relative;flex-shrink:0;
+  animation:phoneIn .9s cubic-bezier(.34,1.56,.64,1) .15s both;
+}
+@keyframes phoneIn{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:none}}
+
+/* Glow halos */
+.p-halo{position:absolute;border-radius:50%;pointer-events:none;animation:haloBreath 6s ease-in-out infinite}
+.ph1{width:520px;height:520px;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:conic-gradient(from 0deg,rgba(99,102,241,.12),rgba(139,92,246,.08),rgba(14,165,233,.06),rgba(99,102,241,.12));
+  filter:blur(2px);}
+.ph2{width:640px;height:640px;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:conic-gradient(from 180deg,rgba(245,158,11,.05),rgba(99,102,241,.07),rgba(245,158,11,.05));
+  filter:blur(3px);animation-delay:-3s;animation-duration:9s;}
+@keyframes haloBreath{0%,100%{opacity:.6}50%{opacity:1}}
+
+/* Phone frame */
+.phone{
+  width:390px;height:844px;
+  position:relative;z-index:2;
+  border-radius:50px;
+  background:linear-gradient(160deg,#FFFFFF 0%,#FFFDF7 50%,#FFF8E6 100%);
+  border:1px solid rgba(245,158,11,.22);
+  box-shadow:
+    0 0 0 1px rgba(245,158,11,.08),
+    0 32px 80px rgba(245,158,11,.22),
+    0 8px 32px rgba(245,158,11,.14),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* Phone edge shine */
+.phone::before{
+  content:'';position:absolute;inset:0;border-radius:50px;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.8) 0%,transparent 40%,transparent 60%,rgba(255,255,255,.3) 100%);
+  z-index:10;
+}
+
+/* Dynamic island */
+.p-island{
+  position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:120px;height:34px;background:#1a1a2e;border-radius:20px;
+  display:flex;align-items:center;justify-content:flex-end;
+  padding-right:9px;gap:7px;z-index:20;
+}
+.p-island::before{
+  content:'';position:absolute;inset:-1px;border-radius:21px;
+  background:linear-gradient(135deg,rgba(255,255,255,.06),transparent);
+}
+.p-island-dot{width:9px;height:9px;border-radius:50%;background:#0f0f0f;border:1px solid rgba(255,255,255,.07)}
+.p-island-cam{
+  width:11px;height:11px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#1a1a2e,#050505);
+  border:1.5px solid rgba(255,255,255,.15);
+  box-shadow:0 0 0 2px rgba(255,255,255,.05) inset;
+}
+
+/* Status bar */
+.p-status{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px 8px;flex-shrink:0;position:relative;z-index:15;
+}
+.p-time{font-family:var(--font-d);font-size:15px;font-weight:700;color:#1C0A00}
+.p-icons{display:flex;align-items:center;gap:5px}
+.p-signal{display:flex;align-items:flex-end;gap:1.5px;height:11px}
+.p-signal-b{width:2.5px;border-radius:1px;background:#1E1B4B}
+.p-battery{
+  width:23px;height:12px;border-radius:3px;border:1.5px solid rgba(30,27,75,.4);
+  padding:1.5px;position:relative;
+}
+.p-battery::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:3px;height:5px;background:rgba(30,27,75,.4);border-radius:0 2px 2px 0}
+.p-battery-fill{height:100%;border-radius:2px;background:var(--jade);width:78%}
+
+/* Screen */
+.p-scr{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;background:linear-gradient(180deg,#FFFBF0 0%,#FFF8E6 100%);position:relative}
+.p-scr::-webkit-scrollbar{display:none}
+.p-dash{display:none}
+.p-dash.on{display:block}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BOTTOM NAV
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.p-nav{
+  flex-shrink:0;
+  background:rgba(255,255,255,.95);
+  backdrop-filter:blur(24px);
+  border-top:1px solid var(--gb);
+  padding:8px 6px 22px;
+  display:flex;align-items:center;justify-content:space-around;
+  position:relative;z-index:15;
+}
+.p-nav::before{
+  content:'';position:absolute;top:0;left:20%;right:20%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(245,158,11,.6),transparent);
+}
+.p-nb{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:7px 10px;border-radius:16px;cursor:pointer;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  min-width:54px;position:relative;
+}
+.p-nb.sel{background:rgba(245,158,11,.12)}
+.nb-ico-wrap{
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border-radius:10px;transition:all .3s cubic-bezier(.34,1.56,.64,1);position:relative;
+}
+.p-nb.sel .nb-ico-wrap{
+  background:var(--eg);
+  box-shadow:0 4px 16px rgba(249,115,22,.45);
+  transform:translateY(-2px);
+}
+.nb-ico-wrap svg{transition:all .25s ease}
+.p-nb.sel .nb-ico-wrap svg{stroke:white!important}
+.nb-lbl{font-size:9.5px;font-weight:700;color:#9CA3AF;transition:color .2s;letter-spacing:.3px}
+.p-nb.sel .nb-lbl{color:#D97706}
+.nb-dot{
+  position:absolute;top:3px;right:6px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--rose);border:2px solid #fff;
+  animation:dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,63,94,.5)}50%{box-shadow:0 0 0 4px rgba(244,63,94,.0)}}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   REVEAL ANIMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.sr{opacity:0;transform:translateY(18px);transition:opacity .5s cubic-bezier(.34,1.56,.64,1),transform .5s cubic-bezier(.34,1.56,.64,1)}
+.sr.in{opacity:1;transform:none}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GLASS CARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.gc{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(20px);
+  border:1px solid var(--gb);border-radius:var(--r3);
+  position:relative;overflow:hidden;
+}
+.gc::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.6) 0%,transparent 60%);
+  pointer-events:none;border-radius:var(--r3);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   HOME TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.p-app-header{
+  background:linear-gradient(135deg,#F59E0B 0%,#F97316 55%,#EA580C 100%);
+  padding:52px 20px 16px;
+  position:relative;overflow:hidden;flex-shrink:0;
+  z-index:10;
+}
+.p-app-header::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 120% at 10% 50%,rgba(255,255,255,.14),transparent 55%),
+    radial-gradient(ellipse 60% 100% at 90% 50%,rgba(234,88,12,.25),transparent 55%);
+}
+.p-app-header-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);
+  background-size:22px 22px;
+}
+.p-app-header-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:14px}
+.p-app-header-row1{display:flex;align-items:center;justify-content:space-between}
+.p-app-logo{display:flex;align-items:center;gap:9px}
+.p-app-logo-icon{
+  width:36px;height:36px;border-radius:11px;
+  background:rgba(255,255,255,.22);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 10px rgba(0,0,0,.1);
+}
+.p-app-logo-text{font-family:var(--font-d);font-size:17px;font-weight:900;color:#fff;letter-spacing:-.4px;text-shadow:0 1px 4px rgba(0,0,0,.1)}
+.p-app-logo-dot{font-size:17px;color:rgba(255,255,255,.5)}
+.p-app-logo-sub{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.3px;margin-top:0px}
+.p-app-actions{display:flex;align-items:center;gap:8px}
+.p-app-btn{
+  width:36px;height:36px;border-radius:11px;
+  background:rgba(255,255,255,.2);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .25s ease;position:relative;
+  box-shadow:0 2px 8px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.p-app-btn:hover{background:rgba(255,255,255,.32);transform:scale(1.06)}
+.p-app-btn-badge{
+  position:absolute;top:-4px;right:-4px;
+  min-width:17px;height:17px;border-radius:9px;
+  background:linear-gradient(135deg,#EF4444,#F87171);
+  font-size:8.5px;font-weight:800;color:#fff;
+  display:flex;align-items:center;justify-content:center;padding:0 3px;
+  border:1.5px solid rgba(255,255,255,.7);
+  box-shadow:0 2px 6px rgba(239,68,68,.4);
+}
+.p-app-user-row{display:flex;align-items:center;gap:10px}
+.p-app-av{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(255,255,255,.22);backdrop-filter:blur(8px);
+  border:2px solid rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-d);font-size:15px;font-weight:800;color:#fff;
+  flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.12);
+}
+.p-app-greet{flex:1}
+.p-app-greet-hi{font-size:10.5px;color:rgba(255,255,255,.78);font-weight:600;letter-spacing:.2px}
+.p-app-greet-name{font-family:var(--font-d);font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px;line-height:1.1}
+.p-app-child-pill{
+  background:rgba(255,255,255,.2);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.3);border-radius:20px;
+  padding:5px 10px 5px 7px;display:flex;align-items:center;gap:7px;
+  cursor:pointer;transition:all .25s ease;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.p-app-child-pill:hover{background:rgba(255,255,255,.3);transform:scale(1.03)}
+.p-app-child-av{
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;font-family:var(--font-d);
+  color:#fff;flex-shrink:0;
+}
+.p-app-child-name{font-size:11px;font-weight:800;color:#fff;white-space:nowrap}
+.p-app-child-caret{color:rgba(255,255,255,.65);font-size:14px;line-height:1}
+.p-app-stat-row{
+  display:flex;gap:6px;
+}
+.p-app-stat{
+  flex:1;background:rgba(255,255,255,.18);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.25);border-radius:11px;
+  padding:8px 6px;text-align:center;
+  transition:all .25s ease;cursor:pointer;
+}
+.p-app-stat:hover{background:rgba(255,255,255,.28);transform:translateY(-2px)}
+.p-app-stat-v{font-family:var(--font-d);font-size:14px;font-weight:900;color:#fff;line-height:1}
+.p-app-stat-l{font-size:8.5px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.3px;margin-top:3px}
+/* === The old hero section now becomes a simple today-strip anchor === */
+.home-hero{
+  display:none;
+}
+.home-hero::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 30%,rgba(255,255,255,.15),transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 70%,rgba(167,139,250,.2),transparent 55%);
+}
+.home-hero::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(99,102,241,.4),rgba(139,92,246,.3),transparent);
+}
+
+/* Mesh grid on hero */
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px);
+  background-size:30px 30px;opacity:.5;
+}
+
+.hero-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;margin-bottom:20px}
+.hero-greeting{font-size:11px;font-weight:600;color:rgba(255,255,255,.8);letter-spacing:.5px;margin-bottom:4px}
+.hero-name{font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
+.hero-notif{
+  width:38px;height:38px;border-radius:12px;
+  background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);
+  backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .25s ease;position:relative;
+}
+.hero-notif:hover{background:var(--glass3);transform:scale(1.05)}
+.hero-notif-count{
+  position:absolute;top:-4px;right:-4px;
+  min-width:18px;height:18px;
+  background:linear-gradient(135deg,#E11D48,#FB7185);
+  border-radius:9px;font-size:9px;font-weight:800;color:#fff;
+  display:flex;align-items:center;justify-content:center;padding:0 4px;
+  border:2px solid rgba(255,255,255,.6);
+  box-shadow:0 0 10px rgba(225,29,72,.4);
+}
+
+/* Active child card */
+.hero-child{
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:22px;padding:18px;
+  display:flex;align-items:center;gap:14px;
+  position:relative;z-index:1;cursor:pointer;
+  transition:all .3s ease;
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
+}
+.hero-child:hover{background:rgba(255,255,255,.3);border-color:rgba(255,255,255,.5)}
+.hero-child-av{
+  width:56px;height:56px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:800;font-family:var(--font-d);
+  flex-shrink:0;position:relative;
+}
+.hero-child-ring{
+  position:absolute;inset:-4px;border-radius:50%;
+  background:conic-gradient(#F59E0B,#F97316,#D97706,#F59E0B);
+  animation:ringRotate 4s linear infinite;
+  -webkit-mask:radial-gradient(circle,transparent 52%,black 54%);
+  mask:radial-gradient(circle,transparent 52%,black 54%);
+}
+.hero-child-body{flex:1}
+.hero-child-name{font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff;letter-spacing:-.2px}
+.hero-child-meta{font-size:11px;color:rgba(255,255,255,.65);font-weight:500;margin-top:2px}
+.hero-chips{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
+.hero-chip{
+  font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;
+  background:rgba(255,255,255,.25);color:rgba(255,255,255,.95);
+  border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(4px);
+}
+.hero-rank-box{flex-shrink:0;text-align:right}
+.hero-rank-num{font-family:var(--font-d);font-size:30px;font-weight:900;color:#fff;line-height:1;letter-spacing:-1px}
+.hero-rank-lbl{font-size:9px;color:rgba(255,255,255,.6);font-weight:600;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+
+/* Today strip */
+.today-strip{
+  display:flex;
+  margin:-22px 14px 0;
+  background:rgba(255,255,255,.98);
+  backdrop-filter:blur(24px);
+  border:1px solid var(--gb2);
+  border-radius:20px;padding:14px 4px;
+  position:relative;z-index:5;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.today-item{
+  flex:1;text-align:center;padding:4px 8px;
+  border-right:1px solid rgba(245,158,11,.15);
+  position:relative;
+}
+.today-item:last-child{border-right:none}
+.today-val{
+  font-family:var(--font-d);font-size:19px;font-weight:800;line-height:1;
+}
+.today-lbl{font-size:9px;font-weight:600;color:#9CA3AF;margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
+
+/* Action grid */
+.action-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:8px;padding:20px 14px 0;
+}
+.action-btn{
+  background:rgba(255,255,255,.9);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);
+  border-radius:18px;padding:14px 6px 12px;
+  text-align:center;cursor:pointer;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+}
+.action-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.06),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.action-btn:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 8px 24px rgba(245,158,11,.2);border-color:var(--gb2)}
+.action-btn:hover::before{opacity:1}
+.action-btn:active{transform:translateY(-1px) scale(.98)}
+.a-ico{
+  width:38px;height:38px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 9px;transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.action-btn:hover .a-ico{transform:scale(1.15) rotate(-8deg)}
+.a-lbl{font-size:9.5px;font-weight:700;color:#4B5563;letter-spacing:.2px}
+
+/* Event + Notice cards */
+.h-section{padding:16px 14px 0}
+.h-section-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.h-section-title{font-family:var(--font-d);font-size:13.5px;font-weight:800;color:#1E1B4B;letter-spacing:-.1px}
+.h-section-more{font-size:11px;font-weight:700;color:#D97706;cursor:pointer;transition:color .2s}
+.h-section-more:hover{color:#B45309}
+
+.event-card{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-radius:16px;
+  padding:12px 14px;display:flex;align-items:center;gap:12px;
+  margin-bottom:8px;cursor:pointer;transition:all .25s ease;
+}
+.event-card:hover{transform:translateX(4px);border-color:var(--gb2);background:var(--glass2)}
+.ev-date{
+  width:44px;height:46px;border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.ev-d{font-family:var(--font-d);font-size:19px;font-weight:900;color:#fff;line-height:1}
+.ev-m{font-size:8.5px;font-weight:700;color:rgba(255,255,255,.75);text-transform:uppercase;margin-top:1px;letter-spacing:.4px}
+.ev-info{flex:1}
+.ev-title{font-size:12.5px;font-weight:700;color:#1E1B4B;margin-bottom:2px}
+.ev-sub{font-size:10.5px;color:#9CA3AF;font-weight:500}
+.ev-tag{font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+
+.notice-card{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-left:2px solid;
+  border-radius:14px;padding:13px 14px;
+  margin-bottom:8px;cursor:pointer;transition:all .2s ease;
+}
+.notice-card:hover{background:rgba(255,255,255,1);transform:translateX(3px)}
+.notice-title{font-size:12.5px;font-weight:700;color:#1E1B4B;margin-bottom:4px}
+.notice-body{font-size:11px;color:#6B7280;line-height:1.5;font-weight:400}
+.notice-meta{font-size:9.5px;color:#9CA3AF;margin-top:7px;font-weight:600;display:flex;align-items:center;gap:6px}
+
+/* Teacher remark */
+.remark-card{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-radius:16px;padding:14px;
+  margin-bottom:8px;
+}
+.remark-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.remark-av{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;font-family:var(--font-d);
+  flex-shrink:0;color:#fff;
+}
+.remark-name{font-size:12.5px;font-weight:700;color:#1E1B4B}
+.remark-role{font-size:10px;color:var(--t3);font-weight:500}
+.remark-time{margin-left:auto;font-size:9.5px;color:var(--t3);font-weight:500}
+.remark-body{
+  font-size:11.5px;color:#3730A3;line-height:1.55;
+  padding:11px 13px;
+  background:rgba(99,102,241,.06);
+  border-radius:12px;border-left:2.5px solid var(--e1);
+  font-style:italic;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ACADEMICS TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.ac-hero{
+  background:linear-gradient(160deg,#065F46 0%,#047857 50%,#064E3B 100%);
+  padding:20px 20px 30px;position:relative;overflow:hidden;
+}
+.ac-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 20% 40%,rgba(255,255,255,.15),transparent 60%),radial-gradient(ellipse 50% 60% at 80% 60%,rgba(167,243,208,.2),transparent 55%)}
+.ac-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:30px 30px}
+.ac-hero-title{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--t1);position:relative;z-index:1;letter-spacing:-.2px}
+.ac-hero-sub{font-size:11.5px;color:rgba(255,255,255,.75);font-weight:500;margin-top:3px;position:relative;z-index:1}
+
+.ac-term-strip{
+  display:flex;gap:0;margin:0 14px;
+  margin-top:-15px;position:relative;z-index:5;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(20px);
+  border:1px solid var(--gb2);border-radius:14px;padding:4px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.ac-term-btn{
+  flex:1;text-align:center;padding:8px 4px;border-radius:10px;
+  font-size:11.5px;font-weight:700;color:var(--t3);cursor:pointer;transition:all .25s ease;
+}
+.ac-term-btn.act{background:var(--eg);color:#fff;box-shadow:0 4px 14px rgba(249,115,22,.4)}
+
+/* GPA hero card */
+.gpa-card{
+  margin:16px 14px 0;
+  background:linear-gradient(135deg,#FFF8E6,#FFF3D0);
+  border:1px solid rgba(245,158,11,.22);border-radius:22px;
+  padding:20px;display:flex;align-items:center;gap:16px;
+  position:relative;overflow:hidden;
+  box-shadow:0 8px 32px rgba(245,158,11,.15),0 0 0 1px rgba(245,158,11,.1);
+}
+.gpa-card::before{content:'';position:absolute;right:-20px;top:-20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,.1),transparent 70%)}
+.gpa-ring-wrap{flex-shrink:0;position:relative;width:80px;height:80px}
+.gpa-svg{width:80px;height:80px;transform:rotate(-90deg)}
+.gpa-track{fill:none;stroke:rgba(255,255,255,.08);stroke-width:6}
+.gpa-fill{fill:none;stroke:url(#jadeGrad);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset 1.5s cubic-bezier(.34,1.56,.64,1)}
+.gpa-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gpa-num{font-family:var(--font-d);font-size:17px;font-weight:900;color:#92400E;line-height:1}
+.gpa-grade{font-size:9px;color:var(--jade);font-weight:700;margin-top:1px}
+.gpa-info{flex:1}
+.gpa-title{font-family:var(--font-d);font-size:15px;font-weight:800;color:#92400E;margin-bottom:8px}
+.gpa-stats{display:flex;gap:16px}
+.gpa-stat-val{font-family:var(--font-d);font-size:16px;font-weight:800;color:#92400E}
+.gpa-stat-lbl{font-size:9px;color:#6B7280;font-weight:600;margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+
+/* Subject cards */
+.subj-card{
+  margin:10px 14px 0;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-radius:18px;
+  padding:15px;cursor:pointer;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+}
+.subj-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 3px 3px 0}
+.subj-card:hover{transform:translateX(5px) translateY(-2px);border-color:var(--gb2);box-shadow:var(--shadow)}
+.subj-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.subj-left{flex:1}
+.subj-name{font-family:var(--font-d);font-size:13.5px;font-weight:700;color:#1E1B4B;margin-bottom:2px}
+.subj-teacher{font-size:10.5px;color:var(--t3);font-weight:500}
+.subj-right{text-align:right;flex-shrink:0}
+.subj-score{font-family:var(--font-d);font-size:24px;font-weight:900;line-height:1}
+.subj-grade-badge{display:inline-block;font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:6px;margin-top:3px}
+.subj-bar-track{height:5px;background:rgba(245,158,11,.12);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.subj-bar-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.34,1.56,.64,1)}
+.subj-footer{display:flex;gap:10px;flex-wrap:wrap}
+.subj-meta{font-size:10px;color:#9CA3AF;font-weight:600}
+.subj-meta span{color:#374151;font-weight:700}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ATTENDANCE TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.att-hero{
+  background:linear-gradient(160deg,#0369A1 0%,#0284C7 50%,#075985 100%);
+  padding:20px 20px 30px;position:relative;overflow:hidden;
+}
+.att-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 70% at 30% 40%,rgba(255,255,255,.15),transparent 60%),radial-gradient(ellipse 50% 50% at 75% 65%,rgba(186,230,253,.2),transparent 55%)}
+.att-hero-title{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--t1);position:relative;z-index:1}
+.att-hero-sub{font-size:11.5px;color:rgba(255,255,255,.75);font-weight:500;margin-top:3px;position:relative;z-index:1}
+
+.att-stats-row{
+  display:flex;gap:8px;margin:0 14px;
+  margin-top:-15px;position:relative;z-index:5;
+}
+.att-stat{
+  flex:1;background:rgba(255,255,255,.97);backdrop-filter:blur(20px);
+  border:1px solid var(--gb2);border-radius:14px;padding:13px 8px;
+  text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  position:relative;overflow:hidden;
+}
+.att-stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.att-stat.c-j::after{background:linear-gradient(90deg,transparent,var(--jade),transparent)}
+.att-stat.c-e::after{background:linear-gradient(90deg,transparent,var(--e1),transparent)}
+.att-stat.c-r::after{background:linear-gradient(90deg,transparent,var(--rose),transparent)}
+.att-stat.c-g::after{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.att-stat-val{font-family:var(--font-d);font-size:20px;font-weight:800;line-height:1}
+.att-stat-lbl{font-size:9px;font-weight:600;color:#6B7280;margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
+
+/* Calendar */
+.att-cal{
+  margin:16px 14px 0;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(20px);
+  border:1px solid var(--gb);border-radius:20px;padding:16px;
+}
+.att-cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.att-cal-month{font-family:var(--font-d);font-size:15px;font-weight:800;color:#1E1B4B}
+.att-cal-btn{
+  width:30px;height:30px;border-radius:9px;
+  background:#FFF3D4;border:1px solid var(--gb);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--t2);transition:all .2s ease;
+}
+.att-cal-btn:hover{background:var(--eg);border-color:transparent;color:#fff}
+.att-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.att-dow{font-size:9px;font-weight:700;color:#9CA3AF;text-align:center;padding:5px 0;text-transform:uppercase;letter-spacing:.3px}
+.att-day{
+  aspect-ratio:1;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;color:#374151;
+  cursor:pointer;transition:all .2s ease;
+}
+.att-day:hover{background:rgba(245,158,11,.08);color:#1E1B4B}
+.att-day.present{background:rgba(16,185,129,.2);color:#34D399;font-weight:700}
+.att-day.absent{background:rgba(244,63,94,.18);color:#FB7185;font-weight:700}
+.att-day.late{background:rgba(245,158,11,.18);color:#FCD34D;font-weight:700}
+.att-day.holiday{background:rgba(14,165,233,.15);color:#38BDF8}
+.att-day.today{background:var(--eg);color:#fff;font-weight:800;box-shadow:0 2px 12px rgba(99,102,241,.5)}
+.att-day.empty{pointer-events:none}
+.att-legend{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.att-leg{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:#6B7280}
+.att-leg-dot{width:10px;height:10px;border-radius:3px}
+
+/* Month bars */
+.month-bar-row{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 14px;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);
+  border:1px solid var(--gb);border-radius:12px;
+  margin:0 14px 7px;transition:all .2s ease;
+}
+.month-bar-row:hover{background:var(--glass2);border-color:var(--gb2)}
+.month-name{font-size:11.5px;font-weight:700;color:#374151;width:58px;flex-shrink:0}
+.bar-track{flex:1;height:7px;background:rgba(245,158,11,.12);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.34,1.56,.64,1)}
+.bar-pct{font-family:var(--font-d);font-size:11.5px;font-weight:800;width:38px;text-align:right;flex-shrink:0}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FEES TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.fee-hero{
+  background:linear-gradient(160deg,#B45309 0%,#D97706 50%,#92400E 100%);
+  padding:20px 20px 30px;position:relative;overflow:hidden;
+}
+.fee-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 70% at 30% 40%,rgba(255,255,255,.15),transparent 60%),radial-gradient(ellipse 50% 50% at 75% 65%,rgba(254,243,199,.2),transparent 55%)}
+.fee-hero-label{font-size:11px;font-weight:600;color:rgba(255,255,255,.75);letter-spacing:.5px;margin-bottom:6px;position:relative;z-index:1}
+.fee-hero-amount{font-family:var(--font-d);font-size:36px;font-weight:900;color:var(--t1);letter-spacing:-1.5px;position:relative;z-index:1}
+.fee-hero-due{font-size:11px;color:rgba(255,255,255,.8);font-weight:600;margin-top:4px;position:relative;z-index:1}
+.fee-hero-title{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--t1);margin-bottom:4px;position:relative;z-index:1}
+
+.fee-pay-btn{
+  margin:0 14px;margin-top:-15px;position:relative;z-index:5;
+  background:linear-gradient(135deg,var(--gold),var(--orange));
+  border:none;border-radius:16px;padding:15px;width:calc(100% - 28px);
+  font-family:var(--font-d);font-size:14.5px;font-weight:800;color:#000;
+  cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 20px rgba(245,158,11,.4);letter-spacing:.2px;
+}
+.fee-pay-btn:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(245,158,11,.55)}
+.fee-pay-btn:active{transform:translateY(-1px)}
+
+.fee-item{
+  margin:10px 14px 0;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-radius:18px;
+  padding:14px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;transition:all .25s ease;
+  position:relative;overflow:hidden;
+}
+.fee-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.fee-item.pending::before{background:var(--gold)}
+.fee-item.overdue::before{background:var(--rose)}
+.fee-item.upcoming::before{background:var(--jade)}
+.fee-item:hover{transform:translateX(4px);border-color:var(--gb2)}
+.fee-item-ico{
+  width:42px;height:42px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.fee-item-info{flex:1}
+.fee-item-name{font-size:13px;font-weight:700;color:#1E1B4B;margin-bottom:2px}
+.fee-item-due{font-size:10.5px;color:#9CA3AF;font-weight:500}
+.fee-item-amt{font-family:var(--font-d);font-size:17px;font-weight:900;text-align:right;flex-shrink:0}
+.fee-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;margin-top:3px;display:inline-block}
+
+.fee-history-item{
+  margin:8px 14px 0;
+  background:rgba(255,255,255,.9);backdrop-filter:blur(12px);
+  border:1px solid var(--gb);border-radius:14px;
+  padding:12px 14px;display:flex;align-items:center;gap:10px;
+  transition:all .2s ease;
+}
+.fee-history-item:hover{background:rgba(255,255,255,1)}
+.fh-check{
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.fh-left{flex:1}
+.fh-name{font-size:12.5px;font-weight:700;color:#1E1B4B;margin-bottom:2px}
+.fh-date{font-size:10px;color:#9CA3AF;font-weight:500}
+.fh-amt{font-family:var(--font-d);font-size:14px;font-weight:800;color:var(--jade);text-align:right}
+.fh-mode{font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(16,185,129,.15);color:var(--jade);margin-top:3px;display:inline-block}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MESSAGES TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.msg-hero{
+  background:linear-gradient(160deg,#9D174D 0%,#BE185D 50%,#831843 100%);
+  padding:20px 20px 26px;position:relative;overflow:hidden;
+}
+.msg-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 70% at 25% 40%,rgba(255,255,255,.15),transparent 60%),radial-gradient(ellipse 50% 50% at 75% 60%,rgba(251,207,232,.2),transparent 55%)}
+.msg-hero-title{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--t1);position:relative;z-index:1}
+.msg-hero-sub{font-size:11.5px;color:rgba(255,255,255,.75);font-weight:500;margin-top:3px;position:relative;z-index:1}
+
+.msg-compose{
+  margin:12px 14px 0;
+  background:rgba(255,255,255,.9);backdrop-filter:blur(16px);
+  border:1.5px dashed rgba(245,158,11,.35);border-radius:16px;
+  padding:13px 14px;display:flex;align-items:center;gap:10px;
+  cursor:pointer;transition:all .25s ease;
+}
+.msg-compose:hover{border-color:var(--e1);background:rgba(245,158,11,.08)}
+.msg-compose-hint{font-size:12px;color:#9CA3AF;font-weight:500}
+
+.msg-thread{
+  margin:8px 14px 0;
+  background:rgba(255,255,255,.9);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-radius:18px;
+  overflow:hidden;cursor:pointer;transition:all .25s ease;
+}
+.msg-thread:hover{border-color:var(--gb2);transform:translateX(3px);box-shadow:0 6px 20px rgba(99,102,241,.12)}
+.msg-thread-header{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;
+  border-bottom:1px solid rgba(245,158,11,.1);
+}
+.msg-av{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;font-family:var(--font-d);
+  flex-shrink:0;color:#fff;position:relative;
+}
+.msg-av-online{
+  position:absolute;bottom:0;right:0;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--jade);border:2px solid var(--bg2);
+}
+.msg-info{flex:1}
+.msg-name{font-size:13px;font-weight:700;color:#1E1B4B;margin-bottom:1px}
+.msg-role{font-size:10px;color:#9CA3AF;font-weight:500}
+.msg-time{font-size:10px;color:#9CA3AF}
+.msg-preview{padding:10px 14px;font-size:11.5px;color:#4B5563;line-height:1.4}
+.msg-unread-row{padding:6px 14px 12px;display:flex;gap:6px}
+.unread-chip{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(99,102,241,.12);color:#6366F1}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MORE TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.more-hero{
+  background:linear-gradient(160deg,#4338CA 0%,#6366F1 50%,#3730A3 100%);
+  padding:20px 20px 26px;position:relative;overflow:hidden;
+}
+.more-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 70% at 25% 40%,rgba(255,255,255,.15),transparent 60%),radial-gradient(ellipse 50% 50% at 75% 60%,rgba(224,231,255,.2),transparent 55%)}
+.more-hero-title{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--t1);position:relative;z-index:1}
+.more-hero-sub{font-size:11.5px;color:rgba(255,255,255,.75);font-weight:500;margin-top:3px;position:relative;z-index:1}
+
+.more-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 14px}
+.more-card{
+  background:rgba(255,255,255,.9);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-radius:20px;
+  padding:18px 14px;cursor:pointer;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;text-align:center;
+}
+.more-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);border-radius:20px}
+.more-card:hover{transform:translateY(-5px);border-color:var(--gb2);box-shadow:0 8px 28px rgba(245,158,11,.2)}
+.more-card-ico{
+  width:52px;height:52px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 4px 16px rgba(0,0,0,.3);
+}
+.more-card:hover .more-card-ico{transform:scale(1.1) rotate(-6deg)}
+.more-card-title{font-family:var(--font-d);font-size:13px;font-weight:800;color:#1E1B4B;margin-bottom:4px}
+.more-card-sub{font-size:10px;color:#9CA3AF;font-weight:400;line-height:1.4}
+.more-card-badge{
+  position:absolute;top:10px;right:10px;
+  font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;
+  background:linear-gradient(135deg,var(--rose),#FB7185);color:#fff;
+  box-shadow:0 2px 8px rgba(244,63,94,.35);
+}
+
+/* Contact section */
+.contact-row{
+  display:flex;align-items:center;gap:12px;padding:11px 10px;
+  border-bottom:1px solid var(--gb);
+  cursor:pointer;transition:background .2s;border-radius:10px;
+}
+.contact-row:last-child{border-bottom:none}
+.contact-row:hover{background:var(--glass2)}
+.contact-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.contact-lbl{font-size:12.5px;font-weight:700;color:#1E1B4B;margin-bottom:1px}
+.contact-val{font-size:10.5px;color:var(--t3);font-weight:400}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   OVERLAYS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.ovl{
+  position:absolute;inset:0;z-index:200;
+  transform:translateX(105%);
+  transition:transform .4s cubic-bezier(.32,.72,0,1);
+  border-radius:44px;overflow:hidden;
+  background:linear-gradient(160deg,#FFF9EE 0%,#FFF8E6 100%);
+  display:flex;flex-direction:column;
+}
+.ovl.open{transform:translateX(0)}
+
+.ovl-head{
+  padding:52px 20px 18px;
+  display:flex;align-items:center;gap:12px;
+  flex-shrink:0;position:relative;overflow:hidden;
+}
+.ovl-head::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.2),transparent)}
+.ovl-back{
+  width:38px;height:38px;background:rgba(255,255,255,.8);border:1px solid var(--gb);
+  border-radius:12px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .25s ease;flex-shrink:0;
+}
+.ovl-back:hover{background:rgba(255,255,255,1);transform:scale(1.05)}
+.ovl-h-title{font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff;flex:1;letter-spacing:-.2px}
+.ovl-body{flex:1;overflow-y:auto;scrollbar-width:none;padding:16px;background:#FFF9EE}
+.ovl-body::-webkit-scrollbar{display:none}
+
+/* Notification items */
+.notif-group{font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:1px;margin:12px 0 8px;padding:0 2px}
+.notif-item{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-radius:14px;
+  padding:12px 14px;margin-bottom:8px;
+  display:flex;gap:11px;cursor:pointer;transition:all .2s ease;
+}
+.notif-item:hover{background:rgba(255,255,255,1);border-color:var(--gb2)}
+.notif-item.unread{border-left:2.5px solid var(--e1);background:rgba(254,243,199,.9)}
+.notif-ico{
+  width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.notif-content{flex:1}
+.notif-title{font-size:12.5px;font-weight:700;color:#1E1B4B;margin-bottom:3px}
+.notif-body{font-size:11px;color:#6B7280;line-height:1.45}
+.notif-time{font-size:9.5px;color:#D1D5DB;font-weight:600;margin-top:4px}
+
+/* Transport */
+.transport-map{
+  height:200px;border-radius:18px;overflow:hidden;
+  background:linear-gradient(135deg,#FFF8E6,#E0E7FF);
+  position:relative;margin-bottom:14px;
+  border:1px solid rgba(14,165,233,.2);
+}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,158,11,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.1) 1px,transparent 1px);background-size:24px 24px}
+.bus-pin{
+  position:absolute;top:52%;left:42%;
+  width:36px;height:36px;border-radius:50%;
+  background:var(--eg);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 6px rgba(249,115,22,.25),0 4px 16px rgba(249,115,22,.5);
+  animation:busPulse 2s ease-in-out infinite;z-index:2;cursor:pointer;
+}
+@keyframes busPulse{0%,100%{box-shadow:0 0 0 4px rgba(99,102,241,.3),0 4px 16px rgba(99,102,241,.5)}50%{box-shadow:0 0 0 12px rgba(99,102,241,.08),0 4px 16px rgba(99,102,241,.5)}}
+.home-pin{position:absolute;top:28%;right:22%;width:22px;height:22px;background:var(--jade);border-radius:50%;border:2.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(16,185,129,.5);z-index:2}
+.school-pin{position:absolute;bottom:22%;left:18%;width:22px;height:22px;background:var(--rose);border-radius:50%;border:2.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(244,63,94,.5);z-index:2}
+.route-line{position:absolute;top:38%;left:20%;width:58%;height:2px;background:linear-gradient(90deg,var(--rose),var(--e1),var(--jade));transform:rotate(-4deg);opacity:.5}
+.transport-eta-card{
+  position:absolute;top:12px;right:12px;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(16px);
+  border:1px solid var(--gb2);border-radius:12px;padding:9px 12px;
+  text-align:center;
+}
+.transport-eta-val{font-family:var(--font-d);font-size:20px;font-weight:800;color:#0284C7;line-height:1}
+.transport-eta-lbl{font-size:8px;font-weight:700;color:#6B7280}
+
+.transport-info{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-radius:18px;padding:4px;
+  margin-bottom:12px;
+}
+.transport-row{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 10px;border-bottom:1px solid var(--gb);
+}
+.transport-row:last-child{border-bottom:none}
+.tr-ico{width:30px;height:30px;border-radius:8px;background:rgba(254,243,199,.8);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tr-lbl{font-size:11.5px;color:#6B7280;font-weight:500;flex:1}
+.tr-val{font-size:12px;font-weight:700;color:#1E1B4B}
+.journey-step{display:flex;gap:12px;align-items:flex-start;padding-bottom:16px}
+.step-line-wrap{display:flex;flex-direction:column;align-items:center;gap:0}
+.step-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:3px;border:2px solid rgba(255,255,255,.2)}
+.step-connector{width:2px;background:rgba(245,158,11,.2);flex:1;min-height:24px}
+.step-title{font-size:12px;font-weight:700;color:#1E1B4B}
+.step-sub{font-size:10px;color:#6B7280;font-weight:500;margin-top:2px}
+
+/* Timetable */
+.tt-day-tabs{display:flex;gap:5px;padding:14px 16px 12px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;background:#FFFBF0}
+.tt-day-tabs::-webkit-scrollbar{display:none}
+.tt-day-btn{
+  flex-shrink:0;padding:8px 14px;border-radius:10px;
+  font-size:11.5px;font-weight:700;color:#6B7280;cursor:pointer;
+  transition:all .2s ease;background:rgba(255,255,255,.85);border:1px solid var(--gb);
+}
+.tt-day-btn.act{background:var(--eg);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(249,115,22,.4)}
+.tt-period{display:flex;gap:10px;align-items:stretch;padding:0 16px;margin-bottom:10px}
+.tt-time{width:38px;flex-shrink:0;text-align:right;padding-top:3px}
+.tt-t1{font-size:10px;font-weight:700;color:var(--t3)}
+.tt-t2{font-size:9px;color:var(--t4)}
+.tt-connector{width:2px;flex-shrink:0;margin:0 4px;background:rgba(245,158,11,.25);position:relative}
+.tt-dot{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:var(--e1);border:2px solid #fff;box-shadow:var(--glow-e)}
+.tt-dot.now{background:var(--rose);box-shadow:0 0 12px rgba(244,63,94,.5);animation:nowPulse 1.5s infinite}
+@keyframes nowPulse{0%,100%{box-shadow:0 0 0 3px rgba(244,63,94,.25)}50%{box-shadow:0 0 0 8px rgba(244,63,94,.06)}}
+.tt-card{flex:1;border-radius:14px;padding:12px;border-left:3px solid;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.tt-subj{font-size:13px;font-weight:700;color:#1E1B4B;margin-bottom:3px}
+.tt-teacher{font-size:10.5px;font-weight:500;margin-bottom:2px}
+.tt-room{font-size:10px;font-weight:600}
+
+/* Homework */
+.hw-tab-strip{display:flex;gap:5px;padding:14px 16px 12px;flex-shrink:0;background:#FFFBF0}
+.hw-tab-btn{
+  flex:1;padding:8px 4px;border-radius:10px;text-align:center;
+  font-size:11px;font-weight:700;color:#6B7280;cursor:pointer;
+  transition:all .2s ease;background:rgba(255,255,255,.85);border:1px solid var(--gb);
+}
+.hw-tab-btn.act{background:var(--eg);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(249,115,22,.4)}
+.hw-item{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-left:3px solid;border-radius:16px;
+  padding:14px;margin:0 16px 10px;cursor:pointer;transition:all .25s ease;
+}
+.hw-item:hover{transform:translateX(4px);border-color:var(--gb2)}
+.hw-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px}
+.hw-subj-chip{font-size:10px;font-weight:700;padding:3px 9px;border-radius:7px}
+.hw-due{font-size:10px;font-weight:600;color:#9CA3AF}
+.hw-title{font-size:13px;font-weight:700;color:#1E1B4B;margin-bottom:4px}
+.hw-desc{font-size:11px;color:#6B7280;line-height:1.45}
+.hw-footer{display:flex;align-items:center;gap:8px;margin-top:9px}
+.hw-status{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:20px}
+
+/* Events */
+.events-body .event-card{margin:0 0 8px}
+
+/* Payment overlay */
+.pay-head{
+  background:linear-gradient(160deg,#B45309,#D97706);
+  padding:52px 20px 20px;flex-shrink:0;position:relative;overflow:hidden;
+}
+.pay-head::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 70% at 30% 40%,rgba(245,158,11,.2),transparent 60%)}
+.pay-head-title{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--t1);margin-bottom:3px;position:relative;z-index:1}
+.pay-head-sub{font-size:11.5px;color:rgba(255,255,255,.8);font-weight:500;position:relative;z-index:1}
+
+.pay-amount-card{
+  margin:16px;background:rgba(255,255,255,.97);backdrop-filter:blur(20px);
+  border:1px solid var(--gb2);border-radius:20px;padding:20px;text-align:center;
+}
+.pay-amount-label{font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+.pay-amount-value{font-family:var(--font-d);font-size:38px;font-weight:900;color:#B45309;letter-spacing:-1.5px;margin-bottom:12px}
+.pay-chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.pay-chip{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(217,119,6,.1);color:#B45309;border:1px solid rgba(217,119,6,.25)}
+
+.pay-method{
+  margin:0 16px 10px;background:rgba(255,255,255,.95);backdrop-filter:blur(16px);
+  border:2px solid var(--gb);border-radius:16px;
+  padding:14px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;transition:all .25s ease;
+}
+.pay-method.selected{border-color:rgba(99,102,241,.5);background:rgba(254,243,199,.8)}
+.pay-method-ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pay-method-name{font-size:13px;font-weight:700;color:#1E1B4B;margin-bottom:2px}
+.pay-method-sub{font-size:10.5px;color:#6B7280}
+.pay-check{
+  width:22px;height:22px;border-radius:50%;border:2px solid var(--gb2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .25s ease;margin-left:auto;
+}
+.pay-method.selected .pay-check{background:var(--eg);border-color:transparent;box-shadow:0 4px 12px rgba(249,115,22,.4)}
+
+.pay-confirm{
+  margin:16px;background:var(--eg);color:#fff;border:none;
+  border-radius:16px;padding:16px;width:calc(100% - 32px);
+  font-family:var(--font-d);font-size:15px;font-weight:800;
+  cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 6px 24px rgba(249,115,22,.4);letter-spacing:.2px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.pay-confirm:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(99,102,241,.6)}
+
+/* Message thread overlay */
+.msg-bubble-row{display:flex;margin-bottom:12px}
+.msg-bubble-row.parent{justify-content:flex-end}
+.msg-bubble{
+  max-width:80%;padding:11px 14px;border-radius:18px;
+  font-size:12px;line-height:1.5;
+}
+.msg-bubble.teacher{background:rgba(241,243,255,.95);border:1px solid rgba(245,158,11,.18);color:#1C0A00;border-bottom-left-radius:4px}
+.msg-bubble.parent{background:var(--eg);color:#fff;border-bottom-right-radius:4px;box-shadow:0 4px 16px rgba(99,102,241,.35)}
+.msg-bubble-time{font-size:9px;color:#9CA3AF;font-weight:600;margin-top:4px}
+.msg-bubble-time.parent{color:rgba(255,255,255,.5)}
+
+.msg-input-row{
+  display:flex;gap:8px;padding:12px 16px;
+  border-top:1px solid var(--gb);flex-shrink:0;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(16px);
+}
+.msg-input-field{
+  flex:1;background:var(--bg2);border:1px solid var(--gb2);
+  border-radius:12px;padding:10px 14px;font-size:12px;color:var(--t3);
+  cursor:text;transition:border-color .2s ease;
+}
+.msg-input-field:hover{border-color:var(--e1)}
+.msg-send-btn{
+  width:42px;height:42px;background:var(--eg);
+  border:none;border-radius:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(249,115,22,.4);transition:all .25s ease;flex-shrink:0;
+}
+.msg-send-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(99,102,241,.55)}
+
+/* Profile overlay */
+.profile-hero{
+  background:linear-gradient(160deg,#F59E0B,#F97316);
+  padding:52px 20px 24px;position:relative;overflow:hidden;text-align:center;flex-shrink:0;
+}
+.profile-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 60%,rgba(255,255,255,.15),transparent 65%)}
+.profile-av-wrap{position:relative;display:inline-block;margin-bottom:14px}
+.profile-av{
+  width:76px;height:76px;border-radius:50%;
+  background:var(--eg);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-d);font-size:28px;font-weight:800;color:#fff;
+  box-shadow:0 8px 28px rgba(99,102,241,.45);
+  position:relative;z-index:1;
+}
+.profile-av-ring{
+  position:absolute;inset:-4px;border-radius:50%;
+  background:conic-gradient(#F59E0B,#F97316,#D97706,#F59E0B);
+  animation:ringRotate 4s linear infinite;
+  -webkit-mask:radial-gradient(circle,transparent 54%,black 57%);
+  mask:radial-gradient(circle,transparent 54%,black 57%);
+  z-index:0;
+}
+.profile-name{font-family:var(--font-d);font-size:20px;font-weight:800;color:#fff;position:relative;z-index:1;letter-spacing:-.2px}
+.profile-role{font-size:11.5px;color:rgba(255,255,255,.75);margin-top:3px;position:relative;z-index:1}
+.profile-section{
+  background:var(--glass);backdrop-filter:blur(16px);
+  border:1px solid var(--gb);border-radius:18px;padding:4px;
+  margin:0 16px 14px;
+}
+.profile-row{
+  display:flex;align-items:center;gap:12px;padding:12px 10px;
+  border-bottom:1px solid var(--gb);cursor:pointer;
+  border-radius:12px;transition:background .2s ease;
+}
+.profile-row:last-child{border-bottom:none}
+.profile-row:hover{background:var(--glass2)}
+.profile-row-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.profile-row-lbl{font-size:13px;font-weight:700;color:#1E1B4B}
+.profile-row-val{font-size:10.5px;color:#9CA3AF;margin-top:1px}
+.profile-row-arrow{color:#D1D5DB;margin-left:auto;font-size:16px}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TOAST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#toast{
+  position:absolute;bottom:88px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:rgba(30,27,75,.92);backdrop-filter:blur(20px);
+  color:var(--t1);padding:10px 18px;border-radius:30px;
+  font-size:12px;font-weight:700;white-space:nowrap;
+  opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999;pointer-events:none;
+  border:1px solid var(--gb2);box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SECTION HEADER (reusable inside overlays & tabs)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 14px 10px;
+}
+.sec-title{font-family:var(--font-d);font-size:12.5px;font-weight:800;color:#1E1B4B;letter-spacing:-.1px}
+.sec-more{font-size:11px;font-weight:700;color:#D97706;cursor:pointer}
+
+/* Divider */
+.div-line{height:1px;background:rgba(245,158,11,.18);margin:10px 14px}
+</style>
+</head>
+<body>
+<!-- Aurora -->
+<div class="aurora">
+  <div class="aurora-blob ab1"></div>
+  <div class="aurora-blob ab2"></div>
+  <div class="aurora-blob ab3"></div>
+  <div class="aurora-blob ab4"></div>
+</div>
+<div class="grid-overlay"></div>
+
+<!-- SVG defs for gradients -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="jadeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#34D399"/>
+    </linearGradient>
+    <linearGradient id="indGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#F97316"/>
+    </linearGradient>
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<!-- ═══════════════ SHELL ═══════════════ -->
+<div class="shell">
+
+  <!-- ══ SIDEBAR ══ -->
+  <div class="sidebar">
+
+    <!-- Logo -->
+    <div class="s-logo">
+      <div class="s-logo-inner">
+        <div class="s-logo-top">
+          <div class="s-logo-mark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5"/></svg>
+          </div>
+          <div class="s-logo-badge">
+            <div class="s-logo-badge-dot"></div>
+            Live
+          </div>
+        </div>
+        <div class="s-logo-name">EduSphere</div>
+        <div class="s-logo-tagline">
+          <div class="s-logo-tag">Parent Portal · 2024–25</div>
+        </div>
+        <div class="s-logo-stats">
+          <div class="s-logo-stat"><div class="s-logo-stat-v">2</div><div class="s-logo-stat-l">Children</div></div>
+          <div class="s-logo-stat"><div class="s-logo-stat-v">92%</div><div class="s-logo-stat-l">Attendance</div></div>
+          <div class="s-logo-stat"><div class="s-logo-stat-v">A</div><div class="s-logo-stat-l">Grade</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Children -->
+    <div class="s-children">
+      <div class="s-section-label">My Children</div>
+
+      <div class="child-card active" id="c-arjun" onclick="switchChild('arjun')">
+        <div class="child-av" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);position:relative">
+          <div class="child-av-ring"></div>
+          <span style="position:relative;z-index:1">A</span>
+        </div>
+        <div class="child-info">
+          <div class="child-name">Arjun Mehta</div>
+          <div class="child-class">Grade 8-A · Roll 12</div>
+        </div>
+        <span class="child-grade-badge" style="background:rgba(245,158,11,.15);color:#D97706">8th</span>
+      </div>
+
+      <div class="child-card" id="c-priya" onclick="switchChild('priya')">
+        <div class="child-av" style="background:linear-gradient(135deg,#EC4899,#F97316);position:relative">
+          <div class="child-av-ring"></div>
+          <span style="position:relative;z-index:1">P</span>
+        </div>
+        <div class="child-info">
+          <div class="child-name">Priya Mehta</div>
+          <div class="child-class">Grade 5-B · Roll 8</div>
+        </div>
+        <span class="child-grade-badge" style="background:rgba(236,72,153,.15);color:#F9A8D4">5th</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="s-stats">
+      <div class="s-section-label" style="grid-column:1/-1">This Week's Overview</div>
+      <div class="stat-cell c-j sr">
+        <div class="stat-num" style="color:#34D399" id="s-att">92%</div>
+        <div class="stat-lbl">Attendance</div>
+      </div>
+      <div class="stat-cell c-e sr">
+        <div class="stat-num" style="color:#A78BFA" id="s-avg">84.6</div>
+        <div class="stat-lbl">Avg Score</div>
+      </div>
+      <div class="stat-cell c-g sr">
+        <div class="stat-num" style="color:#FCD34D" id="s-fees">2</div>
+        <div class="stat-lbl">Fee Dues</div>
+      </div>
+      <div class="stat-cell c-o sr">
+        <div class="stat-num" style="color:#FB923C" id="s-hw">3</div>
+        <div class="stat-lbl">Pending HW</div>
+      </div>
+    </div>
+
+    <!-- Quick nav -->
+    <div class="s-nav">
+      <div class="s-section-label">Quick Access</div>
+      <div class="s-link sr" onclick="openTransport()">
+        <div class="s-link-ico" style="background:rgba(99,102,241,.15)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v6h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        Bus Live Tracker
+        <span class="s-link-arrow">›</span>
+      </div>
+      <div class="s-link sr" onclick="openTimetable()">
+        <div class="s-link-ico" style="background:rgba(14,165,233,.15)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        Class Timetable
+        <span class="s-link-arrow">›</span>
+      </div>
+      <div class="s-link sr" onclick="openHomework()">
+        <div class="s-link-ico" style="background:rgba(245,158,11,.15)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+        </div>
+        Homework Tracker
+        <span class="s-link-arrow">›</span>
+      </div>
+      <div class="s-link sr" onclick="openPayFee()">
+        <div class="s-link-ico" style="background:rgba(249,115,22,.15)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        Pay School Fees
+        <span class="s-link-arrow">›</span>
+      </div>
+      <div class="s-link sr" onclick="openProfile()">
+        <div class="s-link-ico" style="background:rgba(16,185,129,.15)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        My Profile
+        <span class="s-link-arrow">›</span>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ══ PHONE ══ -->
+  <div class="phone-outer">
+    <div class="p-halo ph1"></div>
+    <div class="p-halo ph2"></div>
+    <div class="phone">
+      <div class="p-island"><div class="p-island-dot"></div><div class="p-island-cam"></div></div>
+
+      <!-- Status -->
+      <div class="p-status">
+        <div class="p-time" id="p-clk">9:41</div>
+        <div class="p-icons">
+          <div class="p-signal">
+            <div class="p-signal-b" style="height:3px;opacity:.4"></div>
+            <div class="p-signal-b" style="height:6px;opacity:.6"></div>
+            <div class="p-signal-b" style="height:9px;opacity:.8"></div>
+            <div class="p-signal-b" style="height:12px"></div>
+          </div>
+          <div class="p-battery"><div class="p-battery-fill"></div></div>
+        </div>
+      </div>
+
+      <!-- Screen -->
+      <div class="p-scr" id="p-scr">
+
+        <!-- ═══ HOME ═══ -->
+        <div class="p-dash on" id="pd-home">
+
+          <!-- ✦ APP HEADER -->
+          <div class="p-app-header" id="p-app-header">
+            <div class="p-app-header-grid"></div>
+            <div class="p-app-header-inner">
+
+              <!-- Row 1: Logo + actions -->
+              <div class="p-app-header-row1">
+                <div class="p-app-logo">
+                  <div class="p-app-logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5"/></svg>
+                  </div>
+                  <div>
+                    <div class="p-app-logo-text">EduSphere</div>
+                    <div class="p-app-logo-sub">Parent Portal</div>
+                  </div>
+                </div>
+                <div class="p-app-actions">
+                  <div class="p-app-btn" onclick="pTab('messages')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    <div class="p-app-btn-badge">3</div>
+                  </div>
+                  <div class="p-app-btn" onclick="openNotif()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                    <div class="p-app-btn-badge">5</div>
+                  </div>
+                  <div class="p-app-btn" onclick="openProfile()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Row 2: User + child switcher -->
+              <div class="p-app-user-row">
+                <div class="p-app-av">R</div>
+                <div class="p-app-greet">
+                  <div class="p-app-greet-hi" id="p-greet">Good morning ☀️</div>
+                  <div class="p-app-greet-name">Rajesh Mehta</div>
+                </div>
+                <div class="p-app-child-pill" onclick="switchChild('arjun')" id="header-child-pill">
+                  <div class="p-app-child-av" style="background:linear-gradient(135deg,rgba(255,255,255,.35),rgba(255,255,255,.15))">A</div>
+                  <div class="p-app-child-name" id="header-child-name">Arjun</div>
+                  <div class="p-app-child-caret">⌄</div>
+                </div>
+              </div>
+
+              <!-- Row 3: Quick stats -->
+              <div class="p-app-stat-row">
+                <div class="p-app-stat" onclick="pTab('academics')">
+                  <div class="p-app-stat-v" id="hdr-avg">84.6</div>
+                  <div class="p-app-stat-l">Avg Score</div>
+                </div>
+                <div class="p-app-stat" onclick="pTab('attendance')">
+                  <div class="p-app-stat-v" id="hdr-att">92%</div>
+                  <div class="p-app-stat-l">Attendance</div>
+                </div>
+                <div class="p-app-stat" onclick="pTab('academics')">
+                  <div class="p-app-stat-v">#4</div>
+                  <div class="p-app-stat-l">Class Rank</div>
+                </div>
+                <div class="p-app-stat" onclick="pTab('fees')">
+                  <div class="p-app-stat-v" style="color:#FCD34D">₹14.5k</div>
+                  <div class="p-app-stat-l">Fees Due</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- old hero hidden, replaced by app header -->
+          <div class="home-hero"><div class="hero-grid"></div></div>
+
+          <!-- Today strip -->
+          <div class="today-strip">
+            <div class="today-item">
+              <div class="today-val" style="color:#A78BFA">6</div>
+              <div class="today-lbl">Periods</div>
+            </div>
+            <div class="today-item">
+              <div class="today-val" style="color:#34D399">Present</div>
+              <div class="today-lbl">Today</div>
+            </div>
+            <div class="today-item">
+              <div class="today-val" style="color:#FB923C">2</div>
+              <div class="today-lbl">HW Due</div>
+            </div>
+            <div class="today-item">
+              <div class="today-val" style="color:#FCD34D">₹0</div>
+              <div class="today-lbl">Due Today</div>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="action-grid">
+            <div class="action-btn sr" onclick="pTab('academics')">
+              <div class="a-ico" style="background:linear-gradient(135deg,#312E81,#1e1b4b)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg>
+              </div>
+              <div class="a-lbl">Academics</div>
+            </div>
+            <div class="action-btn sr" onclick="pTab('attendance')">
+              <div class="a-ico" style="background:linear-gradient(135deg,#064E3B,#065F46)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+              </div>
+              <div class="a-lbl">Attendance</div>
+            </div>
+            <div class="action-btn sr" onclick="pTab('fees')">
+              <div class="a-ico" style="background:linear-gradient(135deg,#451a03,#7c2d12)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              </div>
+              <div class="a-lbl">Pay Fees</div>
+            </div>
+            <div class="action-btn sr" onclick="pTab('messages')">
+              <div class="a-ico" style="background:linear-gradient(135deg,#4a044e,#701a75)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E879F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              </div>
+              <div class="a-lbl">Messages</div>
+            </div>
+            <div class="action-btn sr" onclick="openTransport()">
+              <div class="a-ico" style="background:linear-gradient(135deg,#0c1a4a,#1e3a8a)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v6h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div class="a-lbl">Bus Track</div>
+            </div>
+            <div class="action-btn sr" onclick="openTimetable()">
+              <div class="a-ico" style="background:linear-gradient(135deg,#083344,#0c4a6e)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <div class="a-lbl">Timetable</div>
+            </div>
+            <div class="action-btn sr" onclick="openHomework()">
+              <div class="a-ico" style="background:linear-gradient(135deg,#3f1700,#7c2d12)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FDBA74" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+              </div>
+              <div class="a-lbl">Homework</div>
+            </div>
+            <div class="action-btn sr" onclick="pTab('more')">
+              <div class="a-ico" style="background:linear-gradient(135deg,#240046,#3c096c)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+              <div class="a-lbl">More</div>
+            </div>
+          </div>
+
+          <!-- Events -->
+          <div class="h-section" style="margin-top:16px">
+            <div class="h-section-row">
+              <div class="h-section-title">Upcoming Events</div>
+              <div class="h-section-more" onclick="openEvents()">See all →</div>
+            </div>
+            <div class="event-card sr" onclick="pTab('more')">
+              <div class="ev-date" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)"><div class="ev-d">15</div><div class="ev-m">Mar</div></div>
+              <div class="ev-info"><div class="ev-title">Parent–Teacher Meeting</div><div class="ev-sub">9:00 AM – 1:00 PM · School Hall</div></div>
+              <span class="ev-tag" style="background:rgba(99,102,241,.15);color:#A78BFA">PTM</span>
+            </div>
+            <div class="event-card sr" onclick="pTab('more')">
+              <div class="ev-date" style="background:linear-gradient(135deg,#F97316,#F59E0B)"><div class="ev-d">20</div><div class="ev-m">Mar</div></div>
+              <div class="ev-info"><div class="ev-title">Science Exhibition</div><div class="ev-sub">10:00 AM – 3:00 PM · Lab Block</div></div>
+              <span class="ev-tag" style="background:rgba(249,115,22,.15);color:#FB923C">Event</span>
+            </div>
+            <div class="event-card sr" onclick="pTab('more')">
+              <div class="ev-date" style="background:linear-gradient(135deg,#10B981,#0EA5E9)"><div class="ev-d">25</div><div class="ev-m">Mar</div></div>
+              <div class="ev-info"><div class="ev-title">Term 2 Examinations</div><div class="ev-sub">Refer to exam schedule</div></div>
+              <span class="ev-tag" style="background:rgba(16,185,129,.15);color:#34D399">Exam</span>
+            </div>
+          </div>
+
+          <!-- Notices -->
+          <div class="h-section" style="margin-top:4px">
+            <div class="h-section-row"><div class="h-section-title">School Notices</div><div class="h-section-more" onclick="openNotif()">View all →</div></div>
+            <div class="notice-card sr" style="border-left-color:#A78BFA">
+              <div class="notice-title">Holiday on March 14 — Holi</div>
+              <div class="notice-body">School closed on Thursday, March 14. Classes resume on Monday, March 18.</div>
+              <div class="notice-meta"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#5A6480" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> School Admin · 2 days ago</div>
+            </div>
+            <div class="notice-card sr" style="border-left-color:#FCD34D">
+              <div class="notice-title">Term 2 Fee Payment Reminder</div>
+              <div class="notice-body">Fees due by March 31. Late charges of ₹500 apply after the deadline.</div>
+              <div class="notice-meta"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#5A6480" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Accounts Dept · 3 days ago</div>
+            </div>
+            <div class="notice-card sr" style="border-left-color:#34D399">
+              <div class="notice-title">Revised Academic Calendar</div>
+              <div class="notice-body">Q4 academic calendar published. Check Events for all important dates and exam schedules.</div>
+              <div class="notice-meta"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#5A6480" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Academic Office · 5 days ago</div>
+            </div>
+          </div>
+
+          <!-- Teacher Remark -->
+          <div class="h-section" style="margin-top:4px">
+            <div class="h-section-row"><div class="h-section-title">Teacher's Remarks</div></div>
+            <div class="remark-card sr">
+              <div class="remark-header">
+                <div class="remark-av" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)">P</div>
+                <div><div class="remark-name">Ms. Priya Sharma</div><div class="remark-role">Class Teacher · Mathematics</div></div>
+                <div class="remark-time">Yesterday</div>
+              </div>
+              <div class="remark-body">"Arjun has shown excellent improvement in Algebra this week. He completed all practice worksheets ahead of schedule and even helped classmates. He's well-prepared for Term 2 exams."</div>
+            </div>
+          </div>
+          <div style="height:24px"></div>
+        </div><!-- /pd-home -->
+
+        <!-- ═══ ACADEMICS ═══ -->
+        <div class="p-dash" id="pd-academics">
+          <div class="ac-hero">
+            <div class="ac-hero-grid"></div>
+            <div class="ac-hero-title" style="position:relative;z-index:1">Academic Performance</div>
+            <div class="ac-hero-sub">Arjun Mehta · Grade 8-A · 2024–25</div>
+          </div>
+          <div class="ac-term-strip">
+            <div class="ac-term-btn act" onclick="acTerm(this)">Term 1</div>
+            <div class="ac-term-btn" onclick="acTerm(this)">Term 2</div>
+            <div class="ac-term-btn" onclick="acTerm(this)">Final</div>
+          </div>
+
+          <!-- GPA ring -->
+          <div class="gpa-card sr">
+            <svg class="gpa-svg" viewBox="0 0 80 80">
+              <defs><linearGradient id="jadeGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#10B981"/><stop offset="100%" stop-color="#34D399"/></linearGradient></defs>
+              <circle class="gpa-track" cx="40" cy="40" r="32"/>
+              <circle class="gpa-fill" cx="40" cy="40" r="32" stroke="url(#jadeGrad2)"
+                stroke-dasharray="201" stroke-dashoffset="35" id="gpa-arc"/>
+            </svg>
+            <div class="gpa-inner">
+              <div class="gpa-num">84.6</div>
+              <div class="gpa-grade">Grade A</div>
+            </div>
+            <div class="gpa-info">
+              <div class="gpa-title">Overall Performance</div>
+              <div class="gpa-stats">
+                <div><div class="gpa-stat-val">#4</div><div class="gpa-stat-lbl">Class Rank</div></div>
+                <div><div class="gpa-stat-val" style="color:#34D399">A</div><div class="gpa-stat-lbl">Grade</div></div>
+                <div><div class="gpa-stat-val" style="color:#34D399">↑3%</div><div class="gpa-stat-lbl">vs Last</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subjects -->
+          <div style="padding:14px 14px 0"><div style="font-family:var(--font-d);font-size:13px;font-weight:800;color:#1E1B4B">Subject Performance</div></div>
+
+          <!-- Math -->
+          <div class="subj-card sr" style="border-left-color:#6366F1" onclick="pToast('Math: 91/100 · A+')">
+            <div class="subj-card::before" style="background:#6366F1"></div>
+            <div class="subj-top">
+              <div class="subj-left"><div class="subj-name">Mathematics</div><div class="subj-teacher" style="color:#A78BFA">Ms. Priya Sharma</div></div>
+              <div class="subj-right"><div class="subj-score" style="color:#A78BFA">91<span style="font-size:13px;color:var(--t3);font-weight:500">/100</span></div><div class="subj-grade-badge" style="background:rgba(99,102,241,.15);color:#A78BFA">A+</div></div>
+            </div>
+            <div class="subj-bar-track"><div class="subj-bar-fill" style="width:91%;background:linear-gradient(90deg,#6366F1,#8B5CF6)"></div></div>
+            <div class="subj-footer"><span class="subj-meta">Theory <span>56/60</span></span><span class="subj-meta">Practical <span>35/40</span></span><span class="subj-meta">Trend <span style="color:#34D399">↑4</span></span></div>
+          </div>
+
+          <!-- Science -->
+          <div class="subj-card sr" style="border-left-color:#10B981" onclick="pToast('Science: 88/100 · A')">
+            <div class="subj-top">
+              <div class="subj-left"><div class="subj-name">Science</div><div class="subj-teacher" style="color:#34D399">Mr. Suresh Nair</div></div>
+              <div class="subj-right"><div class="subj-score" style="color:#34D399">88<span style="font-size:13px;color:var(--t3);font-weight:500">/100</span></div><div class="subj-grade-badge" style="background:rgba(16,185,129,.15);color:#34D399">A</div></div>
+            </div>
+            <div class="subj-bar-track"><div class="subj-bar-fill" style="width:88%;background:linear-gradient(90deg,#10B981,#0EA5E9)"></div></div>
+            <div class="subj-footer"><span class="subj-meta">Theory <span>52/60</span></span><span class="subj-meta">Practical <span>36/40</span></span><span class="subj-meta">Trend <span style="color:#34D399">↑2</span></span></div>
+          </div>
+
+          <!-- CS -->
+          <div class="subj-card sr" style="border-left-color:#0EA5E9" onclick="pToast('Computer Science: 93/100 · A+')">
+            <div class="subj-top">
+              <div class="subj-left"><div class="subj-name">Computer Science</div><div class="subj-teacher" style="color:#38BDF8">Mr. Vijay Rao</div></div>
+              <div class="subj-right"><div class="subj-score" style="color:#38BDF8">93<span style="font-size:13px;color:var(--t3);font-weight:500">/100</span></div><div class="subj-grade-badge" style="background:rgba(14,165,233,.15);color:#38BDF8">A+</div></div>
+            </div>
+            <div class="subj-bar-track"><div class="subj-bar-fill" style="width:93%;background:linear-gradient(90deg,#0EA5E9,#6366F1)"></div></div>
+            <div class="subj-footer"><span class="subj-meta">Theory <span>55/60</span></span><span class="subj-meta">Practical <span>38/40</span></span><span class="subj-meta">Trend <span style="color:#34D399">↑8</span></span></div>
+          </div>
+
+          <!-- English -->
+          <div class="subj-card sr" style="border-left-color:#F97316" onclick="pToast('English: 82/100 · A')">
+            <div class="subj-top">
+              <div class="subj-left"><div class="subj-name">English</div><div class="subj-teacher" style="color:#FB923C">Ms. Rekha Nair</div></div>
+              <div class="subj-right"><div class="subj-score" style="color:#FB923C">82<span style="font-size:13px;color:var(--t3);font-weight:500">/100</span></div><div class="subj-grade-badge" style="background:rgba(249,115,22,.15);color:#FB923C">A</div></div>
+            </div>
+            <div class="subj-bar-track"><div class="subj-bar-fill" style="width:82%;background:linear-gradient(90deg,#F97316,#F59E0B)"></div></div>
+            <div class="subj-footer"><span class="subj-meta">Literature <span>50/60</span></span><span class="subj-meta">Writing <span>32/40</span></span><span class="subj-meta">Trend <span style="color:var(--t3)">→ 0</span></span></div>
+          </div>
+
+          <!-- Social -->
+          <div class="subj-card sr" style="border-left-color:#EC4899" onclick="pToast('Social Studies: 80/100 · A')">
+            <div class="subj-top">
+              <div class="subj-left"><div class="subj-name">Social Studies</div><div class="subj-teacher" style="color:#F9A8D4">Mr. Kiran Patel</div></div>
+              <div class="subj-right"><div class="subj-score" style="color:#F9A8D4">80<span style="font-size:13px;color:var(--t3);font-weight:500">/100</span></div><div class="subj-grade-badge" style="background:rgba(236,72,153,.15);color:#F9A8D4">A</div></div>
+            </div>
+            <div class="subj-bar-track"><div class="subj-bar-fill" style="width:80%;background:linear-gradient(90deg,#EC4899,#F43F5E)"></div></div>
+            <div class="subj-footer"><span class="subj-meta">History <span>26/30</span></span><span class="subj-meta">Geography <span>28/35</span></span><span class="subj-meta">Trend <span style="color:#F43F5E">↓1</span></span></div>
+          </div>
+
+          <!-- Hindi -->
+          <div class="subj-card sr" style="border-left-color:#F59E0B" onclick="pToast('Hindi: 78/100 · B+')">
+            <div class="subj-top">
+              <div class="subj-left"><div class="subj-name">Hindi</div><div class="subj-teacher" style="color:#FCD34D">Ms. Anita Devi</div></div>
+              <div class="subj-right"><div class="subj-score" style="color:#FCD34D">78<span style="font-size:13px;color:var(--t3);font-weight:500">/100</span></div><div class="subj-grade-badge" style="background:rgba(245,158,11,.15);color:#FCD34D">B+</div></div>
+            </div>
+            <div class="subj-bar-track"><div class="subj-bar-fill" style="width:78%;background:linear-gradient(90deg,#F59E0B,#FBBF24)"></div></div>
+            <div class="subj-footer"><span class="subj-meta">Written <span>47/60</span></span><span class="subj-meta">Oral <span>31/40</span></span><span class="subj-meta">Trend <span style="color:#34D399">↑5</span></span></div>
+          </div>
+
+          <!-- PE -->
+          <div class="subj-card sr" style="border-left-color:#22C55E" onclick="pToast('Physical Education: 85/100 · A')">
+            <div class="subj-top">
+              <div class="subj-left"><div class="subj-name">Physical Education</div><div class="subj-teacher" style="color:#86EFAC">Coach Ramesh</div></div>
+              <div class="subj-right"><div class="subj-score" style="color:#86EFAC">85<span style="font-size:13px;color:var(--t3);font-weight:500">/100</span></div><div class="subj-grade-badge" style="background:rgba(34,197,94,.15);color:#86EFAC">A</div></div>
+            </div>
+            <div class="subj-bar-track"><div class="subj-bar-fill" style="width:85%;background:linear-gradient(90deg,#22C55E,#34D399)"></div></div>
+            <div class="subj-footer"><span class="subj-meta">Fitness <span>A+</span></span><span class="subj-meta">Team <span>Cricket</span></span><span class="subj-meta">Trend <span style="color:#34D399">↑3</span></span></div>
+          </div>
+
+          <div style="padding:12px 14px 20px">
+            <button onclick="pToast('📄 Downloading report card...')" style="width:100%;background:var(--eg);color:#fff;border:none;border-radius:14px;padding:14px;font-family:var(--font-d);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(249,115,22,.4);transition:all .3s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.2px" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 10px 32px rgba(249,115,22,.5)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 6px 24px rgba(99,102,241,.4)'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Report Card
+            </button>
+          </div>
+        </div><!-- /pd-academics -->
+
+        <!-- ═══ ATTENDANCE ═══ -->
+        <div class="p-dash" id="pd-attendance">
+          <div class="att-hero">
+            <div class="att-hero-title">Attendance Record</div>
+            <div class="att-hero-sub">Arjun Mehta · Academic Year 2024–25</div>
+          </div>
+          <div class="att-stats-row">
+            <div class="att-stat c-j sr"><div class="att-stat-val" style="color:#34D399">92%</div><div class="att-stat-lbl">Overall</div></div>
+            <div class="att-stat c-e sr"><div class="att-stat-val" style="color:#A78BFA">184</div><div class="att-stat-lbl">Present</div></div>
+            <div class="att-stat c-r sr"><div class="att-stat-val" style="color:#FB7185">16</div><div class="att-stat-lbl">Absent</div></div>
+            <div class="att-stat c-g sr"><div class="att-stat-val" style="color:#FCD34D">4</div><div class="att-stat-lbl">Late</div></div>
+          </div>
+
+          <div class="att-cal sr" style="margin-top:18px">
+            <div class="att-cal-nav">
+              <button class="att-cal-btn" onclick="attNav(-1)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+              </button>
+              <div class="att-cal-month" id="att-month">March 2025</div>
+              <button class="att-cal-btn" onclick="attNav(1)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+              </button>
+            </div>
+            <div class="att-cal-grid" id="att-grid"></div>
+            <div class="att-legend">
+              <div class="att-leg"><div class="att-leg-dot" style="background:rgba(16,185,129,.4)"></div>Present</div>
+              <div class="att-leg"><div class="att-leg-dot" style="background:rgba(244,63,94,.4)"></div>Absent</div>
+              <div class="att-leg"><div class="att-leg-dot" style="background:rgba(245,158,11,.4)"></div>Late</div>
+              <div class="att-leg"><div class="att-leg-dot" style="background:rgba(14,165,233,.3)"></div>Holiday</div>
+            </div>
+          </div>
+
+          <div class="sec-head" style="margin-top:4px"><div class="sec-title">Monthly Breakdown</div></div>
+          <div class="month-bar-row sr"><div class="month-name">April</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><div class="bar-pct" style="color:#34D399">100%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">May</div><div class="bar-track"><div class="bar-fill" style="width:96%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><div class="bar-pct" style="color:#34D399">96%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">June</div><div class="bar-track"><div class="bar-fill" style="width:88%;background:linear-gradient(90deg,#F59E0B,#FBBF24)"></div></div><div class="bar-pct" style="color:#FCD34D">88%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">July</div><div class="bar-track"><div class="bar-fill" style="width:92%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><div class="bar-pct" style="color:#34D399">92%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">August</div><div class="bar-track"><div class="bar-fill" style="width:95%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><div class="bar-pct" style="color:#34D399">95%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">September</div><div class="bar-track"><div class="bar-fill" style="width:90%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><div class="bar-pct" style="color:#34D399">90%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">October</div><div class="bar-track"><div class="bar-fill" style="width:78%;background:linear-gradient(90deg,#F43F5E,#FB7185)"></div></div><div class="bar-pct" style="color:#FB7185">78%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">November</div><div class="bar-track"><div class="bar-fill" style="width:94%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><div class="bar-pct" style="color:#34D399">94%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">December</div><div class="bar-track"><div class="bar-fill" style="width:96%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><div class="bar-pct" style="color:#34D399">96%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">January</div><div class="bar-track"><div class="bar-fill" style="width:92%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><div class="bar-pct" style="color:#34D399">92%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">February</div><div class="bar-track"><div class="bar-fill" style="width:89%;background:linear-gradient(90deg,#F59E0B,#FBBF24)"></div></div><div class="bar-pct" style="color:#FCD34D">89%</div></div>
+          <div class="month-bar-row sr"><div class="month-name">March</div><div class="bar-track"><div class="bar-fill" style="width:92%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><div class="bar-pct" style="color:#34D399">92%</div></div>
+          <div style="height:20px"></div>
+        </div><!-- /pd-attendance -->
+
+        <!-- ═══ FEES ═══ -->
+        <div class="p-dash" id="pd-fees">
+          <div class="fee-hero">
+            <div class="fee-hero-title">Fee Management</div>
+            <div class="fee-hero-label" style="margin-top:4px">Total Outstanding</div>
+            <div class="fee-hero-amount">₹14,500</div>
+            <div class="fee-hero-due">Due by March 31, 2025</div>
+          </div>
+          <button class="fee-pay-btn sr" onclick="openPayFee()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Pay Now · ₹14,500
+          </button>
+
+          <div class="sec-head" style="margin-top:8px"><div class="sec-title">Pending Fees</div></div>
+          <div class="fee-item pending sr" onclick="openPayFee()">
+            <div class="fee-item-ico" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.2)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c0 2 6 3 6 3s6-1 6-3v-5"/></svg>
+            </div>
+            <div class="fee-item-info"><div class="fee-item-name">Term 2 Tuition Fee</div><div class="fee-item-due">Due: March 31, 2025</div></div>
+            <div style="text-align:right"><div class="fee-item-amt" style="color:#FCD34D">₹9,500</div><div class="fee-badge" style="background:rgba(245,158,11,.15);color:#FCD34D">Pending</div></div>
+          </div>
+          <div class="fee-item overdue sr" onclick="openPayFee()">
+            <div class="fee-item-ico" style="background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.2)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FB7185" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            </div>
+            <div class="fee-item-info"><div class="fee-item-name">Sports &amp; Activity Fee</div><div class="fee-item-due">Overdue since March 20</div></div>
+            <div style="text-align:right"><div class="fee-item-amt" style="color:#FB7185">₹3,500</div><div class="fee-badge" style="background:rgba(244,63,94,.15);color:#FB7185">Overdue</div></div>
+          </div>
+          <div class="fee-item upcoming sr" onclick="openPayFee()">
+            <div class="fee-item-ico" style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v6h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            </div>
+            <div class="fee-item-info"><div class="fee-item-name">Transport Fee Q4</div><div class="fee-item-due">Due: April 5, 2025</div></div>
+            <div style="text-align:right"><div class="fee-item-amt" style="color:#34D399">₹1,500</div><div class="fee-badge" style="background:rgba(16,185,129,.15);color:#34D399">Upcoming</div></div>
+          </div>
+
+          <div class="div-line" style="margin-top:14px"></div>
+          <div class="sec-head"><div class="sec-title">Payment History</div></div>
+
+          <div class="fee-history-item sr">
+            <div class="fh-check"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></div>
+            <div class="fh-left"><div class="fh-name">Term 1 Tuition Fee</div><div class="fh-date">Nov 15, 2024 · TXN2024001</div></div>
+            <div style="text-align:right"><div class="fh-amt">₹9,500</div><div class="fh-mode">UPI</div></div>
+          </div>
+          <div class="fee-history-item sr">
+            <div class="fh-check"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></div>
+            <div class="fh-left"><div class="fh-name">Annual &amp; Admission Charges</div><div class="fh-date">Apr 12, 2024 · TXN2024002</div></div>
+            <div style="text-align:right"><div class="fh-amt">₹18,000</div><div class="fh-mode">NEFT</div></div>
+          </div>
+          <div class="fee-history-item sr">
+            <div class="fh-check"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></div>
+            <div class="fh-left"><div class="fh-name">Transport Fee Q1–Q3</div><div class="fh-date">Apr 12, 2024 · TXN2024003</div></div>
+            <div style="text-align:right"><div class="fh-amt">₹4,500</div><div class="fh-mode">Card</div></div>
+          </div>
+          <div class="fee-history-item sr">
+            <div class="fh-check"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg></div>
+            <div class="fh-left"><div class="fh-name">Sports Fee Q1–Q3</div><div class="fh-date">Apr 12, 2024 · TXN2024004</div></div>
+            <div style="text-align:right"><div class="fh-amt">₹7,000</div><div class="fh-mode">UPI</div></div>
+          </div>
+          <div style="height:20px"></div>
+        </div><!-- /pd-fees -->
+
+        <!-- ═══ MESSAGES ═══ -->
+        <div class="p-dash" id="pd-messages">
+          <div class="msg-hero">
+            <div class="msg-hero-title">Messages</div>
+            <div class="msg-hero-sub">Connect with teachers &amp; school</div>
+          </div>
+          <div class="msg-compose sr" onclick="openMsgCompose()">
+            <div style="width:34px;height:34px;background:rgba(99,102,241,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+            <div class="msg-compose-hint">Write a message to a teacher...</div>
+          </div>
+          <div style="padding:12px 14px 6px"><div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px">Recent Conversations</div></div>
+
+          <div class="msg-thread sr" onclick="openMsgThread('priya')">
+            <div class="msg-thread-header">
+              <div class="msg-av" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)">P<div class="msg-av-online"></div></div>
+              <div class="msg-info"><div class="msg-name">Ms. Priya Sharma</div><div class="msg-role">Class Teacher · Mathematics</div></div>
+              <div class="msg-time">2h ago</div>
+            </div>
+            <div class="msg-preview">"Arjun did really well in today's algebra test! Score: 24/25. He's ready for the upcoming term exam."</div>
+            <div class="msg-unread-row"><span class="unread-chip">2 unread</span></div>
+          </div>
+
+          <div class="msg-thread sr" onclick="openMsgThread('suresh')">
+            <div class="msg-thread-header">
+              <div class="msg-av" style="background:linear-gradient(135deg,#10B981,#0EA5E9)">S</div>
+              <div class="msg-info"><div class="msg-name">Mr. Suresh Nair</div><div class="msg-role">Science Teacher</div></div>
+              <div class="msg-time">Yesterday</div>
+            </div>
+            <div class="msg-preview">"Please remind Arjun to bring the science project materials by Thursday."</div>
+          </div>
+
+          <div class="msg-thread sr" onclick="openMsgThread('admin')">
+            <div class="msg-thread-header">
+              <div class="msg-av" style="background:linear-gradient(135deg,#F97316,#F59E0B)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/></svg>
+              </div>
+              <div class="msg-info"><div class="msg-name">School Administration</div><div class="msg-role">Official Communication</div></div>
+              <div class="msg-time">2 days ago</div>
+            </div>
+            <div class="msg-preview">"PTM scheduled for March 15. Please confirm attendance by March 12."</div>
+            <div class="msg-unread-row"><span class="unread-chip">1 unread</span></div>
+          </div>
+
+          <div class="msg-thread sr" onclick="openMsgThread('vijay')">
+            <div class="msg-thread-header">
+              <div class="msg-av" style="background:linear-gradient(135deg,#0EA5E9,#6366F1)">V<div class="msg-av-online"></div></div>
+              <div class="msg-info"><div class="msg-name">Mr. Vijay Rao</div><div class="msg-role">Computer Science</div></div>
+              <div class="msg-time">3 days ago</div>
+            </div>
+            <div class="msg-preview">"Arjun selected for Inter-School Coding Competition! Congratulations!"</div>
+          </div>
+          <div style="height:20px"></div>
+        </div><!-- /pd-messages -->
+
+        <!-- ═══ MORE ═══ -->
+        <div class="p-dash" id="pd-more">
+          <div class="more-hero">
+            <div class="more-hero-title">More Features</div>
+            <div class="more-hero-sub">Everything for your child's success</div>
+          </div>
+          <div class="more-grid">
+            <div class="more-card sr" onclick="openTransport()">
+              <div class="more-card-ico" style="background:linear-gradient(135deg,#1e1b4b,#312E81)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v6h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div class="more-card-title">Bus Tracker</div>
+              <div class="more-card-sub">Live GPS · Real-time ETA</div>
+            </div>
+            <div class="more-card sr" onclick="openTimetable()">
+              <div class="more-card-ico" style="background:linear-gradient(135deg,#083344,#0c4a6e)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <div class="more-card-title">Timetable</div>
+              <div class="more-card-sub">Daily class schedule</div>
+            </div>
+            <div class="more-card sr" onclick="openHomework()">
+              <div class="more-card-ico" style="background:linear-gradient(135deg,#3f1700,#7c2d12)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FDBA74" stroke-width="1.8" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+              </div>
+              <div class="more-card-title">Homework</div>
+              <div class="more-card-sub">Assignments &amp; due dates</div>
+              <div class="more-card-badge">3</div>
+            </div>
+            <div class="more-card sr" onclick="openEvents()">
+              <div class="more-card-ico" style="background:linear-gradient(135deg,#240046,#3c096c)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="1.8" stroke-linecap="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+              </div>
+              <div class="more-card-title">Events</div>
+              <div class="more-card-sub">Calendar &amp; activities</div>
+            </div>
+            <div class="more-card sr" onclick="pToast('📖 Library module')">
+              <div class="more-card-ico" style="background:linear-gradient(135deg,#0c1a4a,#1e3a8a)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="1.8" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+              </div>
+              <div class="more-card-title">Library</div>
+              <div class="more-card-sub">Books borrowed &amp; due</div>
+            </div>
+            <div class="more-card sr" onclick="pToast('📝 Exam schedule')">
+              <div class="more-card-ico" style="background:linear-gradient(135deg,#451a03,#7c2d12)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+              </div>
+              <div class="more-card-title">Exam Schedule</div>
+              <div class="more-card-sub">Dates &amp; syllabus</div>
+            </div>
+            <div class="more-card sr" onclick="pToast('🏥 Health records')">
+              <div class="more-card-ico" style="background:linear-gradient(135deg,#1a0512,#4a044e)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E879F9" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              </div>
+              <div class="more-card-title">Health</div>
+              <div class="more-card-sub">Medical &amp; vaccinations</div>
+            </div>
+            <div class="more-card sr" onclick="openProfile()">
+              <div class="more-card-ico" style="background:linear-gradient(135deg,#064E3B,#065F46)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div class="more-card-title">My Profile</div>
+              <div class="more-card-sub">Account &amp; settings</div>
+            </div>
+          </div>
+
+          <div style="padding:0 14px 16px">
+            <div style="font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">School Contact</div>
+            <div class="gc" style="padding:4px">
+              <div class="contact-row" onclick="pToast('📞 Calling school office...')">
+                <div class="contact-ico" style="background:rgba(99,102,241,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81 19.79 19.79 0 01.1 2.22 2 2 0 012.11 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.5 7.5a16 16 0 006 6l.86-.86a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg></div>
+                <div class="contact-lbl">School Office<div class="contact-val">+91 80 2345 6789</div></div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E3650" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+              </div>
+              <div class="contact-row" onclick="pToast('📧 Opening email...')">
+                <div class="contact-ico" style="background:rgba(16,185,129,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+                <div class="contact-lbl">Email<div class="contact-val">info@edusphere.school</div></div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E3650" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+              </div>
+              <div class="contact-row" onclick="pToast('🌐 Opening website...')">
+                <div class="contact-ico" style="background:rgba(14,165,233,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
+                <div class="contact-lbl">Website<div class="contact-val">www.edusphere.school</div></div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E3650" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+              </div>
+            </div>
+          </div>
+          <div style="height:10px"></div>
+        </div><!-- /pd-more -->
+
+      </div><!-- /p-scr -->
+
+      <!-- ═══ BOTTOM NAV ═══ -->
+      <div class="p-nav">
+        <div class="p-nb sel" id="nb-home" onclick="pTab('home')">
+          <div class="nb-ico-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5A6480" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+          <div class="nb-lbl">Home</div>
+        </div>
+        <div class="p-nb" id="nb-academics" onclick="pTab('academics')">
+          <div class="nb-ico-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5A6480" stroke-width="2" stroke-linecap="round"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/><polyline points="17,6 23,6 23,12"/></svg></div>
+          <div class="nb-lbl">Academics</div>
+        </div>
+        <div class="p-nb" id="nb-attendance" onclick="pTab('attendance')">
+          <div class="nb-ico-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5A6480" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg></div>
+          <div class="nb-lbl">Attendance</div>
+        </div>
+        <div class="p-nb" id="nb-fees" onclick="pTab('fees')">
+          <div class="nb-ico-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5A6480" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+          <div class="nb-lbl">Fees</div>
+          <div class="nb-dot"></div>
+        </div>
+        <div class="p-nb" id="nb-messages" onclick="pTab('messages')">
+          <div class="nb-ico-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5A6480" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+          <div class="nb-lbl">Messages</div>
+          <div class="nb-dot"></div>
+        </div>
+        <div class="p-nb" id="nb-more" onclick="pTab('more')">
+          <div class="nb-ico-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5A6480" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+          <div class="nb-lbl">More</div>
+        </div>
+      </div>
+      <!-- ═══ NOTIFICATION OVERLAY ═══ -->
+      <div class="ovl" id="ovl-notif">
+        <div class="ovl-head" style="background:linear-gradient(160deg,#0D1E45,#1a0d3d)">
+          <div class="ovl-back" onclick="closeOvl('ovl-notif')"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="ovl-h-title">Notifications</div>
+          <div style="font-size:11px;font-weight:700;color:#6366F1;cursor:pointer" onclick="pToast('✓ All marked as read')">Mark all read</div>
+        </div>
+        <div class="ovl-body">
+          <div class="notif-group">Today</div>
+          <div class="notif-item unread"><div class="notif-ico" style="background:rgba(99,102,241,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/></svg></div><div class="notif-content"><div class="notif-title">Term 2 Results Published</div><div class="notif-body">Arjun scored 84.6% overall. Rank #4 in class. View detailed report card.</div><div class="notif-time">9:30 AM</div></div></div>
+          <div class="notif-item unread"><div class="notif-ico" style="background:rgba(244,63,94,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FB7185" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="notif-content"><div class="notif-title">Message from Ms. Priya</div><div class="notif-body">"Arjun scored 24/25 in today's algebra test. Excellent work!"</div><div class="notif-time">8:15 AM</div></div></div>
+          <div class="notif-group" style="margin-top:14px">Yesterday</div>
+          <div class="notif-item unread"><div class="notif-ico" style="background:rgba(245,158,11,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="notif-content"><div class="notif-title">Fee Payment Reminder</div><div class="notif-body">Term 2 tuition fees of ₹9,500 due by March 31. Pay now to avoid late charges.</div><div class="notif-time">4:00 PM</div></div></div>
+          <div class="notif-item"><div class="notif-ico" style="background:rgba(16,185,129,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><circle cx="5.5" cy="18.5" r="2.5"/></svg></div><div class="notif-content"><div class="notif-title">Arjun boarded the bus</div><div class="notif-body">Bus B-12 picked up Arjun at 7:48 AM. ETA to school: 8:25 AM</div><div class="notif-time">7:48 AM</div></div></div>
+          <div class="notif-group" style="margin-top:14px">Earlier</div>
+          <div class="notif-item"><div class="notif-ico" style="background:rgba(99,102,241,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="notif-content"><div class="notif-title">PTM on March 15</div><div class="notif-body">Confirm your slot by March 12. Duration: 15 min per family.</div><div class="notif-time">2 days ago</div></div></div>
+          <div class="notif-item"><div class="notif-ico" style="background:rgba(245,158,11,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></div><div class="notif-content"><div class="notif-title">Coding Competition Selection</div><div class="notif-body">Arjun selected for Inter-School Coding Competition on March 22. Congratulations!</div><div class="notif-time">3 days ago</div></div></div>
+        </div>
+      </div>
+
+      <!-- ═══ TRANSPORT OVERLAY ═══ -->
+      <div class="ovl" id="ovl-transport">
+        <div class="ovl-head" style="background:linear-gradient(160deg,#0c1a4a,#1e3a8a)">
+          <div class="ovl-back" onclick="closeOvl('ovl-transport')"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="ovl-h-title">Live Bus Tracker</div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:7px;height:7px;border-radius:50%;background:#059669;animation:nowPulse 1.5s infinite"></div><span style="font-size:10px;font-weight:700;color:#059669">LIVE</span></div>
+        </div>
+        <div class="ovl-body">
+          <div class="transport-map">
+            <div class="map-grid"></div>
+            <div class="route-line"></div>
+            <div class="bus-pin" title="Bus B-12">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v6h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            </div>
+            <div class="home-pin" title="Home">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            </div>
+            <div class="school-pin" title="School">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/></svg>
+            </div>
+            <div class="transport-eta-card">
+              <div class="transport-eta-val">12</div>
+              <div class="transport-eta-lbl">min ETA</div>
+            </div>
+          </div>
+          <!-- Bus stats -->
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <div style="flex:1;background:rgba(255,255,255,.97);border:1px solid var(--gb);border-radius:14px;padding:12px 8px;text-align:center"><div style="font-family:var(--font-d);font-size:18px;font-weight:800;color:#D97706">B-12</div><div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;margin-top:2px">Bus No.</div></div>
+            <div style="flex:1;background:rgba(255,255,255,.97);border:1px solid rgba(5,150,105,.25);border-radius:14px;padding:12px 8px;text-align:center"><div style="font-family:var(--font-d);font-size:16px;font-weight:800;color:#059669">On Time</div><div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;margin-top:2px">Status</div></div>
+            <div style="flex:1;background:rgba(255,255,255,.97);border:1px solid var(--gb);border-radius:14px;padding:12px 8px;text-align:center"><div style="font-family:var(--font-d);font-size:18px;font-weight:800;color:#0284C7">8:24</div><div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;margin-top:2px">Arrives At</div></div>
+          </div>
+          <div class="transport-info">
+            <div class="transport-row"><div class="tr-ico"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v6h-7V8z"/></svg></div><div class="tr-lbl">Vehicle Number</div><div class="tr-val">KA 05 AB 1234</div></div>
+            <div class="transport-row"><div class="tr-ico"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="tr-lbl">Driver</div><div class="tr-val">Raju Kumar</div></div>
+            <div class="transport-row"><div class="tr-ico"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81"/></svg></div><div class="tr-lbl">Driver Contact</div><div class="tr-val" style="color:#A78BFA;cursor:pointer" onclick="pToast('📞 Calling driver...')">+91 98765 43210</div></div>
+            <div class="transport-row"><div class="tr-ico"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 00-8 8c0 5.25 8 13 8 13s8-7.75 8-13a8 8 0 00-8-8z"/></svg></div><div class="tr-lbl">Current Location</div><div class="tr-val">MG Road — Stop 4</div></div>
+            <div class="transport-row"><div class="tr-ico"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 00-8 8c0 5.25 8 13 8 13s8-7.75 8-13a8 8 0 00-8-8z"/></svg></div><div class="tr-lbl">Next Stop</div><div class="tr-val">Residency Road — Stop 5</div></div>
+          </div>
+          <!-- Journey timeline -->
+          <div style="font-size:12px;font-weight:800;color:var(--t1);font-family:var(--font-d);margin-bottom:12px">Today's Journey</div>
+          <div class="journey-step">
+            <div class="step-line-wrap"><div class="step-dot" style="background:var(--jade)"></div><div class="step-connector"></div></div>
+            <div><div class="step-title">Picked up at Home Stop</div><div class="step-sub">7:48 AM · 12th Cross, Koramangala</div></div>
+          </div>
+          <div class="journey-step">
+            <div class="step-line-wrap"><div class="step-dot" style="background:var(--e1);animation:nowPulse 1.5s infinite"></div><div class="step-connector" style="opacity:.3"></div></div>
+            <div><div class="step-title" style="color:#A78BFA">Currently at MG Road</div><div class="step-sub">Now · Stop 4 of 7</div></div>
+          </div>
+          <div class="journey-step" style="padding-bottom:0">
+            <div class="step-line-wrap"><div class="step-dot" style="background:var(--t4)"></div></div>
+            <div><div class="step-title" style="color:var(--t3)">EduSphere School</div><div class="step-sub">ETA 8:24 AM · ~12 min</div></div>
+          </div>
+          <div style="height:16px"></div>
+        </div>
+      </div>
+
+      <!-- ═══ TIMETABLE OVERLAY ═══ -->
+      <div class="ovl" id="ovl-timetable">
+        <div class="ovl-head" style="background:linear-gradient(160deg,#071828,#0c4a6e)">
+          <div class="ovl-back" onclick="closeOvl('ovl-timetable')"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="ovl-h-title">Class Timetable</div>
+        </div>
+        <div class="tt-day-tabs" id="tt-tabs"></div>
+        <div class="ovl-body" id="tt-body" style="padding-top:0"></div>
+      </div>
+
+      <!-- ═══ HOMEWORK OVERLAY ═══ -->
+      <div class="ovl" id="ovl-homework">
+        <div class="ovl-head" style="background:linear-gradient(160deg,#3f1700,#7c2d12)">
+          <div class="ovl-back" onclick="closeOvl('ovl-homework')"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="ovl-h-title">Homework</div>
+          <div style="font-size:11px;font-weight:700;color:#EA580C">3 Pending</div>
+        </div>
+        <div class="hw-tab-strip" id="hw-tabs"></div>
+        <div class="ovl-body" id="hw-body" style="padding-top:0"></div>
+      </div>
+
+      <!-- ═══ EVENTS OVERLAY ═══ -->
+      <div class="ovl" id="ovl-events">
+        <div class="ovl-head" style="background:linear-gradient(160deg,#240046,#3c096c)">
+          <div class="ovl-back" onclick="closeOvl('ovl-events')"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="ovl-h-title">School Calendar</div>
+        </div>
+        <div class="ovl-body events-body" id="events-body"></div>
+      </div>
+
+      <!-- ═══ PAY FEE OVERLAY ═══ -->
+      <div class="ovl" id="ovl-payfee">
+        <div class="pay-head">
+          <div style="margin-bottom:12px"><div class="ovl-back" onclick="closeOvl('ovl-payfee')"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg></div></div>
+          <div class="pay-head-title">Pay School Fees</div>
+          <div class="pay-head-sub">Secure · Fast · All methods accepted</div>
+        </div>
+        <div style="flex:1;overflow-y:auto;scrollbar-width:none;background:#FFF9EE">
+          <div class="pay-amount-card">
+            <div class="pay-amount-label">Total Amount Due</div>
+            <div class="pay-amount-value">₹14,500</div>
+            <div class="pay-chips">
+              <span class="pay-chip">Tuition ₹9,500</span>
+              <span class="pay-chip">Sports ₹3,500</span>
+              <span class="pay-chip">Transport ₹1,500</span>
+            </div>
+          </div>
+          <div style="padding:16px 16px 8px"><div style="font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.7px">Select Payment Method</div></div>
+          <div class="pay-method selected" id="pm-upi" onclick="selectPM('upi')"><div class="pay-method-ico" style="background:rgba(14,165,233,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div><div class="pay-method-name">UPI Payment</div><div class="pay-method-sub">PhonePe · GPay · Paytm · BHIM</div></div><div class="pay-check"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg></div></div>
+          <div class="pay-method" id="pm-card" onclick="selectPM('card')"><div class="pay-method-ico" style="background:rgba(244,63,94,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FB7185" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div><div class="pay-method-name">Debit / Credit Card</div><div class="pay-method-sub">Visa · Mastercard · RuPay</div></div><div class="pay-check"></div></div>
+          <div class="pay-method" id="pm-netbank" onclick="selectPM('netbank')"><div class="pay-method-ico" style="background:rgba(16,185,129,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><div class="pay-method-name">Net Banking</div><div class="pay-method-sub">All major Indian banks</div></div><div class="pay-check"></div></div>
+          <div class="pay-method" id="pm-emi" onclick="selectPM('emi')"><div class="pay-method-ico" style="background:rgba(245,158,11,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="pay-method-name">EMI / Pay Later</div><div class="pay-method-sub">0% EMI on select cards</div></div><div class="pay-check"></div></div>
+          <button class="pay-confirm" onclick="processPayment()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Pay ₹14,500 Securely
+          </button>
+          <div style="text-align:center;font-size:10px;color:var(--t3);padding:0 16px 20px;line-height:1.6">🔐 256-bit SSL · PCI DSS Compliant<br>Your payment is 100% secure</div>
+        </div>
+      </div>
+
+      <!-- ═══ MESSAGE OVERLAY ═══ -->
+      <div class="ovl" id="ovl-msg">
+        <div class="ovl-head" style="background:linear-gradient(160deg,#1a0512,#4a044e)">
+          <div class="ovl-back" onclick="closeOvl('ovl-msg')"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="ovl-h-title" id="msg-ovl-title">Message</div>
+        </div>
+        <div class="ovl-body" id="msg-ovl-body" style="padding-bottom:0"></div>
+        <div class="msg-input-row">
+          <div class="msg-input-field" onclick="pToast('✏️ Type your message...')">Type a message...</div>
+          <button class="msg-send-btn" onclick="pToast('✉️ Message sent!')"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg></button>
+        </div>
+      </div>
+
+      <!-- ═══ PROFILE OVERLAY ═══ -->
+      <div class="ovl" id="ovl-profile">
+        <div class="profile-hero">
+          <div style="position:absolute;top:52px;left:20px" class="ovl-back" onclick="closeOvl('ovl-profile')"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg></div>
+          <div class="profile-av-wrap"><div class="profile-av">R<div class="profile-av-ring"></div></div></div>
+          <div class="profile-name">Rajesh Mehta</div>
+          <div class="profile-role">Parent · EduSphere School · Since 2020</div>
+        </div>
+        <div style="flex:1;overflow-y:auto;scrollbar-width:none;background:#FFF9EE">
+          <div style="display:flex;gap:8px;padding:16px 16px 0">
+            <div style="flex:1;background:rgba(255,248,220,.9);border:1px solid rgba(245,158,11,.25);border-radius:14px;padding:12px;text-align:center"><div style="font-family:var(--font-d);font-size:18px;font-weight:800;color:#D97706">2</div><div style="font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;margin-top:2px">Children</div></div>
+            <div style="flex:1;background:rgba(254,252,232,.9);border:1px solid rgba(245,158,11,.25);border-radius:14px;padding:12px;text-align:center"><div style="font-family:var(--font-d);font-size:18px;font-weight:800;color:#D97706">5 yrs</div><div style="font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;margin-top:2px">With School</div></div>
+            <div style="flex:1;background:rgba(255,237,213,.9);border:1px solid rgba(249,115,22,.25);border-radius:14px;padding:12px;text-align:center"><div style="font-family:var(--font-d);font-size:14px;font-weight:800;color:#EA580C">Active</div><div style="font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;margin-top:2px">Status</div></div>
+          </div>
+          <div style="padding:16px 16px 0"><div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Account Details</div></div>
+          <div class="profile-section">
+            <div class="profile-row" onclick="pToast('👤 Edit personal info...')"><div class="profile-row-ico" style="background:rgba(99,102,241,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="profile-row-info" style="flex:1"><div class="profile-row-lbl">Personal Info</div><div class="profile-row-val">Rajesh Mehta · +91 98765 43210</div></div><div class="profile-row-arrow">›</div></div>
+            <div class="profile-row" onclick="pToast('🏠 Address details...')"><div class="profile-row-ico" style="background:rgba(16,185,129,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div class="profile-row-info" style="flex:1"><div class="profile-row-lbl">Home Address</div><div class="profile-row-val">12th Cross, Koramangala, Bengaluru</div></div><div class="profile-row-arrow">›</div></div>
+            <div class="profile-row" onclick="pToast('📧 Email settings...')"><div class="profile-row-ico" style="background:rgba(245,158,11,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div class="profile-row-info" style="flex:1"><div class="profile-row-lbl">Email</div><div class="profile-row-val">rajesh.mehta@gmail.com</div></div><div class="profile-row-arrow">›</div></div>
+          </div>
+          <div style="padding:0 16px 8px"><div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Settings</div></div>
+          <div class="profile-section">
+            <div class="profile-row" onclick="pToast('🔔 Notification preferences')"><div class="profile-row-ico" style="background:rgba(14,165,233,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="profile-row-info" style="flex:1"><div class="profile-row-lbl">Notifications</div><div class="profile-row-val">All alerts enabled</div></div><div class="profile-row-arrow">›</div></div>
+            <div class="profile-row" onclick="pToast('🔒 Security settings')"><div class="profile-row-ico" style="background:rgba(244,63,94,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FB7185" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><div class="profile-row-info" style="flex:1"><div class="profile-row-lbl">Security</div><div class="profile-row-val">Biometric · 2FA enabled</div></div><div class="profile-row-arrow">›</div></div>
+            <div class="profile-row" onclick="pToast('🌐 Language: English')"><div class="profile-row-ico" style="background:rgba(139,92,246,.15)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div class="profile-row-info" style="flex:1"><div class="profile-row-lbl">Language</div><div class="profile-row-val">English</div></div><div class="profile-row-arrow">›</div></div>
+          </div>
+          <div style="padding:16px 16px 24px">
+            <button onclick="pToast('👋 Logged out')" style="width:100%;background:transparent;color:#E11D48;border:1.5px solid rgba(225,29,72,.3);border-radius:14px;padding:13px;font-family:var(--font-d);font-size:14px;font-weight:800;cursor:pointer;transition:all .2s ease;letter-spacing:.2px" onmouseover="this.style.background='rgba(225,29,72,.08)'" onmouseout="this.style.background='transparent'">Sign Out</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="toast"></div>
+    </div><!-- /phone -->
+  </div><!-- /phone-outer -->
+
+</div><!-- /shell -->
+<script>
+/* ── CLOCK ── */
+function tick(){const n=new Date(),h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0');const el=document.getElementById('p-clk');if(el)el.textContent=h+':'+m;}
+tick();setInterval(tick,1000);
+/* greeting */
+(()=>{const h=new Date().getHours();const g=h<5?'Good night 🌙':h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';document.querySelectorAll('#p-greet').forEach(el=>el.textContent=g);})();
+
+/* ── TOAST ── */
+let _tt=null;
+function pToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2400);}
+
+/* ── TABS ── */
+const TABS=['home','academics','attendance','fees','messages','more'];
+function pTab(tab){
+  TABS.forEach(t=>{
+    const d=document.getElementById('pd-'+t),b=document.getElementById('nb-'+t);
+    if(d)d.classList.toggle('on',t===tab);
+    if(b)b.classList.toggle('sel',t===tab);
+  });
+  document.getElementById('p-scr').scrollTop=0;
+  setTimeout(revealSr,80);
+}
+
+/* ── REVEAL ── */
+function revealSr(){
+  document.querySelectorAll('#p-scr .p-dash.on .sr:not(.in)').forEach((el,i)=>{
+    setTimeout(()=>el.classList.add('in'),i*45);
+  });
+  // sidebar
+  document.querySelectorAll('.sidebar .sr:not(.in)').forEach((el,i)=>{
+    setTimeout(()=>el.classList.add('in'),i*60+100);
+  });
+}
+
+/* ── OVERLAYS ── */
+function openOvl(id){document.getElementById(id).classList.add('open');}
+function closeOvl(id){document.getElementById(id).classList.remove('open');}
+function openNotif(){openOvl('ovl-notif');}
+function openTransport(){openOvl('ovl-transport');}
+function openTimetable(){ttRender('Mon');openOvl('ovl-timetable');}
+function openHomework(){hwRender('pending');openOvl('ovl-homework');}
+function openEvents(){eventsRender();openOvl('ovl-events');}
+function openPayFee(){openOvl('ovl-payfee');}
+function openProfile(){openOvl('ovl-profile');}
+function openMsgThread(t){renderThread(t);openOvl('ovl-msg');}
+function openMsgCompose(){renderCompose();openOvl('ovl-msg');}
+
+/* ── CHILD SWITCH ── */
+const KIDS={arjun:{name:'Arjun Mehta',meta:'Grade 8-A · Section Priya Sharma',att:'92%',avg:'84.6',fees:'2',hw:'3'},priya:{name:'Priya Mehta',meta:'Grade 5-B · Section Kavitha Reddy',att:'97%',avg:'91.2',fees:'1',hw:'1'}};
+function switchChild(k){
+  document.querySelectorAll('.child-card').forEach(el=>el.classList.remove('active'));
+  document.getElementById('c-'+k).classList.add('active');
+  const d=KIDS[k];
+  const hcn=document.getElementById('h-child-name');if(hcn)hcn.textContent=d.name;
+  const hcm=document.getElementById('h-child-meta');if(hcm)hcm.textContent=d.meta;
+  // update header pill
+  const pill=document.getElementById('header-child-name');if(pill)pill.textContent=d.name.split(' ')[0];
+  // update header stats
+  const ha=document.getElementById('hdr-avg');if(ha)ha.textContent=d.avg;
+  const ht=document.getElementById('hdr-att');if(ht)ht.textContent=d.att;
+  // update logo stats (first stat)
+  const svEls=document.querySelectorAll('.s-logo-stat-v');
+  if(svEls[1])svEls[1].textContent=d.att;
+  ['att','avg','fees','hw'].forEach(id=>{const el=document.getElementById('s-'+id);if(el)el.textContent=d[id];});
+  pToast('Switched to '+d.name);
+}
+
+/* ── ACADEMICS TERM ── */
+function acTerm(el){document.querySelectorAll('.ac-term-btn').forEach(b=>b.classList.remove('act'));el.classList.add('act');pToast(`Showing ${el.textContent} results`);}
+
+/* ── ATTENDANCE CALENDAR ── */
+let attM=2,attY=2025;
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const ATT={'2025-3-3':'present','2025-3-4':'present','2025-3-5':'present','2025-3-6':'late','2025-3-7':'present','2025-3-10':'present','2025-3-11':'present','2025-3-12':'absent','2025-3-13':'present','2025-3-14':'holiday','2025-3-17':'present','2025-3-18':'present','2025-3-19':'present','2025-3-20':'present','2025-3-21':'present','2025-2-3':'present','2025-2-4':'present','2025-2-5':'absent','2025-2-6':'present','2025-2-7':'present','2025-2-10':'present','2025-2-11':'present','2025-2-12':'present','2025-2-13':'late','2025-2-14':'holiday','2025-2-17':'absent','2025-2-18':'present','2025-2-19':'present','2025-2-20':'present','2025-2-21':'present','2025-2-24':'present','2025-2-25':'present','2025-2-26':'present','2025-2-27':'present','2025-2-28':'present'};
+function attNav(d){attM+=d;if(attM>11){attM=0;attY++;}if(attM<0){attM=11;attY--;}attRender();}
+function attRender(){
+  const lbl=document.getElementById('att-month');if(lbl)lbl.textContent=MONTHS[attM]+' '+attY;
+  const g=document.getElementById('att-grid');if(!g)return;
+  const dows=['S','M','T','W','T','F','S'];
+  let h=dows.map(d=>`<div class="att-dow">${d}</div>`).join('');
+  const fd=new Date(attY,attM,1).getDay(),dim=new Date(attY,attM+1,0).getDate(),now=new Date();
+  for(let i=0;i<fd;i++)h+=`<div class="att-day empty"></div>`;
+  for(let d=1;d<=dim;d++){
+    const k=`${attY}-${attM+1}-${d}`,s=ATT[k]||'';
+    const isT=now.getDate()===d&&now.getMonth()===attM&&now.getFullYear()===attY;
+    h+=`<div class="att-day ${isT?'today':s}">${d}</div>`;
+  }
+  g.innerHTML=h;
+}
+attRender();
+
+/* ── TIMETABLE ── */
+const TT={
+  Mon:[{t:'8:00',e:'8:45',s:'Mathematics',tc:'Ms. Priya Sharma',r:'Room 204',c:'rgba(99,102,241,.12)',b:'#6366F1',tc2:'#A78BFA'},{t:'8:45',e:'9:30',s:'Science',tc:'Mr. Suresh Nair',r:'Lab 1',c:'rgba(16,185,129,.1)',b:'#10B981',tc2:'#34D399'},{t:'9:30',e:'10:00',s:'Break',tc:'—',r:'Canteen',c:'rgba(255,255,255,.04)',b:'#2E3650',tc2:'#5A6480',br:1},{t:'10:00',e:'10:45',s:'English',tc:'Ms. Rekha Nair',r:'Room 201',c:'rgba(249,115,22,.1)',b:'#F97316',tc2:'#FB923C'},{t:'10:45',e:'11:30',s:'Social Studies',tc:'Mr. Kiran Patel',r:'Room 206',c:'rgba(236,72,153,.1)',b:'#EC4899',tc2:'#F9A8D4'},{t:'11:30',e:'12:15',s:'Computer Science',tc:'Mr. Vijay Rao',r:'Computer Lab',c:'rgba(14,165,233,.1)',b:'#0EA5E9',tc2:'#38BDF8'},{t:'12:15',e:'1:00',s:'Lunch Break',tc:'—',r:'Canteen',c:'rgba(255,255,255,.04)',b:'#2E3650',tc2:'#5A6480',br:1},{t:'1:00',e:'1:45',s:'Hindi',tc:'Ms. Anita Devi',r:'Room 203',c:'rgba(245,158,11,.1)',b:'#F59E0B',tc2:'#FCD34D'},{t:'1:45',e:'2:30',s:'Physical Education',tc:'Coach Ramesh',r:'Ground',c:'rgba(34,197,94,.1)',b:'#22C55E',tc2:'#86EFAC'}],
+  Tue:[{t:'8:00',e:'8:45',s:'English',tc:'Ms. Rekha Nair',r:'Room 201',c:'rgba(249,115,22,.1)',b:'#F97316',tc2:'#FB923C'},{t:'8:45',e:'9:30',s:'Mathematics',tc:'Ms. Priya Sharma',r:'Room 204',c:'rgba(99,102,241,.12)',b:'#6366F1',tc2:'#A78BFA'},{t:'9:30',e:'10:00',s:'Break',tc:'—',r:'Canteen',c:'rgba(255,255,255,.04)',b:'#2E3650',tc2:'#5A6480',br:1},{t:'10:00',e:'10:45',s:'Hindi',tc:'Ms. Anita Devi',r:'Room 203',c:'rgba(245,158,11,.1)',b:'#F59E0B',tc2:'#FCD34D'},{t:'10:45',e:'11:30',s:'Science',tc:'Mr. Suresh Nair',r:'Lab 1',c:'rgba(16,185,129,.1)',b:'#10B981',tc2:'#34D399'},{t:'11:30',e:'12:15',s:'Social Studies',tc:'Mr. Kiran Patel',r:'Room 206',c:'rgba(236,72,153,.1)',b:'#EC4899',tc2:'#F9A8D4'},{t:'12:15',e:'1:00',s:'Lunch Break',tc:'—',r:'Canteen',c:'rgba(255,255,255,.04)',b:'#2E3650',tc2:'#5A6480',br:1},{t:'1:00',e:'1:45',s:'Computer Science',tc:'Mr. Vijay Rao',r:'Computer Lab',c:'rgba(14,165,233,.1)',b:'#0EA5E9',tc2:'#38BDF8'},{t:'1:45',e:'2:30',s:'Art & Craft',tc:'Ms. Sunita',r:'Art Room',c:'rgba(244,63,94,.1)',b:'#F43F5E',tc2:'#FB7185'}],
+  Wed:[{t:'8:00',e:'8:45',s:'Science',tc:'Mr. Suresh Nair',r:'Lab 1',c:'rgba(16,185,129,.1)',b:'#10B981',tc2:'#34D399'},{t:'8:45',e:'9:30',s:'Hindi',tc:'Ms. Anita Devi',r:'Room 203',c:'rgba(245,158,11,.1)',b:'#F59E0B',tc2:'#FCD34D'},{t:'9:30',e:'10:00',s:'Break',tc:'—',r:'Canteen',c:'rgba(255,255,255,.04)',b:'#2E3650',tc2:'#5A6480',br:1},{t:'10:00',e:'10:45',s:'Mathematics',tc:'Ms. Priya Sharma',r:'Room 204',c:'rgba(99,102,241,.12)',b:'#6366F1',tc2:'#A78BFA'},{t:'10:45',e:'11:30',s:'Computer Science',tc:'Mr. Vijay Rao',r:'Computer Lab',c:'rgba(14,165,233,.1)',b:'#0EA5E9',tc2:'#38BDF8'},{t:'11:30',e:'2:30',s:'Library / Free Period',tc:'Ms. Librarian',r:'Library',c:'rgba(139,92,246,.1)',b:'#8B5CF6',tc2:'#C084FC'}],
+  Thu:[{t:'8:00',e:'8:45',s:'Social Studies',tc:'Mr. Kiran Patel',r:'Room 206',c:'rgba(236,72,153,.1)',b:'#EC4899',tc2:'#F9A8D4'},{t:'8:45',e:'9:30',s:'Mathematics',tc:'Ms. Priya Sharma',r:'Room 204',c:'rgba(99,102,241,.12)',b:'#6366F1',tc2:'#A78BFA'},{t:'9:30',e:'10:00',s:'Break',tc:'—',r:'Canteen',c:'rgba(255,255,255,.04)',b:'#2E3650',tc2:'#5A6480',br:1},{t:'10:00',e:'10:45',s:'Science Lab',tc:'Mr. Suresh Nair',r:'Lab 1',c:'rgba(16,185,129,.1)',b:'#10B981',tc2:'#34D399'},{t:'10:45',e:'11:30',s:'English',tc:'Ms. Rekha Nair',r:'Room 201',c:'rgba(249,115,22,.1)',b:'#F97316',tc2:'#FB923C'},{t:'11:30',e:'12:15',s:'Hindi',tc:'Ms. Anita Devi',r:'Room 203',c:'rgba(245,158,11,.1)',b:'#F59E0B',tc2:'#FCD34D'},{t:'12:15',e:'2:30',s:'Games / Sports',tc:'Coach Ramesh',r:'Ground',c:'rgba(34,197,94,.1)',b:'#22C55E',tc2:'#86EFAC'}],
+  Fri:[{t:'8:00',e:'8:45',s:'Mathematics',tc:'Ms. Priya Sharma',r:'Room 204',c:'rgba(99,102,241,.12)',b:'#6366F1',tc2:'#A78BFA'},{t:'8:45',e:'9:30',s:'English',tc:'Ms. Rekha Nair',r:'Room 201',c:'rgba(249,115,22,.1)',b:'#F97316',tc2:'#FB923C'},{t:'9:30',e:'10:00',s:'Break',tc:'—',r:'Canteen',c:'rgba(255,255,255,.04)',b:'#2E3650',tc2:'#5A6480',br:1},{t:'10:00',e:'10:45',s:'Science',tc:'Mr. Suresh Nair',r:'Lab 1',c:'rgba(16,185,129,.1)',b:'#10B981',tc2:'#34D399'},{t:'10:45',e:'11:30',s:'Computer Science',tc:'Mr. Vijay Rao',r:'Computer Lab',c:'rgba(14,165,233,.1)',b:'#0EA5E9',tc2:'#38BDF8'},{t:'11:30',e:'2:30',s:'Value Education',tc:'Ms. Kavitha',r:'Room 205',c:'rgba(139,92,246,.1)',b:'#8B5CF6',tc2:'#C084FC'}],
+  Sat:[{t:'8:00',e:'9:30',s:'Extra Classes (Math)',tc:'Ms. Priya Sharma',r:'Room 204',c:'rgba(99,102,241,.12)',b:'#6366F1',tc2:'#A78BFA'},{t:'9:30',e:'10:00',s:'Break',tc:'—',r:'Canteen',c:'rgba(255,255,255,.04)',b:'#2E3650',tc2:'#5A6480',br:1},{t:'10:00',e:'11:30',s:'Extra Classes (Science)',tc:'Mr. Suresh Nair',r:'Lab 1',c:'rgba(16,185,129,.1)',b:'#10B981',tc2:'#34D399'},{t:'11:30',e:'12:30',s:'Club Activities',tc:'Various',r:'Club Rooms',c:'rgba(236,72,153,.1)',b:'#EC4899',tc2:'#F9A8D4'}]
+};
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat'];
+let ttDay='Mon';
+function initTTTabs(){
+  const wrap=document.getElementById('tt-tabs');if(!wrap)return;
+  wrap.innerHTML=DAYS.map(d=>`<div class="tt-day-btn${d===ttDay?' act':''}" onclick="setTTDay(this,'${d}')">${d}</div>`).join('');
+}
+function setTTDay(el,d){document.querySelectorAll('.tt-day-btn').forEach(b=>b.classList.remove('act'));el.classList.add('act');ttDay=d;ttRender(d);}
+function ttRender(day){
+  const body=document.getElementById('tt-body');if(!body)return;
+  const ps=TT[day]||TT.Mon;const now=new Date();const nowMin=now.getHours()*60+now.getMinutes();
+  const isToday=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()]===day;
+  let html='';
+  ps.forEach(p=>{
+    const [sh,sm]=p.t.split(':').map(Number),[eh,em]=p.e.split(':').map(Number);
+    const sMin=sh*60+sm,eMin=eh*60+em;
+    const isNow=isToday&&nowMin>=sMin&&nowMin<eMin;
+    html+=`<div class="tt-period">
+      <div class="tt-time"><div class="tt-t1">${p.t}</div><div class="tt-t2">${p.e}</div></div>
+      <div class="tt-connector"><div class="tt-dot${isNow?' now':''}"></div></div>
+      <div class="tt-card" style="background:${p.c};border-left-color:${p.b};${isNow?`box-shadow:0 4px 20px ${p.b}33;`:''};${p.br?'opacity:.6':''}">
+        <div class="tt-subj">${p.s}${isNow?` <span style="font-size:9px;background:${p.b};color:#fff;padding:2px 7px;border-radius:6px;font-weight:700;margin-left:4px">NOW</span>`:''}</div>
+        <div class="tt-teacher" style="color:${p.tc2}">${p.tc}</div>
+        <div class="tt-room" style="color:${p.tc2}">📍 ${p.r}</div>
+      </div>
+    </div>`;
+  });
+  body.innerHTML=html+'<div style="height:20px"></div>';
+}
+function openTimetable(){initTTTabs();ttRender('Mon');openOvl('ovl-timetable');}
+
+/* ── HOMEWORK ── */
+const HW=[
+  {id:1,s:'Mathematics',sc:'#A78BFA',sb:'rgba(99,102,241,.15)',b:'#6366F1',t:'Algebra Worksheet',d:'Complete exercises 5.1–5.5 from Chapter 5. Show all working.',due:'Mar 13',st:'pending',pri:'high'},
+  {id:2,s:'Science',sc:'#34D399',sb:'rgba(16,185,129,.15)',b:'#10B981',t:'Lab Report: Photosynthesis',d:'2-page lab report on the photosynthesis experiment from March 8.',due:'Mar 14',st:'pending',pri:'medium'},
+  {id:3,s:'English',sc:'#FB923C',sb:'rgba(249,115,22,.15)',b:'#F97316',t:'Essay: My Favourite Season',d:'Write a 300-word descriptive essay on your favourite season.',due:'Mar 15',st:'pending',pri:'low'},
+  {id:4,s:'Social Studies',sc:'#F9A8D4',sb:'rgba(236,72,153,.15)',b:'#EC4899',t:'Map Work: Indian Rivers',d:'Mark and label all major Indian rivers on the outline map.',due:'Mar 10',st:'submitted',grade:'A'},
+  {id:5,s:'Hindi',sc:'#FCD34D',sb:'rgba(245,158,11,.15)',b:'#F59E0B',t:'निबंध: मेरा विद्यालय',d:'200-word essay on your school in Hindi.',due:'Mar 9',st:'submitted',grade:'A+'},
+  {id:6,s:'Computer Science',sc:'#38BDF8',sb:'rgba(14,165,233,.15)',b:'#0EA5E9',t:'Python Calculator',d:'Create a simple calculator using Python functions.',due:'Mar 8',st:'submitted',grade:'A+'}
+];
+const PRI={high:'🔴 High',medium:'🟡 Medium',low:'🟢 Low'};
+function hwTab(el,tab){document.querySelectorAll('.hw-tab-btn').forEach(b=>b.classList.remove('act'));el.classList.add('act');hwRender(tab);}
+function hwRender(tab){
+  const body=document.getElementById('hw-body');if(!body)return;
+  const items=tab==='all'?HW:HW.filter(h=>tab==='pending'?h.st==='pending':h.st==='submitted');
+  let html='';
+  items.forEach(h=>{
+    html+=`<div class="hw-item" style="border-left-color:${h.b}" onclick="pToast('${h.s}: ${h.t}')">
+      <div class="hw-top"><span class="hw-subj-chip" style="background:${h.sb};color:${h.sc}">${h.s}</span><span class="hw-due">Due: ${h.due}</span></div>
+      <div class="hw-title">${h.t}</div>
+      <div class="hw-desc">${h.d}</div>
+      <div class="hw-footer">
+        ${h.st==='pending'
+          ?`<span class="hw-status" style="background:rgba(245,158,11,.15);color:#FCD34D">⏳ Pending</span><span style="font-size:10px;color:var(--t3);font-weight:600">${PRI[h.pri]||''}</span>`
+          :`<span class="hw-status" style="background:rgba(16,185,129,.15);color:#34D399">✅ Submitted</span><span style="font-size:10px;font-weight:700;color:#A78BFA">Grade: ${h.grade}</span>`
+        }
+      </div>
+    </div>`;
+  });
+  if(!items.length)html='<div style="text-align:center;padding:40px 20px;color:var(--t3);font-weight:600;font-size:13px">No assignments here</div>';
+
+  // Build tabs HTML
+  const tabs=document.getElementById('hw-tabs');
+  if(tabs&&!tabs.innerHTML){
+    tabs.innerHTML=`<div class="hw-tab-btn act" onclick="hwTab(this,'pending')">Pending (3)</div><div class="hw-tab-btn" onclick="hwTab(this,'submitted')">Submitted</div><div class="hw-tab-btn" onclick="hwTab(this,'all')">All</div>`;
+  }
+  body.innerHTML=html+'<div style="height:20px"></div>';
+}
+function openHomework(){
+  const tabs=document.getElementById('hw-tabs');if(tabs)tabs.innerHTML='';
+  hwRender('pending');
+  const tabs2=document.getElementById('hw-tabs');
+  if(tabs2)tabs2.innerHTML=`<div class="hw-tab-btn act" onclick="hwTab(this,'pending')">Pending (3)</div><div class="hw-tab-btn" onclick="hwTab(this,'submitted')">Submitted</div><div class="hw-tab-btn" onclick="hwTab(this,'all')">All</div>`;
+  openOvl('ovl-homework');
+}
+
+/* ── EVENTS ── */
+const EVTS=[
+  {d:'12',m:'Mar',t:'Last Date: PTM Slot Booking',desc:'Book your preferred slot for the Parent-Teacher Meeting by today.',cat:'Admin',cb:'rgba(99,102,241,.15)',cc:'#A78BFA',g:'linear-gradient(135deg,#6366F1,#8B5CF6)'},
+  {d:'14',m:'Mar',t:'Holi Holiday',desc:'School closed. Classes resume Monday March 18.',cat:'Holiday',cb:'rgba(16,185,129,.15)',cc:'#34D399',g:'linear-gradient(135deg,#10B981,#34D399)'},
+  {d:'15',m:'Mar',t:'Parent–Teacher Meeting',desc:'9:00 AM–1:00 PM. All parents invited. Bring progress report.',cat:'PTM',cb:'rgba(139,92,246,.15)',cc:'#C084FC',g:'linear-gradient(135deg,#7C3AED,#EC4899)'},
+  {d:'20',m:'Mar',t:'Science Exhibition',desc:'Students display projects. 10 AM–3 PM, Lab Block. Parents welcome.',cat:'Event',cb:'rgba(249,115,22,.15)',cc:'#FB923C',g:'linear-gradient(135deg,#F97316,#F59E0B)'},
+  {d:'22',m:'Mar',t:'Inter-School Coding Competition',desc:'Arjun selected to represent school. Venue: DPS School. 9:00 AM.',cat:'Competition',cb:'rgba(14,165,233,.15)',cc:'#38BDF8',g:'linear-gradient(135deg,#0EA5E9,#6366F1)'},
+  {d:'25',m:'Mar',t:'Term 2 Exams Begin',desc:'First exam: Mathematics. Syllabus on portal.',cat:'Exam',cb:'rgba(245,158,11,.15)',cc:'#FCD34D',g:'linear-gradient(135deg,#B45309,#F59E0B)'},
+  {d:'31',m:'Mar',t:'Fee Payment Deadline',desc:'Last date without late charges. Online payment available 24/7.',cat:'Finance',cb:'rgba(244,63,94,.15)',cc:'#FB7185',g:'linear-gradient(135deg,#F43F5E,#EC4899)'},
+  {d:'5',m:'Apr',t:'Annual Sports Day',desc:'Full day event. Sports kit required. Parents welcome.',cat:'Sports',cb:'rgba(16,185,129,.15)',cc:'#34D399',g:'linear-gradient(135deg,#10B981,#0EA5E9)'},
+  {d:'15',m:'Apr',t:'Summer Vacation Begins',desc:'School closes. Reopens June 10, 2025.',cat:'Holiday',cb:'rgba(16,185,129,.15)',cc:'#34D399',g:'linear-gradient(135deg,#10B981,#34D399)'}
+];
+function eventsRender(){
+  const b=document.getElementById('events-body');if(!b)return;
+  b.innerHTML=EVTS.map(e=>`<div class="event-card" onclick="pToast('📅 ${e.t}')">
+    <div class="ev-date" style="background:${e.g}"><div class="ev-d">${e.d}</div><div class="ev-m">${e.m}</div></div>
+    <div class="ev-info"><div class="ev-title">${e.t}</div><div class="ev-sub">${e.desc.slice(0,55)}${e.desc.length>55?'…':''}</div></div>
+    <span class="ev-tag" style="background:${e.cb};color:${e.cc}">${e.cat}</span>
+  </div>`).join('')+'<div style="height:20px"></div>';
+}
+function openEvents(){eventsRender();openOvl('ovl-events');}
+
+/* ── PAYMENT ── */
+let selPM='upi';
+function selectPM(m){
+  selPM=m;['upi','card','netbank','emi'].forEach(id=>{
+    const el=document.getElementById('pm-'+id);if(!el)return;
+    el.classList.toggle('selected',id===m);
+    const c=el.querySelector('.pay-check');
+    if(c)c.innerHTML=id===m?`<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>`:''  ;
+  });
+}
+function processPayment(){
+  closeOvl('ovl-payfee');
+  pToast(`✅ ₹14,500 paid via ${selPM.toUpperCase()}!`);
+  setTimeout(()=>pToast('🎉 Receipt sent to your email'),2600);
+}
+
+/* ── MESSAGES ── */
+const THREADS={
+  priya:{name:'Ms. Priya Sharma',role:'Class Teacher · Mathematics',g:'linear-gradient(135deg,#6366F1,#8B5CF6)',av:'P',msgs:[
+    {from:'t',text:"Good morning! Just to let you know — Arjun did really well in today's Algebra test. Score: 24/25! 🎉",time:"Today 8:15 AM"},
+    {from:'t',text:"He's been consistently improving. I think he's ready for the upcoming term exam.",time:"Today 8:16 AM"},
+    {from:'p',text:"Thank you so much! We've been encouraging him to practice daily. 😊",time:"Today 8:30 AM"},
+    {from:'t',text:"That's great! Also, please remind him to bring the textbook tomorrow — we start Chapter 6.",time:"Today 8:45 AM"},
+  ]},
+  suresh:{name:'Mr. Suresh Nair',role:'Science Teacher',g:'linear-gradient(135deg,#10B981,#0EA5E9)',av:'S',msgs:[
+    {from:'t',text:"Hello! Reminder that Arjun needs to bring science project materials by Thursday.",time:"Yesterday 3:30 PM"},
+    {from:'t',text:"Materials needed: 2 lemon cells, copper wire, LED bulb.",time:"Yesterday 3:32 PM"},
+    {from:'p',text:"Thank you for the reminder! We'll get them today evening.",time:"Yesterday 5:00 PM"},
+  ]},
+  admin:{name:'School Administration',role:'Official Communication',g:'linear-gradient(135deg,#F97316,#F59E0B)',av:'🏫',msgs:[
+    {from:'t',text:"Dear Parent — the Parent-Teacher Meeting is scheduled for March 15, 2025.",time:"2 days ago 4:00 PM"},
+    {from:'t',text:"Book your preferred slot through the portal by March 12. Duration: 15 minutes.",time:"2 days ago 4:01 PM"},
+    {from:'p',text:"Thank you! I'll book the 10:30 AM slot.",time:"2 days ago 6:00 PM"},
+  ]},
+  vijay:{name:'Mr. Vijay Rao',role:'Computer Science',g:'linear-gradient(135deg,#0EA5E9,#6366F1)',av:'V',msgs:[
+    {from:'t',text:"Great news! Arjun has been selected for the Inter-School Coding Competition! 🏆",time:"3 days ago"},
+    {from:'t',text:"Competition date: March 22. Details to follow.",time:"3 days ago"},
+    {from:'p',text:"Wonderful! We're so proud. He'll definitely be there. Thank you!",time:"3 days ago"},
+  ]}
+};
+function renderThread(k){
+  const th=THREADS[k],b=document.getElementById('msg-ovl-body'),tl=document.getElementById('msg-ovl-title');
+  if(!th||!b)return;
+  if(tl)tl.textContent=th.name;
+  let html=`<div style="display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--gb);margin-bottom:16px">
+    <div style="width:44px;height:44px;border-radius:50%;background:${th.g};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;font-family:var(--font-d);flex-shrink:0">${th.av}</div>
+    <div><div style="font-family:var(--font-d);font-size:14px;font-weight:800;color:var(--t1)">${th.name}</div><div style="font-size:11px;color:var(--t3);font-weight:500">${th.role}</div></div>
+  </div>`;
+  th.msgs.forEach(m=>{
+    const isP=m.from==='p';
+    html+=`<div class="msg-bubble-row${isP?' parent':''}">
+      <div class="msg-bubble ${isP?'parent':'teacher'}">
+        ${m.text}
+        <div class="msg-bubble-time${isP?' parent':''}">${m.time}</div>
+      </div>
+    </div>`;
+  });
+  b.innerHTML=html+'<div style="height:8px"></div>';
+}
+function renderCompose(){
+  const b=document.getElementById('msg-ovl-body'),tl=document.getElementById('msg-ovl-title');
+  if(tl)tl.textContent='New Message';
+  if(!b)return;
+  b.innerHTML=`<div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">To</div>
+    <div style="background:var(--glass);border:1.5px solid var(--gb2);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="pToast('👩‍🏫 Select recipient...')"><span style="font-size:12px;color:var(--t3)">Select teacher or school office...</span><span style="color:var(--t4)">›</span></div></div>
+  <div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Subject</div>
+    <div style="background:var(--glass);border:1.5px solid var(--gb2);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--t3);cursor:text" onclick="pToast('📝 Enter subject...')">Message subject...</div></div>
+  <div><div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Message</div>
+    <div style="background:var(--glass);border:1.5px solid var(--gb2);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--t3);min-height:120px;cursor:text" onclick="pToast('✏️ Type your message...')">Type your message here...</div></div>`;
+}
+
+/* ── INIT ── */
+setTimeout(revealSr,150);
+document.getElementById('p-scr').addEventListener('scroll',revealSr);
+</script>
+</body>
+</html>

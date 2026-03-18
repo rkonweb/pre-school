@@ -39,8 +39,10 @@ export const StandardActionButton = React.forwardRef<HTMLButtonElement, Standard
         disabled,
         asChild,
         href,
+        loadingLabel: _loadingLabel,
+        size: _size,
         ...props
-    }, ref) => {
+    }: any, ref: any) => {
         const { can, isLoading: isPermsLoading } = useRolePermissions();
 
         const hasPermission = permission

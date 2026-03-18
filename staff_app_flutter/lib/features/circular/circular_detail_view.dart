@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'circular_model.dart';
+import '../../shared/components/top_nav_bell.dart';
 
 class CircularDetailView extends StatelessWidget {
   final CircularModel circular;
@@ -30,6 +31,10 @@ class CircularDetailView extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF140E28)),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: const [
+          TopNavBell(badgeText: '3'),
+          SizedBox(width: 8),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

@@ -241,6 +241,35 @@ export default function ProfileTab() {
                                 onChange={(v: any) => setStudent({ ...student, dateOfBirth: v })}
                                 error={formErrors.dateOfBirth}
                             />
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest px-1 text-zinc-400">Religion</label>
+                                <select
+                                    disabled={isReadOnly}
+                                    value={student.religion || ""}
+                                    onChange={e => setStudent({ ...student, religion: e.target.value })}
+                                    title="Religion"
+                                    className={cn(
+                                        "w-full bg-zinc-50 border-0 rounded-2xl py-4 px-6 font-bold transition-all disabled:opacity-75 disabled:cursor-not-allowed",
+                                        isReadOnly ? "text-zinc-500" : "text-zinc-900 border-2 bg-white border-zinc-100"
+                                    )}
+                                >
+                                    <option value="">Select</option>
+                                    <option value="Hinduism">Hinduism</option>
+                                    <option value="Islam">Islam</option>
+                                    <option value="Christianity">Christianity</option>
+                                    <option value="Sikhism">Sikhism</option>
+                                    <option value="Buddhism">Buddhism</option>
+                                    <option value="Jainism">Jainism</option>
+                                    <option value="Judaism">Judaism</option>
+                                    <option value="Zoroastrianism">Zoroastrianism</option>
+                                    <option value="Bahá'í Faith">Bahá'í Faith</option>
+                                    <option value="Shinto">Shinto</option>
+                                    <option value="Confucianism">Confucianism</option>
+                                    <option value="Taoism">Taoism</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Prefer not to say">Prefer not to say</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
