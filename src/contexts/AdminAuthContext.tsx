@@ -59,8 +59,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             
             // Feth current user's mobile to use for OTP/Biometric
             getCurrentUserAction().then(res => {
-                if (res.success && res.user && res.user.mobile) {
-                    setMobile(res.user.mobile);
+                if (res.success && res.data && (res.data as any).mobile) {
+                    setMobile((res.data as any).mobile);
                 } else {
                     toast.error("Could not fetch user mobile number.");
                     handleCancel();
@@ -155,7 +155,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         if (!mobile) return;
         setLoading(true);
         try {
-            const res = await verifyOtpAction(mobile, code, "school-login");
+            const res = await verifyOtpAction(mobile, code, "login");
             if (res.success) {
                 handleSuccess();
             } else {

@@ -20,7 +20,7 @@ const MEAL_OPTIONS = [
     { id: "DINNER", label: "Dinner", icon: Utensils },
 ];
 
-type Pkg = { id: string; name: string; description?: string; includedMeals: string; monthlyFee: number; yearlyFee: number; packageType: string; isActive: boolean };
+type Pkg = { id: string; name: string; description?: string | null; includedMeals: string; monthlyFee: number; yearlyFee: number; packageType: string; isActive: boolean };
 
 export default function CanteenPackagesClient({ slug, packages }: { slug: string; packages: Pkg[]; items: any[] }) {
     const { currency } = useSidebar();
@@ -140,7 +140,7 @@ export default function CanteenPackagesClient({ slug, packages }: { slug: string
                         <div><label className="text-sm font-medium text-slate-700 mb-1 block">Description</label>
                             <Textarea placeholder="Short description..." value={form.description} onChange={e => setForm(s => ({ ...s, description: e.target.value }))} rows={2} /></div>
                         <div><label className="text-sm font-medium text-slate-700 mb-1 block">Package Type *</label>
-                            <Select value={form.packageType} onValueChange={v => setForm(s => ({ ...s, packageType: v }))}>
+                            <Select value={form.packageType} onValueChange={(v: string) => setForm(s => ({ ...s, packageType: v }))}>
                                 <SelectTrigger title="Package Type"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="HOSTEL_PACKAGE">Hostel Package</SelectItem>

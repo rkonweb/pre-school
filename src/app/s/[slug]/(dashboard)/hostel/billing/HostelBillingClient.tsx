@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useSidebar } from '@/context/SidebarContext'
 
-export default function HostelBillingClient({ slug, allocations, recentInvoices }: { slug: string, allocations: any[], recentInvoices: any[] }) {
+export default function HostelBillingClient({ slug, allocations, recentInvoices, currency: _currency }: { slug: string, allocations: any[], recentInvoices: any[], currency?: string }) {
     const { currency } = useSidebar()
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
     const [description, setDescription] = useState('Monthly Hostel Fee')

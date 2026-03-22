@@ -1,12 +1,18 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/state/auth_state.dart';
 import '../../shared/components/all_modules_overlay.dart';
+import '../../shared/components/module_popup_shell.dart';
 import '../../shared/components/floating_shapes_background.dart';
 import '../../core/state/alert_state.dart';
 import '../../core/services/alert_engine.dart';
+import '../../core/services/biometric_service.dart';
+import '../auth/biometric_lock_screen.dart';
 import '../chat/teacher_chat_view.dart';
 import '../attendance/teacher_attendance_view.dart';
 import '../profile/teacher_profile_view.dart';
@@ -22,8 +28,49 @@ class AppShell extends ConsumerStatefulWidget {
   ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends ConsumerState<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver {
   int? _activeBottomSheetIndex;
+  BiometricService? _biometricSvc; // cached so we never call ref after dispose
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initBiometricState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> _initBiometricState() async {
+    _biometricSvc = ref.read(biometricServiceProvider);
+    final enabled = await _biometricSvc!.isEnabled();
+    if (mounted) ref.read(biometricEnabledProvider.notifier).state = enabled;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final svc = _biometricSvc;
+    if (svc == null) return; // not yet initialised
+    if (state == AppLifecycleState.resumed) {
+      _checkSessionOnResume(svc);
+    } else if (state == AppLifecycleState.paused ||
+               state == AppLifecycleState.inactive) {
+      svc.recordActivity();
+    }
+  }
+
+  Future<void> _checkSessionOnResume(BiometricService svc) async {
+    final enabled = await svc.isEnabled();
+    if (!enabled || !mounted) return;
+    final expired = await svc.isSessionExpired();
+    if (expired && mounted) {
+      ref.read(appLockedProvider.notifier).state = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,62 +100,72 @@ class _AppShellState extends ConsumerState<AppShell> {
 
     int currentIndex = _activeBottomSheetIndex ?? baseIndex;
 
-    return Scaffold(
-      key: AppShell.scaffoldKey,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Stack(
-        children: [
-          // Background layer and content
-          Positioned.fill(
-            child: FloatingShapesBackground(
-              child: Column(
-                children: [
-                  if (location != '/profile')
-                    // Custom iOS Status Bar Replacement
-                    _buildStatBar(context, ref, location),
-                  
-                  // Main content
-                  Expanded(
-                    child: widget.child,
-                  ),
-                  
-                  // Custom Bottom Nav Replacement
-                  _buildBotNav(context, currentIndex, ref),
-                ],
-              ),
-            ),
-          ),
-          
-          // Floating Action Button Overlay for "All Modules"
-          Positioned(
-            bottom: 30,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: () => showAllModulesMenu(context),
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: AppTheme.teacherTheme,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 20,
-                        offset: const Offset(0, 6),
+    return Listener(
+      // Record activity on any touch so the 15-min timeout resets
+      onPointerDown: (_) => ref.read(biometricServiceProvider).recordActivity(),
+      child: Consumer(
+        builder: (context, ref, _) {
+          final isLocked = ref.watch(appLockedProvider);
+          return Stack(
+            children: [
+              Scaffold(
+                key: AppShell.scaffoldKey,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                body: Stack(
+                  children: [
+                    // Background layer and content
+                    Positioned.fill(
+                      child: FloatingShapesBackground(
+                        child: Column(
+                          children: [
+                            if (location != '/profile')
+                              _buildStatBar(context, ref, location),
+                            Expanded(child: widget.child),
+                            _buildBotNav(context, currentIndex, ref),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.grid_view_rounded, color: Colors.white, size: 28),
-                  ),
+                    ),
+                    // ── Animated blur overlay (blurs dashboard before popup opens) ──
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: dashboardBlurNotifier,
+                          builder: (_, isBlurred, __) => TweenAnimationBuilder<double>(
+                            tween: Tween(end: isBlurred ? 14.0 : 0.0),
+                            duration: const Duration(milliseconds: 220),
+                            curve: Curves.easeOut,
+                            builder: (_, sigma, __) {
+                              if (sigma < 0.1) return const SizedBox.expand();
+                              return BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+                                child: Container(
+                                  color: Colors.black.withOpacity(0.18 * (sigma / 14.0)),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    // ── Animated All Modules FAB ──
+                    Positioned(
+                      bottom: 30, left: 0, right: 0,
+                      child: Center(
+                        child: _AllModulesFAB(
+                          onTap: () => showAllModulesMenu(context),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
-        ],
+              // Biometric Lock Screen overlay
+              if (isLocked)
+                const BiometricLockScreen(),
+            ],
+          );
+        },
       ),
     );
   }
@@ -421,21 +478,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   void _showBottomSheet(BuildContext context, Widget child, int index) {
     setState(() => _activeBottomSheetIndex = index);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 40),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          child: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: child,
-          ),
-        ),
-      ),
-    ).then((_) {
+    showModulePopup(context, child).then((_) {
       if (mounted && _activeBottomSheetIndex == index) {
         setState(() => _activeBottomSheetIndex = null);
       }
@@ -581,6 +624,111 @@ class _AppShellState extends ConsumerState<AppShell> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Animated All Modules FAB ─────────────────────────────────────────────────
+class _AllModulesFAB extends StatefulWidget {
+  final VoidCallback onTap;
+  const _AllModulesFAB({required this.onTap});
+
+  @override
+  State<_AllModulesFAB> createState() => _AllModulesFABState();
+}
+
+class _AllModulesFABState extends State<_AllModulesFAB>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+  late final Animation<double> _glowSize;
+  late final Animation<double> _glowOpacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    // Button shrinks to 0.87 then bounces back to 1.05 then settles at 1.0
+    _scale = TweenSequence([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.87).chain(CurveTween(curve: Curves.easeOut)), weight: 35),
+      TweenSequenceItem(tween: Tween(begin: 0.87, end: 1.08).chain(CurveTween(curve: Curves.easeOut)), weight: 40),
+      TweenSequenceItem(tween: Tween(begin: 1.08, end: 1.0).chain(CurveTween(curve: Curves.easeOut)), weight: 25),
+    ]).animate(_ctrl);
+
+    // Glow ring expands from 56→90px
+    _glowSize = Tween(begin: 56.0, end: 90.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
+    );
+
+    // Glow ring fades in then out
+    _glowOpacity = TweenSequence([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.55), weight: 30),
+      TweenSequenceItem(tween: Tween(begin: 0.55, end: 0.0), weight: 70),
+    ]).animate(_ctrl);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleTap() async {
+    dashboardBlurNotifier.value = true;  // blur immediately on tap — before animation
+    HapticFeedback.mediumImpact();
+    await _ctrl.forward(from: 0); // wait for full 300ms bounce animation
+    widget.onTap();               // open popup (blur is already set)
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (_, __) => SizedBox(
+          width: 90, height: 90,
+          child: Stack(alignment: Alignment.center, children: [
+            // ── Expanding glow ring ──
+            Opacity(
+              opacity: _glowOpacity.value,
+              child: Container(
+                width: _glowSize.value,
+                height: _glowSize.value,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular((_glowSize.value / 56) * 20),
+                  gradient: AppTheme.teacherTheme,
+                ),
+              ),
+            ),
+            // ── FAB ──
+            Transform.scale(
+              scale: _scale.value,
+              child: Container(
+                width: 56, height: 56,
+                decoration: BoxDecoration(
+                  gradient: AppTheme.teacherTheme,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.22),
+                      blurRadius: 20,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(Icons.grid_view_rounded, color: Colors.white, size: 28),
+                ),
+              ),
+            ),
+          ]),
         ),
       ),
     );

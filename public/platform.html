@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bodhiboard — Platform Features</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --indigo-50:  #EEF2FF;
+  --indigo-100: #E0E7FF;
+  --indigo-200: #C7D2FE;
+  --indigo-400: #818CF8;
+  --indigo-500: #6366F1;
+  --indigo-600: #4F46E5;
+  --indigo-700: #4338CA;
+  --indigo-900: #1E1B4B;
+  --slate-50:  #F8FAFC;
+  --slate-100: #F1F5F9;
+  --slate-200: #E2E8F0;
+  --slate-300: #CBD5E1;
+  --slate-400: #94A3B8;
+  --slate-500: #64748B;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-900: #0F172A;
+  --white: #FFFFFF;
+  --grad-main:  linear-gradient(135deg, #6366F1 0%, #4338CA 100%);
+  --grad-dark:  linear-gradient(160deg, #0F172A 0%, #1E1B4B 100%);
+  --shadow-xs:  0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+  --shadow-sm:  0 4px 12px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.04);
+  --shadow-md:  0 8px 28px rgba(15,23,42,0.10), 0 2px 8px rgba(15,23,42,0.05);
+  --shadow-lg:  0 20px 60px rgba(15,23,42,0.12), 0 4px 16px rgba(15,23,42,0.06);
+  --shadow-xl:  0 40px 100px rgba(15,23,42,0.14), 0 8px 32px rgba(15,23,42,0.08);
+  --shadow-indigo: 0 8px 32px rgba(99,102,241,0.25);
+  --shadow-indigo-lg: 0 16px 56px rgba(99,102,241,0.30);
+  --radius-sm: 10px;
+  --radius:    16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-sans:  'DM Sans', sans-serif;
+  --font-ui:    'Inter', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  background: var(--white);
+  color: var(--slate-900);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV (identical to home) ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 68px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 56px;
+  background: rgba(255,255,255,0.92); -webkit-backdrop-filter: blur(20px);
+ backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--slate-200);
+  transition: box-shadow 0.3s;
+}
+nav.scrolled { box-shadow: var(--shadow-sm); }
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-size: 17px; font-weight: 700; color: var(--slate-900); letter-spacing: -0.3px; }
+.logo-mark { width: 34px; height: 34px; border-radius: 9px; background: var(--grad-main); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(99,102,241,0.35); flex-shrink: 0; }
+.logo-name em { font-style: normal; color: var(--indigo-600); }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a { color: var(--slate-500); text-decoration: none; font-family: var(--font-ui); font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 8px; transition: color 0.15s, background 0.15s; }
+.nav-links a:hover { color: var(--slate-900); background: var(--slate-100); }
+.nav-links a.active { color: var(--indigo-600); background: var(--indigo-50); }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.btn-ghost-nav { font-family: var(--font-ui); font-size: 14px; font-weight: 500; color: var(--slate-600); background: none; border: none; cursor: pointer; padding: 8px 16px; border-radius: 8px; text-decoration: none; transition: color 0.15s, background 0.15s; }
+.btn-ghost-nav:hover { color: var(--slate-900); background: var(--slate-100); }
+.btn-cta-nav { font-family: var(--font-ui); font-size: 14px; font-weight: 600; color: var(--white); background: var(--grad-main); border: none; cursor: pointer; padding: 9px 20px; border-radius: 9px; text-decoration: none; transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s; box-shadow: var(--shadow-indigo); }
+.btn-cta-nav:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: var(--shadow-indigo-lg); }
+
+/* ── SHARED SECTION UTILS ── */
+section { position: relative; z-index: 1; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 56px; }
+.section-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--indigo-600); margin-bottom: 16px; }
+.eyebrow-line { width: 20px; height: 1.5px; background: var(--indigo-400); border-radius: 2px; }
+.section-title { font-family: var(--font-serif); font-size: clamp(34px, 4.5vw, 52px); font-weight: 400; letter-spacing: -0.5px; line-height: 1.1; color: var(--slate-900); }
+.section-title em { font-style: italic; color: var(--indigo-600); }
+.section-body { font-family: var(--font-ui); font-size: 16px; color: var(--slate-500); line-height: 1.7; max-width: 480px; margin-top: 14px; font-weight: 400; }
+
+/* ── PRODUCT HERO ── */
+.product-hero {
+  padding: 140px 56px 100px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--slate-50) 0%, var(--white) 100%);
+  position: relative; overflow: hidden;
+}
+.product-hero::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(99,102,241,0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+}
+.product-hero::after {
+  content: '';
+  position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-ui); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--indigo-600); background: var(--indigo-50); border: 1px solid var(--indigo-200);
+  padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.5s ease both;
+}
+.kicker-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--indigo-500); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(0.8);} }
+.hero-h1 {
+  font-family: var(--font-serif); font-size: clamp(44px, 6vw, 74px);
+  font-weight: 400; line-height: 1.08; letter-spacing: -1px;
+  color: var(--slate-900); max-width: 780px; margin: 0 auto;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.55s 0.08s ease both;
+}
+.hero-h1 em { font-style: italic; color: var(--indigo-600); }
+.hero-sub {
+  margin-top: 20px; font-family: var(--font-ui); font-size: 17px; font-weight: 400;
+  color: var(--slate-500); max-width: 520px; line-height: 1.7; margin-left: auto; margin-right: auto;
+  position: relative; z-index: 1; animation: fadeUp 0.55s 0.16s ease both;
+}
+.hero-actions {
+  display: flex; gap: 12px; margin-top: 36px; justify-content: center; flex-wrap: wrap;
+  position: relative; z-index: 1; animation: fadeUp 0.55s 0.24s ease both;
+}
+.btn-primary { font-family: var(--font-ui); font-size: 15px; font-weight: 600; color: var(--white); background: var(--grad-main); border: none; cursor: pointer; padding: 13px 28px; border-radius: 10px; text-decoration: none; transition: all 0.2s ease; box-shadow: var(--shadow-indigo); display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-indigo-lg); opacity: 0.93; }
+.btn-secondary { font-family: var(--font-ui); font-size: 15px; font-weight: 500; color: var(--slate-700); background: var(--white); border: 1.5px solid var(--slate-200); cursor: pointer; padding: 12px 22px; border-radius: 10px; text-decoration: none; transition: all 0.2s ease; box-shadow: var(--shadow-xs); display: inline-flex; align-items: center; gap: 8px; }
+.btn-secondary:hover { border-color: var(--indigo-300); color: var(--indigo-600); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+
+/* Tabs bar */
+.module-tabs {
+  display: flex; justify-content: center; gap: 4px;
+  margin-top: 52px; flex-wrap: wrap;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.55s 0.32s ease both;
+}
+.module-tab {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+  padding: 9px 18px; border-radius: 10px; cursor: pointer;
+  color: var(--slate-500); background: var(--white);
+  border: 1.5px solid var(--slate-200); transition: all 0.2s ease;
+  text-decoration: none;
+}
+.module-tab:hover { color: var(--indigo-600); border-color: var(--indigo-200); background: var(--indigo-50); }
+.module-tab.active { color: var(--indigo-700); background: var(--indigo-50); border-color: var(--indigo-300); box-shadow: var(--shadow-indigo); }
+.module-tab svg { flex-shrink: 0; }
+
+/* ── MODULE SECTIONS ── */
+.module-sec {
+  padding: 100px 0;
+  position: relative;
+}
+.module-sec:nth-child(even) { background: var(--slate-50); }
+.module-sec:nth-child(odd)  { background: var(--white); }
+
+/* Alternating layout */
+.module-layout {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+}
+.module-layout.reverse { direction: rtl; }
+.module-layout.reverse > * { direction: ltr; }
+
+/* Module label */
+.module-number {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--slate-400); margin-bottom: 8px;
+}
+.module-icon-wrap {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--indigo-50), var(--indigo-100));
+  border: 1px solid var(--indigo-200); margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+.module-title { font-family: var(--font-serif); font-size: clamp(28px, 3.5vw, 40px); font-weight: 400; letter-spacing: -0.4px; line-height: 1.12; color: var(--slate-900); margin-bottom: 16px; }
+.module-title em { font-style: italic; color: var(--indigo-600); }
+.module-desc { font-family: var(--font-ui); font-size: 15px; color: var(--slate-500); line-height: 1.75; font-weight: 400; }
+
+/* Feature list inside module */
+.module-features { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; }
+.mf-item { display: flex; align-items: flex-start; gap: 12px; }
+.mf-icon {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100);
+  display: flex; align-items: center; justify-content: center; margin-top: 1px;
+}
+.mf-text { font-family: var(--font-ui); font-size: 14px; color: var(--slate-600); font-weight: 500; line-height: 1.5; }
+.mf-text strong { color: var(--slate-800); font-weight: 600; display: block; margin-bottom: 1px; }
+
+/* Module screen mock */
+.module-screen {
+  background: var(--white); border-radius: var(--radius-lg);
+  border: 1px solid var(--slate-200); box-shadow: var(--shadow-xl);
+  overflow: hidden; position: relative;
+  animation: cardFloat 6s ease-in-out infinite;
+}
+.module-screen.alt { animation-delay: -3s; }
+@keyframes cardFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+
+.screen-top {
+  display: flex; align-items: center; gap: 6px; padding: 11px 16px;
+  background: var(--slate-50); border-bottom: 1px solid var(--slate-200);
+}
+.sdot { width: 10px; height: 10px; border-radius: 50%; }
+.sr { background: #FF5F57; } .sy { background: #FEBC2E; } .sg { background: #28C840; }
+.screen-label { font-family: var(--font-ui); font-size: 11px; color: var(--slate-400); margin: 0 auto; }
+.screen-body { padding: 20px; }
+
+/* Stat chips row */
+.stat-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.stat-chip {
+  flex: 1; min-width: 100px; background: var(--slate-50);
+  border: 1px solid var(--slate-200); border-radius: 11px; padding: 12px 14px;
+}
+.stat-chip-label { font-family: var(--font-ui); font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate-400); margin-bottom: 4px; }
+.stat-chip-val { font-family: var(--font-sans); font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--slate-900); }
+.stat-chip-val.accent { color: var(--indigo-600); }
+.stat-chip-sub { font-family: var(--font-ui); font-size: 10px; color: #16A34A; font-weight: 600; margin-top: 2px; }
+
+/* Pipeline rows */
+.pipeline { display: flex; flex-direction: column; gap: 8px; }
+.pipeline-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--slate-50); border-radius: 9px; border: 1px solid var(--slate-200); transition: all 0.15s; }
+.pipeline-row:hover { background: var(--indigo-50); border-color: var(--indigo-200); }
+.pipeline-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.pipeline-name { font-family: var(--font-ui); font-size: 12px; font-weight: 600; color: var(--slate-700); flex: 1; }
+.pipeline-school { font-family: var(--font-ui); font-size: 11px; color: var(--slate-400); }
+.pipeline-badge { font-family: var(--font-ui); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+.pb-green  { background: #DCFCE7; color: #16A34A; }
+.pb-yellow { background: #FEF9C3; color: #CA8A04; }
+.pb-blue   { background: var(--indigo-50); color: var(--indigo-700); }
+.pb-gray   { background: var(--slate-100); color: var(--slate-500); }
+
+/* Lesson card mock */
+.lesson-list { display: flex; flex-direction: column; gap: 8px; }
+.lesson-row {
+  display: flex; align-items: center; gap: 12px; padding: 11px 13px;
+  background: var(--slate-50); border-radius: 10px; border: 1px solid var(--slate-200);
+  transition: all 0.15s;
+}
+.lesson-row:hover { border-color: var(--indigo-200); background: var(--indigo-50); }
+.lesson-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--indigo-50); border: 1px solid var(--indigo-100); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.lesson-title { font-family: var(--font-ui); font-size: 12px; font-weight: 600; color: var(--slate-700); }
+.lesson-meta { font-family: var(--font-ui); font-size: 10px; color: var(--slate-400); margin-top: 1px; }
+.lesson-progress { margin-left: auto; display: flex; align-items: center; gap: 7px; }
+.prog-track { width: 48px; height: 4px; background: var(--slate-200); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--indigo-500); border-radius: 2px; }
+.prog-pct { font-family: var(--font-ui); font-size: 10px; font-weight: 600; color: var(--slate-500); }
+
+/* Diary card mock */
+.diary-list { display: flex; flex-direction: column; gap: 8px; }
+.diary-card {
+  background: var(--slate-50); border-radius: 11px; border: 1px solid var(--slate-200); padding: 13px 14px;
+  transition: all 0.15s;
+}
+.diary-card:hover { border-color: var(--indigo-200); background: var(--indigo-50); }
+.diary-header { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.diary-avatar { width: 28px; height: 28px; border-radius: 8px; background: var(--grad-main); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; font-family: var(--font-ui); }
+.diary-child { font-family: var(--font-ui); font-size: 12px; font-weight: 600; color: var(--slate-700); }
+.diary-class { font-family: var(--font-ui); font-size: 10px; color: var(--slate-400); }
+.diary-time { font-family: var(--font-ui); font-size: 10px; color: var(--slate-400); margin-left: auto; }
+.diary-text { font-family: var(--font-ui); font-size: 12px; color: var(--slate-600); line-height: 1.5; }
+.diary-tag { display: inline-block; margin-top: 6px; font-family: var(--font-ui); font-size: 10px; font-weight: 600; color: var(--indigo-600); background: var(--indigo-50); border: 1px solid var(--indigo-100); padding: 2px 7px; border-radius: 4px; }
+
+/* Staff training cards */
+.training-list { display: flex; flex-direction: column; gap: 8px; }
+.training-row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 13px;
+  background: var(--slate-50); border-radius: 10px; border: 1px solid var(--slate-200);
+  transition: all 0.15s;
+}
+.training-row:hover { border-color: var(--indigo-200); background: var(--indigo-50); }
+.training-avatar { width: 32px; height: 32px; border-radius: 9px; background: var(--grad-main); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; font-family: var(--font-ui); }
+.training-name { font-family: var(--font-ui); font-size: 12px; font-weight: 600; color: var(--slate-700); }
+.training-role { font-family: var(--font-ui); font-size: 10px; color: var(--slate-400); }
+.training-progress { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.tp-track { width: 60px; height: 5px; background: var(--slate-200); border-radius: 3px; overflow: hidden; }
+.tp-fill { height: 100%; border-radius: 3px; background: var(--grad-main); }
+
+/* Billing rows */
+.billing-list { display: flex; flex-direction: column; gap: 8px; }
+.billing-row {
+  display: flex; align-items: center; gap: 12px; padding: 11px 14px;
+  background: var(--slate-50); border-radius: 10px; border: 1px solid var(--slate-200);
+  transition: all 0.15s;
+}
+.billing-row:hover { border-color: var(--indigo-200); }
+.billing-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--indigo-50); border: 1px solid var(--indigo-100); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.billing-name { font-family: var(--font-ui); font-size: 12px; font-weight: 600; color: var(--slate-700); }
+.billing-date { font-family: var(--font-ui); font-size: 10px; color: var(--slate-400); }
+.billing-amount { font-family: var(--font-sans); font-size: 13px; font-weight: 700; color: var(--slate-800); margin-left: auto; }
+
+/* Analytics chart mock */
+.analytics-bars { display: flex; align-items: flex-end; gap: 6px; height: 70px; margin-bottom: 10px; }
+.abar { flex: 1; border-radius: 5px 5px 0 0; background: var(--indigo-100); transition: all 0.3s; }
+.abar.highlight { background: var(--grad-main); }
+.abar:hover { background: var(--indigo-400); }
+.analytics-labels { display: flex; gap: 6px; }
+.alabel { flex: 1; text-align: center; font-family: var(--font-ui); font-size: 9px; color: var(--slate-400); font-weight: 500; }
+
+/* ── INTEGRATIONS / APPS SECTION ── */
+.apps-sec { padding: 100px 0; background: var(--white); }
+.apps-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: 56px; }
+.app-card {
+  background: var(--white); border: 1.5px solid var(--slate-200); border-radius: var(--radius);
+  padding: 28px 22px; cursor: default;
+  transition: all 0.25s cubic-bezier(0.34,1.3,0.64,1);
+  box-shadow: var(--shadow-xs); text-align: center;
+}
+.app-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--indigo-200); }
+.app-icon-box {
+  width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--indigo-50), var(--indigo-100));
+  border: 1px solid var(--indigo-200);
+  box-shadow: 0 2px 8px rgba(99,102,241,0.12);
+  transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1);
+}
+.app-card:hover .app-icon-box { transform: translateY(-4px) rotate(-3deg); background: linear-gradient(135deg, var(--indigo-100), var(--indigo-50)); box-shadow: 0 8px 20px rgba(99,102,241,0.2); }
+.app-name { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--slate-800); margin-bottom: 6px; }
+.app-desc { font-family: var(--font-ui); font-size: 13px; color: var(--slate-500); line-height: 1.55; }
+.app-label { display: inline-block; margin-top: 12px; font-family: var(--font-ui); font-size: 10px; font-weight: 600; color: var(--indigo-600); background: var(--indigo-50); border: 1px solid var(--indigo-100); padding: 3px 8px; border-radius: 5px; }
+
+/* ── METRICS BAND ── */
+.metrics-band {
+  padding: 72px 0; background: linear-gradient(135deg, var(--slate-900) 0%, var(--indigo-900) 100%);
+  position: relative; overflow: hidden;
+}
+.metrics-band::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image: radial-gradient(circle, rgba(129,140,248,0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.metrics-inner { max-width: 1100px; margin: 0 auto; padding: 0 56px; display: grid; grid-template-columns: repeat(4,1fr); gap: 0; }
+.metric-item { text-align: center; padding: 32px 24px; position: relative; }
+.metric-item + .metric-item::before { content:''; position:absolute; left:0; top:25%; height:50%; width:1px; background: rgba(255,255,255,0.1); }
+.metric-num { font-family: var(--font-sans); font-size: 48px; font-weight: 700; letter-spacing: -2px; color: var(--white); display: block; margin-bottom: 6px; }
+.metric-label { font-family: var(--font-ui); font-size: 14px; color: rgba(255,255,255,0.5); font-weight: 500; }
+.metric-sub { font-family: var(--font-ui); font-size: 11px; color: rgba(129,140,248,0.7); font-weight: 600; margin-top: 3px; }
+
+/* ── FAQ ── */
+.faq-sec { padding: 100px 0; background: var(--slate-50); }
+.faq-header { text-align: center; margin-bottom: 56px; }
+.faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.faq-item {
+  background: var(--white); border: 1px solid var(--slate-200); border-radius: var(--radius);
+  padding: 24px 26px; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-xs);
+}
+.faq-item:hover { border-color: var(--indigo-200); box-shadow: var(--shadow-md); }
+.faq-q { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--slate-800); margin-bottom: 10px; display: flex; align-items: flex-start; gap: 12px; }
+.faq-q-icon { width: 22px; height: 22px; border-radius: 6px; background: var(--indigo-50); border: 1px solid var(--indigo-100); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.faq-a { font-family: var(--font-ui); font-size: 13px; color: var(--slate-500); line-height: 1.65; padding-left: 34px; }
+
+/* ── CTA (identical to home) ── */
+.cta-sec { padding: 100px 56px; background: var(--white); }
+.cta-inner { max-width: 740px; margin: 0 auto; background: var(--grad-dark); border-radius: var(--radius-xl); padding: 72px 60px; text-align: center; position: relative; overflow: hidden; box-shadow: var(--shadow-xl); }
+.cta-inner::before { content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:500px; height:300px; border-radius:50%; background: radial-gradient(circle, rgba(99,102,241,0.3), transparent 70%); pointer-events:none; }
+.cta-inner::after { content:''; position:absolute; top:0; left:0; right:0; height:1px; background: linear-gradient(90deg, transparent, rgba(129,140,248,0.6), transparent); }
+.cta-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--indigo-400); margin-bottom: 20px; }
+.cta-title { font-family: var(--font-serif); font-size: clamp(32px, 4vw, 48px); font-weight: 400; color: var(--white); letter-spacing: -0.5px; line-height: 1.1; margin-bottom: 18px; }
+.cta-title em { font-style: italic; color: var(--indigo-400); }
+.cta-sub { font-family: var(--font-ui); font-size: 15px; color: rgba(255,255,255,0.5); line-height: 1.7; max-width: 400px; margin: 0 auto 34px; }
+.cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 26px; }
+.btn-cta-white { font-family: var(--font-ui); font-size: 15px; font-weight: 600; cursor: pointer; color: var(--slate-900); background: var(--white); border: none; padding: 13px 28px; border-radius: 10px; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: inline-flex; align-items: center; gap: 8px; }
+.btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(0,0,0,0.2); }
+.btn-cta-ghost { font-family: var(--font-ui); font-size: 15px; font-weight: 500; cursor: pointer; color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.15); padding: 12px 22px; border-radius: 10px; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-cta-ghost:hover { background: rgba(255,255,255,0.14); color: var(--white); transform: translateY(-1px); }
+.cta-trust { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+.ctrust { display: flex; align-items: center; gap: 6px; font-family: var(--font-ui); font-size: 12px; color: rgba(255,255,255,0.35); font-weight: 500; }
+
+/* ── FOOTER ── */
+footer { background: var(--slate-900); padding: 56px 56px 36px; }
+.footer-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+.footer-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; margin-bottom: 12px; }
+.footer-logo-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--grad-main); display: flex; align-items: center; justify-content: center; }
+.footer-logo-name { font-family: var(--font-sans); font-size: 16px; font-weight: 700; color: var(--white); }
+.footer-desc { font-family: var(--font-ui); font-size: 13px; color: rgba(255,255,255,0.35); line-height: 1.65; max-width: 220px; }
+.footer-col-title { font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+.footer-links { display: flex; flex-direction: column; gap: 9px; }
+.footer-links a { font-family: var(--font-ui); font-size: 13px; color: rgba(255,255,255,0.35); text-decoration: none; font-weight: 400; transition: color 0.15s; }
+.footer-links a:hover { color: rgba(255,255,255,0.7); }
+.footer-bottom { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.07); font-family: var(--font-ui); font-size: 12px; color: rgba(255,255,255,0.25); flex-wrap: wrap; gap: 10px; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 960px) {
+  nav { padding: 0 24px; } .nav-links { display: none; }
+  .product-hero { padding: 110px 24px 72px; }
+  .wrap { padding: 0 24px; }
+  .module-layout { grid-template-columns: 1fr; gap: 40px; }
+  .module-layout.reverse { direction: ltr; }
+  .apps-grid { grid-template-columns: repeat(2,1fr); }
+  .metrics-inner { grid-template-columns: repeat(2,1fr); padding: 0 24px; }
+  .faq-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .cta-sec { padding: 80px 24px; }
+  .cta-inner { padding: 48px 28px; }
+  footer { padding: 40px 24px 28px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="/" class="nav-logo">
+    <div class="logo-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    </div>
+    <span class="logo-name">Bodhi<em>board</em></span>
+  </a>
+  <div class="nav-links">
+    <a href="/" >Home</a>
+    <a href="/platform" class="active">Platform</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/about">About</a>
+    <a href="/blog">Blog</a>
+  </div>
+  <div class="nav-right">
+    <a href="/login" class="btn-ghost-nav">Sign in</a>
+    <a href="/signup" class="btn-cta-nav">Start free trial</a>
+  </div>
+</nav>
+
+<!-- PRODUCT HERO -->
+<section class="product-hero">
+  <div class="hero-kicker">
+    <div class="kicker-dot"></div>
+    The Complete School Operating System
+  </div>
+  <h1 class="hero-h1">
+    Six modules.<br><em>One unified platform.</em>
+  </h1>
+  <p class="hero-sub">
+    Every part of your school — admissions, curriculum, parents, billing, staff and growth — connected, automated and elegant.
+  </p>
+  <div class="hero-actions">
+    <a href="/signup" class="btn-primary">
+      Get started free
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+    <a href="/demo" class="btn-secondary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+      Watch 2-min demo
+    </a>
+  </div>
+
+  <!-- Module jump tabs -->
+  <div class="module-tabs">
+    <a href="#admissions" class="module-tab active">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Admissions
+    </a>
+    <a href="#curriculum" class="module-tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Curriculum
+    </a>
+    <a href="#parents" class="module-tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Parents
+    </a>
+    <a href="#staff" class="module-tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      Staff
+    </a>
+    <a href="#billing" class="module-tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Billing
+    </a>
+    <a href="#growth" class="module-tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Growth
+    </a>
+  </div>
+</section>
+
+<!-- ── MODULE 1: ADMISSIONS ── -->
+<section class="module-sec" id="admissions">
+  <div class="wrap">
+    <div class="module-layout reveal">
+      <div>
+        <div class="module-number">Module 01</div>
+        <div class="module-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h2 class="module-title">Admissions that <em>never miss a lead</em></h2>
+        <p class="module-desc">Every inquiry from every channel — phone, WhatsApp, website — lands in one intelligent pipeline. AI scores each lead, triggers personalised follow-ups and books tours automatically.</p>
+        <div class="module-features">
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+            <div class="mf-text"><strong>Multi-channel lead capture</strong>Phone, WhatsApp, web form — all in one place, instantly.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div class="mf-text"><strong>AI-powered follow-up</strong>Personalised messages sent at the right time. Zero manual effort.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+            <div class="mf-text"><strong>School tour scheduling</strong>Book, confirm and track visits directly inside the dashboard.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <div class="mf-text"><strong>Conversion analytics</strong>See exactly where leads drop off and fix the leaks.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="module-screen">
+          <div class="screen-top">
+            <div class="sdot sr"></div><div class="sdot sy"></div><div class="sdot sg"></div>
+            <div class="screen-label">Admissions Pipeline</div>
+          </div>
+          <div class="screen-body">
+            <div class="stat-chips">
+              <div class="stat-chip"><div class="stat-chip-label">Open Leads</div><div class="stat-chip-val accent">67</div><div class="stat-chip-sub">↑ 8 this week</div></div>
+              <div class="stat-chip"><div class="stat-chip-label">Conversion</div><div class="stat-chip-val">42%</div><div class="stat-chip-sub">↑ 2× vs last term</div></div>
+              <div class="stat-chip"><div class="stat-chip-label">Tours Booked</div><div class="stat-chip-val">18</div><div class="stat-chip-sub">↑ 5 this week</div></div>
+            </div>
+            <div class="pipeline">
+              <div class="pipeline-row"><div class="pipeline-dot" style="background:#6366F1"></div><div class="pipeline-name">Priya Sharma</div><div class="pipeline-school">Nursery · LKG</div><div class="pipeline-badge pb-green">Enrolled</div></div>
+              <div class="pipeline-row"><div class="pipeline-dot" style="background:#F59E0B"></div><div class="pipeline-name">Arjun Mehta</div><div class="pipeline-school">Nursery · UKG</div><div class="pipeline-badge pb-yellow">Tour Scheduled</div></div>
+              <div class="pipeline-row"><div class="pipeline-dot" style="background:#6366F1"></div><div class="pipeline-name">Kavya Nair</div><div class="pipeline-school">Preschool · PP1</div><div class="pipeline-badge pb-blue">Follow-up Sent</div></div>
+              <div class="pipeline-row"><div class="pipeline-dot" style="background:#94A3B8"></div><div class="pipeline-name">Rohan Gupta</div><div class="pipeline-school">Nursery · LKG</div><div class="pipeline-badge pb-gray">New Inquiry</div></div>
+              <div class="pipeline-row"><div class="pipeline-dot" style="background:#F59E0B"></div><div class="pipeline-name">Ananya Das</div><div class="pipeline-school">Preschool · PP2</div><div class="pipeline-badge pb-yellow">Tour Scheduled</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MODULE 2: CURRICULUM ── -->
+<section class="module-sec" id="curriculum">
+  <div class="wrap">
+    <div class="module-layout reverse reveal">
+      <div>
+        <div class="module-number">Module 02</div>
+        <div class="module-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <h2 class="module-title">Curriculum <em>ready on day one</em></h2>
+        <p class="module-desc">Expert-designed lesson plans, learning outcomes, and progress tracking — built in. No more hunting through drives. Launch confidently in your first week.</p>
+        <div class="module-features">
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="mf-text"><strong>Ready-to-teach lesson plans</strong>Age-appropriate, educator-designed — just open and teach.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+            <div class="mf-text"><strong>Learning outcome tracking</strong>Track every child's developmental milestones with clarity.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <div class="mf-text"><strong>Multi-branch curriculum sync</strong>One change updates all branches instantly. No drift.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="mf-text"><strong>Weekly planner</strong>Auto-generate weekly plans from annual curriculum in seconds.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="module-screen alt">
+          <div class="screen-top">
+            <div class="sdot sr"></div><div class="sdot sy"></div><div class="sdot sg"></div>
+            <div class="screen-label">Curriculum — Week 12</div>
+          </div>
+          <div class="screen-body">
+            <div class="lesson-list">
+              <div class="lesson-row">
+                <div class="lesson-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/></svg></div>
+                <div><div class="lesson-title">Nature & Seasons</div><div class="lesson-meta">PP1 · Mon–Wed · 45 min</div></div>
+                <div class="lesson-progress"><div class="prog-track"><div class="prog-fill" style="width:100%"></div></div><span class="prog-pct">Done</span></div>
+              </div>
+              <div class="lesson-row">
+                <div class="lesson-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+                <div><div class="lesson-title">Numbers 1–20</div><div class="lesson-meta">Nursery · Tue–Thu · 30 min</div></div>
+                <div class="lesson-progress"><div class="prog-track"><div class="prog-fill" style="width:72%"></div></div><span class="prog-pct">72%</span></div>
+              </div>
+              <div class="lesson-row">
+                <div class="lesson-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+                <div><div class="lesson-title">Phonics — Set B</div><div class="lesson-meta">LKG · All days · 20 min</div></div>
+                <div class="lesson-progress"><div class="prog-track"><div class="prog-fill" style="width:55%"></div></div><span class="prog-pct">55%</span></div>
+              </div>
+              <div class="lesson-row">
+                <div class="lesson-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></div>
+                <div><div class="lesson-title">Storytelling Hour</div><div class="lesson-meta">UKG · Fri · 60 min</div></div>
+                <div class="lesson-progress"><div class="prog-track"><div class="prog-fill" style="width:0%"></div></div><span class="prog-pct">Due</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MODULE 3: PARENTS ── -->
+<section class="module-sec" id="parents">
+  <div class="wrap">
+    <div class="module-layout reveal">
+      <div>
+        <div class="module-number">Module 03</div>
+        <div class="module-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>
+        </div>
+        <h2 class="module-title">Parents who feel <em>completely informed</em></h2>
+        <p class="module-desc">Daily diary updates, real-time attendance, progress reports, and announcements — all in a beautiful parent app. They stop calling because they already know.</p>
+        <div class="module-features">
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+            <div class="mf-text"><strong>Digital daily diary</strong>Teachers publish in seconds. Parents receive instantly. No paper.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+            <div class="mf-text"><strong>Live attendance</strong>Mark attendance on the app. Parents notified within seconds.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <div class="mf-text"><strong>Progress reports</strong>Term reports auto-generated from tracked milestones.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg></div>
+            <div class="mf-text"><strong>Smart announcements</strong>Holiday notices, events, circulars — one tap to all parents.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="module-screen">
+          <div class="screen-top">
+            <div class="sdot sr"></div><div class="sdot sy"></div><div class="sdot sg"></div>
+            <div class="screen-label">Parent App — Today's Diary</div>
+          </div>
+          <div class="screen-body">
+            <div class="diary-list">
+              <div class="diary-card">
+                <div class="diary-header">
+                  <div class="diary-avatar">A</div>
+                  <div><div class="diary-child">Aarav Sharma</div><div class="diary-class">Nursery — Section A</div></div>
+                  <div class="diary-time">9:42 AM</div>
+                </div>
+                <div class="diary-text">Aarav was excited about our nature walk today! He identified 4 different leaves and helped his friends label them. Excellent participation. 🌿</div>
+                <span class="diary-tag">Nature & Seasons</span>
+              </div>
+              <div class="diary-card">
+                <div class="diary-header">
+                  <div class="diary-avatar" style="background:linear-gradient(135deg,#4338CA,#6366F1)">M</div>
+                  <div><div class="diary-child">Mia Patel</div><div class="diary-class">LKG — Section B</div></div>
+                  <div class="diary-time">11:15 AM</div>
+                </div>
+                <div class="diary-text">Mia completed her phonics workbook independently today — a first! She's showing great confidence with Set B sounds. Well done! 📚</div>
+                <span class="diary-tag">Phonics — Set B</span>
+              </div>
+              <div class="diary-card">
+                <div class="diary-header">
+                  <div class="diary-avatar" style="background:linear-gradient(135deg,#1E1B4B,#4338CA)">R</div>
+                  <div><div class="diary-child">Rohan Gupta</div><div class="diary-class">PP1 — Section A</div></div>
+                  <div class="diary-time">1:30 PM</div>
+                </div>
+                <div class="diary-text">Rohan had a great afternoon session on numbers! He can now count to 20 without assistance and loves the counting games. 🌟</div>
+                <span class="diary-tag">Numbers 1–20</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MODULE 4: STAFF ── -->
+<section class="module-sec" id="staff">
+  <div class="wrap">
+    <div class="module-layout reverse reveal">
+      <div>
+        <div class="module-number">Module 04</div>
+        <div class="module-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        </div>
+        <h2 class="module-title">Staff who are <em>trained from day one</em></h2>
+        <p class="module-desc">Structured onboarding for teachers, nannies, drivers and support staff. SOPs, training modules and performance tracking — ensuring consistent quality across every person and every branch.</p>
+        <div class="module-features">
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="mf-text"><strong>Role-based onboarding</strong>Teachers, drivers, nannies — each get their own structured path.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="mf-text"><strong>Digital SOPs</strong>Standard operating procedures accessible from any device, always current.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <div class="mf-text"><strong>Performance tracking</strong>Track completion rates and identify training gaps before they matter.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="module-screen alt">
+          <div class="screen-top">
+            <div class="sdot sr"></div><div class="sdot sy"></div><div class="sdot sg"></div>
+            <div class="screen-label">Staff Induction Progress</div>
+          </div>
+          <div class="screen-body">
+            <div class="stat-chips" style="margin-bottom:14px;">
+              <div class="stat-chip"><div class="stat-chip-label">Staff Members</div><div class="stat-chip-val accent">24</div></div>
+              <div class="stat-chip"><div class="stat-chip-label">Avg. Completion</div><div class="stat-chip-val">78%</div><div class="stat-chip-sub">↑ 12% this month</div></div>
+            </div>
+            <div class="training-list">
+              <div class="training-row"><div class="training-avatar">PT</div><div><div class="training-name">Priya Thomas</div><div class="training-role">Head Teacher · Class A</div></div><div class="training-progress"><div class="tp-track"><div class="tp-fill" style="width:100%"></div></div><span style="font-family:var(--font-ui);font-size:10px;font-weight:700;color:#16A34A;">Done</span></div></div>
+              <div class="training-row"><div class="training-avatar" style="background:linear-gradient(135deg,#4338CA,#6366F1)">SK</div><div><div class="training-name">Suresh Kumar</div><div class="training-role">Driver · Route 3</div></div><div class="training-progress"><div class="tp-track"><div class="tp-fill" style="width:85%"></div></div><span style="font-family:var(--font-ui);font-size:10px;font-weight:600;color:var(--slate-500);">85%</span></div></div>
+              <div class="training-row"><div class="training-avatar" style="background:linear-gradient(135deg,#1E1B4B,#4338CA)">MR</div><div><div class="training-name">Meena Raj</div><div class="training-role">Nanny · Nursery</div></div><div class="training-progress"><div class="tp-track"><div class="tp-fill" style="width:60%"></div></div><span style="font-family:var(--font-ui);font-size:10px;font-weight:600;color:var(--slate-500);">60%</span></div></div>
+              <div class="training-row"><div class="training-avatar" style="background:linear-gradient(135deg,#6366F1,#818CF8)">AV</div><div><div class="training-name">Anita Verma</div><div class="training-role">Asst. Teacher · LKG</div></div><div class="training-progress"><div class="tp-track"><div class="tp-fill" style="width:40%"></div></div><span style="font-family:var(--font-ui);font-size:10px;font-weight:600;color:var(--slate-500);">40%</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MODULE 5: BILLING ── -->
+<section class="module-sec" id="billing">
+  <div class="wrap">
+    <div class="module-layout reveal">
+      <div>
+        <div class="module-number">Module 05</div>
+        <div class="module-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="7" y1="15" x2="7.01" y2="15"/><line x1="11" y1="15" x2="13" y2="15"/></svg>
+        </div>
+        <h2 class="module-title">Billing that <em>runs itself</em></h2>
+        <p class="module-desc">Fee collection, automated reminders, receipts, timetables, attendance, transport and inventory — fully connected. No more spreadsheets, no more chasing payments manually.</p>
+        <div class="module-features">
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+            <div class="mf-text"><strong>Automated fee collection</strong>UPI, bank transfer, or cash — all tracked in one place.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg></div>
+            <div class="mf-text"><strong>Smart reminders</strong>Automated WhatsApp & email reminders at the right time.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <div class="mf-text"><strong>Instant receipts</strong>Auto-generated receipts sent to parents the moment payment lands.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div class="mf-text"><strong>Timetable & attendance</strong>Connected to billing — track, report and reconcile in one click.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="module-screen">
+          <div class="screen-top">
+            <div class="sdot sr"></div><div class="sdot sy"></div><div class="sdot sg"></div>
+            <div class="screen-label">Fee Management — March 2026</div>
+          </div>
+          <div class="screen-body">
+            <div class="stat-chips">
+              <div class="stat-chip"><div class="stat-chip-label">Collected</div><div class="stat-chip-val accent">₹4.2L</div><div class="stat-chip-sub">94% of target</div></div>
+              <div class="stat-chip"><div class="stat-chip-label">Pending</div><div class="stat-chip-val">₹26K</div><div class="stat-chip-sub">8 families</div></div>
+            </div>
+            <div class="billing-list">
+              <div class="billing-row"><div class="billing-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="billing-name">Sharma Family</div><div class="billing-date">Paid · 2 Mar</div></div><div class="billing-amount" style="color:#16A34A">₹8,500</div></div>
+              <div class="billing-row"><div class="billing-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="billing-name">Mehta Family</div><div class="billing-date">Paid · 5 Mar</div></div><div class="billing-amount" style="color:#16A34A">₹8,500</div></div>
+              <div class="billing-row"><div class="billing-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div><div class="billing-name">Nair Family</div><div class="billing-date">Reminder sent · Due 15 Mar</div></div><div class="billing-amount" style="color:#F59E0B">₹8,500</div></div>
+              <div class="billing-row"><div class="billing-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="billing-name">Gupta Family</div><div class="billing-date">Paid · 8 Mar</div></div><div class="billing-amount" style="color:#16A34A">₹8,500</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MODULE 6: GROWTH ── -->
+<section class="module-sec" id="growth">
+  <div class="wrap">
+    <div class="module-layout reverse reveal">
+      <div>
+        <div class="module-number">Module 06</div>
+        <div class="module-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h2 class="module-title">Growth that's <em>data-driven, not guesswork</em></h2>
+        <p class="module-desc">WhatsApp campaigns, smart templates, conversion analytics and school performance dashboards — everything you need to grow enrolments with confidence.</p>
+        <div class="module-features">
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div class="mf-text"><strong>WhatsApp automation</strong>Campaign templates, bulk sends and conversation tracking built in.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <div class="mf-text"><strong>Enrolment analytics</strong>Weekly, monthly and term-level enrolment trends at a glance.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+            <div class="mf-text"><strong>Conversion funnel</strong>See where inquiries drop off and optimise your admission process.</div>
+          </div>
+          <div class="mf-item">
+            <div class="mf-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="mf-text"><strong>Performance benchmarks</strong>Compare your school's growth against term and annual goals.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="module-screen alt">
+          <div class="screen-top">
+            <div class="sdot sr"></div><div class="sdot sy"></div><div class="sdot sg"></div>
+            <div class="screen-label">Growth Dashboard — Q1 2026</div>
+          </div>
+          <div class="screen-body">
+            <div class="stat-chips">
+              <div class="stat-chip"><div class="stat-chip-label">Inquiries</div><div class="stat-chip-val accent">142</div><div class="stat-chip-sub">↑ 28% vs last qtr</div></div>
+              <div class="stat-chip"><div class="stat-chip-label">Enrolled</div><div class="stat-chip-val">60</div><div class="stat-chip-sub">42% conversion</div></div>
+            </div>
+            <div style="background:var(--slate-50);border:1px solid var(--slate-200);border-radius:11px;padding:14px;">
+              <div style="font-family:var(--font-ui);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate-400);margin-bottom:12px;">Enrolments — Last 6 Months</div>
+              <div class="analytics-bars">
+                <div class="abar" style="height:40%"></div>
+                <div class="abar" style="height:55%"></div>
+                <div class="abar" style="height:48%"></div>
+                <div class="abar" style="height:65%"></div>
+                <div class="abar" style="height:72%"></div>
+                <div class="abar highlight" style="height:88%"></div>
+              </div>
+              <div class="analytics-labels">
+                <div class="alabel">Oct</div><div class="alabel">Nov</div><div class="alabel">Dec</div>
+                <div class="alabel">Jan</div><div class="alabel">Feb</div><div class="alabel">Mar</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── APPS / EXPERIENCES ── -->
+<section class="apps-sec">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:0;" class="reveal">
+      <div class="section-eyebrow" style="justify-content:center;"><div class="eyebrow-line"></div>Experiences<div class="eyebrow-line"></div></div>
+      <h2 class="section-title">Four apps. <em>One connected system.</em></h2>
+      <p class="section-body" style="margin: 14px auto 0; text-align:center;">Every stakeholder gets their own purpose-built interface. All synced in real time.</p>
+    </div>
+    <div class="apps-grid">
+      <div class="app-card reveal">
+        <div class="app-icon-box">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="app-name">School Dashboard</div>
+        <div class="app-desc">Full command centre for principals and admins. Every metric, module and report in one place.</div>
+        <div class="app-label">Web · Desktop</div>
+      </div>
+      <div class="app-card reveal">
+        <div class="app-icon-box">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="app-name">Teacher App</div>
+        <div class="app-desc">Attendance, daily diary, class updates and task management — purpose-built for educators.</div>
+        <div class="app-label">iOS · Android</div>
+      </div>
+      <div class="app-card reveal">
+        <div class="app-icon-box">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="app-name">Parent App</div>
+        <div class="app-desc">Daily diary, attendance, progress and announcements. Parents informed. Calls reduced by 90%.</div>
+        <div class="app-label">iOS · Android</div>
+      </div>
+      <div class="app-card reveal">
+        <div class="app-icon-box">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        </div>
+        <div class="app-name">Driver App</div>
+        <div class="app-desc">Route tracking, attendance check-ins, and parent notifications. Full transport accountability.</div>
+        <div class="app-label">iOS · Android</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── METRICS BAND ── -->
+<div class="metrics-band">
+  <div class="metrics-inner">
+    <div class="metric-item reveal">
+      <span class="metric-num" data-count="500">0+</span>
+      <div class="metric-label">Schools onboarded</div>
+      <div class="metric-sub">Across India</div>
+    </div>
+    <div class="metric-item reveal">
+      <span class="metric-num" data-count="95">0%</span>
+      <div class="metric-label">Admin time saved</div>
+      <div class="metric-sub">On average</div>
+    </div>
+    <div class="metric-item reveal">
+      <span class="metric-num" data-count="90">0%</span>
+      <div class="metric-label">Fewer parent calls</div>
+      <div class="metric-sub">After going live</div>
+    </div>
+    <div class="metric-item reveal">
+      <span class="metric-num" data-count="4.9">0★</span>
+      <div class="metric-label">Average rating</div>
+      <div class="metric-sub">From school principals</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FAQ ── -->
+<section class="faq-sec">
+  <div class="wrap">
+    <div class="faq-header reveal">
+      <div class="section-eyebrow" style="justify-content:center;"><div class="eyebrow-line"></div>Common Questions<div class="eyebrow-line"></div></div>
+      <h2 class="section-title">Everything you want to know</h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item reveal">
+        <div class="faq-q"><div class="faq-q-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>How long does setup take?</div>
+        <div class="faq-a">Most schools are fully live within 5 minutes of signing up. Your dashboard is pre-configured with sensible defaults. Our onboarding team helps with data migration and staff training at no extra cost.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q"><div class="faq-q-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>Can I use only some modules?</div>
+        <div class="faq-a">Yes. Every module is independently usable. Most schools start with Admissions and Parents, then add Billing and Curriculum as they grow. You only pay for what you use.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q"><div class="faq-q-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>Does it work for multiple branches?</div>
+        <div class="faq-a">Absolutely. Bodhiboard is built for chains and franchises. You get one central dashboard to manage all branches, standardised curriculum, and consolidated reporting — with branch-level granularity when you need it.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q"><div class="faq-q-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>Is my school's data secure?</div>
+        <div class="faq-a">Yes. All data is encrypted at rest and in transit. We're hosted on AWS with 99.9% uptime SLA. Your data is never shared or used to train models. You own it entirely.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q"><div class="faq-q-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>What does the free trial include?</div>
+        <div class="faq-a">Your 30-day trial includes full access to all modules with no student limit. No credit card required. At the end, you choose which plan fits — or simply stop with no charge.</div>
+      </div>
+      <div class="faq-item reveal">
+        <div class="faq-q"><div class="faq-q-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>What kind of support is available?</div>
+        <div class="faq-a">Every plan includes email and WhatsApp support. Growth and Institution plans include a dedicated success manager. We also have a Help Centre, video library and weekly live Q&A sessions.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-sec">
+  <div class="cta-inner reveal">
+    <div class="cta-eyebrow">✦ &nbsp;Start today</div>
+    <h2 class="cta-title">See the platform <em>in action</em></h2>
+    <p class="cta-sub">30-day free trial. No credit card. Full access to every module from day one.</p>
+    <div class="cta-buttons">
+      <a href="/signup" class="btn-cta-white">
+        Start free trial
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="/demo" class="btn-cta-ghost">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+        Watch demo
+      </a>
+    </div>
+    <div class="cta-trust">
+      <div class="ctrust">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        No credit card
+      </div>
+      <div class="ctrust">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Live in 5 minutes
+      </div>
+      <div class="ctrust">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Cancel any time
+      </div>
+      <div class="ctrust">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Built in India 🇮🇳
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="/" class="footer-logo">
+        <div class="footer-logo-mark">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <span class="footer-logo-name">Bodhiboard</span>
+      </a>
+      <div class="footer-desc">The complete operating system for modern schools. Built by educators, for educators. Made in India.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Product</div>
+      <div class="footer-links"><a href="/product">Features</a><a href="/pricing">Pricing</a><a href="/curriculum">Curriculum</a><a href="/solutions">Solutions</a></div>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <div class="footer-links"><a href="/about">About</a><a href="/careers">Careers</a><a href="/blog">Blog</a><a href="/press">Press</a></div>
+    </div>
+    <div>
+      <div class="footer-col-title">Resources</div>
+      <div class="footer-links"><a href="/docs">Docs</a><a href="/help">Help Centre</a><a href="/cases">Case Studies</a><a href="/webinars">Webinars</a></div>
+    </div>
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <div class="footer-links"><a href="mailto:hello@bodhiboard.in">hello@bodhiboard.in</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/gdpr">GDPR</a></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Bodhiboard by Little Chanakyas. All rights reserved.</div>
+    <div>Secure · Award-Winning · Cloud-Based</div>
+  </div>
+</footer>
+
+<script>
+// Nav scroll
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 30);
+});
+
+// Active tab on scroll
+const sections = ['admissions','curriculum','parents','staff','billing','growth'];
+const tabs = document.querySelectorAll('.module-tab');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 200) current = id;
+  });
+  tabs.forEach(tab => {
+    tab.classList.toggle('active', tab.getAttribute('href') === '#' + current);
+  });
+});
+
+// Reveal on scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (i % 3 * 0.07) + 's';
+  obs.observe(el);
+});
+
+// Count-up
+const cObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    const raw = parseFloat(el.dataset.count);
+    const suffix = el.textContent.replace(/[\d.]/g, '');
+    const isDecimal = raw % 1 !== 0;
+    let start = null; const dur = 1600;
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const step = ts => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / dur, 1);
+      el.textContent = (isDecimal ? (raw * ease(p)).toFixed(1) : Math.floor(raw * ease(p))) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+    cObs.unobserve(el);
+  });
+}, { threshold: 0.6 });
+document.querySelectorAll('[data-count]').forEach(el => cObs.observe(el));
+
+// Grid stagger
+document.querySelectorAll('.apps-grid > *, .faq-grid > *').forEach((c, i) => {
+  c.style.transitionDelay = (i * 0.07) + 's';
+  c.classList.add('reveal');
+  obs.observe(c);
+});
+</script>
+</body>
+</html>

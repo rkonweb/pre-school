@@ -42,7 +42,6 @@ export function AddStudentForm({ onCancel, slug }: { onCancel: () => void, slug:
             await createStudentAction(slug, {
                 firstName,
                 lastName,
-                age: parseInt(form.age) || 0,
                 gender: form.gender,
                 classroomId: form.classroomId,
                 parentName: form.parentName,

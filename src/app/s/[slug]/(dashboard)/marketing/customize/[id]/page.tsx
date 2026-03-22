@@ -131,9 +131,9 @@ export default function MarketingCustomizerPage() {
                     }
                 } else {
                     // Fallback to defaults
-                    if (z.type === 'SCHOOL_NAME') initialValues[z.id] = sRes.school.name;
-                    else if (z.type === 'CONTACT_INFO') initialValues[z.id] = sRes.school.phone || sRes.school.email || "";
-                    else if (z.type === 'WEBSITE') initialValues[z.id] = sRes.school.website || "";
+                    if (z.type === 'SCHOOL_NAME') initialValues[z.id] = sRes.school?.name ?? '';
+                    else if (z.type === 'CONTACT_INFO') initialValues[z.id] = sRes.school?.phone || sRes.school?.email || "";
+                    else if (z.type === 'WEBSITE') initialValues[z.id] = sRes.school?.website || "";
                     else if (z.mockContent) {
                         initialValues[z.id] = z.mockContent;
                     }

@@ -36,11 +36,11 @@ import {
   Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { Footer } from "./Footer";
 
 export function ProductPage() {
-  const navigate = useNavigate();
+  const navigate = useRouter();
 
   const coreModules = [
     {
@@ -233,7 +233,7 @@ export function ProductPage() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button
-                    onClick={() => navigate("/signup")}
+                    onClick={() => navigate.push("/signup")}
                     size="lg"
                     className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-900 hover:from-amber-500 hover:to-yellow-600 px-10 py-7 text-lg font-bold rounded-full shadow-2xl shadow-amber-500/30"
                   >
@@ -506,7 +506,7 @@ export function ProductPage() {
               whileTap={{ scale: 0.95 }}
             >
               <Button
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate.push("/signup")}
                 size="lg"
                 className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white hover:from-teal-600 hover:to-cyan-700 px-10 py-7 text-lg font-bold rounded-full shadow-2xl shadow-teal-500/30"
               >
@@ -782,7 +782,7 @@ export function ProductPage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Button
-                  onClick={() => navigate("/signup")}
+                  onClick={() => navigate.push("/signup")}
                   size="lg"
                   className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-900 hover:from-amber-500 hover:to-yellow-600 px-12 py-8 text-xl font-bold rounded-full shadow-2xl shadow-amber-500/30"
                 >

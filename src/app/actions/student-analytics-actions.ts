@@ -3,6 +3,60 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserAction } from "./session-actions";
 
+export interface SubjectPerformance {
+    subject: string;
+    marks: number;
+    maxMarks: number;
+    percentage: number;
+    grade: string;
+    status: string;
+}
+
+export interface ActivitySummary {
+    id: string;
+    type: string;
+    title: string;
+    date: string;
+    description?: string;
+}
+
+export interface AIInsight {
+    id: string;
+    type: "strength" | "weakness" | "improvement" | "concern" | "achievement";
+    title: string;
+    description: string;
+    category?: string;
+    severity?: "low" | "medium" | "high";
+}
+
+export interface AttendanceStats {
+    totalDays: number;
+    present: number;
+    absent: number;
+    late: number;
+    sick?: number;
+    percentage: number;
+}
+
+export interface HealthMetrics {
+    latest?: {
+        height?: number;
+        weight?: number;
+        bmi?: number;
+        bloodGroup?: string;
+        pulseRate?: number;
+        bloodPressure?: string;
+        recordedAt: Date | string;
+        [key: string]: any;
+    } | null;
+    growthTrend?: any[];
+    alerts?: string[];
+    // legacy flat fields
+    height?: number;
+    weight?: number;
+    bmi?: number;
+}
+
 export interface BulkSmartAnalytics {
     [studentId: string]: any; // Same structure as SmartAnalytics
 }
@@ -16,7 +70,7 @@ export interface StudentAnalytics {
         avatar: string | null;
     };
     academic: {
-        subjects: any[];
+        subjects: SubjectPerformance[];
         overallPercentage: number;
         overallGrade: string;
         trend: "IMPROVING" | "DECLINING" | "STABLE" | "INSUFFICIENT_DATA";
@@ -39,9 +93,8 @@ export async function getStudentAnalyticsAction(studentId: string, academicYearI
 
         if (!student) return { success: false, error: "Student not found" };
 
-        const user = await prisma.user.findFirst({
-            where: { student: { id: student.id } }
-        });
+        // Note: User-Student link not directly available, default avatar to null
+        const userAvatar: string | null = null;
 
         const classroomName = student.classroomId ?
             (await prisma.classroom.findUnique({ where: { id: student.classroomId } }))?.name || "N/A" : "N/A";
@@ -80,15 +133,22 @@ export async function getStudentAnalyticsAction(studentId: string, academicYearI
                 name: `${student.firstName} ${student.lastName}`,
                 grade: classroomName,
                 admissionNumber: student.admissionNumber || null,
-                avatar: user?.avatar || null,
+                avatar: userAvatar,
             },
             academic: {
-                subjects: processed.academics.subjectPerformance,
+                subjects: processed.academics.subjectPerformance.map((sp: any) => ({
+                    subject: sp.subject,
+                    marks: Math.round(sp.average),
+                    maxMarks: 100,
+                    percentage: sp.average,
+                    grade: sp.grade,
+                    status: sp.average >= 40 ? "PASSED" : "FAILED"
+                } as SubjectPerformance)),
                 overallPercentage: processed.academics.overallPercentage,
                 overallGrade: calculateGrade(processed.academics.overallPercentage),
                 trend: processed.academics.trend,
                 consistencyScore: processed.academics.subjectPerformance.length > 0
-                    ? processed.academics.subjectPerformance.reduce((acc, sub) => acc + sub.average, 0) / processed.academics.subjectPerformance.length
+                    ? processed.academics.subjectPerformance.reduce((acc: number, sub: any) => acc + sub.average, 0) / processed.academics.subjectPerformance.length
                     : 0
             },
             attendance: processed.attendance,

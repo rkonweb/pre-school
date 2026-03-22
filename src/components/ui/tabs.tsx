@@ -64,7 +64,7 @@ const TabsTrigger = React.forwardRef<
 });
 TabsTrigger.displayName = "TabsTrigger";
 
-const TabsContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+const TabsContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & { value?: string }>(
     ({ className, style, ...props }, ref) => (
         <div
             ref={ref}

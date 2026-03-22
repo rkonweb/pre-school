@@ -345,7 +345,7 @@ export function FeeStructureManager({ slug, initialData, classrooms, academicYea
                                             <div className="md:col-span-3 space-y-1">
                                                 <label className="text-[10px] font-bold text-zinc-400 uppercase">Amount</label>
                                                 <div className="relative">
-                                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">{getCurrencySymbol(currency)}</span>
+                                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">{getCurrencySymbol(currency ?? "USD")}</span>
                                                     <input type="number" value={comp.amount} onChange={e => updateComponent(idx, 'amount', e.target.value)} className="w-full bg-white h-12 rounded-xl pl-8 pr-4 font-bold text-sm outline-none focus:ring-2 focus:ring-brand" />
                                                 </div>
                                             </div>
@@ -359,7 +359,7 @@ export function FeeStructureManager({ slug, initialData, classrooms, academicYea
                                         <div className="md:col-span-3 space-y-1">
                                             <label className="text-[10px] font-bold text-zinc-400 uppercase">Amount</label>
                                             <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">{getCurrencySymbol(currency)}</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">{getCurrencySymbol(currency ?? "USD")}</span>
                                                 <input type="number" value={comp.amount} onChange={e => updateComponent(idx, 'amount', e.target.value)} className="w-full bg-white h-12 rounded-xl pl-8 pr-4 font-bold text-sm outline-none focus:ring-2 focus:ring-brand" />
                                             </div>
                                         </div>
@@ -391,7 +391,7 @@ export function FeeStructureManager({ slug, initialData, classrooms, academicYea
                                                         <div className="md:col-span-3 space-y-1">
                                                             <label className="text-[9px] font-bold text-zinc-400 uppercase">Amount</label>
                                                             <div className="relative">
-                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-[10px]">{getCurrencySymbol(currency)}</span>
+                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-[10px]">{getCurrencySymbol(currency ?? "USD")}</span>
                                                                 <input type="number" placeholder="0.00" value={term.amount} onChange={e => updateComponentTerm(idx, tIdx, 'amount', e.target.value)} className="w-full bg-zinc-50 border-none rounded-lg h-8 pl-5 text-xs font-bold focus:ring-1 focus:ring-brand" />
                                                             </div>
                                                         </div>
@@ -472,7 +472,7 @@ export function FeeStructureManager({ slug, initialData, classrooms, academicYea
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Total Fees</p>
                                         <p className="text-2xl font-black text-zinc-900">
-                                            {getCurrencySymbol(currency)}{totalAmount.toLocaleString()}
+                                        {getCurrencySymbol(currency ?? "USD")}{totalAmount.toLocaleString()}
                                         </p>
                                     </div>
                                     <div className="flex flex-wrap gap-1">

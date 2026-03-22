@@ -616,6 +616,42 @@ model Otp {
   createdAt DateTime @default(now())
 }
 
+model SchoolApplication {
+  id             String   @id @default(cuid())
+  // Contact
+  phoneCode      String   @default("+91")
+  mobile         String
+  email          String
+  firstName      String
+  lastName       String
+  designation    String
+  // School
+  schoolName     String
+  schoolTagline  String?
+  schoolType     String   // new-founder | existing | chain | educator
+  schoolCategory String   // playschool | preschool | k12 etc
+  board          String   // cbse | icse | ib | state | other
+  schoolSize     String   // 1-30 | 31-75 | 76-150 | 151-300 | 300+
+  city           String
+  state          String
+  pincode        String
+  yearEstd       String
+  website        String?
+  schoolPhone    String?
+  schoolAbout    String
+  features       String   @default("[]") // JSON array
+  referralSource String?
+  // Status
+  status         String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  adminNotes     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
+  @@index([mobile])
+}
+
+
 model SubscriptionPlan {
   id                   String         @id @default(cuid())
   name                 String
@@ -794,6 +830,7 @@ model SystemSettings {
   backupEnabled      Boolean  @default(true)
   backupFrequency    String   @default("DAILY")
   maintenanceMode    Boolean  @default(false)
+  trialDays          Int      @default(30)
   updatedAt          DateTime @updatedAt
   integrationsConfig String?  @default("{}")
 }
@@ -961,6 +998,8 @@ model Conversation {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   participantType String    @default("BOTH")
+  parentTypingAt  DateTime?
+  staffTypingAt   DateTime?
   student         Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   messages        Message[]
 

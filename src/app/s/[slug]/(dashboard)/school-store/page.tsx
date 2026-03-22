@@ -96,7 +96,7 @@ const BS: Record<string, any> = { sm: { p: "7px 14px", fs: 12, r: 9 }, md: { p: 
 
 function Btn({ variant = "primary", size = "md", icon: Icon, iconPos = "left", loading, disabled, children, onClick, fullWidth }: any) {
     const [ripples, setRipples] = useState<any[]>([]);
-    const ref = useRef<any>();
+    const ref = useRef<any>(null);
     const v = BV[variant] || BV.primary;
     const s = BS[size];
     const dis = disabled || loading;

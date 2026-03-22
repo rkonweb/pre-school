@@ -1,12 +1,41 @@
-import { BlogListingClient } from "@/components/blog/BlogListingClient";
-import { getAllBlogPostsAction } from "@/app/actions/cms-actions";
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import Script from 'next/script';
+import type { Metadata } from 'next';
 
-export const metadata = {
-    title: "Blog | Bodhi Board",
-    description: "Insights, ideas, and best practices to build and run better schools from the Bodhi Board team.",
+export const metadata: Metadata = {
+    title: 'Blog — Bodhiboard School Management Insights',
+    description: 'Insights, ideas and best practices to build and run better schools. Written by educators, for educators.',
 };
 
-export default async function BlogListingPage() {
-    const posts = await getAllBlogPostsAction();
-    return <BlogListingClient initialPosts={posts} />;
+export default function BlogPage() {
+    const html = readFileSync(join(process.cwd(), 'public/blog.html'), 'utf-8');
+
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    const rawBody = bodyMatch ? bodyMatch[1] : '';
+    const bodyContent = rawBody.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+
+    const styleBlocks = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)]
+        .map(m => m[1])
+        .join('\n');
+
+    const scriptBlocks = [...html.matchAll(/<script(?![^>]*src)[^>]*>([\s\S]*?)<\/script>/gi)]
+        .map(m => m[1])
+        .join('\n');
+
+    return (
+        <>
+            <link
+                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+                rel="stylesheet"
+            />
+            <style dangerouslySetInnerHTML={{ __html: styleBlocks }} />
+            <div dangerouslySetInnerHTML={{ __html: bodyContent }} />
+            <Script
+                id="blog-inline-script"
+                strategy="afterInteractive"
+                dangerouslySetInnerHTML={{ __html: scriptBlocks }}
+            />
+        </>
+    );
 }

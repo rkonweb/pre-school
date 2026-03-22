@@ -178,7 +178,7 @@ export default function SimpleDocumentUploader({ pageId }: SimpleDocumentUploade
 
                         {uploading && (
                             <div className="w-full max-w-xs space-y-2">
-                                <Progress value={uploadProgress} className="h-2 bg-zinc-100" indicatorClassName="bg-brand" />
+                                <Progress value={uploadProgress} className="h-2 bg-zinc-100" indicatorColor="var(--brand-color)" />
                                 <p className="text-xs text-zinc-500 font-medium">{Math.round(uploadProgress)}% uploaded</p>
                             </div>
                         )}

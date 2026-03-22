@@ -329,7 +329,7 @@ export default function HealthRecordManager({ studentId, slug }: Props) {
                                                 onChange={e => setFormData({ ...formData, height: e.target.value })}
                                                 className="flex-1 min-w-[120px]"
                                             />
-                                            <Select value={formData.heightUnit} onValueChange={v => setFormData({ ...formData, heightUnit: v })}>
+                                            <Select value={formData.heightUnit} onValueChange={(v: string) => setFormData({ ...formData, heightUnit: v })}>
                                                 <SelectTrigger className="w-24">
                                                     <SelectValue />
                                                 </SelectTrigger>
@@ -353,7 +353,7 @@ export default function HealthRecordManager({ studentId, slug }: Props) {
                                                 onChange={e => setFormData({ ...formData, weight: e.target.value })}
                                                 className="flex-1 min-w-[120px]"
                                             />
-                                            <Select value={formData.weightUnit} onValueChange={v => setFormData({ ...formData, weightUnit: v })}>
+                                            <Select value={formData.weightUnit} onValueChange={(v: string) => setFormData({ ...formData, weightUnit: v })}>
                                                 <SelectTrigger className="w-24">
                                                     <SelectValue />
                                                 </SelectTrigger>
@@ -384,7 +384,7 @@ export default function HealthRecordManager({ studentId, slug }: Props) {
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-slate-600 uppercase">Blood Group</label>
-                                        <Select value={formData.bloodGroup} onValueChange={v => setFormData({ ...formData, bloodGroup: v })}>
+                                        <Select value={formData.bloodGroup} onValueChange={(v: string) => setFormData({ ...formData, bloodGroup: v })}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select blood group" />
                                             </SelectTrigger>
@@ -462,7 +462,7 @@ export default function HealthRecordManager({ studentId, slug }: Props) {
 
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-slate-600 uppercase">Hearing</label>
-                                        <Select value={formData.hearing} onValueChange={v => setFormData({ ...formData, hearing: v })}>
+                                        <Select value={formData.hearing} onValueChange={(v: string) => setFormData({ ...formData, hearing: v })}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select status" />
                                             </SelectTrigger>
@@ -478,7 +478,7 @@ export default function HealthRecordManager({ studentId, slug }: Props) {
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-slate-600 uppercase">Dental Status</label>
-                                        <Select value={formData.dental} onValueChange={v => setFormData({ ...formData, dental: v })}>
+                                        <Select value={formData.dental} onValueChange={(v: string) => setFormData({ ...formData, dental: v })}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select status" />
                                             </SelectTrigger>

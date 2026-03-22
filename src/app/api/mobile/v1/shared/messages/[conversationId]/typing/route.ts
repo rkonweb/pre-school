@@ -4,7 +4,7 @@ import { getMobileAuth, verifyToken } from "@/lib/auth-mobile";
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request, { params }: { params: { conversationId: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ conversationId: string }> }) {
     try {
         const authHeader = req.headers.get("Authorization") ?? "";
         const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -27,7 +27,7 @@ export async function POST(req: Request, { params }: { params: { conversationId:
             isParent = true;
         }
 
-        const { conversationId } = params;
+        const { conversationId } = await params;
         
         if (isParent) {
              await prisma.conversation.update({

@@ -36,10 +36,11 @@ interface SalaryRevision {
 
 interface SalaryPackageSectionProps {
     staffId: string;
+    schoolSlug: string;
     salaryRevisions: SalaryRevision[];
 }
 
-export function SalaryPackageSection({ staffId, salaryRevisions: initialRevisions }: SalaryPackageSectionProps) {
+export function SalaryPackageSection({ staffId, schoolSlug, salaryRevisions: initialRevisions }: SalaryPackageSectionProps) {
     const { confirm: confirmDialog } = useConfirm();
     const [revisions, setRevisions] = useState<SalaryRevision[]>(initialRevisions);
     const [isAdding, setIsAdding] = useState(false);
@@ -112,10 +113,10 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
             netSalary
         };
 
-        const res = await addSalaryRevisionAction(staffId, submitData as any);
+        const res = await addSalaryRevisionAction(schoolSlug, staffId, submitData);
         if (res.success) {
             toast.success("Salary package created successfully");
-            setRevisions([res.data as any, ...revisions]);
+            setRevisions([res.data as SalaryRevision, ...revisions]);
             setIsAdding(false);
             setFormData({ amount: 0, basic: 0, hra: 0, allowance: 0, tax: 0, pf: 0, insurance: 0 });
             setCustomAdditions([]);
@@ -137,7 +138,7 @@ export function SalaryPackageSection({ staffId, salaryRevisions: initialRevision
 
         if (!confirmed) return;
 
-        const res = await deleteSalaryRevisionAction(id);
+        const res = await deleteSalaryRevisionAction(schoolSlug, id);
         if (res.success) {
             toast.success("Record deleted");
             setRevisions(revisions.filter(r => r.id !== id));

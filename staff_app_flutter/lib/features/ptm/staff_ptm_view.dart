@@ -1,11 +1,19 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../../core/theme/app_theme.dart';
 import '../../core/state/auth_state.dart';
 import '../../core/config/api_config.dart';
+import '../../shared/components/module_popup_shell.dart';
+
+// ─── Brand gradient (matches rest of app) ─────────────────────────────────────
+const _ptmGrad = LinearGradient(
+  colors: [Color(0xFFFF5733), Color(0xFFFF006E), Color(0xFFC77DFF)],
+  begin: Alignment.topLeft, end: Alignment.bottomRight,
+);
 
 // ━━━ Data Models ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 class PTMStudent {
@@ -169,83 +177,94 @@ class _StaffPTMViewState extends ConsumerState<StaffPTMView> {
   Widget build(BuildContext context) {
     final async = ref.watch(staffPTMProvider);
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: Container(
-          color: const Color(0xFFFAFBFE),
-          child: Column(children: [
-            _header(), _filters(),
-            if (_showCreateForm) Expanded(child: _PTMCreateForm(
-              onCreated: () { setState(() => _showCreateForm = false); ref.invalidate(staffPTMProvider); },
-              onCancel: () => setState(() => _showCreateForm = false),
-            ))
-            else Expanded(child: async.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => const Center(child: Text('Error loading sessions')),
-              data: (sess) {
-                final f = _applyFilter(sess);
-                if (f.isEmpty) return _empty();
-                return RefreshIndicator(onRefresh: () => ref.refresh(staffPTMProvider.future),
-                  child: ListView.builder(padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-                    itemCount: f.length, itemBuilder: (_, i) => _sessionCard(f[i])));
-              },
-            )),
-          ]),
+      backgroundColor: const Color(0xFFFAFBFE),
+      floatingActionButton: _buildFab(),
+      body: Column(children: [
+        // ── Standard Gradient Header ──────────────────────────────────
+        ModulePageHeader(
+          title: 'PTM Sessions',
+          icon: Icons.people_alt_rounded,
+          bottomRows: [_filters()],
         ),
-      ),
+        if (_showCreateForm) Expanded(child: _PTMCreateForm(
+          onCreated: () { setState(() => _showCreateForm = false); ref.invalidate(staffPTMProvider); },
+          onCancel: () => setState(() => _showCreateForm = false),
+        ))
+        else Expanded(child: async.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => const Center(child: Text('Error loading sessions')),
+          data: (sess) {
+            final f = _applyFilter(sess);
+            if (f.isEmpty) return _empty();
+            return RefreshIndicator(onRefresh: () => ref.refresh(staffPTMProvider.future),
+              child: ListView.builder(padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                itemCount: f.length, itemBuilder: (_, i) => _sessionCard(f[i])));
+          },
+        )),
+      ]),
     );
   }
 
-  Widget _header() => Container(
-    decoration: const BoxDecoration(color: Color(0xFFFAFBFE),
-      border: Border(bottom: BorderSide(color: Color.fromRGBO(20, 14, 40, 0.06), width: 1.5))),
-    padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-    child: SafeArea(bottom: false, child: Column(children: [
-      const SizedBox(height: 10),
-      Container(width: 36, height: 4, decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(100))),
-      const SizedBox(height: 14),
-      Row(children: [
-        _iconBtn(Icons.arrow_back_ios_new_rounded, () => Navigator.pop(context)),
-        const SizedBox(width: 10),
-        Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFF7C3AED).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-          child: const Icon(Icons.people_alt_rounded, size: 20, color: Color(0xFF7C3AED))),
-        const SizedBox(width: 10),
-        const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('PTM Scheduler', style: TextStyle(fontFamily: 'Outfit', fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF140E28))),
-          Text('Parent-Teacher Meetings', style: TextStyle(fontFamily: 'Satoshi', fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF94A3B8))),
-        ])),
-        GestureDetector(
-          onTap: () => setState(() => _showCreateForm = !_showCreateForm),
-          child: Container(width: 38, height: 38,
-            decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF7C3AED), Color(0xFF6366F1)]),
-              borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: const Color(0xFF7C3AED).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 3))]),
-            child: Icon(_showCreateForm ? Icons.close_rounded : Icons.add_rounded, color: Colors.white, size: 22)),
+  Widget _buildFab() => GestureDetector(
+    onTap: () {
+      HapticFeedback.lightImpact();
+      setState(() => _showCreateForm = !_showCreateForm);
+    },
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 56, height: 56,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF5733), Color(0xFFFF006E), Color(0xFFC77DFF)],
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
         ),
-      ]),
-      const SizedBox(height: 12),
-    ])),
+        shape: BoxShape.circle,
+        boxShadow: [BoxShadow(
+          color: const Color(0xFFFF5733).withOpacity(0.45),
+          blurRadius: 16, offset: const Offset(0, 6),
+        )],
+      ),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        transitionBuilder: (child, anim) => RotationTransition(
+          turns: anim, child: ScaleTransition(scale: anim, child: child)),
+        child: Icon(
+          _showCreateForm ? Icons.close_rounded : Icons.add_rounded,
+          key: ValueKey(_showCreateForm),
+          color: Colors.white, size: 28,
+        ),
+      ),
+    ),
   );
-
-  Widget _iconBtn(IconData ic, VoidCallback onTap) => GestureDetector(onTap: onTap,
-    child: Container(width: 34, height: 34, decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
-      child: Icon(ic, size: 14, color: const Color(0xFF140E28))));
 
   Widget _filters() {
     final items = [('all', 'All'), ('upcoming', 'Upcoming'), ('active', 'Active'), ('closed', 'Closed')];
-    return SingleChildScrollView(scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       child: Row(children: items.map((f) {
         final on = _filter == f.$1;
-        return GestureDetector(onTap: () => setState(() => _filter = f.$1),
-          child: Container(margin: const EdgeInsets.only(right: 8), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        return GestureDetector(
+          onTap: () { HapticFeedback.selectionClick(); setState(() => _filter = f.$1); },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              gradient: on ? const LinearGradient(colors: [Color(0xFF7C3AED), Color(0xFF6366F1)]) : null,
-              color: on ? null : Colors.white, borderRadius: BorderRadius.circular(100),
+              gradient: on ? _ptmGrad : null,
+              color: on ? null : Colors.white,
+              borderRadius: BorderRadius.circular(100),
               border: on ? null : Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
-              boxShadow: on ? [BoxShadow(color: const Color(0xFF7C3AED).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 3))] : null),
-            child: Text(f.$2, style: TextStyle(fontFamily: 'Satoshi', fontSize: 12, fontWeight: FontWeight.w700, color: on ? Colors.white : const Color(0xFF64748B)))));
-      }).toList()));
+              boxShadow: on ? [BoxShadow(color: const Color(0xFFFF5733).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 3))] : null,
+            ),
+            child: Text(f.$2, style: TextStyle(
+              fontFamily: 'Satoshi', fontSize: 12, fontWeight: FontWeight.w700,
+              color: on ? Colors.white : const Color(0xFF64748B),
+            )),
+          ),
+        );
+      }).toList()),
+    );
   }
 
   Widget _sessionCard(PTMSession s) {

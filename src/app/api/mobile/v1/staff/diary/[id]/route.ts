@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { jwtVerify } from "jose";
 import { updateDiaryEntryAction, deleteDiaryEntryAction } from "@/app/actions/diary-actions";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const authHeader = req.headers.get("Authorization") ?? "";
         const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -20,7 +20,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         }
 
         const userId = payload.sub;
-        const entryId = params.id;
+        const { id: entryId } = await params;
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
@@ -86,7 +86,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const authHeader = req.headers.get("Authorization") ?? "";
         const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -103,7 +103,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
         }
 
         const userId = payload.sub;
-        const entryId = params.id;
+        const { id: entryId } = await params;
 
         const user = await prisma.user.findUnique({
             where: { id: userId },

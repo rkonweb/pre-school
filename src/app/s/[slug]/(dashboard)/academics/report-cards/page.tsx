@@ -78,19 +78,19 @@ export default function ReportCardsPage() {
         setIsLoading(true);
         try {
             const [studentsRes, rcRes] = await Promise.all([
-                getStudentsAction(slug, selectedClassId),
+                getStudentsAction(slug, { filters: { classroomId: selectedClassId } }),
                 getReportCardsForClassAction(slug, selectedClassId, selectedTerm)
             ]);
 
             if (studentsRes.success) {
-                setStudents(studentsRes.data);
+                setStudents(studentsRes.students);
 
                 // Initialize form data
                 const initialForm: Record<string, { marks: SubjectMark[], comments: string }> = {};
-                const rcs = rcRes.success ? rcRes.data : [];
+                const rcs = rcRes.success ? (rcRes as any).data : [];
                 setReportCards(rcs);
 
-                studentsRes.data.forEach((student: any) => {
+                studentsRes.students.forEach((student: any) => {
                     const existingRc = rcs.find((rc: any) => rc.studentId === student.id);
                     if (existingRc && existingRc.marks) {
                         try {

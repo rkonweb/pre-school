@@ -28,6 +28,10 @@ export async function getCurrentUserAction() {
                 id: true,
                 role: true,
                 mobile: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                avatar: true,
                 branchId: true,
                 schoolId: true,
                 school: {

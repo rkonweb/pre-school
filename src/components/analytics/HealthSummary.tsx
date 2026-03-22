@@ -30,14 +30,14 @@ export function HealthSummary({ data }: HealthSummaryProps) {
             </div>
 
             {/* Alerts */}
-            {alerts.length > 0 && (
+            {(alerts?.length ?? 0) > 0 && (
                 <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
                     <div className="flex items-start gap-2">
                         <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                         <div>
                             <h4 className="font-semibold text-red-800 mb-1">Health Alerts</h4>
                             <ul className="text-sm text-red-700 space-y-1">
-                                {alerts.map((alert, index) => (
+                                {(alerts ?? []).map((alert: any, index: any) => (
                                     <li key={index}>• {alert}</li>
                                 ))}
                             </ul>
@@ -100,14 +100,14 @@ export function HealthSummary({ data }: HealthSummaryProps) {
             )}
 
             {/* Growth Trend Chart */}
-            {growthTrend.length > 1 && (
+            {(growthTrend?.length ?? 0) > 1 && (
                 <div className="mt-6 pt-6 border-t">
                     <h4 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
                         <TrendingUp className="w-4 h-4" />
                         Growth Trend
                     </h4>
                     <ResponsiveContainer width="100%" height={200}>
-                        <LineChart data={growthTrend.reverse()}>
+                        <LineChart data={(growthTrend ?? []).slice().reverse()}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                             <XAxis
                                 dataKey="date"

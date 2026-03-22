@@ -42,7 +42,7 @@ export function StaffRolePermissions({ staffId, schoolSlug, roles, initialRoleId
     const loadPermissions = useCallback(async () => {
         const res = await getUserModulePermissionsAction(staffId);
         if (res.success && res.permissions) {
-            const saved = res.permissions[GLOBAL_PERM_KEY] as UserModulePermission | undefined;
+            const saved = (res.permissions as Record<string, UserModulePermission>)[GLOBAL_PERM_KEY];
             if (saved) {
                 setGlobalPerm({
                     view:   !!saved.view,

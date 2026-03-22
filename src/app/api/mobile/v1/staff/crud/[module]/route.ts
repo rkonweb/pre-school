@@ -20,7 +20,7 @@ async function getAuthorizedUser(req: Request) {
 
 export async function GET(
   request: Request,
-  { params }: { params: { module: string } }
+  { params }: { params: Promise<{ module: string }> }
 ) {
   try {
     const user = await getAuthorizedUser(request);
@@ -28,7 +28,7 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { module } = params;
+    const { module } = await params;
     const schoolId = user.schoolId;
     
     switch (module) {
@@ -102,14 +102,15 @@ export async function GET(
         return NextResponse.json({ success: true, data: parsedData });
     }
   } catch (error) {
-    console.error(`[GET /crud/${params.module}] error:`, error);
+    const { module } = await params.catch?.(() => ({ module: 'unknown' })) ?? { module: 'unknown' };
+    console.error(`[GET /crud/${module}] error:`, error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function POST(
   request: Request,
-  { params }: { params: { module: string } }
+  { params }: { params: Promise<{ module: string }> }
 ) {
   try {
     const user = await getAuthorizedUser(request);
@@ -117,7 +118,7 @@ export async function POST(
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { module } = params;
+    const { module } = await params;
     const schoolId = user.schoolId;
     const body: any = await request.json();
     let result;
@@ -178,14 +179,14 @@ export async function POST(
 
     return NextResponse.json({ success: true, data: result });
   } catch (error) {
-    console.error(`[POST /crud/${params.module}] error:`, error);
+    console.error(`[POST /crud] error:`, error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { module: string } }
+  { params }: { params: Promise<{ module: string }> }
 ) {
   try {
     const user = await getAuthorizedUser(request);
@@ -193,7 +194,7 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { module } = params;
+    const { module } = await params;
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
 
@@ -218,7 +219,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: 'Deleted successfully' });
   } catch (error) {
-    console.error(`[DELETE /crud/${params.module}] error:`, error);
+    console.error(`[DELETE /crud] error:`, error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }

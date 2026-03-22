@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useRouter } from "next/navigation";
 import {
     getBooksAction,
@@ -8,7 +9,8 @@ import {
     updateBookAction,
     deleteBookAction,
     updateBookCoverAction,
-    bulkCreateBooksAction
+    bulkCreateBooksAction,
+    getBookActivityAction
 } from "@/app/actions/library-actions";
 import {
     Search,
@@ -22,7 +24,15 @@ import {
     Image as ImageIcon,
     X,
     MoreHorizontal,
-    CreditCard
+    CreditCard,
+    History,
+    User,
+    Calendar,
+    ArrowLeft,
+    ArrowRight,
+    CheckCircle2,
+    Clock,
+    AlertCircle
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -48,6 +58,15 @@ export default function LibraryInventoryPage() {
     const [categoryFilter, setCategoryFilter] = useState("All");
     const [availableCategories, setAvailableCategories] = useState<string[]>([]);
     const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    // Activity Log Drawer State
+    const [activityBook, setActivityBook] = useState<any>(null);
+    const [activityLog, setActivityLog] = useState<any[]>([]);
+    const [activityLoading, setActivityLoading] = useState(false);
+    const [portalMounted, setPortalMounted] = useState(false);
+
+    // Mount portal after hydration (SSR-safe)
+    useEffect(() => { setPortalMounted(true); }, []);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -98,6 +117,15 @@ export default function LibraryInventoryPage() {
             if (res.categories) setAvailableCategories(res.categories);
         }
         setLoading(false);
+    }
+
+    async function openActivityLog(book: any) {
+        setActivityBook(book);
+        setActivityLog([]);
+        setActivityLoading(true);
+        const res = await getBookActivityAction(slug, book.id);
+        if (res.success) setActivityLog(res.data || []);
+        setActivityLoading(false);
     }
 
     const handleSort = (key: string) => {
@@ -467,24 +495,31 @@ export default function LibraryInventoryPage() {
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        onClick={() => handleOpenModal(book)}
-                                                        className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/40 transition-all shadow-sm"
-                                                        title="Edit Book"
-                                                    >
-                                                        <Edit className="h-3.5 w-3.5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(book.id)}
-                                                        className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
-                                                        title="Delete Book"
-                                                    >
-                                                        <Trash className="h-3.5 w-3.5" />
-                                                    </button>
-                                                </div>
-                                            </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button
+                                                            onClick={() => openActivityLog(book)}
+                                                            className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-violet-600 hover:border-violet-200 transition-all shadow-sm"
+                                                            title="Activity Log"
+                                                        >
+                                                            <History className="h-3.5 w-3.5" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleOpenModal(book)}
+                                                            className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-brand hover:border-brand/40 transition-all shadow-sm"
+                                                            title="Edit Book"
+                                                        >
+                                                            <Edit className="h-3.5 w-3.5" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(book.id)}
+                                                            className="h-8 w-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
+                                                            title="Delete Book"
+                                                        >
+                                                            <Trash className="h-3.5 w-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </td>
                                         </tr>
                                     ))
                                 )}
@@ -704,6 +739,174 @@ export default function LibraryInventoryPage() {
                     </div>
                 )
             }
-        </div >
+
+            {/* ── Activity Log Drawer — rendered via portal to escape layout stacking context ── */}
+            {activityBook && portalMounted && createPortal(
+                <>
+                    {/* Backdrop — z-[9998] is above header (z-999) and desktop sidebar (z-150) */}
+                    <div
+                        className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-[2px]"
+                        onClick={() => setActivityBook(null)}
+                    />
+                    {/* Drawer — z-[9999] above backdrop */}
+                    <div className="fixed right-0 top-0 z-[9999] h-full w-[420px] flex flex-col bg-white shadow-2xl border-l border-zinc-200 animate-in slide-in-from-right duration-300">
+
+                        {/* Header */}
+                        <div className="flex items-center gap-3 px-5 py-4 shrink-0" style={{ background: 'var(--school-gradient, var(--brand-color, #7c3aed))' }}>
+                            <div className="flex h-11 w-9 shrink-0 overflow-hidden rounded-lg bg-white/20 items-center justify-center">
+                                {activityBook.coverUrl ? (
+                                    <img src={activityBook.coverUrl} alt={activityBook.title} className="h-full w-full object-cover" />
+                                ) : (
+                                    <History className="h-5 w-5 text-white" />
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-0.5">Activity Log</p>
+                                <h2 className="font-black text-white text-base leading-tight truncate">{activityBook.title}</h2>
+                                <p className="text-xs text-white/65 truncate mt-0.5">{activityBook.author}</p>
+                            </div>
+                            <button
+                                onClick={() => setActivityBook(null)}
+                                className="shrink-0 flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+                                title="Close"
+                            >
+                                <X className="h-4 w-4 text-white" />
+                            </button>
+                        </div>
+
+                        {/* Stats strip — 4 equal columns, short labels */}
+                        <div className="flex shrink-0 border-b border-zinc-100 bg-zinc-50/80">
+                            {[
+                                { label: 'Total', value: activityLog.length, color: 'text-zinc-900' },
+                                { label: 'Active', value: activityLog.filter(t => t.status === 'ISSUED').length, color: 'text-amber-600' },
+                                { label: 'Returned', value: activityLog.filter(t => t.status === 'RETURNED').length, color: 'text-emerald-600' },
+                                { label: 'Overdue', value: activityLog.filter(t => t.status === 'ISSUED' && new Date(t.dueDate) < new Date()).length, color: 'text-red-600' },
+                            ].map((s, idx) => (
+                                <div key={s.label} className={`flex-1 py-3 text-center ${idx > 0 ? 'border-l border-zinc-100' : ''}`}>
+                                    <div className={`text-xl font-black ${s.color}`}>{s.value}</div>
+                                    <div className="text-[9px] font-bold uppercase tracking-wide text-zinc-400 mt-0.5">{s.label}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Timeline body */}
+                        <div className="flex-1 overflow-y-auto">
+                            {activityLoading ? (
+                                <div className="flex h-40 items-center justify-center">
+                                    <Loader2 className="h-6 w-6 animate-spin text-violet-500" />
+                                </div>
+                            ) : activityLog.length === 0 ? (
+                                <div className="flex h-40 flex-col items-center justify-center gap-2 text-zinc-400">
+                                    <History className="h-8 w-8 opacity-50" />
+                                    <p className="text-sm font-semibold">No borrowing activity yet</p>
+                                </div>
+                            ) : (
+                                <div className="relative px-5 py-5">
+                                    {/* Vertical connector line — 20px (left-5) + half dot width (14px) = 34px from left → left-[34px] */}
+                                    <div className="absolute left-[34px] top-5 bottom-5 w-px bg-zinc-150 bg-zinc-200" />
+                                    <div className="space-y-4">
+                                        {activityLog.map((tx: any) => {
+                                            const isOverdue = tx.status === 'ISSUED' && new Date(tx.dueDate) < new Date();
+                                            const overdueDays = isOverdue ? Math.floor((Date.now() - new Date(tx.dueDate).getTime()) / 86400000) : 0;
+                                            const borrowerName = tx.student
+                                                ? `${tx.student.firstName} ${tx.student.lastName}`
+                                                : tx.staff
+                                                    ? `${tx.staff.firstName} ${tx.staff.lastName}`
+                                                    : 'Unknown';
+                                            const borrowerSub = tx.student
+                                                ? [tx.student.classroom?.name, tx.student.admissionNumber].filter(Boolean).join(' · ')
+                                                : tx.staff?.role ?? '';
+
+                                            // Per-status accent tokens
+                                            const isReturned = tx.status === 'RETURNED';
+                                            const dotCls = isReturned
+                                                ? 'bg-emerald-50 text-emerald-600 ring-emerald-300'
+                                                : isOverdue
+                                                    ? 'bg-red-50 text-red-500 ring-red-300'
+                                                    : 'bg-amber-50 text-amber-500 ring-amber-300';
+                                            const badgeCls = isReturned
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : isOverdue
+                                                    ? 'bg-red-100 text-red-700'
+                                                    : 'bg-amber-100 text-amber-700';
+                                            const badgeText = isReturned ? 'Returned' : isOverdue ? 'Overdue' : 'Issued';
+                                            const Icon = isReturned ? CheckCircle2 : isOverdue ? AlertCircle : Clock;
+
+                                            return (
+                                                <div key={tx.id} className="relative flex gap-3">
+                                                    {/* Timeline dot */}
+                                                    <div className={`relative z-10 mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ring-2 ${dotCls}`}>
+                                                        <Icon className="h-3.5 w-3.5" />
+                                                    </div>
+
+                                                    {/* Card */}
+                                                    <div className="flex-1 rounded-xl border border-zinc-100 bg-white p-3.5 shadow-sm ring-1 ring-black/[0.03]">
+                                                        {/* Borrower row */}
+                                                        <div className="flex items-start justify-between gap-2 mb-3">
+                                                            <div className="flex items-center gap-2.5 min-w-0">
+                                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100">
+                                                                    <User className="h-4 w-4 text-zinc-400" />
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-sm font-bold text-zinc-900 leading-tight truncate">{borrowerName}</p>
+                                                                    {borrowerSub && <p className="text-[11px] text-zinc-400 truncate mt-0.5">{borrowerSub}</p>}
+                                                                </div>
+                                                            </div>
+                                                            <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${badgeCls}`}>
+                                                                {badgeText}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Date grid */}
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div className="rounded-lg bg-zinc-50 px-3 py-2">
+                                                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Issued</p>
+                                                                <p className="text-xs font-semibold text-zinc-700 mt-0.5">
+                                                                    {new Date(tx.issuedDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                                </p>
+                                                            </div>
+                                                            <div className="rounded-lg bg-zinc-50 px-3 py-2">
+                                                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Due Date</p>
+                                                                <p className={`text-xs font-semibold mt-0.5 ${isOverdue ? 'text-red-600' : 'text-zinc-700'}`}>
+                                                                    {new Date(tx.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                                </p>
+                                                            </div>
+                                                            {tx.returnedDate && (
+                                                                <div className="col-span-2 rounded-lg bg-emerald-50 px-3 py-2 border border-emerald-100">
+                                                                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Returned On</p>
+                                                                    <p className="text-xs font-semibold text-emerald-700 mt-0.5">
+                                                                        {new Date(tx.returnedDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                            {isOverdue && (
+                                                                <div className="col-span-2 rounded-lg bg-red-50 px-3 py-2 border border-red-100">
+                                                                    <p className="text-[10px] font-bold uppercase tracking-wider text-red-400">Overdue</p>
+                                                                    <p className="text-xs font-semibold text-red-700 mt-0.5">
+                                                                        {overdueDays} day{overdueDays !== 1 ? 's' : ''} late · Est. fine ₹{overdueDays * 10}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                            {tx.fineAmount > 0 && isReturned && (
+                                                                <div className="col-span-2 rounded-lg bg-orange-50 px-3 py-2 border border-orange-100">
+                                                                    <p className="text-[10px] font-bold uppercase tracking-wider text-orange-400">Fine Collected</p>
+                                                                    <p className="text-xs font-semibold text-orange-700 mt-0.5">₹{tx.fineAmount}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </>,
+                document.body
+            )}
+        </div>
     );
 }
+

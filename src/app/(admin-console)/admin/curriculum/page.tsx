@@ -55,6 +55,7 @@ interface AcademicDay {
     title: string | null;
     theme: string | null;
     blocks: string;
+    worksheets?: string | any[]; // stored as JSON string or array
     isCompleted: boolean;
 }
 

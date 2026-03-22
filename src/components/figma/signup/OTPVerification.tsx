@@ -78,9 +78,8 @@ export function OTPVerification() {
           "SELECT_PLAN": "/signup/select-plan",
           "FREE_TRIAL": "/signup/free-trial",
           "SCHOOL_SETUP": "/signup/setup",
-          "LOADING": "/signup/setup", // Don't re-trigger loading, go back to setup
-          "LOADING": "/signup/setup", // Don't re-trigger loading, go back to setup
-          "COMPLETED": "/school-login" // Already registered, go to login
+          "LOADING": "/signup/setup",
+          "COMPLETED": "/school-login"
         };
 
         const signupStep = (result as any).signupStep || "SELECT_PLAN";

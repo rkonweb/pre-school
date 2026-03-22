@@ -226,12 +226,16 @@ export default function TemplateLibraryPage() {
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => handleOpenEditor(template)}
+                                        aria-label="Edit template"
+                                        title="Edit template"
                                         className="h-8 w-8 rounded-full hover:bg-zinc-50 flex items-center justify-center text-zinc-400 hover:text-brand"
                                     >
                                         <Edit2 className="h-3.5 w-3.5" />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(template.id)}
+                                        aria-label="Delete template"
+                                        title="Delete template"
                                         className="h-8 w-8 rounded-full hover:bg-zinc-50 flex items-center justify-center text-zinc-400 hover:text-red-500"
                                     >
                                         <Trash2 className="h-3.5 w-3.5" />
@@ -280,7 +284,7 @@ export default function TemplateLibraryPage() {
                     slug={slug}
                     template={editingTemplate}
                     onClose={() => setIsEditorOpen(false)}
-                    onSave={(newTemplate) => {
+                    onSave={(newTemplate: any) => {
                         if (editingTemplate.id) {
                             setTemplates(prev => prev.map(t => t.id === newTemplate.id ? newTemplate : t));
                         } else {
@@ -307,7 +311,7 @@ function TemplateEditorModal({ slug, template, onClose, onSave }: any) {
             found.push(match[1]);
         }
         const uniqueVars = Array.from(new Set(found));
-        setFormData(prev => ({ ...prev, variables: uniqueVars }));
+        setFormData((prev: any) => ({ ...prev, variables: uniqueVars }));
     }, [formData.body]);
 
     const handleSave = async () => {
@@ -335,7 +339,7 @@ function TemplateEditorModal({ slug, template, onClose, onSave }: any) {
                         </h2>
                         <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1">Design your WhatsApp communication</p>
                     </div>
-                    <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-400 transition-colors">
+                    <button onClick={onClose} aria-label="Close" title="Close" className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-400 transition-colors">
                         <X className="h-5 w-5" />
                     </button>
                 </div>

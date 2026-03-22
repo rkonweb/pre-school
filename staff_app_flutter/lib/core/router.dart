@@ -17,6 +17,8 @@ import '../features/circular/circular_model.dart';
 import '../features/auth/login_screen.dart';
 import '../features/leave/teacher_leave_view.dart';
 import '../features/diary/teacher_diary_view.dart';
+import '../features/calendar/teacher_calendar_view.dart';
+import '../features/library/staff_library_view.dart';
 import '../features/dashboard/admin_dashboard_view.dart' deferred as admin_dashboard;
 import '../shared/components/generic_crud_page.dart' deferred as admin_crud;
 import '../features/students/students_view.dart' deferred as admin_students;
@@ -338,6 +340,18 @@ final GoRouter appRouter = GoRouter(
           path: '/diary',
           pageBuilder: (context, state) => const NoTransitionPage(
             child: TeacherDiaryView(),
+          ),
+        ),
+        GoRoute(
+          path: '/calendar',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: TeacherCalendarView(),
+          ),
+        ),
+        GoRoute(
+          path: '/library',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: StaffLibraryView(),
           ),
         ),
         GoRoute(

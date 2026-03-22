@@ -6,9 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/state/auth_state.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/config/api_config.dart';
+import '../../core/services/biometric_service.dart';
 import '../../shared/components/phone_input.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -49,8 +52,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   bool _isBioScanning = false;
   bool _isFaceScanning = false;
+  bool _biometricEnrolled = false;  // whether device has biometric lock set up
   int _otpTimerSeconds = 60;
   Timer? _otpTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricEnrolled();
+  }
+
+  Future<void> _checkBiometricEnrolled() async {
+    final svc = BiometricService();
+    final enabled = await svc.isEnabled();
+    final available = await svc.isAvailable();
+    if (mounted) setState(() => _biometricEnrolled = enabled && available);
+  }
 
   void _startOtpTimer() {
     _otpTimer?.cancel();
@@ -166,13 +183,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _handleSuccess(UserProfile profile) {
     if (profile.role == 'ADMIN' || profile.role == 'SUPER_ADMIN') {
       _showSnack('Administrators must use the Administrator App to login.');
-      // Keep state at OTP panel so they don't enter dashboard
       return;
     }
-    setState(() => _currentPanel = 2);
+    if (mounted) setState(() => _currentPanel = 2);
     Future.delayed(const Duration(milliseconds: 2600), () {
-      ref.read(userProfileProvider.notifier).state = profile;
-      ref.read(isAuthenticatedProvider.notifier).state = true;
+      // Guard: widget may have been disposed if biometric auto-login fired
+      // a second callback after navigation already occurred.
+      if (!mounted) return;
+      try {
+        ref.read(userProfileProvider.notifier).state = profile;
+        ref.read(isAuthenticatedProvider.notifier).state = true;
+      } catch (_) {
+        // Ref already disposed — state was already set by an earlier callback.
+        return;
+      }
       context.go('/dashboard');
     });
   }
@@ -208,6 +232,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           branchId: u['branchId'],
           permissions: (u['permissions'] as List?)?.map((e) => e.toString()).toList() ?? [],
         );
+        // Persist token for biometric re-login
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('saved_token',     data['token'] ?? '');
+        await prefs.setString('saved_phone',     _phoneNumber);
+        await prefs.setString('saved_name',      u['name']?.toString() ?? '');
+        await prefs.setString('saved_role',      u['role']?.toString() ?? 'STAFF');
+        await prefs.setString('saved_school',    profile.schoolName);
+        await prefs.setString('saved_slug',      profile.schoolSlug);
+        await prefs.setString('saved_school_id', profile.schoolId);
+        if (u['branchId'] != null) await prefs.setString('saved_branch_id', u['branchId'].toString());
         _handleSuccess(profile);
       } else {
         HapticFeedback.vibrate();
@@ -224,17 +258,93 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  // Biometric/Face on web → send OTP then switch to OTP tab for real verification
+  // ── Real biometric/face login ──────────────────────────────────────────────
+  // Authenticates with device biometrics, then restores session from saved token
   Future<void> _startBioScan() async {
+    if (!_biometricEnrolled) {
+      _showSnack('Biometric lock not enabled. Use OTP to login.');
+      setState(() => _selectedAuthMode = 'otp');
+      return;
+    }
     setState(() => _isBioScanning = true);
-    await _sendOtpForBiometric();
+    await _authenticateWithBiometric();
     if (mounted) setState(() => _isBioScanning = false);
   }
 
   Future<void> _startFaceScan() async {
+    if (!_biometricEnrolled) {
+      _showSnack('Biometric lock not enabled. Use OTP to login.');
+      setState(() => _selectedAuthMode = 'otp');
+      return;
+    }
     setState(() => _isFaceScanning = true);
-    await _sendOtpForBiometric();
+    await _authenticateWithBiometric();
     if (mounted) setState(() => _isFaceScanning = false);
+  }
+
+  Future<void> _authenticateWithBiometric() async {
+    final auth = LocalAuthentication();
+    try {
+      final ok = await auth.authenticate(
+        localizedReason: 'Verify your identity to sign in to EduSphere Staff',
+      );
+      if (!ok || !mounted) return;
+
+      // Restore session from saved token + user data
+      final prefs = await SharedPreferences.getInstance();
+      final savedToken   = prefs.getString('saved_token');
+      final savedPhone   = prefs.getString('saved_phone') ?? '';
+      final savedName    = prefs.getString('saved_name') ?? '';
+      final savedRole    = prefs.getString('saved_role') ?? 'STAFF';
+      final savedSchool  = prefs.getString('saved_school') ?? '';
+      final savedSlug    = prefs.getString('saved_slug') ?? '';
+      final savedSchoolId= prefs.getString('saved_school_id') ?? '';
+      final savedBranchId= prefs.getString('saved_branch_id');
+
+      if (savedToken == null || savedToken.isEmpty) {
+        // No saved token — must verify via OTP once more
+        _showSnack('First-time setup: please verify via OTP once.');
+        if (mounted) setState(() => _selectedAuthMode = 'otp');
+        await _sendOtpForBiometric();
+        return;
+      }
+
+      // Validate token is still alive with the server
+      try {
+        final res = await http.get(
+          Uri.parse('$apiBase/api/mobile/v1/staff/profile'),
+          headers: {'Authorization': 'Bearer $savedToken'},
+        ).timeout(const Duration(seconds: 8));
+
+        if (res.statusCode == 200) {
+          final data = jsonDecode(res.body);
+          final u = (data['staff'] ?? data['user'] ?? {}) as Map;
+          final profile = UserProfile(
+            id: u['id']?.toString() ?? '',
+            phone: savedPhone,
+            name: u['name']?.toString() ?? savedName,
+            role: u['role']?.toString() ?? savedRole,
+            schoolId: u['schoolId']?.toString() ?? savedSchoolId,
+            schoolName: u['schoolName']?.toString() ?? savedSchool,
+            schoolSlug: u['schoolSlug']?.toString() ?? savedSlug,
+            token: savedToken,
+            branchId: savedBranchId,
+            permissions: (u['permissions'] as List?)?.map((e) => e.toString()).toList() ?? [],
+          );
+          final svc = BiometricService();
+          await svc.recordActivity();
+          if (mounted) _handleSuccess(profile);
+          return;
+        }
+      } catch (_) {}
+
+      // Token expired — need fresh OTP
+      _showSnack('Session expired. Please verify via OTP.');
+      if (mounted) setState(() => _selectedAuthMode = 'otp');
+      await _sendOtpForBiometric();
+    } catch (e) {
+      _showSnack('Biometric error: $e');
+    }
   }
 
   Future<void> _sendOtpForBiometric() async {

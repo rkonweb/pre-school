@@ -1,10 +1,9 @@
 "use client";
 
-import { ActivitySummary } from "@/app/actions/student-analytics-actions";
 import { Trophy, Star, Calendar } from "lucide-react";
 
 interface ActivitiesTimelineProps {
-    data: ActivitySummary;
+    data: any;
 }
 
 const categoryColors: Record<string, string> = {
@@ -50,7 +49,7 @@ export function ActivitiesTimeline({ data }: ActivitiesTimelineProps) {
                                 className={`px-3 py-1 rounded-full text-sm font-medium ${categoryColors[category] || "bg-gray-100 text-gray-800"
                                     }`}
                             >
-                                {category}: {count}
+                                {category}: {String(count)}
                             </span>
                         ))}
                     </div>
@@ -62,7 +61,7 @@ export function ActivitiesTimeline({ data }: ActivitiesTimelineProps) {
                 <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Recent Activities</h4>
                     <div className="space-y-3">
-                        {data.recent.map((activity) => (
+                        {data.recent.map((activity: any) => (
                             <div
                                 key={activity.id}
                                 className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"

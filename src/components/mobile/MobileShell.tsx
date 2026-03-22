@@ -27,7 +27,7 @@ export default function MobileShell({ children, slug, hideFooter = false }: Mobi
             </main>
 
             {/* Bottom Navigation */}
-            {!hideNav && !hideFooter && <BottomNav slug={slug} />}
+            {!hideNav && !hideFooter && <BottomNav />}
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import { Header } from "@/components/dashboard/Header";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { SchoolTheme } from "@/components/dashboard/SchoolTheme";
-import { prisma } from "@/lib/prisma";
+import { prisma, withReconnect } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUserAction } from "@/app/actions/session-actions";
 import { SidebarProvider } from "@/context/SidebarContext";
@@ -16,10 +16,9 @@ import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
-    const school = await prisma.school.findUnique({
-        where: { slug },
-        select: { name: true, motto: true }
-    });
+    const school = await withReconnect(() =>
+        prisma.school.findUnique({ where: { slug }, select: { name: true, motto: true } })
+    );
 
     if (!school) return { title: "School Portal | Bodhi Board" };
 
@@ -66,7 +65,7 @@ export default async function DashboardLayout({
     // ============================================
     // LOAD SCHOOL DATA
     // ============================================
-    const school = (await prisma.school.findUnique({
+    const school = (await withReconnect(() => prisma.school.findUnique({
         where: { slug },
         select: {
             id: true,
@@ -80,7 +79,7 @@ export default async function DashboardLayout({
             dateFormat: true,
             currency: true
         } as any
-    })) as any;
+    }))) as any;
 
     if (!school) {
         notFound();
@@ -91,10 +90,10 @@ export default async function DashboardLayout({
     // ============================================
     if (user.role !== "SUPER_ADMIN") {
         try {
-            const subscription = await prisma.subscription.findFirst({
+            const subscription = await withReconnect(() => prisma.subscription.findFirst({
                 where: { schoolId: school.id },
                 select: { status: true, endDate: true }
-            });
+            }));
 
             const now = new Date();
             const isExpired = subscription?.endDate && new Date(subscription.endDate) < now;
@@ -128,10 +127,10 @@ export default async function DashboardLayout({
         }
     } catch (e) { /* keep default */ }
 
-    const branches = await prisma.branch.findMany({
+    const branches = await withReconnect(() => prisma.branch.findMany({
         where: { schoolId: school.id },
         select: { id: true, name: true }
-    });
+    }));
 
     const currentBranchId = user.currentBranchId || (branches.length > 0 ? branches[0].id : "");
 

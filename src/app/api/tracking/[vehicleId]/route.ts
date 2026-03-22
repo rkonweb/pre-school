@@ -18,11 +18,11 @@ import { updateVehicleTelemetryAction } from "@/app/actions/tracking-actions";
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { vehicleId: string } }
+    { params }: { params: Promise<{ vehicleId: string }> }
 ) {
     try {
         const body = await request.json();
-        const { vehicleId } = params;
+        const { vehicleId } = await params;
 
         // Validate required fields
         if (!body.latitude || !body.longitude) {
@@ -86,10 +86,10 @@ export async function POST(
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { vehicleId: string } }
+    { params }: { params: Promise<{ vehicleId: string }> }
 ) {
     try {
-        const { vehicleId } = params;
+        const { vehicleId } = await params;
         const { getVehicleTelemetryAction } = await import("@/app/actions/tracking-actions");
 
         const result = await getVehicleTelemetryAction(vehicleId);

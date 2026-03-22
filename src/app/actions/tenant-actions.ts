@@ -312,15 +312,18 @@ export async function updateTenantAction(id: string, data: any) {
             // 1. Update School details - explicitly map fields to avoid Prisma errors
             const schoolUpdateData: any = {};
 
+            // Helper: treat empty strings as null for unique-nullable fields
+            const orNull = (v: any) => (v === '' || v === undefined ? null : v);
+
             // Basic info
             if (rest.name !== undefined) schoolUpdateData.name = rest.name;
             if (rest.subdomain !== undefined) schoolUpdateData.slug = rest.subdomain;
-            if (rest.customDomain !== undefined) schoolUpdateData.customDomain = rest.customDomain;
+            if (rest.customDomain !== undefined) schoolUpdateData.customDomain = orNull(rest.customDomain);
             if (rest.brandColor !== undefined) schoolUpdateData.brandColor = rest.brandColor;
-            if (rest.website !== undefined) schoolUpdateData.website = rest.website;
-            if (rest.motto !== undefined) schoolUpdateData.motto = rest.motto;
-            if (rest.foundingYear !== undefined) schoolUpdateData.foundingYear = rest.foundingYear;
-            if (rest.logo !== undefined) schoolUpdateData.logo = rest.logo;
+            if (rest.website !== undefined) schoolUpdateData.website = orNull(rest.website);
+            if (rest.motto !== undefined) schoolUpdateData.motto = orNull(rest.motto);
+            if (rest.foundingYear !== undefined) schoolUpdateData.foundingYear = orNull(rest.foundingYear);
+            if (rest.logo !== undefined) schoolUpdateData.logo = orNull(rest.logo);
 
             // Location
             if (rest.address !== undefined) schoolUpdateData.address = rest.address;
@@ -331,10 +334,10 @@ export async function updateTenantAction(id: string, data: any) {
             if (rest.latitude !== undefined) schoolUpdateData.latitude = rest.latitude;
             if (rest.longitude !== undefined) schoolUpdateData.longitude = rest.longitude;
 
-            // Contact
-            if (rest.contactEmail !== undefined) schoolUpdateData.email = rest.contactEmail;
-            if (rest.contactPhone !== undefined) schoolUpdateData.phone = rest.contactPhone;
-            if (rest.phone !== undefined) schoolUpdateData.phone = rest.phone;
+            // Contact — email/phone are unique-nullable, coerce empty → null
+            if (rest.contactEmail !== undefined) schoolUpdateData.email = orNull(rest.contactEmail);
+            if (rest.contactPhone !== undefined) schoolUpdateData.phone = orNull(rest.contactPhone);
+            if (rest.phone !== undefined) schoolUpdateData.phone = orNull(rest.phone);
 
             // Config
             if (rest.currency !== undefined) schoolUpdateData.currency = rest.currency;

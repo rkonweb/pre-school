@@ -44,7 +44,7 @@ export function DropdownMenuTrigger({ children, asChild }: { children: React.Rea
     );
 }
 
-export function DropdownMenuContent({ children, className }: { children: React.ReactNode; className?: string }) {
+export function DropdownMenuContent({ children, className, align, sideOffset, side }: { children: React.ReactNode; className?: string; align?: string; sideOffset?: number; side?: string }) {
     const { isOpen } = React.useContext(DropdownMenuContext);
     if (!isOpen) return null;
 

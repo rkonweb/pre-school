@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bodhiboard — The School Operating System</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+<style>
+/* ── SVG Icon system ── */
+.icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.icon svg { display: block; }
+
+/* Feature icon boxes — premium style */
+.feat-icon-box {
+  width: 48px; height: 48px; border-radius: 13px; margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100);
+  transition: background 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative; overflow: hidden;
+}
+.feat-icon-box::after {
+  content: ''; position: absolute; inset: 0; border-radius: 13px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.6), transparent);
+  pointer-events: none;
+}
+.feat-card:hover .feat-icon-box {
+  background: linear-gradient(135deg, var(--indigo-100), var(--indigo-50));
+  transform: translateY(-3px) rotate(-2deg);
+}
+
+/* Persona emoji replacement */
+.persona-icon-wrap {
+  width: 64px; height: 64px; border-radius: 18px; margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--indigo-50), var(--slate-50));
+  border: 1px solid var(--indigo-100);
+  box-shadow: 0 2px 8px rgba(99,102,241,0.12);
+  transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1);
+}
+.persona-card:hover .persona-icon-wrap {
+  background: linear-gradient(135deg, var(--indigo-100), var(--indigo-50));
+  box-shadow: 0 6px 20px rgba(99,102,241,0.2);
+  transform: translateY(-4px) scale(1.05);
+}
+
+/* Nav logo mark */
+.logo-mark {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--grad-main);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 10px rgba(99,102,241,0.35);
+  flex-shrink: 0;
+}
+
+/* Dashboard nav icons */
+.db-nav-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; flex-shrink: 0;
+}
+
+/* Kicker dot pulse */
+.kicker-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--indigo-500);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Hero play button */
+.play-icon {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--slate-200);
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* School tag dot */
+.school-tag-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--indigo-300); flex-shrink: 0;
+}
+
+/* Transform cell icon */
+.tg-icon-wrap {
+  width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 1px;
+}
+.tg-icon-wrap.bad  { background: #FEF2F2; }
+.tg-icon-wrap.good { background: var(--indigo-50); }
+
+/* Activity dot */
+.activity-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--indigo-400); flex-shrink: 0;
+}
+
+/* CTA eyebrow dot */
+.cta-eyebrow-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--indigo-400);
+  display: inline-block;
+}
+
+/* Footer logo mark */
+.footer-logo-mark {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--grad-main);
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Testimonial avatar gradient */
+.tcard-avatar {
+  width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+  background: var(--grad-main);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: var(--white);
+  font-family: var(--font-ui);
+  box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+}
+
+/* Plan check */
+.plan-check { font-size: 13px; flex-shrink: 0; margin-top: 0; color: var(--indigo-500); font-weight: 700; }
+.plan-check.light { color: rgba(255,255,255,0.55); }
+
+/* Proof stat icon */
+.proof-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px;
+}
+
+/* Extracted from inline styles */
+.flex-between{display:flex;justify-content:space-between;align-items:center;}
+.text-right-340{max-width:340px;text-align:right;}
+.no-border-bottom{border-bottom:none;}
+.text-right-body{text-align:right;}
+.eyebrow-center{justify-content:center;}
+.section-body-center{margin:14px auto 0;text-align:center;}
+.mb-0{margin-bottom:0!important;}
+.icon-inline-right{display:inline-block;vertical-align:middle;margin-left:4px;}
+.icon-inline-left{display:inline-block;vertical-align:middle;margin-right:6px;}
+.bar-fill{width:var(--w,0%);}
+</style>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Palette — two tones only: Indigo + Slate */
+  --indigo-50:  #EEF2FF;
+  --indigo-100: #E0E7FF;
+  --indigo-200: #C7D2FE;
+  --indigo-400: #818CF8;
+  --indigo-500: #6366F1;
+  --indigo-600: #4F46E5;
+  --indigo-700: #4338CA;
+  --indigo-900: #1E1B4B;
+
+  --slate-50:  #F8FAFC;
+  --slate-100: #F1F5F9;
+  --slate-200: #E2E8F0;
+  --slate-300: #CBD5E1;
+  --slate-400: #94A3B8;
+  --slate-500: #64748B;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-900: #0F172A;
+
+  --white: #FFFFFF;
+
+  /* Gradients — indigo only, 2 stops max */
+  --grad-main:   linear-gradient(135deg, #6366F1 0%, #4338CA 100%);
+  --grad-soft:   linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+  --grad-text:   linear-gradient(135deg, #6366F1, #4338CA);
+  --grad-card:   linear-gradient(160deg, #F8FAFC 0%, #EEF2FF 100%);
+  --grad-dark:   linear-gradient(160deg, #0F172A 0%, #1E1B4B 100%);
+  --grad-subtle: linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%);
+
+  /* Shadows */
+  --shadow-xs: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+  --shadow-sm: 0 4px 12px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.04);
+  --shadow-md: 0 8px 28px rgba(15,23,42,0.10), 0 2px 8px rgba(15,23,42,0.05);
+  --shadow-lg: 0 20px 60px rgba(15,23,42,0.12), 0 4px 16px rgba(15,23,42,0.06);
+  --shadow-xl: 0 40px 100px rgba(15,23,42,0.14), 0 8px 32px rgba(15,23,42,0.08);
+  --shadow-indigo: 0 8px 32px rgba(99,102,241,0.25);
+  --shadow-indigo-lg: 0 16px 56px rgba(99,102,241,0.30);
+
+  --radius-sm: 10px;
+  --radius:    16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-sans:  'DM Sans', sans-serif;
+  --font-ui:    'Inter', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--white);
+  color: var(--slate-900);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 68px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 56px;
+  background: rgba(255,255,255,0.92);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--slate-200);
+  transition: box-shadow 0.3s;
+}
+nav.scrolled { box-shadow: var(--shadow-sm); }
+
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; font-family: var(--font-sans);
+  font-size: 17px; font-weight: 700; color: var(--slate-900);
+  letter-spacing: -0.3px;
+}
+.logo-mark {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--grad-main);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 10px rgba(99,102,241,0.35);
+  flex-shrink: 0;
+}
+.logo-name { color: var(--slate-900); }
+.logo-name em { font-style: normal; color: var(--indigo-600); }
+
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-links a {
+  color: var(--slate-500); text-decoration: none; font-family: var(--font-ui);
+  font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-links a:hover { color: var(--slate-900); background: var(--slate-100); }
+
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.btn-ghost-nav {
+  font-family: var(--font-ui); font-size: 14px; font-weight: 500;
+  color: var(--slate-600); background: none; border: none; cursor: pointer;
+  padding: 8px 16px; border-radius: 8px; text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+}
+.btn-ghost-nav:hover { color: var(--slate-900); background: var(--slate-100); }
+.btn-cta-nav {
+  font-family: var(--font-ui); font-size: 14px; font-weight: 600;
+  color: var(--white); background: var(--grad-main); border: none; cursor: pointer;
+  padding: 9px 20px; border-radius: 9px; text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-indigo);
+}
+.btn-cta-nav:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: var(--shadow-indigo-lg); }
+
+/* ─── HERO ─── */
+.hero {
+  padding: 144px 56px 100px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; position: relative; overflow: hidden;
+  background: linear-gradient(180deg, var(--slate-50) 0%, var(--white) 100%);
+}
+
+/* Subtle dot grid */
+.hero::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(99,102,241,0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+}
+
+/* Soft glow */
+.hero::after {
+  content: '';
+  position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-ui); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--indigo-600);
+  background: var(--indigo-50); border: 1px solid var(--indigo-200);
+  padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.5s ease both;
+}
+.kicker-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--indigo-500);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.hero-h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(48px, 6.5vw, 80px);
+  font-weight: 400; line-height: 1.08;
+  letter-spacing: -1px; color: var(--slate-900);
+  max-width: 820px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.55s 0.08s ease both;
+}
+.hero-h1 em {
+  font-style: italic; color: var(--indigo-600);
+}
+
+.hero-sub {
+  margin-top: 22px;
+  font-family: var(--font-ui); font-size: 18px; font-weight: 400;
+  color: var(--slate-500); max-width: 560px; line-height: 1.7;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.55s 0.16s ease both;
+}
+
+.hero-actions {
+  display: flex; gap: 12px; margin-top: 40px;
+  justify-content: center; flex-wrap: wrap;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.55s 0.24s ease both;
+}
+
+.btn-primary {
+  font-family: var(--font-ui); font-size: 15px; font-weight: 600;
+  color: var(--white); background: var(--grad-main);
+  border: none; cursor: pointer; padding: 14px 30px; border-radius: 10px;
+  text-decoration: none; transition: all 0.2s ease;
+  box-shadow: var(--shadow-indigo);
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-indigo-lg); opacity: 0.93; }
+
+.btn-secondary {
+  font-family: var(--font-ui); font-size: 15px; font-weight: 500;
+  color: var(--slate-700); background: var(--white);
+  border: 1.5px solid var(--slate-200); cursor: pointer;
+  padding: 13px 24px; border-radius: 10px; text-decoration: none;
+  transition: all 0.2s ease; box-shadow: var(--shadow-xs);
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-secondary:hover { border-color: var(--indigo-300); color: var(--indigo-600); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+
+/* Social proof row */
+.hero-proof {
+  display: flex; gap: 32px; margin-top: 52px; justify-content: center;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.55s 0.32s ease both;
+  flex-wrap: wrap;
+}
+.proof-stat { text-align: center; }
+.proof-num {
+  font-family: var(--font-sans); font-size: 28px; font-weight: 700;
+  color: var(--slate-900); letter-spacing: -0.8px; display: block;
+}
+.proof-label {
+  font-family: var(--font-ui); font-size: 12px; color: var(--slate-400);
+  font-weight: 500; margin-top: 2px; display: block;
+}
+.proof-sep { width: 1px; height: 36px; background: var(--slate-200); align-self: center; }
+
+/* ─── DASHBOARD PREVIEW ─── */
+.dashboard-wrap {
+  margin-top: 64px; width: 100%; max-width: 1000px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.7s 0.4s ease both;
+}
+.dashboard-glow {
+  position: absolute; inset: -40px; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.1), transparent 70%);
+}
+.dashboard-card {
+  background: var(--white); border-radius: var(--radius-lg);
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  animation: cardFloat 6s ease-in-out infinite;
+}
+@keyframes cardFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.db-topbar {
+  display: flex; align-items: center; gap: 7px;
+  padding: 13px 18px; background: var(--slate-50);
+  border-bottom: 1px solid var(--slate-200);
+}
+.db-dot { width: 11px; height: 11px; border-radius: 50%; }
+.dd-r { background: #FF5F57; } .dd-y { background: #FEBC2E; } .dd-g { background: #28C840; }
+.db-url {
+  margin: 0 auto; font-family: var(--font-ui); font-size: 11px;
+  color: var(--slate-400); background: var(--white);
+  padding: 4px 16px; border-radius: 6px; border: 1px solid var(--slate-200);
+  letter-spacing: 0.01em;
+}
+.db-layout { display: grid; grid-template-columns: 210px 1fr; min-height: 340px; }
+
+.db-sidebar {
+  background: var(--slate-50); border-right: 1px solid var(--slate-200); padding: 20px 14px;
+}
+.db-school {
+  display: flex; align-items: center; gap: 9px; padding: 10px 12px;
+  background: var(--white); border-radius: 10px; margin-bottom: 20px;
+  border: 1px solid var(--slate-200); box-shadow: var(--shadow-xs);
+}
+.db-school-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--grad-main);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.db-school-name { font-size: 12px; font-weight: 600; color: var(--slate-800); }
+.db-school-role { font-size: 10px; color: var(--slate-400); font-family: var(--font-ui); }
+.db-section-label {
+  font-family: var(--font-ui); font-size: 9px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate-400);
+  padding: 0 8px; margin-bottom: 6px; margin-top: 4px;
+}
+.db-nav-item {
+  display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+  border-radius: 8px; margin-bottom: 1px; font-size: 12px; font-weight: 500;
+  color: var(--slate-500); cursor: default; transition: all 0.15s;
+}
+.db-nav-item.active { background: var(--indigo-600); color: var(--white); }
+.db-nav-item:not(.active):hover { background: var(--slate-200); color: var(--slate-700); }
+
+.db-main { padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+.db-greeting { font-family: var(--font-sans); font-size: 15px; font-weight: 600; color: var(--slate-800); }
+.db-date { font-family: var(--font-ui); font-size: 11px; color: var(--slate-400); }
+
+.db-kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.db-kpi {
+  background: var(--white); border: 1px solid var(--slate-200); border-radius: 11px; padding: 14px;
+  box-shadow: var(--shadow-xs);
+}
+.db-kpi-label { font-family: var(--font-ui); font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate-400); margin-bottom: 6px; }
+.db-kpi-value { font-family: var(--font-sans); font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: var(--slate-900); }
+.db-kpi-value.accent { color: var(--indigo-600); }
+.db-kpi-change { font-family: var(--font-ui); font-size: 10px; font-weight: 600; color: #16A34A; margin-top: 3px; }
+
+.db-charts { display: grid; grid-template-columns: 3fr 2fr; gap: 10px; }
+.db-chart-card {
+  background: var(--white); border: 1px solid var(--slate-200); border-radius: 11px; padding: 14px;
+  box-shadow: var(--shadow-xs);
+}
+.db-chart-label { font-family: var(--font-ui); font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate-400); margin-bottom: 12px; }
+.bar-row { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.bar-lbl { font-family: var(--font-ui); font-size: 11px; color: var(--slate-500); width: 68px; flex-shrink: 0; font-weight: 500; }
+.bar-track { flex: 1; height: 6px; background: var(--slate-100); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; background: var(--grad-main); transition: width 1s ease; }
+.bar-pct { font-family: var(--font-ui); font-size: 10px; font-weight: 600; color: var(--slate-600); width: 28px; text-align: right; }
+
+.activity-list { display: flex; flex-direction: column; gap: 9px; }
+.activity-row { display: flex; align-items: center; gap: 8px; }
+.activity-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--indigo-400); flex-shrink: 0; }
+.activity-text { font-family: var(--font-ui); font-size: 11px; color: var(--slate-600); font-weight: 500; flex: 1; }
+.activity-time { font-family: var(--font-ui); font-size: 10px; color: var(--slate-400); white-space: nowrap; }
+
+/* ─── LOGOS ─── */
+.logos-band {
+  padding: 36px 0;
+  border-top: 1px solid var(--slate-100);
+  border-bottom: 1px solid var(--slate-100);
+  overflow: hidden;
+}
+.logos-label {
+  text-align: center; font-family: var(--font-ui); font-size: 11px;
+  font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--slate-400); margin-bottom: 22px;
+}
+.logos-marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+}
+.logos-track {
+  display: flex; gap: 12px;
+  animation: marquee 30s linear infinite;
+  width: max-content;
+}
+.logos-track:hover { animation-play-state: paused; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.school-tag {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--white); border: 1px solid var(--slate-200); border-radius: 10px;
+  padding: 8px 16px; white-space: nowrap;
+  font-family: var(--font-ui); font-size: 13px; font-weight: 600; color: var(--slate-600);
+  box-shadow: var(--shadow-xs); flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s;
+}
+.school-tag:hover { border-color: var(--indigo-300); color: var(--indigo-600); }
+.school-tag-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--indigo-300); }
+
+/* ─── SECTIONS SHARED ─── */
+section { position: relative; z-index: 1; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 56px; }
+
+.section-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--indigo-600); margin-bottom: 16px;
+}
+.eyebrow-line { width: 20px; height: 1.5px; background: var(--indigo-400); border-radius: 2px; }
+
+.section-title {
+  font-family: var(--font-serif); font-size: clamp(34px, 4.5vw, 52px);
+  font-weight: 400; letter-spacing: -0.5px; line-height: 1.1; color: var(--slate-900);
+}
+.section-title em { font-style: italic; color: var(--indigo-600); }
+.section-body { font-family: var(--font-ui); font-size: 16px; color: var(--slate-500); line-height: 1.7; max-width: 480px; margin-top: 14px; font-weight: 400; }
+
+/* ─── BEFORE/AFTER ─── */
+.transform-sec { padding: 112px 0; background: var(--slate-50); }
+.transform-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 56px; }
+.transform-grid {
+  display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--slate-200);
+  border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);
+}
+.tg-head {
+  padding: 16px 28px; font-family: var(--font-ui); font-size: 11px;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.tg-head.before { background: #FFF5F5; color: #DC2626; border-right: 1px solid var(--slate-200); border-bottom: 1px solid var(--slate-200); }
+.tg-head.after  { background: var(--indigo-50); color: var(--indigo-600); border-bottom: 1px solid var(--slate-200); }
+
+.tg-row { display: contents; }
+.tg-cell {
+  padding: 20px 28px; border-bottom: 1px solid var(--slate-100);
+  display: flex; align-items: flex-start; gap: 14px;
+  transition: background 0.15s;
+}
+.tg-cell.before { background: var(--white); border-right: 1px solid var(--slate-200); }
+.tg-cell.before:hover { background: #FFF5F5; }
+.tg-cell.after  { background: var(--white); }
+.tg-cell.after:hover  { background: var(--indigo-50); }
+.tg-cell:last-child, .tg-cell:nth-last-child(2) { border-bottom: none; }
+
+.tg-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+.tg-text-main { font-family: var(--font-ui); font-size: 13px; font-weight: 600; color: var(--slate-700); margin-bottom: 5px; }
+.tg-badge {
+  display: inline-block; font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 5px;
+}
+.badge-red   { background: #FEF2F2; color: #DC2626; }
+.badge-green { background: var(--indigo-50); color: var(--indigo-700); }
+
+/* ─── FEATURES ─── */
+.features-sec { padding: 112px 0; background: var(--white); }
+.feat-header { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; margin-bottom: 64px; }
+.feat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--slate-200); border: 1px solid var(--slate-200); border-radius: var(--radius-lg); overflow: hidden; }
+.feat-card {
+  background: var(--white); padding: 32px 28px;
+  transition: background 0.2s;
+  cursor: default;
+}
+.feat-card:hover { background: var(--slate-50); }
+.feat-icon-box {
+  width: 44px; height: 44px; border-radius: 11px; margin-bottom: 18px;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  background: var(--indigo-50); border: 1px solid var(--indigo-100);
+  transition: background 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.feat-card:hover .feat-icon-box { background: var(--indigo-100); transform: translateY(-3px); }
+.feat-name { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--slate-800); margin-bottom: 8px; letter-spacing: -0.2px; }
+.feat-desc { font-family: var(--font-ui); font-size: 13px; color: var(--slate-500); line-height: 1.65; }
+.feat-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 14px; }
+.feat-tag {
+  font-family: var(--font-ui); font-size: 11px; font-weight: 500;
+  color: var(--indigo-600); background: var(--indigo-50); border: 1px solid var(--indigo-100);
+  padding: 3px 8px; border-radius: 5px;
+}
+
+/* ─── WHO FOR ─── */
+.personas-sec { padding: 112px 0; background: var(--slate-50); }
+.personas-header { text-align: center; margin-bottom: 56px; }
+.persona-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+.persona-card {
+  background: var(--white); border: 1px solid var(--slate-200);
+  border-radius: var(--radius); padding: 28px 22px; text-align: center;
+  cursor: default; transition: all 0.25s cubic-bezier(0.34,1.3,0.64,1);
+  box-shadow: var(--shadow-xs);
+}
+.persona-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--indigo-200); }
+.persona-emoji {
+  font-size: 36px; display: block; margin-bottom: 14px;
+  animation: gentleFloat ease-in-out infinite;
+}
+.persona-card:nth-child(1) .persona-emoji { animation-duration: 3.5s; }
+.persona-card:nth-child(2) .persona-emoji { animation-duration: 4.1s; animation-delay: 0.4s; }
+.persona-card:nth-child(3) .persona-emoji { animation-duration: 3.8s; animation-delay: 0.8s; }
+.persona-card:nth-child(4) .persona-emoji { animation-duration: 4.4s; animation-delay: 0.2s; }
+@keyframes gentleFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+.persona-name { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--slate-800); margin-bottom: 6px; }
+.persona-desc { font-family: var(--font-ui); font-size: 13px; color: var(--slate-500); line-height: 1.6; }
+.persona-chips { display: flex; gap: 5px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+.pchip {
+  font-family: var(--font-ui); font-size: 10px; font-weight: 600;
+  color: var(--slate-500); background: var(--slate-100);
+  padding: 3px 8px; border-radius: 5px;
+}
+
+/* ─── PRICING ─── */
+.pricing-sec { padding: 112px 0; background: var(--white); }
+.pricing-header { text-align: center; margin-bottom: 56px; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+
+.plan-card {
+  background: var(--white); border: 1.5px solid var(--slate-200);
+  border-radius: var(--radius-lg); padding: 36px 30px;
+  cursor: default; transition: all 0.25s ease;
+  box-shadow: var(--shadow-xs);
+}
+.plan-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--indigo-200); }
+.plan-card.featured {
+  background: var(--grad-dark);
+  border-color: transparent;
+  box-shadow: var(--shadow-xl);
+}
+.plan-card.featured:hover { transform: translateY(-5px); box-shadow: 0 40px 100px rgba(15,23,42,0.25); }
+
+.plan-badge {
+  display: inline-block; font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--grad-main); color: var(--white);
+  padding: 4px 10px; border-radius: 5px; margin-bottom: 16px;
+}
+.plan-name { font-family: var(--font-sans); font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; color: var(--slate-900); }
+.plan-name.light { color: var(--white); }
+.plan-tagline { font-family: var(--font-ui); font-size: 13px; color: var(--slate-500); margin-bottom: 24px; }
+.plan-tagline.light { color: rgba(255,255,255,0.5); }
+
+.plan-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 4px; }
+.plan-sym { font-family: var(--font-ui); font-size: 18px; font-weight: 600; color: var(--slate-400); }
+.plan-sym.light { color: rgba(255,255,255,0.5); }
+.plan-num { font-family: var(--font-sans); font-size: 42px; font-weight: 700; letter-spacing: -1.5px; color: var(--slate-900); }
+.plan-num.light { color: var(--white); }
+.plan-num.custom { font-size: 32px; letter-spacing: -0.5px; }
+.plan-per { font-family: var(--font-ui); font-size: 13px; color: var(--slate-400); }
+.plan-per.light { color: rgba(255,255,255,0.4); }
+.plan-cap { font-family: var(--font-ui); font-size: 12px; color: var(--slate-400); margin-bottom: 24px; font-weight: 500; }
+.plan-cap.light { color: rgba(255,255,255,0.35); }
+.plan-divider { height: 1px; background: var(--slate-100); margin: 20px 0; }
+.plan-divider.light { background: rgba(255,255,255,0.1); }
+.plan-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.plan-feat { display: flex; align-items: flex-start; gap: 9px; font-family: var(--font-ui); font-size: 13px; color: var(--slate-600); font-weight: 500; }
+.plan-feat.light { color: rgba(255,255,255,0.7); }
+.plan-check { font-size: 12px; flex-shrink: 0; margin-top: 1px; color: var(--indigo-500); }
+.plan-check.light { color: rgba(255,255,255,0.6); }
+
+.btn-plan {
+  display: block; width: 100%; text-align: center; text-decoration: none;
+  font-family: var(--font-ui); font-size: 14px; font-weight: 600; cursor: pointer;
+  padding: 13px; border-radius: 10px; transition: all 0.2s ease;
+}
+.btn-plan.outline {
+  background: var(--slate-50); color: var(--slate-700);
+  border: 1.5px solid var(--slate-200);
+}
+.btn-plan.outline:hover { background: var(--indigo-50); color: var(--indigo-700); border-color: var(--indigo-200); transform: translateY(-1px); }
+.btn-plan.main {
+  background: var(--grad-main); color: var(--white); border: none;
+  box-shadow: var(--shadow-indigo);
+}
+.btn-plan.main:hover { opacity: 0.92; transform: translateY(-2px); box-shadow: var(--shadow-indigo-lg); }
+.btn-plan.ghost {
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);
+  border: 1.5px solid rgba(255,255,255,0.15);
+}
+.btn-plan.ghost:hover { background: rgba(255,255,255,0.18); color: var(--white); transform: translateY(-1px); }
+
+/* ─── TESTIMONIALS ─── */
+.testi-sec { padding: 112px 0; background: var(--slate-50); overflow: hidden; }
+.testi-header { text-align: center; margin-bottom: 56px; }
+.testi-scroll { overflow: hidden; mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); }
+.testi-track { display: flex; gap: 18px; animation: marquee 40s linear infinite; width: max-content; }
+.testi-track:hover { animation-play-state: paused; }
+
+.tcard {
+  background: var(--white); border: 1px solid var(--slate-200);
+  border-radius: var(--radius); padding: 26px; min-width: 300px; max-width: 300px;
+  flex-shrink: 0; box-shadow: var(--shadow-xs);
+  transition: all 0.25s ease; cursor: default;
+}
+.tcard:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--indigo-200); }
+.tcard-stars { display: flex; gap: 2px; margin-bottom: 12px; }
+.tstar { font-size: 14px; color: #F59E0B; }
+.tcard-text { font-family: var(--font-ui); font-size: 13px; color: var(--slate-600); line-height: 1.7; margin-bottom: 18px; font-style: italic; }
+.tcard-author { display: flex; align-items: center; gap: 10px; }
+.tcard-avatar {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: var(--grad-main);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: var(--white);
+}
+.tcard-name { font-family: var(--font-ui); font-size: 13px; font-weight: 600; color: var(--slate-800); }
+.tcard-role { font-family: var(--font-ui); font-size: 11px; color: var(--slate-400); margin-top: 1px; }
+
+/* ─── CTA ─── */
+.cta-sec { padding: 112px 56px; background: var(--white); }
+.cta-inner {
+  max-width: 740px; margin: 0 auto;
+  background: var(--grad-dark);
+  border-radius: var(--radius-xl); padding: 72px 60px;
+  text-align: center; position: relative; overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+/* Subtle glow inside CTA */
+.cta-inner::before {
+  content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%);
+  width:500px; height:300px; border-radius:50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.3), transparent 70%);
+  pointer-events: none;
+}
+/* Top shimmer line */
+.cta-inner::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(129,140,248,0.6), transparent);
+}
+.cta-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--indigo-400); margin-bottom: 20px;
+}
+.cta-title {
+  font-family: var(--font-serif); font-size: clamp(32px, 4vw, 50px);
+  font-weight: 400; color: var(--white); letter-spacing: -0.5px;
+  line-height: 1.1; margin-bottom: 18px;
+}
+.cta-title em { font-style: italic; color: var(--indigo-400); }
+.cta-sub { font-family: var(--font-ui); font-size: 16px; color: rgba(255,255,255,0.5); line-height: 1.7; max-width: 420px; margin: 0 auto 36px; }
+.cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+.btn-cta-white {
+  font-family: var(--font-ui); font-size: 15px; font-weight: 600; cursor: pointer;
+  color: var(--slate-900); background: var(--white); border: none;
+  padding: 14px 30px; border-radius: 10px; text-decoration: none;
+  transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(0,0,0,0.2); }
+.btn-cta-ghost {
+  font-family: var(--font-ui); font-size: 15px; font-weight: 500; cursor: pointer;
+  color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  padding: 13px 24px; border-radius: 10px; text-decoration: none;
+  transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-cta-ghost:hover { background: rgba(255,255,255,0.14); color: var(--white); transform: translateY(-1px); }
+.cta-trust { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+.ctrust { display: flex; align-items: center; gap: 6px; font-family: var(--font-ui); font-size: 12px; color: rgba(255,255,255,0.35); font-weight: 500; }
+.ctrust-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--indigo-400); }
+
+/* ─── FOOTER ─── */
+footer { background: var(--slate-900); padding: 56px 56px 36px; }
+.footer-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+.footer-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; margin-bottom: 12px; }
+.footer-logo-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--grad-main); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.footer-logo-name { font-family: var(--font-sans); font-size: 16px; font-weight: 700; color: var(--white); }
+.footer-desc { font-family: var(--font-ui); font-size: 13px; color: rgba(255,255,255,0.35); line-height: 1.65; max-width: 220px; }
+.footer-col-title { font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+.footer-links { display: flex; flex-direction: column; gap: 9px; }
+.footer-links a { font-family: var(--font-ui); font-size: 13px; color: rgba(255,255,255,0.35); text-decoration: none; font-weight: 400; transition: color 0.15s; }
+.footer-links a:hover { color: rgba(255,255,255,0.7); }
+.footer-bottom {
+  max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;
+  padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.07);
+  font-family: var(--font-ui); font-size: 12px; color: rgba(255,255,255,0.25); flex-wrap: wrap; gap: 10px;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 960px) {
+  nav { padding: 0 24px; } .nav-links { display: none; }
+  .hero { padding: 110px 24px 72px; }
+  .wrap { padding: 0 24px; }
+  .transform-grid { grid-template-columns: 1fr; }
+  .tg-cell.before { border-right: none; }
+  .tg-head.before { border-right: none; }
+  .feat-header { grid-template-columns: 1fr; gap: 24px; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .persona-grid { grid-template-columns: repeat(2,1fr); }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .db-layout { grid-template-columns: 1fr; }
+  .db-sidebar { display: none; }
+  .db-kpi-grid { grid-template-columns: repeat(2,1fr); }
+  .db-charts { grid-template-columns: 1fr; }
+  .cta-sec { padding: 80px 24px; }
+  .cta-inner { padding: 48px 28px; }
+  footer { padding: 40px 24px 28px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="#" class="nav-logo">
+    <div class="logo-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    </div>
+    <span class="logo-name">Bodhi<em>board</em></span>
+  </a>
+  <div class="nav-links">
+    <a href="/platform">Platform</a>
+    <a href="#personas">Solutions</a>
+    <a href="/pricing">Pricing</a>
+    <a href="#testimonials">Stories</a>
+    <a href="#">Blog</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="btn-ghost-nav">Sign in</a>
+    <a href="/signup" class="btn-cta-nav">Start free trial</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-kicker">
+    <div class="kicker-dot"></div>
+    Trusted by 500+ schools across India
+  </div>
+
+  <h1 class="hero-h1">
+    The school management platform<br>
+    <em>built for how you actually work</em>
+  </h1>
+
+  <p class="hero-sub">
+    Admissions, curriculum, billing, parent communication and staff — unified in one elegant platform designed by educators.
+  </p>
+
+  <div class="hero-actions">
+    <a href="/signup" class="btn-primary">Get started free →</a>
+    <a href="#" class="btn-secondary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+      Watch a demo
+    </a>
+  </div>
+
+  <div class="hero-proof">
+    <div class="proof-stat">
+      <div class="proof-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <span class="proof-num" data-count="500">0+</span>
+      <span class="proof-label">Schools onboarded</span>
+    </div>
+    <div class="proof-sep"></div>
+    <div class="proof-stat">
+      <div class="proof-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <span class="proof-num" data-count="1000">0+</span>
+      <span class="proof-label">Happy families</span>
+    </div>
+    <div class="proof-sep"></div>
+    <div class="proof-stat">
+      <div class="proof-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <span class="proof-num" data-count="95">0%</span>
+      <span class="proof-label">Admin time saved</span>
+    </div>
+    <div class="proof-sep"></div>
+    <div class="proof-stat">
+      <div class="proof-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <span class="proof-num" data-count="4.9">0★</span>
+      <span class="proof-label">Average rating</span>
+    </div>
+  </div>
+
+  <!-- Dashboard Preview -->
+  <div class="dashboard-wrap reveal">
+    <div class="dashboard-glow"></div>
+    <div class="dashboard-card">
+      <div class="db-topbar">
+        <div class="db-dot dd-r"></div>
+        <div class="db-dot dd-y"></div>
+        <div class="db-dot dd-g"></div>
+        <div class="db-url">app.bodhiboard.in / dashboard</div>
+      </div>
+      <div class="db-layout">
+        <div class="db-sidebar">
+          <div class="db-school">
+            <div class="db-school-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+            </div>
+            <div>
+              <div class="db-school-name">Sunrise Academy</div>
+              <div class="db-school-role">Administrator</div>
+            </div>
+          </div>
+          <div class="db-section-label">Navigation</div>
+          <div class="db-nav-item active">
+            <span class="db-nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+            Dashboard
+          </div>
+          <div class="db-nav-item">
+            <span class="db-nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            Admissions
+          </div>
+          <div class="db-nav-item">
+            <span class="db-nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+            Curriculum
+          </div>
+          <div class="db-nav-item">
+            <span class="db-nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+            Parents
+          </div>
+          <div class="db-nav-item">
+            <span class="db-nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+            Billing
+          </div>
+          <div class="db-nav-item">
+            <span class="db-nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            Staff
+          </div>
+          <div class="db-nav-item">
+            <span class="db-nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+            Reports
+          </div>
+        </div>
+        <div class="db-main">
+          <div class="flex-between">
+            <div class="db-greeting">Good morning, Principal 👋</div>
+            <div class="db-date">Thu, 19 Mar 2026</div>
+          </div>
+          <div class="db-kpi-grid">
+            <div class="db-kpi">
+              <div class="db-kpi-label">Enrolled Students</div>
+              <div class="db-kpi-value accent">248</div>
+              <div class="db-kpi-change">↑ 12% this month</div>
+            </div>
+            <div class="db-kpi">
+              <div class="db-kpi-label">Open Leads</div>
+              <div class="db-kpi-value">67</div>
+              <div class="db-kpi-change">↑ 8 this week</div>
+            </div>
+            <div class="db-kpi">
+              <div class="db-kpi-label">Fees Collected</div>
+              <div class="db-kpi-value">₹4.2L</div>
+              <div class="db-kpi-change">94% of target</div>
+            </div>
+            <div class="db-kpi">
+              <div class="db-kpi-label">Parent Rating</div>
+              <div class="db-kpi-value accent">4.9★</div>
+              <div class="db-kpi-change">↑ 0.2 vs last qtr</div>
+            </div>
+          </div>
+          <div class="db-charts">
+            <div class="db-chart-card">
+              <div class="db-chart-label">Admission Funnel — This Term</div>
+              <div class="bar-row"><div class="bar-lbl">Inquiries</div><div class="bar-track"><div class="bar-fill" style="--w:88%"></div></div><div class="bar-pct">88</div></div>
+              <div class="bar-row"><div class="bar-lbl">Tours done</div><div class="bar-track"><div class="bar-fill" style="--w:64%"></div></div><div class="bar-pct">64</div></div>
+              <div class="bar-row"><div class="bar-lbl">Enrolled</div><div class="bar-track"><div class="bar-fill" style="--w:42%"></div></div><div class="bar-pct">42</div></div>
+            </div>
+            <div class="db-chart-card">
+              <div class="db-chart-label">Recent Activity</div>
+              <div class="activity-list">
+                <div class="activity-row"><div class="activity-dot"></div><div class="activity-text">Priya R. enrolled — Nursery</div><div class="activity-time">2m</div></div>
+                <div class="activity-row"><div class="activity-dot"></div><div class="activity-text">12 fee reminders sent</div><div class="activity-time">14m</div></div>
+                <div class="activity-row"><div class="activity-dot"></div><div class="activity-text">Diary published — KG A</div><div class="activity-time">1h</div></div>
+                <div class="activity-row"><div class="activity-dot"></div><div class="activity-text">New inquiry received</div><div class="activity-time">2h</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<div class="logos-band">
+  <div class="logos-label">Schools that trust Bodhiboard</div>
+  <div class="logos-marquee">
+    <div class="logos-track">
+      <div class="school-tag"><div class="school-tag-dot"></div>Little Chanakyas</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Sunrise Academy</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Bloombright Schools</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Greenleaf Preschool</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Wisdom Tree</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Nova Learning</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Wings Early Years</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Summit Academy</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Little Chanakyas</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Sunrise Academy</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Bloombright Schools</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Greenleaf Preschool</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Wisdom Tree</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Nova Learning</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Wings Early Years</div>
+      <div class="school-tag"><div class="school-tag-dot"></div>Summit Academy</div>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFORM -->
+<section class="transform-sec" id="transform">
+  <div class="wrap">
+    <div class="transform-header reveal">
+      <div>
+        <div class="section-eyebrow"><div class="eyebrow-line"></div>The Transformation</div>
+        <h2 class="section-title">Stop patching together<br><em>five different tools</em></h2>
+      </div>
+      <p class="section-body" class="text-right-340">Every pain point has an intelligent solution already built in — designed for how Indian schools actually operate.</p>
+    </div>
+    <div class="transform-grid reveal">
+      <div class="tg-head before">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        Without Bodhiboard
+      </div>
+      <div class="tg-head after">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        With Bodhiboard
+      </div>
+
+      <div class="tg-cell before">
+        <div class="tg-icon-wrap bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <div><div class="tg-text-main">Admissions scattered across calls, WhatsApp, and paper</div><span class="tg-badge badge-red">40% leads lost</span></div>
+      </div>
+      <div class="tg-cell after">
+        <div class="tg-icon-wrap good"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div><div class="tg-text-main">AI-powered pipeline with automated follow-ups</div><span class="tg-badge badge-green">2× conversion rate</span></div>
+      </div>
+
+      <div class="tg-cell before">
+        <div class="tg-icon-wrap bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div><div class="tg-text-main">Manual admin consuming 15 hours of staff time every week</div><span class="tg-badge badge-red">15h wasted weekly</span></div>
+      </div>
+      <div class="tg-cell after">
+        <div class="tg-icon-wrap good"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div><div class="tg-text-main">Automation handles repetitive tasks so staff focus on students</div><span class="tg-badge badge-green">95% time saved</span></div>
+      </div>
+
+      <div class="tg-cell before">
+        <div class="tg-icon-wrap bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+        <div><div class="tg-text-main">Curriculum chaos — documents scattered across drives and folders</div><span class="tg-badge badge-red">3h daily search</span></div>
+      </div>
+      <div class="tg-cell after">
+        <div class="tg-icon-wrap good"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <div><div class="tg-text-main">Ready-to-teach curriculum, lesson plans and outcomes — built in</div><span class="tg-badge badge-green">Launch in 1 week</span></div>
+      </div>
+
+      <div class="tg-cell before" class="no-border-bottom">
+        <div class="tg-icon-wrap bad"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div><div class="tg-text-main">50+ parent calls daily for updates that should be automatic</div><span class="tg-badge badge-red">50+ calls per day</span></div>
+      </div>
+      <div class="tg-cell after" class="no-border-bottom">
+        <div class="tg-icon-wrap good"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4338CA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="16 2 16 8 22 8"/></svg></div>
+        <div><div class="tg-text-main">Real-time parent app — attendance, diary, progress, all instant</div><span class="tg-badge badge-green">90% fewer calls</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-sec" id="features">
+  <div class="wrap">
+    <div class="feat-header reveal">
+      <div>
+        <div class="section-eyebrow"><div class="eyebrow-line"></div>Platform</div>
+        <h2 class="section-title">Everything your school<br><em>needs, in one place</em></h2>
+      </div>
+      <p class="section-body" class="text-right-body">Six integrated modules. One login. Zero context-switching. Built by educators who've run real schools.</p>
+    </div>
+    <div class="feat-grid reveal">
+      <div class="feat-card">
+        <div class="feat-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><path d="M14.05 2a9 9 0 0 1 8 7.94"/><path d="M14.05 6A5 5 0 0 1 18 10"/></svg>
+        </div>
+        <div class="feat-name">Admissions Intelligence</div>
+        <div class="feat-desc">Capture every inquiry, score leads automatically, schedule tours, and convert prospects with AI-powered follow-ups.</div>
+        <div class="feat-tags"><span class="feat-tag">Lead pipeline</span><span class="feat-tag">Auto follow-up</span><span class="feat-tag">AI scoring</span></div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div class="feat-name">Built-in Curriculum</div>
+        <div class="feat-desc">Ready-to-teach lesson plans, learning outcomes and progress tracking — designed by educators, not software teams.</div>
+        <div class="feat-tags"><span class="feat-tag">Lesson plans</span><span class="feat-tag">Outcomes</span><span class="feat-tag">Progress</span></div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>
+        </div>
+        <div class="feat-name">Parent Communication</div>
+        <div class="feat-desc">Daily diary, attendance, progress reports and school announcements. Parents stay informed without calling.</div>
+        <div class="feat-tags"><span class="feat-tag">Daily diary</span><span class="feat-tag">Real-time</span><span class="feat-tag">Reports</span></div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        </div>
+        <div class="feat-name">Staff Training Hub</div>
+        <div class="feat-desc">Structured onboarding for every role — teachers, nannies, drivers. Consistent quality from their very first day.</div>
+        <div class="feat-tags"><span class="feat-tag">Onboarding</span><span class="feat-tag">SOPs</span><span class="feat-tag">Tracking</span></div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="7" y1="15" x2="7.01" y2="15"/><line x1="11" y1="15" x2="13" y2="15"/></svg>
+        </div>
+        <div class="feat-name">Billing & Operations</div>
+        <div class="feat-desc">Fee management, attendance, timetables, transport and inventory — connected and automated end-to-end.</div>
+        <div class="feat-tags"><span class="feat-tag">Fee collection</span><span class="feat-tag">Attendance</span><span class="feat-tag">Transport</span></div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="feat-name">Growth & Marketing</div>
+        <div class="feat-desc">WhatsApp campaigns, templates and analytics dashboards to grow enrolments without guesswork.</div>
+        <div class="feat-tags"><span class="feat-tag">WhatsApp</span><span class="feat-tag">Analytics</span><span class="feat-tag">Campaigns</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO FOR -->
+<section class="personas-sec" id="personas">
+  <div class="wrap">
+    <div class="personas-header reveal">
+      <div class="section-eyebrow" class="eyebrow-center"><div class="eyebrow-line"></div>Solutions<div class="eyebrow-line"></div></div>
+      <h2 class="section-title">Built for every school builder</h2>
+      <p class="section-body" class="section-body-center">Whether you're launching your first classroom or running a chain — Bodhiboard meets you where you are.</p>
+    </div>
+    <div class="persona-grid">
+      <div class="persona-card reveal">
+        <div class="persona-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2z"/><path d="M12 14c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"/><path d="M17 8l2 2 4-4"/></svg>
+        </div>
+        <div class="persona-name">New Founders</div>
+        <div class="persona-desc">Step-by-step guidance from registration to your first enrolment. Launch with confidence.</div>
+        <div class="persona-chips"><span class="pchip">Quick setup</span><span class="pchip">Guided onboarding</span></div>
+      </div>
+      <div class="persona-card reveal">
+        <div class="persona-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        </div>
+        <div class="persona-name">Existing Schools</div>
+        <div class="persona-desc">Replace manual chaos with intelligent systems. Get full visibility across every department.</div>
+        <div class="persona-chips"><span class="pchip">Automation</span><span class="pchip">Visibility</span></div>
+      </div>
+      <div class="persona-card reveal">
+        <div class="persona-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="12" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18.01"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
+        </div>
+        <div class="persona-name">Chains & Franchises</div>
+        <div class="persona-desc">Central control, standardised curriculum and consistent quality across every branch.</div>
+        <div class="persona-chips"><span class="pchip">Multi-branch</span><span class="pchip">Central control</span></div>
+      </div>
+      <div class="persona-card reveal">
+        <div class="persona-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <div class="persona-name">Educator-Led Schools</div>
+        <div class="persona-desc">Built by educators who've run real schools. Pedagogy-first. Human-centred. Always.</div>
+        <div class="persona-chips"><span class="pchip">Pedagogy-first</span><span class="pchip">Human-centred</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-sec" id="pricing">
+  <div class="wrap">
+    <div class="pricing-header reveal">
+      <div class="section-eyebrow" class="eyebrow-center"><div class="eyebrow-line"></div>Pricing<div class="eyebrow-line"></div></div>
+      <h2 class="section-title">Honest pricing, no surprises</h2>
+      <p class="section-body" class="section-body-center">No hidden fees. No long-term lock-ins. Cancel any time.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="plan-card reveal">
+        <div class="plan-name">Starter</div>
+        <div class="plan-tagline">Perfect for new schools launching right</div>
+        <div class="plan-price"><span class="plan-sym">₹</span><span class="plan-num">2,499</span><span class="plan-per">/month</span></div>
+        <div class="plan-cap">Up to 50 students</div>
+        <div class="plan-divider"></div>
+        <div class="plan-features">
+          <div class="plan-feat"><span class="plan-check">✓</span>Admissions & student management</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>Parent communication app</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>Attendance & digital diary</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>Preschool curriculum access</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>Basic staff management</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>WhatsApp & email alerts</div>
+        </div>
+        <a href="/signup" class="btn-plan outline">Get started →</a>
+      </div>
+
+      <div class="plan-card featured reveal">
+        <div class="plan-badge">Most Popular</div>
+        <div class="plan-name light">Growth</div>
+        <div class="plan-tagline light">For schools ready to scale</div>
+        <div class="plan-price"><span class="plan-sym light">₹</span><span class="plan-num light">4,999</span><span class="plan-per light">/month</span></div>
+        <div class="plan-cap light">Up to 200 students</div>
+        <div class="plan-divider light"></div>
+        <div class="plan-features">
+          <div class="plan-feat light"><span class="plan-check light">✓</span>Everything in Starter</div>
+          <div class="plan-feat light"><span class="plan-check light">✓</span>AI admissions dashboard</div>
+          <div class="plan-feat light"><span class="plan-check light">✓</span>Lead & follow-up automation</div>
+          <div class="plan-feat light"><span class="plan-check light">✓</span>Staff induction modules</div>
+          <div class="plan-feat light"><span class="plan-check light">✓</span>Billing & fee management</div>
+          <div class="plan-feat light"><span class="plan-check light">✓</span>Marketing tools & analytics</div>
+        </div>
+        <a href="#" class="btn-plan main">Start growing →</a>
+      </div>
+
+      <div class="plan-card reveal">
+        <div class="plan-name">Institution</div>
+        <div class="plan-tagline">For large schools and franchise chains</div>
+        <div class="plan-price"><span class="plan-num custom">Custom</span></div>
+        <div class="plan-cap">Unlimited students · All branches</div>
+        <div class="plan-divider"></div>
+        <div class="plan-features">
+          <div class="plan-feat"><span class="plan-check">✓</span>Everything in Growth</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>Multi-branch management</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>Central curriculum control</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>Franchise-ready SOPs</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>Custom roles & permissions</div>
+          <div class="plan-feat"><span class="plan-check">✓</span>Priority onboarding & support</div>
+        </div>
+        <a href="/apply" class="btn-plan outline">Talk to our team →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testi-sec" id="testimonials">
+  <div class="wrap" class="mb-0">
+    <div class="testi-header reveal">
+      <div class="section-eyebrow" class="eyebrow-center"><div class="eyebrow-line"></div>Stories<div class="eyebrow-line"></div></div>
+      <h2 class="section-title">Educators who made the switch</h2>
+    </div>
+  </div>
+  <div class="testi-scroll">
+    <div class="testi-track">
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"We replaced six different tools with Bodhiboard. Admissions conversion doubled in the first term. It genuinely changed how we run the school."</div><div class="tcard-author"><div class="tcard-avatar">S</div><div><div class="tcard-name">Sneha Agarwal</div><div class="tcard-role">Founder, Bloomseed Preschool</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"Our teachers save three hours of admin every day. Parents rave about the app. Satisfaction scores are the highest they've ever been."</div><div class="tcard-author"><div class="tcard-avatar">R</div><div><div class="tcard-name">Ramesh Nair</div><div class="tcard-role">Director, Greenleaf Academy</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"We opened our third branch with zero quality drop. The curriculum module alone paid for itself. Scaling has never felt this manageable."</div><div class="tcard-author"><div class="tcard-avatar">P</div><div><div class="tcard-name">Priyanka Mehta</div><div class="tcard-role">Chain Owner, Nova Learning</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"Setup was faster than I expected. We were fully live within a week and the support team actually felt like they cared about our success."</div><div class="tcard-author"><div class="tcard-avatar">A</div><div><div class="tcard-name">Ananya Singh</div><div class="tcard-role">Founder, LittleStars Early Learning</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"Parents stopped calling the moment we went live. The daily diary feature alone transformed our community relationship."</div><div class="tcard-author"><div class="tcard-avatar">M</div><div><div class="tcard-name">Meera Krishnan</div><div class="tcard-role">Principal, Sunrise Montessori</div></div></div></div>
+      <!-- Duplicate -->
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"We replaced six different tools with Bodhiboard. Admissions conversion doubled in the first term. It genuinely changed how we run the school."</div><div class="tcard-author"><div class="tcard-avatar">S</div><div><div class="tcard-name">Sneha Agarwal</div><div class="tcard-role">Founder, Bloomseed Preschool</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"Our teachers save three hours of admin every day. Parents rave about the app. Satisfaction scores are the highest they've ever been."</div><div class="tcard-author"><div class="tcard-avatar">R</div><div><div class="tcard-name">Ramesh Nair</div><div class="tcard-role">Director, Greenleaf Academy</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"We opened our third branch with zero quality drop. The curriculum module alone paid for itself. Scaling has never felt this manageable."</div><div class="tcard-author"><div class="tcard-avatar">P</div><div><div class="tcard-name">Priyanka Mehta</div><div class="tcard-role">Chain Owner, Nova Learning</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"Setup was faster than I expected. We were fully live within a week and the support team actually felt like they cared about our success."</div><div class="tcard-author"><div class="tcard-avatar">A</div><div><div class="tcard-name">Ananya Singh</div><div class="tcard-role">Founder, LittleStars Early Learning</div></div></div></div>
+      <div class="tcard"><div class="tcard-stars"><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span><span class="tstar">★</span></div><div class="tcard-text">"Parents stopped calling the moment we went live. The daily diary feature alone transformed our community relationship."</div><div class="tcard-author"><div class="tcard-avatar">M</div><div><div class="tcard-name">Meera Krishnan</div><div class="tcard-role">Principal, Sunrise Montessori</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-sec">
+  <div class="cta-inner reveal">
+    <div class="cta-eyebrow">✦ &nbsp;Your next step</div>
+    <h2 class="cta-title">Ready to build a<br><em>better school?</em></h2>
+    <p class="cta-sub">Whether you're opening your first classroom or scaling a multi-branch institution — Bodhiboard is your long-term partner.</p>
+    <div class="cta-buttons">
+      <a href="/signup" class="btn-cta-white">Start free 30-day trial <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="icon-inline-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+      <a href="#" class="btn-cta-ghost"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-inline-left"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Book a free demo</a>
+    </div>
+    <div class="cta-trust">
+      <div class="ctrust"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>No credit card needed</div>
+      <div class="ctrust"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Live in 5 minutes</div>
+      <div class="ctrust"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Cancel any time</div>
+      <div class="ctrust"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Built in India 🇮🇳</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="#" class="footer-logo">
+        <div class="footer-logo-mark">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <span class="footer-logo-name">Bodhiboard</span>
+      </a>
+      <div class="footer-desc">The complete operating system for modern schools. Built by educators, for educators. Made in India.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Product</div>
+      <div class="footer-links"><a href="#">Features</a><a href="#">Pricing</a><a href="#">Curriculum</a><a href="#">Solutions</a></div>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <div class="footer-links"><a href="#">About</a><a href="#">Careers</a><a href="#">Blog</a><a href="#">Press</a></div>
+    </div>
+    <div>
+      <div class="footer-col-title">Resources</div>
+      <div class="footer-links"><a href="#">Docs</a><a href="#">Help Centre</a><a href="#">Case Studies</a><a href="#">Webinars</a></div>
+    </div>
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <div class="footer-links"><a href="#">hello@bodhiboard.in</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">GDPR</a></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Bodhiboard by Little Chanakyas. All rights reserved.</div>
+    <div>Secure · Award-Winning · Cloud-Based</div>
+  </div>
+</footer>
+
+<script>
+// Nav scroll
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 30);
+});
+
+// Reveal on scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('in'), 0);
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (i % 4 * 0.06) + 's';
+  obs.observe(el);
+});
+
+// Count-up animation
+const cObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    const raw = parseFloat(el.dataset.count);
+    const suffix = el.textContent.replace(/[\d.]/g, '');
+    const isDecimal = raw % 1 !== 0;
+    let start = null;
+    const dur = 1600;
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    const step = ts => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / dur, 1);
+      const val = raw * ease(p);
+      el.textContent = (isDecimal ? val.toFixed(1) : Math.floor(val)) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+    cObs.unobserve(el);
+  });
+}, { threshold: 0.6 });
+document.querySelectorAll('[data-count]').forEach(el => cObs.observe(el));
+
+// Stagger grids
+['feat-grid','persona-grid','pricing-grid'].forEach(cls => {
+  document.querySelectorAll('.' + cls + ' > *').forEach((c, i) => {
+    c.style.transitionDelay = (i * 0.07) + 's';
+    c.classList.add('reveal');
+    obs.observe(c);
+  });
+});
+</script>
+</body>
+</html>

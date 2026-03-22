@@ -64,13 +64,7 @@ export function FollowUpManager({ slug, leadId, followUps, onUpdate }: FollowUpM
     }
 
     async function handleComplete(id: string) {
-        const confirmed = await confirmDialog({
-            title: "Complete Follow-Up",
-            message: "Mark this follow-up as done?",
-            variant: "default",
-            confirmText: "Complete",
-            cancelText: "Cancel"
-        });
+        const confirmed = window.confirm("Mark this follow-up as done?");
 
         if (!confirmed) return;
 

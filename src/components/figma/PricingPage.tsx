@@ -21,11 +21,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { Footer } from "./Footer";
 
 export function PricingPage() {
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const [additionalUsers, setAdditionalUsers] = useState(0);
   const pricePerUser = 299;
 
@@ -51,7 +51,7 @@ export function PricingPage() {
         "Mobile App Access"
       ],
       cta: "Start Free Trial",
-      ctaAction: () => navigate("/signup")
+      ctaAction: () => navigate.push("/signup")
     },
     {
       name: "Growth School",
@@ -74,7 +74,7 @@ export function PricingPage() {
         "Custom Workflows"
       ],
       cta: "Start Free Trial",
-      ctaAction: () => navigate("/signup")
+      ctaAction: () => navigate.push("/signup")
     },
     {
       name: "Institution Pro",
@@ -485,7 +485,7 @@ export function PricingPage() {
               whileTap={{ scale: 0.95 }}
             >
               <Button
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate.push("/signup")}
                 size="lg"
                 className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-900 hover:from-amber-500 hover:to-yellow-600 px-12 py-8 text-xl font-bold rounded-full shadow-2xl shadow-amber-500/30"
               >
@@ -569,7 +569,7 @@ export function PricingPage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Button
-                  onClick={() => navigate("/signup")}
+                  onClick={() => navigate.push("/signup")}
                   size="lg"
                   className="bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-900 hover:from-teal-500 hover:to-cyan-600 px-10 py-7 text-lg font-bold rounded-full shadow-2xl shadow-teal-500/30"
                 >

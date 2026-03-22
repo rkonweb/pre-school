@@ -13,9 +13,10 @@ interface AIPageBuilderProps {
     onSave: (html: string) => void;
     initialContent?: string;
     isSaving?: boolean;
+    slug?: string; // school slug for tenant-scoped AI generation; empty string for admin context
 }
 
-export default function AIPageBuilder({ onSave, initialContent = "", isSaving = false }: AIPageBuilderProps) {
+export default function AIPageBuilder({ onSave, initialContent = "", isSaving = false, slug = "" }: AIPageBuilderProps) {
     const [step, setStep] = useState<"input" | "generating" | "editing">(initialContent ? "editing" : "input");
     const [rawText, setRawText] = useState("");
     const [generatedHTML, setGeneratedHTML] = useState(initialContent);
@@ -42,7 +43,7 @@ export default function AIPageBuilder({ onSave, initialContent = "", isSaving = 
                 } catch (e) { }
             }
 
-            const res = await generatePageAction(rawText, images, provider);
+            const res = await generatePageAction(slug, rawText, images, provider);
 
             if (res.success && res.data) {
                 setGeneratedHTML(res.data);

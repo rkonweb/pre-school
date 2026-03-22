@@ -175,7 +175,7 @@ export default function StudentProgressReportPage() {
                                 <p className="text-xs text-muted-foreground mt-1">
                                     {analytics.attendance.present} Present / {analytics.attendance.totalDays} Working Days
                                 </p>
-                                <Progress value={analytics.attendance.percentage} className="h-2 mt-3 bg-red-100" indicatorClassName={analytics.attendance.percentage < 75 ? "bg-red-500" : "bg-green-500"} />
+                                <Progress value={analytics.attendance.percentage} className="h-2 mt-3 bg-red-100" indicatorColor={analytics.attendance.percentage < 75 ? "#ef4444" : "#22c55e"} />
                             </CardContent>
                         </Card>
                         <Card>

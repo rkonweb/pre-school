@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../../core/state/auth_state.dart';
+import '../../core/theme/app_theme.dart';
 import '../../shared/components/module_popup_shell.dart';
 
 // ─── CSS var equivalents ──────────────────────────────────────────────────────
@@ -219,15 +220,35 @@ class _TeacherScheduleViewState extends ConsumerState<TeacherScheduleView> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(scheduleDataProvider);
-    return ModulePopupShell(
-      title: 'Timetable',
-      subtitle: _active == _todayKey() ? 'Today\'s schedule' : _dayFulls[_dayKeys.indexOf(_active)],
-      actionIcon: Icons.refresh_rounded,
-      onActionIcon: () => ref.invalidate(scheduleDataProvider),
-      backgroundColor: const Color(0xFFF7F8FC),
+    final data  = async.value ?? {};
+    final days  = _parseDays(data);
+    final cnt   = (days[_active] ?? []).where((p) => !p.isBreak && !p.isFree).length;
+    final tIdx  = _dayKeys.indexOf(_active);
+    final dayLabel = tIdx >= 0 ? _dayFulls[tIdx] : _active;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6FB),
       body: Column(children: [
-        _WeekMiniGrid(active: _active, async: async, onDaySwitch: (d) => setState(() => _active = d)),
-        Expanded(child: _PeriodsBody(active: _active, async: async, onDaySwitch: (d) => setState(() => _active = d))),
+        // ── Standard Gradient Header ───────────────────────────────────────
+        ModulePageHeader(
+          title: 'My Timetable',
+          icon: Icons.calendar_month_rounded,
+          actionIcon: Icons.refresh_rounded,
+          onActionIcon: () => ref.invalidate(scheduleDataProvider),
+          bottomRows: [
+            _DayPillSelector(
+              active: _active,
+              async: async,
+              onDaySwitch: (d) => setState(() => _active = d),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+        // ── Body ──────────────────────────────────────────────────────────
+        Expanded(child: _PeriodsBody(
+          active: _active, async: async,
+          onDaySwitch: (d) => setState(() => _active = d),
+        )),
       ]),
     );
   }
@@ -324,58 +345,71 @@ class _Header extends StatelessWidget {
     );
   }
 }
-// ─── Week Mini-Grid (extracted from former gradient header) ───────────────────
-class _WeekMiniGrid extends StatelessWidget {
+// ─── Day Pill Selector ────────────────────────────────────────────────────────
+class _DayPillSelector extends StatelessWidget {
   final String active;
   final AsyncValue<Map<String, dynamic>> async;
   final void Function(String) onDaySwitch;
-  const _WeekMiniGrid({required this.active, required this.async, required this.onDaySwitch});
+  const _DayPillSelector({required this.active, required this.async, required this.onDaySwitch});
 
   @override
   Widget build(BuildContext context) {
     final data = async.value ?? {};
     final days = _parseDays(data);
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
-        decoration: BoxDecoration(
-          color: _tSoft,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: _dayKeys.asMap().entries.map((e) {
-            final dk  = e.key;
-            final day = e.value;
-            final isCur = day == active;
-            final pds   = (days[day] ?? []).where((p) => !p.isBreak && !p.isFree).toList();
-            return Expanded(child: GestureDetector(
-              onTap: () => onDaySwitch(day),
+    final todayKey = _todayKey();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      child: Row(
+        children: _dayKeys.asMap().entries.map((e) {
+          final dk     = e.key;
+          final day    = e.value;
+          final isCur  = day == active;
+          final isToday = day == todayKey;
+          final cnt    = (days[day] ?? []).where((p) => !p.isBreak && !p.isFree).length;
+
+          return Expanded(child: GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onDaySwitch(day);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeInOut,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: isCur ? Colors.white : Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isCur ? Colors.white : Colors.white.withOpacity(0.15),
+                  width: 1.5,
+                ),
+                boxShadow: isCur ? [
+                  BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
+                ] : [],
+              ),
               child: Column(children: [
                 Text(_dayShorts[dk], style: TextStyle(
-                  fontFamily: 'Satoshi', fontSize: 9, fontWeight: FontWeight.w800,
-                  color: isCur ? _tA : _ink3)),
+                  fontFamily: 'Satoshi', fontSize: 10, fontWeight: FontWeight.w800,
+                  color: isCur ? _tA : Colors.white.withOpacity(0.55))),
                 const SizedBox(height: 4),
-                Column(children: pds.take(6).map((p) {
-                  final c = _colorFor(p.subj);
-                  return Container(
-                    height: 5, margin: const EdgeInsets.only(bottom: 2),
+                Text('$cnt', style: TextStyle(
+                  fontFamily: 'Cabinet Grotesk', fontSize: 15, fontWeight: FontWeight.w900,
+                  color: isCur ? _ink : Colors.white.withOpacity(0.7), height: 1)),
+                const SizedBox(height: 2),
+                if (isToday)
+                  Container(
+                    width: 4, height: 4,
                     decoration: BoxDecoration(
-                      color: isCur ? _hexColor(c.bar) : _ink3.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(3)),
-                  );
-                }).toList()),
-                if (pds.isEmpty)
-                  Container(height: 5, decoration: BoxDecoration(
-                    color: _ink3.withOpacity(0.15), borderRadius: BorderRadius.circular(3))),
-                if (isCur)
-                  Container(margin: const EdgeInsets.only(top: 4), width: 4, height: 4,
-                    decoration: BoxDecoration(color: _tA, shape: BoxShape.circle)),
+                      color: isCur ? _tA : Colors.white.withOpacity(0.4),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
               ]),
-            ));
-          }).toList(),
-        ),
+            ),
+          ));
+        }).toList(),
       ),
     );
   }
@@ -668,16 +702,33 @@ class _BreakRow extends StatelessWidget {
   const _BreakRow({required this.p});
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: 52, bottom: 10),
-    child: Row(children: [
-      Expanded(child: Container(height: 1.5, color: _tA.withOpacity(0.35))),
-      Padding(padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Text(p.breakLabel ?? 'Break',
-          style: const TextStyle(fontFamily: 'Satoshi', fontSize: 9, fontWeight: FontWeight.w700, color: _ink3))),
-      Expanded(child: Container(height: 1.5, color: _tA.withOpacity(0.35))),
-    ]),
-  );
+  Widget build(BuildContext context) {
+    final isLunch = (p.breakLabel ?? '').toLowerCase().contains('lunch');
+    return Padding(
+      padding: const EdgeInsets.only(left: 52, bottom: 10),
+      child: Row(children: [
+        Expanded(child: Container(height: 1, color: const Color(0xFFE2E8F0))),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: isLunch ? const Color(0xFFFEF9C3) : const Color(0xFFF0F9FF),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isLunch ? const Color(0xFFFDE68A) : const Color(0xFFBAE6FD),
+            ),
+          ),
+          child: Text(p.breakLabel ?? 'Break',
+            style: TextStyle(
+              fontFamily: 'Satoshi', fontSize: 9, fontWeight: FontWeight.w800,
+              color: isLunch ? const Color(0xFFB45309) : const Color(0xFF0369A1),
+            )),
+        ),
+        const SizedBox(width: 8),
+        Expanded(child: Container(height: 1, color: const Color(0xFFE2E8F0))),
+      ]),
+    );
+  }
 }
 
 // ─── Week Overview card (bottom of list) ─────────────────────────────────────
@@ -701,78 +752,106 @@ class _WeekOverview extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(top: 6),
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0x0F000000)),
-        boxShadow: const [BoxShadow(color: Color(0x07000000), blurRadius: 8, offset: Offset(0, 2))],
+        gradient: AppTheme.teacherTheme,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [BoxShadow(color: const Color(0xFFFF5733).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 6))],
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('📊 Week Overview',
-          style: TextStyle(fontFamily: 'Satoshi', fontSize: 12, fontWeight: FontWeight.w800, color: _ink)),
-        const SizedBox(height: 10),
-        // Bar chart per day
-        Row(children: _dayKeys.asMap().entries.map((e) {
-          final dk   = e.key;
-          final day  = e.value;
-          final cnt  = (days[day] ?? []).where((p) => !p.isBreak && !p.isFree).length;
-          final isCur = day == active;
-          final pct  = cnt == 0 ? 0.0 : (cnt / 6).clamp(0.0, 1.0);
-          return Expanded(child: GestureDetector(
-            onTap: () => onSwitch(day),
-            child: Column(children: [
-              Text(_dayShorts[dk], style: TextStyle(
-                fontFamily: 'Satoshi', fontSize: 9,
-                fontWeight: isCur ? FontWeight.w900 : FontWeight.w700,
-                color: isCur ? _tA : _ink3)),
-              const SizedBox(height: 4),
-              Container(width: double.infinity, height: 40,
-                decoration: BoxDecoration(color: _bg2, borderRadius: BorderRadius.circular(6)),
-                clipBehavior: Clip.hardEdge,
-                child: Align(alignment: Alignment.bottomCenter,
-                  child: FractionallySizedBox(heightFactor: pct,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: isCur ? _tGrad : const LinearGradient(
-                          colors: [Color(0x80FF5733), Color(0x33FF5733)],
-                          begin: Alignment.topCenter, end: Alignment.bottomCenter),
-                        borderRadius: BorderRadius.circular(6)),
-                    )))),
-              const SizedBox(height: 3),
-              Text('$cnt', style: TextStyle(
-                fontFamily: 'Satoshi', fontSize: 9,
-                fontWeight: isCur ? FontWeight.w900 : FontWeight.w700,
-                color: isCur ? _tA : _ink3)),
-            ]),
-          ));
-        }).toList()),
-        const SizedBox(height: 12),
-        // Totals row
-        Row(children: [
-          _StatChip('$totalPeriods', 'Periods', _tSoft, _tA),
-          const SizedBox(width: 8),
-          _StatChip('${totalHrs}h', 'Teaching', const Color(0xFFF0FDF4), const Color(0xFF10B981)),
-          const SizedBox(width: 8),
-          _StatChip('$classCount', 'Classes', const Color(0xFFEFF6FF), const Color(0xFF3B82F6)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(
+              width: 28, height: 28,
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+              child: const Icon(Icons.bar_chart_rounded, size: 16, color: Colors.white),
+            ),
+            const SizedBox(width: 10),
+            const Text('Week Overview',
+              style: TextStyle(fontFamily: 'Satoshi', fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white)),
+          ]),
+          const SizedBox(height: 14),
+          // Bar chart per day
+          Row(children: _dayKeys.asMap().entries.map((e) {
+            final dk   = e.key;
+            final day  = e.value;
+            final cnt  = (days[day] ?? []).where((p) => !p.isBreak && !p.isFree).length;
+            final isCur = day == active;
+            final pct  = cnt == 0 ? 0.04 : (cnt / 6).clamp(0.0, 1.0);
+            return Expanded(child: GestureDetector(
+              onTap: () => onSwitch(day),
+              child: Column(children: [
+                Text(_dayShorts[dk], style: TextStyle(
+                  fontFamily: 'Satoshi', fontSize: 9,
+                  fontWeight: isCur ? FontWeight.w900 : FontWeight.w700,
+                  color: isCur ? Colors.white : Colors.white.withOpacity(0.4))),
+                const SizedBox(height: 6),
+                Container(
+                  width: double.infinity, height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: FractionallySizedBox(
+                      heightFactor: pct,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: isCur
+                              ? const LinearGradient(
+                                  colors: [Color(0xFFFF5733), Color(0xFFFF006E), Color(0xFFC77DFF)],
+                                  begin: Alignment.topCenter, end: Alignment.bottomCenter)
+                              : LinearGradient(
+                                  colors: [Colors.white.withOpacity(0.4), Colors.white.withOpacity(0.15)],
+                                  begin: Alignment.topCenter, end: Alignment.bottomCenter),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text('$cnt', style: TextStyle(
+                  fontFamily: 'Cabinet Grotesk', fontSize: 13,
+                  fontWeight: isCur ? FontWeight.w900 : FontWeight.w700,
+                  color: isCur ? Colors.white : Colors.white.withOpacity(0.5))),
+              ]),
+            ));
+          }).toList()),
+          const SizedBox(height: 16),
+          // Stat chips row
+          Row(children: [
+            _StatChip('$totalPeriods', 'Periods', const Color(0xFFFF5733)),
+            const SizedBox(width: 8),
+            _StatChip('${totalHrs}h', 'Teaching', const Color(0xFF10B981)),
+            const SizedBox(width: 8),
+            _StatChip('$classCount', 'Classes', const Color(0xFF6366F1)),
+          ]),
         ]),
-      ]),
+      ),
     );
   }
 }
 
 class _StatChip extends StatelessWidget {
   final String value, label;
-  final Color bg, color;
-  const _StatChip(this.value, this.label, this.bg, this.color);
+  final Color color;
+  const _StatChip(this.value, this.label, this.color);
 
   @override
   Widget build(BuildContext context) => Expanded(child: Container(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.15),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: color.withOpacity(0.25)),
+    ),
     child: Column(children: [
-      Text(value, style: TextStyle(fontFamily: 'Cabinet Grotesk', fontSize: 16, fontWeight: FontWeight.w900, color: color)),
-      Text(label, style: TextStyle(fontFamily: 'Satoshi', fontSize: 8, fontWeight: FontWeight.w700, color: _ink3, letterSpacing: 0.5)),
+      Text(value, style: TextStyle(fontFamily: 'Cabinet Grotesk', fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
+      const SizedBox(height: 3),
+      Text(label, style: TextStyle(fontFamily: 'Satoshi', fontSize: 8, fontWeight: FontWeight.w700, color: Colors.white.withOpacity(0.5), letterSpacing: 0.5)),
     ]),
   ));
 }

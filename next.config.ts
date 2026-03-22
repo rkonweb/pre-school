@@ -25,6 +25,18 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async rewrites() {
+    return [
+      { source: '/',           destination: '/home.html' },
+      { source: '/platform',   destination: '/platform.html' },
+      { source: '/pricing',    destination: '/pricing.html' },
+      { source: '/about',      destination: '/about.html' },
+      { source: '/blog',       destination: '/blog.html' },
+      { source: '/curriculum', destination: '/curriculum.html' },
+      { source: '/signup',     destination: '/signup.html' },
+      { source: '/apply',      destination: '/signup.html' },
+    ];
+  },
   async headers() {
     return [
       {

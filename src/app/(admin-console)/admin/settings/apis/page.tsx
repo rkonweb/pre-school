@@ -198,13 +198,13 @@ export default function AdminAPISettingsPage() {
                             <div className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm">
                                 <SectionHeader icon={Mail} title="SMTP Configuration" description="Configure outgoing email server settings." color="bg-amber-50 text-amber-600" />
                                 <div className="grid gap-6 mt-6">
-                                    <InputGroup label="SMTP Host" value={smtpSettings.smtpHost} onChange={(v) => setSmtpSettings({ ...smtpSettings, smtpHost: v })} placeholder="smtp.gmail.com" />
+                                    <InputGroup label="SMTP Host" value={smtpSettings.smtpHost} onChange={(v: string) => setSmtpSettings({ ...smtpSettings, smtpHost: v })} placeholder="smtp.gmail.com" />
                                     <div className="grid grid-cols-2 gap-4">
-                                        <InputGroup label="Port" type="number" value={smtpSettings.smtpPort} onChange={(v) => setSmtpSettings({ ...smtpSettings, smtpPort: Number(v) })} placeholder="587" />
-                                        <InputGroup label="Sender Email" value={smtpSettings.smtpSender} onChange={(v) => setSmtpSettings({ ...smtpSettings, smtpSender: v })} placeholder="noreply@school.com" />
+                                        <InputGroup label="Port" type="number" value={smtpSettings.smtpPort} onChange={(v: string) => setSmtpSettings({ ...smtpSettings, smtpPort: Number(v) })} placeholder="587" />
+                                        <InputGroup label="Sender Email" value={smtpSettings.smtpSender} onChange={(v: string) => setSmtpSettings({ ...smtpSettings, smtpSender: v })} placeholder="noreply@school.com" />
                                     </div>
-                                    <InputGroup label="Username" value={smtpSettings.smtpUser} onChange={(v) => setSmtpSettings({ ...smtpSettings, smtpUser: v })} />
-                                    <InputGroup label="Password" type="password" value={smtpSettings.smtpPass} onChange={(v) => setSmtpSettings({ ...smtpSettings, smtpPass: v })} isSecret />
+                                    <InputGroup label="Username" value={smtpSettings.smtpUser} onChange={(v: string) => setSmtpSettings({ ...smtpSettings, smtpUser: v })} />
+                                    <InputGroup label="Password" type="password" value={smtpSettings.smtpPass} onChange={(v: string) => setSmtpSettings({ ...smtpSettings, smtpPass: v })} isSecret />
                                 </div>
                             </div>
                         </div>
@@ -239,7 +239,7 @@ export default function AdminAPISettingsPage() {
                                             <Badge isActive={!!config.googleAiKey} />
                                         </div>
                                         <div className="flex gap-2">
-                                            <Input value={config.googleAiKey} onChange={(v) => setConfig({ ...config, googleAiKey: v })} isSecret className="flex-1" />
+                                            <Input value={config.googleAiKey} onChange={(v: string) => setConfig({ ...config, googleAiKey: v })} isSecret className="flex-1" />
                                             <TestKeyButton provider="google" apiKey={config.googleAiKey || ""} />
                                         </div>
                                     </div>
@@ -250,7 +250,7 @@ export default function AdminAPISettingsPage() {
                                             <Badge isActive={!!config.openAiKey} />
                                         </div>
                                         <div className="flex gap-2">
-                                            <Input value={config.openAiKey} onChange={(v) => setConfig({ ...config, openAiKey: v })} isSecret className="flex-1" />
+                                            <Input value={config.openAiKey} onChange={(v: string) => setConfig({ ...config, openAiKey: v })} isSecret className="flex-1" />
                                             <TestKeyButton provider="openai" apiKey={config.openAiKey || ""} />
                                         </div>
                                     </div>
@@ -272,19 +272,19 @@ export default function AdminAPISettingsPage() {
                                     <InputGroup
                                         label="Service Account Email"
                                         value={config.googleDrive?.serviceAccountEmail}
-                                        onChange={(v) => setConfig({ ...config, googleDrive: { ...config.googleDrive, serviceAccountEmail: v } })}
+                                        onChange={(v: string) => setConfig({ ...config, googleDrive: { ...config.googleDrive, serviceAccountEmail: v } })}
                                         placeholder="service-account@project.iam.gserviceaccount.com"
                                     />
                                     <InputGroup
                                         label="Folder ID"
                                         value={config.googleDrive?.folderId}
-                                        onChange={(v) => setConfig({ ...config, googleDrive: { ...config.googleDrive, folderId: v } })}
+                                        onChange={(v: string) => setConfig({ ...config, googleDrive: { ...config.googleDrive, folderId: v } })}
                                         placeholder="1A2B3C..."
                                     />
                                     <InputGroup
                                         label="Private Key"
                                         value={config.googleDrive?.privateKey}
-                                        onChange={(v) => setConfig({ ...config, googleDrive: { ...config.googleDrive, privateKey: v } })}
+                                        onChange={(v: string) => setConfig({ ...config, googleDrive: { ...config.googleDrive, privateKey: v } })}
                                         isSecret
                                         isTextArea
                                         placeholder="-----BEGIN PRIVATE KEY-----..."
@@ -304,8 +304,8 @@ export default function AdminAPISettingsPage() {
                                 </div>
                                 {config.payments?.razorpay?.isActive && (
                                     <div className="grid gap-6 mt-6 animate-in slide-in-from-top-2">
-                                        <InputGroup label="Key ID" value={config.payments?.razorpay?.keyId} onChange={(v) => setConfig({ ...config, payments: { ...config.payments, razorpay: { ...config.payments?.razorpay, keyId: v } as any } })} />
-                                        <InputGroup label="Key Secret" value={config.payments?.razorpay?.keySecret} onChange={(v) => setConfig({ ...config, payments: { ...config.payments, razorpay: { ...config.payments?.razorpay, keySecret: v } as any } })} isSecret />
+                                        <InputGroup label="Key ID" value={config.payments?.razorpay?.keyId} onChange={(v: string) => setConfig({ ...config, payments: { ...config.payments, razorpay: { ...config.payments?.razorpay, keyId: v } as any } })} />
+                                        <InputGroup label="Key Secret" value={config.payments?.razorpay?.keySecret} onChange={(v: string) => setConfig({ ...config, payments: { ...config.payments, razorpay: { ...config.payments?.razorpay, keySecret: v } as any } })} isSecret />
                                     </div>
                                 )}
                             </div>
@@ -318,8 +318,8 @@ export default function AdminAPISettingsPage() {
                                 </div>
                                 {config.payments?.stripe?.isActive && (
                                     <div className="grid gap-6 mt-6 animate-in slide-in-from-top-2">
-                                        <InputGroup label="Publishable Key" value={config.payments?.stripe?.publishableKey} onChange={(v) => setConfig({ ...config, payments: { ...config.payments, stripe: { ...config.payments?.stripe, publishableKey: v } as any } })} />
-                                        <InputGroup label="Secret Key" value={config.payments?.stripe?.secretKey} onChange={(v) => setConfig({ ...config, payments: { ...config.payments, stripe: { ...config.payments?.stripe, secretKey: v } as any } })} isSecret />
+                                        <InputGroup label="Publishable Key" value={config.payments?.stripe?.publishableKey} onChange={(v: string) => setConfig({ ...config, payments: { ...config.payments, stripe: { ...config.payments?.stripe, publishableKey: v } as any } })} />
+                                        <InputGroup label="Secret Key" value={config.payments?.stripe?.secretKey} onChange={(v: string) => setConfig({ ...config, payments: { ...config.payments, stripe: { ...config.payments?.stripe, secretKey: v } as any } })} isSecret />
                                     </div>
                                 )}
                             </div>
@@ -350,16 +350,16 @@ export default function AdminAPISettingsPage() {
 
                                 {config.sms?.provider === 'twilio' && (
                                     <div className="grid gap-6 mt-4">
-                                        <InputGroup label="Account SID" value={config.sms?.twilio?.accountSid} onChange={(v) => setConfig({ ...config, sms: { ...config.sms, twilio: { ...config.sms?.twilio, accountSid: v } as any } })} />
-                                        <InputGroup label="Auth Token" value={config.sms?.twilio?.authToken} onChange={(v) => setConfig({ ...config, sms: { ...config.sms, twilio: { ...config.sms?.twilio, authToken: v } as any } })} isSecret />
-                                        <InputGroup label="From Phone" value={config.sms?.twilio?.fromPhone} onChange={(v) => setConfig({ ...config, sms: { ...config.sms, twilio: { ...config.sms?.twilio, fromPhone: v } as any } })} />
+                                        <InputGroup label="Account SID" value={config.sms?.twilio?.accountSid} onChange={(v: string) => setConfig({ ...config, sms: { ...config.sms, twilio: { ...config.sms?.twilio, accountSid: v } as any } })} />
+                                        <InputGroup label="Auth Token" value={config.sms?.twilio?.authToken} onChange={(v: string) => setConfig({ ...config, sms: { ...config.sms, twilio: { ...config.sms?.twilio, authToken: v } as any } })} isSecret />
+                                        <InputGroup label="From Phone" value={config.sms?.twilio?.fromPhone} onChange={(v: string) => setConfig({ ...config, sms: { ...config.sms, twilio: { ...config.sms?.twilio, fromPhone: v } as any } })} />
                                     </div>
                                 )}
 
                                 {config.sms?.provider === 'msg91' && (
                                     <div className="grid gap-6 mt-4">
-                                        <InputGroup label="Auth Key" value={config.sms?.msg91?.authKey} onChange={(v) => setConfig({ ...config, sms: { ...config.sms, msg91: { ...config.sms?.msg91, authKey: v } as any } })} isSecret />
-                                        <InputGroup label="Sender ID" value={config.sms?.msg91?.senderId} onChange={(v) => setConfig({ ...config, sms: { ...config.sms, msg91: { ...config.sms?.msg91, senderId: v } as any } })} />
+                                        <InputGroup label="Auth Key" value={config.sms?.msg91?.authKey} onChange={(v: string) => setConfig({ ...config, sms: { ...config.sms, msg91: { ...config.sms?.msg91, authKey: v } as any } })} isSecret />
+                                        <InputGroup label="Sender ID" value={config.sms?.msg91?.senderId} onChange={(v: string) => setConfig({ ...config, sms: { ...config.sms, msg91: { ...config.sms?.msg91, senderId: v } as any } })} />
                                     </div>
                                 )}
                             </div>
@@ -385,13 +385,13 @@ export default function AdminAPISettingsPage() {
                                 </div>
                                 {config.whatsapp?.provider === 'interakt' && (
                                     <div className="mt-4">
-                                        <InputGroup label="API Key" value={config.whatsapp?.interakt?.apiKey} onChange={(v) => setConfig({ ...config, whatsapp: { ...config.whatsapp, interakt: { ...config.whatsapp?.interakt, apiKey: v } as any } })} isSecret />
+                                        <InputGroup label="API Key" value={config.whatsapp?.interakt?.apiKey} onChange={(v: string) => setConfig({ ...config, whatsapp: { ...config.whatsapp, interakt: { ...config.whatsapp?.interakt, apiKey: v } as any } })} isSecret />
                                     </div>
                                 )}
                                 {config.whatsapp?.provider === 'wati' && (
                                     <div className="grid gap-6 mt-4">
-                                        <InputGroup label="API Endpoint" value={config.whatsapp?.wati?.endpoint} onChange={(v) => setConfig({ ...config, whatsapp: { ...config.whatsapp, wati: { ...config.whatsapp?.wati, endpoint: v } as any } })} />
-                                        <InputGroup label="Access Token" value={config.whatsapp?.wati?.token} onChange={(v) => setConfig({ ...config, whatsapp: { ...config.whatsapp, wati: { ...config.whatsapp?.wati, token: v } as any } })} isSecret />
+                                        <InputGroup label="API Endpoint" value={config.whatsapp?.wati?.endpoint} onChange={(v: string) => setConfig({ ...config, whatsapp: { ...config.whatsapp, wati: { ...config.whatsapp?.wati, endpoint: v } as any } })} />
+                                        <InputGroup label="Access Token" value={config.whatsapp?.wati?.token} onChange={(v: string) => setConfig({ ...config, whatsapp: { ...config.whatsapp, wati: { ...config.whatsapp?.wati, token: v } as any } })} isSecret />
                                     </div>
                                 )}
                             </div>
@@ -403,16 +403,16 @@ export default function AdminAPISettingsPage() {
                             <div className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm">
                                 <SectionHeader icon={MapPin} title="Google Maps" description="Maps JavaScript API Key." color="bg-orange-50 text-orange-600" />
                                 <div className="mt-6">
-                                    <InputGroup label="API Key" value={config.maps?.googleMapsApiKey} onChange={(v) => setConfig({ ...config, maps: { ...config.maps, googleMapsApiKey: v } })} isSecret={false} placeholder="AIza..." />
+                                    <InputGroup label="API Key" value={config.maps?.googleMapsApiKey} onChange={(v: string) => setConfig({ ...config, maps: { ...config.maps, googleMapsApiKey: v } })} isSecret={false} placeholder="AIza..." />
                                 </div>
                             </div>
 
                             <div className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm">
                                 <SectionHeader icon={Video} title="Zoom" description="Server-to-Server OAuth app." color="bg-blue-50 text-blue-600" />
                                 <div className="grid gap-6 mt-6">
-                                    <InputGroup label="Account ID" value={config.zoom?.accountId} onChange={(v) => setConfig({ ...config, zoom: { ...config.zoom, accountId: v } })} />
-                                    <InputGroup label="Client ID" value={config.zoom?.clientId} onChange={(v) => setConfig({ ...config, zoom: { ...config.zoom, clientId: v } })} />
-                                    <InputGroup label="Client Secret" value={config.zoom?.clientSecret} onChange={(v) => setConfig({ ...config, zoom: { ...config.zoom, clientSecret: v } })} isSecret />
+                                    <InputGroup label="Account ID" value={config.zoom?.accountId} onChange={(v: string) => setConfig({ ...config, zoom: { ...config.zoom, accountId: v } as any })} />
+                                    <InputGroup label="Client ID" value={config.zoom?.clientId} onChange={(v: string) => setConfig({ ...config, zoom: { ...config.zoom, clientId: v } as any })} />
+                                    <InputGroup label="Client Secret" value={config.zoom?.clientSecret} onChange={(v: string) => setConfig({ ...config, zoom: { ...config.zoom, clientSecret: v } as any })} isSecret />
                                 </div>
                             </div>
                         </div>

@@ -275,7 +275,7 @@ export function LeavePolicyManager({ schoolSlug, initialPolicies }: LeavePolicyM
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24, animation: "fadeUp 0.4s ease 0.07s both" }}>
                 {[
                     { label: "Total Policies", value: policies.length.toString(), color: C.blue, bg: C.blueL, icon: FileText },
-                    { label: "Default Active", value: policies.filter(p => p.isDefault).length > 0 ? "Yes" : "No", color: policies.filter(p => !p.isDefault).length > 0 ? C.green : C.orange, bg: policies.filter(p => !p.isDefault).length > 0 ? C.greenL : C.orangeL, icon: ShieldCheck },
+                    { label: "Default Active", value: policies.filter(p => p.isDefault).length > 0 ? "Yes" : "No", color: policies.filter(p => !p.isDefault).length > 0 ? C.green : C.orange, bg: policies.filter(p => !p.isDefault).length > 0 ? C.greenL : "#FFEDD5", icon: ShieldCheck },
                     { label: "System Status", value: "Operational", color: C.green, bg: C.greenL, icon: Check },
                 ].map((stat: any, i) => (
                     <div key={i} style={{ background: "white", borderRadius: 16, padding: "16px 20px", boxShadow: C.sh, border: `1px solid ${C.g100}`, display: "flex", alignItems: "center", gap: 14 }}>

@@ -254,7 +254,7 @@ export default function CreateClubPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Open to Classes <span className="text-xs text-muted-foreground">(optional)</span></Label>
-                                    <Select value="__placeholder__" onValueChange={(v) => {
+                                    <Select value="__placeholder__" onValueChange={(v: string) => {
                                         if (v !== "__placeholder__" && !targetClasses.includes(v)) {
                                             setTargetClasses([...targetClasses, v]);
                                         }
@@ -359,7 +359,7 @@ export default function CreateClubPage() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label>President / Lead Mentor</Label>
-                                <Select value={coachId || "__none__"} onValueChange={v => setCoachId(v === "__none__" ? "" : v)}>
+                                <Select value={coachId || "__none__"} onValueChange={(v: string) => setCoachId(v === "__none__" ? "" : v)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select mentor">
                                             {coachId
@@ -380,7 +380,7 @@ export default function CreateClubPage() {
 
                             <div className="space-y-2">
                                 <Label>Co-Mentor <span className="text-xs text-muted-foreground">(optional)</span></Label>
-                                <Select value={coMentorId || "__none__"} onValueChange={v => setCoMentorId(v === "__none__" ? "" : v)}>
+                                <Select value={coMentorId || "__none__"} onValueChange={(v: string) => setCoMentorId(v === "__none__" ? "" : v)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select co-mentor">
                                             {coMentorId

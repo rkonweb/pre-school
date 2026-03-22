@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
     BarChart3,
     Building2,
+    ClipboardList,
     Layers,
     Settings,
     ShieldCheck,
@@ -168,6 +169,7 @@ export function AdminSidebar() {
     const baseNavigation: NavItem[] = [
         { name: "Console Overview", href: "/admin/dashboard", icon: BarChart3 },
         { name: "Tenant Management", href: "/admin/tenants", icon: Building2 },
+        { name: "School Applications", href: "/admin/tenants/applications", icon: ClipboardList },
         { name: "Master Data", href: "/admin/dashboard/master-data", icon: Database },
         { name: "Marketing Tools", href: "/admin/marketing", icon: Layers },
         { name: "CMS", href: "/admin/cms", icon: FileText },
@@ -223,6 +225,8 @@ export function AdminSidebar() {
         >
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                 className="absolute -right-3 top-8 h-6 w-6 rounded-full bg-white border border-zinc-200 text-zinc-400 flex items-center justify-center hover:text-zinc-900 hover:scale-110 transition-all z-50 shadow-sm"
             >
                 <ChevronRight className={cn("h-3 w-3 transition-transform", isCollapsed ? "" : "rotate-180")} />

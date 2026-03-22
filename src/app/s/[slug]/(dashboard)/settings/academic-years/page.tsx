@@ -33,7 +33,7 @@ const C = {
 
 function Btn({ variant = "primary", size = "md", icon: Icon, loading, disabled, children, onClick, fullWidth }: any) {
     const [ripples, setRipples] = useState<any[]>([]);
-    const ref = useRef<any>();
+    const ref = useRef<any>(null);
     const vs: any = {
         primary: { bg: "var(--school-gradient, linear-gradient(135deg,#F59E0B,#F97316))", color: "var(--secondary-color, white)", sh: "0 4px 16px rgba(var(--brand-color-rgb, 245, 158, 11), 0.25)" },
         secondary: { bg: "white", color: C.navy, border: `1.5px solid ${C.g200}`, sh: C.sh },

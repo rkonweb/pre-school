@@ -457,8 +457,9 @@ export default function ProfileTab() {
                         loadData();
                     }}
                     studentId={id}
-                    schoolSlug={slug}
+                    slug={slug}
                     currentParentPhone={student.parentMobile}
+                    onSuccess={loadData}
                 />
             )}
         </Fragment>

@@ -344,7 +344,7 @@ export default function CanteenBillingClient({
                         {/* Package Select */}
                         <div>
                             <label className="text-sm font-medium text-slate-700 mb-1 block">Package *</label>
-                            <Select value={assignForm.packageId} onValueChange={v => setAssignForm(f => ({ ...f, packageId: v }))}>
+                            <Select value={assignForm.packageId} onValueChange={(v: string) => setAssignForm(f => ({ ...f, packageId: v }))}>
                                 <SelectTrigger id="billing-package-select" title="Select Package">
                                     <SelectValue placeholder="Select a meal package..." />
                                 </SelectTrigger>
@@ -372,7 +372,7 @@ export default function CanteenBillingClient({
                         {/* Billing Cycle */}
                         <div>
                             <label className="text-sm font-medium text-slate-700 mb-1 block">Billing Cycle *</label>
-                            <Select value={assignForm.billingCycle} onValueChange={v => setAssignForm(f => ({ ...f, billingCycle: v }))}>
+                            <Select value={assignForm.billingCycle} onValueChange={(v: string) => setAssignForm(f => ({ ...f, billingCycle: v }))}>
                                 <SelectTrigger id="billing-cycle-select" title="Billing Cycle"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="MONTHLY">Monthly</SelectItem>

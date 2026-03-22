@@ -101,7 +101,7 @@ export default function NewTransactionPage({ params }: { params: Promise<{ slug:
 
         setSaving(true);
         try {
-            await createTransaction(schoolId, userId, {
+            await createTransaction(schoolId, {
                 title: form.title,
                 amount: parseFloat(form.amount),
                 type: form.type,

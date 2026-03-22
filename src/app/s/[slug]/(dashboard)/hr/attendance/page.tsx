@@ -807,7 +807,7 @@ function PunchSwitch({ isIn, onClick, isLoading, lastPunchTime, minGapMins }: { 
                     )}
                 </div>
             </button>
-            {!isLocked && minGapMins > 0 && (
+            {!isLocked && (minGapMins ?? 0) > 0 && (
                 <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest px-2 opacity-0 group-hover/punch:opacity-100 transition-opacity">
                     {minGapMins}m Gap Active
                 </span>

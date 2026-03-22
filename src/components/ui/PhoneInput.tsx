@@ -202,6 +202,7 @@ export interface PhoneInputProps {
     disabled?: boolean;
     error?: string | null;
     className?: string;
+    required?: boolean;
 }
 
 export function PhoneInput({ label, value, onChange, readOnly = false, disabled = false, error, className }: PhoneInputProps) {

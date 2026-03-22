@@ -156,7 +156,7 @@ export default function SchoolCurriculumPage() {
     );
 }
 
-function SchoolCalendarView({ selectedClass, onSelectDate }: any) {
+function SchoolCalendarView({ selectedClass, onSelectDate }: { selectedClass: any; onSelectDate: (date: Date) => void }) {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [curriculumData, setCurriculumData] = useState<any>({});
 

@@ -24,6 +24,7 @@ export async function GET() {
                 sortOrder: 1
             },
             create: {
+                id: 'homepage-hero',
                 sectionKey: 'hero',
                 title: 'Hero Section',
                 subtitle: 'Main headline and CTA',
@@ -37,7 +38,7 @@ export async function GET() {
                 }),
                 isEnabled: true,
                 sortOrder: 1
-            }
+            } as any
         });
 
         // Features Section
@@ -90,6 +91,7 @@ export async function GET() {
                 sortOrder: 2
             },
             create: {
+                id: 'homepage-features',
                 sectionKey: 'features',
                 title: 'Features',
                 subtitle: 'Core platform capabilities',
@@ -135,7 +137,7 @@ export async function GET() {
                 }),
                 isEnabled: true,
                 sortOrder: 2
-            }
+            } as any
         });
 
         // CTA Section
@@ -155,6 +157,7 @@ export async function GET() {
                 sortOrder: 3
             },
             create: {
+                id: 'homepage-cta',
                 sectionKey: 'cta',
                 title: 'Call to Action',
                 subtitle: 'Final conversion section',
@@ -167,7 +170,7 @@ export async function GET() {
                 }),
                 isEnabled: true,
                 sortOrder: 3
-            }
+            } as any
         });
 
         return NextResponse.json({

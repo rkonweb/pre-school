@@ -216,7 +216,7 @@ export default function PromoteStudentsPage() {
                                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = selectedStudents.includes(student.id) ? "rgba(245,158,11,0.04)" : "white"; }}
                             >
                                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                                    <div onClick={e => e.stopPropagation()} style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${selectedStudents.includes(student.id) ? "#F59E0B" : "#D1D5DB"}`, background: selectedStudents.includes(student.id) ? "#F59E0B" : "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                                    <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${selectedStudents.includes(student.id) ? "#F59E0B" : "#D1D5DB"}`, background: selectedStudents.includes(student.id) ? "#F59E0B" : "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
                                         onClick={(e) => { e.stopPropagation(); toggleStudent(student.id); }}>
                                         {selectedStudents.includes(student.id) && <CheckCircle2 style={{ width: 12, height: 12, color: "white" }} />}
                                     </div>

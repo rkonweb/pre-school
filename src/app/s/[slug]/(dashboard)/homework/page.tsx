@@ -44,15 +44,15 @@ export default async function HomeworkPage(props: { params: Promise<{ slug: stri
     const allHomework = homeworkRes.success ? (homeworkRes.data || []) : []
 
     const statusFilter = searchParams.status || 'ALL'
-    const homework = allHomework.filter(hw => {
+    const homework = allHomework.filter((hw: any) => {
         if (statusFilter === 'PUBLISHED') return hw.isPublished
         if (statusFilter === 'DRAFT') return !hw.isPublished
         return true
     })
 
-    const totalPublished = allHomework.filter(h => h.isPublished).length
-    const totalDraft = allHomework.filter(h => !h.isPublished).length
-    const totalSubmissions = allHomework.reduce((acc, h) => acc + (h.submittedCount || 0), 0)
+    const totalPublished = allHomework.filter((h: any) => h.isPublished).length
+    const totalDraft = allHomework.filter((h: any) => !h.isPublished).length
+    const totalSubmissions = allHomework.reduce((acc: number, h: any) => acc + (h.submittedCount || 0), 0)
 
     const stats = [
         { label: 'Total', value: allHomework.length, icon: FileText, bg: '#F9FAFB', iconColor: '#6B7280' },
@@ -142,7 +142,7 @@ export default async function HomeworkPage(props: { params: Promise<{ slug: stri
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 18 }}>
-                        {homework.map(hw => {
+                        {homework.map((hw: any) => {
                             const submittedPct = hw.submissionCount > 0 ? Math.round((hw.submittedCount / hw.submissionCount) * 100) : 0
 
                             return (

@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../../core/state/auth_state.dart';
+import '../../shared/components/module_popup_shell.dart';
+import '../../shared/components/app_fab.dart';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const _ink    = Color(0xFF140E28);
@@ -115,6 +117,7 @@ class _TeacherLeaveViewState extends ConsumerState<TeacherLeaveView> {
     final async = ref.watch(_leavesProvider);
     return Scaffold(
       backgroundColor: const Color(0xFFFAFBFE),
+      floatingActionButton: _buildFab(context),
       body: Column(children: [
         _buildHeader(context, async),
         Expanded(child: _buildBody(context, async)),
@@ -122,39 +125,23 @@ class _TeacherLeaveViewState extends ConsumerState<TeacherLeaveView> {
     );
   }
 
+  Widget _buildFab(BuildContext context) => AppFab(onTap: () => _showApply(context));
+
   Widget _buildHeader(BuildContext context, AsyncValue<List<LeaveRequest>> async) {
-    final leaves = async.value ?? [];
+    final leaves      = async.value ?? [];
     final pending     = leaves.where((l) => l.status == 'PENDING').length;
     final casualUsed  = leaves.where((l) => l.type == 'CASUAL'  && l.status == 'APPROVED').fold(0, (s, l) => s + l.totalDays);
     final medicalUsed = leaves.where((l) => l.type == 'MEDICAL' && l.status == 'APPROVED').fold(0, (s, l) => s + l.totalDays);
     final earnedUsed  = leaves.where((l) => l.type == 'EARNED'  && l.status == 'APPROVED').fold(0, (s, l) => s + l.totalDays);
 
-    return Container(color: Colors.white,
-      child: SafeArea(bottom: false, child: Column(children: [
-        Padding(padding: const EdgeInsets.fromLTRB(16,12,16,14), child: Row(children: [
-          GestureDetector(
-            onTap: () { HapticFeedback.lightImpact(); context.pop(); },
-            child: Container(width:32, height:32,
-              decoration: BoxDecoration(color: _tSoft, borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.chevron_left_rounded, color: _tA, size:20))),
-          const SizedBox(width:10),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Leave', style: TextStyle(fontFamily:'Clash Display', fontSize:17, fontWeight:FontWeight.w900, color:_ink, letterSpacing:-.3)),
-            const Text('Apply, track & manage your leaves', style: TextStyle(fontFamily:'Satoshi', fontSize:10, fontWeight:FontWeight.w600, color:_ink3)),
-          ])),
-          GestureDetector(
-            onTap: () => _showApply(context),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal:14, vertical:8),
-              decoration: BoxDecoration(gradient: _tGrad, borderRadius: BorderRadius.circular(100),
-                boxShadow: [BoxShadow(color: _tA.withOpacity(.3), blurRadius:12, offset: const Offset(0,4))]),
-              child: const Text('+ Apply', style: TextStyle(fontFamily:'Satoshi', fontSize:11, fontWeight:FontWeight.w800, color:Colors.white)))),
-        ])),
-
-        // Balance chips
-        SizedBox(height: 86, child: ListView(
+    return ModulePageHeader(
+      title: 'Leave',
+      icon: Icons.beach_access_rounded,
+      bottomRows: [
+        // ── Balance chips ──────────────────────────────────────────────────
+        SizedBox(height: 98, child: ListView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.fromLTRB(16,0,16,14),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           children: [
             _Chip('${12-casualUsed}',  'Casual',  '$casualUsed used · ${12-casualUsed} left', _tSoft, _tA, const Color(0x33FF5733)),
             _Chip('${8-medicalUsed}',  'Medical', '$medicalUsed used · ${8-medicalUsed} left', const Color(0xFFEFF6FF), const Color(0xFF3B82F6), const Color(0x333B82F6)),
@@ -163,19 +150,23 @@ class _TeacherLeaveViewState extends ConsumerState<TeacherLeaveView> {
           ],
         )),
 
-        // Filter tabs
+        // ── Filter tabs ────────────────────────────────────────────────────
         Container(
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0x10140E28)))),
-          child: Row(children: [
-            _tab('all', 'All', null),
-            _tab('pending', 'Pending', pending > 0 ? '$pending' : null),
-            _tab('approved', 'Approved', null),
-            _tab('rejected', 'Rejected', null),
-          ]),
+          color: Colors.white,
+          child: Container(
+            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0x10140E28)))),
+            child: Row(children: [
+              _tab('all', 'All', null),
+              _tab('pending', 'Pending', pending > 0 ? '$pending' : null),
+              _tab('approved', 'Approved', null),
+              _tab('rejected', 'Rejected', null),
+            ]),
+          ),
         ),
-      ])),
+      ],
     );
   }
+
 
   Widget _tab(String key, String label, String? badge) {
     final active = _filter == key;
@@ -228,7 +219,7 @@ class _TeacherLeaveViewState extends ConsumerState<TeacherLeaveView> {
     const SizedBox(height:16),
     const Text('No leaves found', style: TextStyle(fontFamily:'Cabinet Grotesk', fontSize:16, fontWeight:FontWeight.w800, color:_ink)),
     const SizedBox(height:6),
-    const Text('Apply for a leave using the + Apply button', style: TextStyle(fontFamily:'Satoshi', fontSize:12, color:_ink3)),
+    const Text('Tap the + button to apply for leave', style: TextStyle(fontFamily:'Satoshi', fontSize:12, color:_ink3)),
     const SizedBox(height:20),
     GestureDetector(
       onTap: () => _showApply(context),
@@ -253,6 +244,11 @@ class _TeacherLeaveViewState extends ConsumerState<TeacherLeaveView> {
     showModalBottomSheet(
       context: context, isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      sheetAnimationStyle: AnimationStyle(
+        curve: Curves.easeInOutCubic,
+        duration: const Duration(milliseconds: 380),
+        reverseDuration: const Duration(milliseconds: 260),
+      ),
       builder: (_) => _ApplySheet(
         token: ref.read(userProfileProvider)?.token ?? '',
         onSuccess: () { _refresh(); Navigator.pop(context); },

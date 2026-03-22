@@ -168,7 +168,7 @@ export async function sendTransportFeeRemindersAction(slug: string) {
         // Find all pending transport fees
         const pendingFees = await prisma.fee.findMany({
             where: {
-                student: { schoolId: auth.user.schoolId },
+                student: { schoolId: auth.user.schoolId! },
                 category: "TRANSPORT",
                 status: "PENDING"
             },

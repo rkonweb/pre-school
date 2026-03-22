@@ -18,22 +18,22 @@ import {
   Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Footer } from "./Footer";
 
 export function AboutUsPage() {
-  const navigate = useNavigate();
+  const navigate = useRouter();
 
   const handleNavClick = (href: string) => {
     if (href.startsWith("#")) {
-      navigate("/");
+      navigate.push("/");
       setTimeout(() => {
         const element = document.querySelector(href);
         element?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     } else {
-      navigate(href);
+      navigate.push(href);
     }
   };
 

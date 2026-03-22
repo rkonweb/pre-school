@@ -63,6 +63,7 @@ export default function HostelAllocationClient({
     initialStudents: Student[]
     availableGrades: string[]
     availableSections: string[]
+    currency?: string | null
 }) {
     const { currency } = useSidebar()
     const [students, setStudents] = useState<Student[]>(initialStudents)

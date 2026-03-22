@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bodhiboard — Curriculum & Training</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --i50:#EEF2FF;--i100:#E0E7FF;--i200:#C7D2FE;--i300:#A5B4FC;--i400:#818CF8;--i500:#6366F1;--i600:#4F46E5;--i700:#4338CA;--i900:#1E1B4B;
+  --s50:#F8FAFC;--s100:#F1F5F9;--s200:#E2E8F0;--s300:#CBD5E1;--s400:#94A3B8;--s500:#64748B;--s600:#475569;--s700:#334155;--s800:#1E293B;--s900:#0F172A;
+  --w:#FFFFFF;--gm:linear-gradient(135deg,#6366F1,#4338CA);--gd:linear-gradient(160deg,#0F172A,#1E1B4B);
+  --sx:0 1px 3px rgba(15,23,42,.06);--sm:0 4px 12px rgba(15,23,42,.08);--md:0 8px 28px rgba(15,23,42,.10);--lg:0 20px 60px rgba(15,23,42,.12);--xl:0 40px 100px rgba(15,23,42,.14);
+  --si:0 8px 32px rgba(99,102,241,.25);--sil:0 16px 56px rgba(99,102,241,.30);
+  --fs:'Instrument Serif',Georgia,serif;--fn:'DM Sans',sans-serif;--fu:'Inter',sans-serif
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--fn);background:var(--w);color:var(--s900);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid var(--s200);transition:box-shadow .3s}
+nav.sc{box-shadow:var(--sm)}
+.nl{display:flex;align-items:center;gap:10px;text-decoration:none;font-size:17px;font-weight:700;color:var(--s900);letter-spacing:-.3px}
+.lm{width:34px;height:34px;border-radius:9px;background:var(--gm);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(99,102,241,.35);flex-shrink:0}
+.le em{font-style:normal;color:var(--i600)}
+.nv{display:flex;align-items:center;gap:4px}
+.nv a{color:var(--s500);text-decoration:none;font-family:var(--fu);font-size:14px;font-weight:500;padding:7px 14px;border-radius:8px;transition:color .15s,background .15s}
+.nv a:hover{color:var(--s900);background:var(--s100)}
+.nv a.ac{color:var(--i600);background:var(--i50)}
+.nr{display:flex;align-items:center;gap:8px}
+.bg2{font-family:var(--fu);font-size:14px;font-weight:500;color:var(--s600);background:none;border:none;cursor:pointer;padding:8px 16px;border-radius:8px;text-decoration:none;transition:color .15s,background .15s}
+.bg2:hover{color:var(--s900);background:var(--s100)}
+.bc{font-family:var(--fu);font-size:14px;font-weight:600;color:var(--w);background:var(--gm);border:none;cursor:pointer;padding:9px 20px;border-radius:9px;text-decoration:none;transition:all .2s;box-shadow:var(--si)}
+.bc:hover{opacity:.92;transform:translateY(-1px);box-shadow:var(--sil)}
+
+/* SHARED */
+.wrap{max-width:1100px;margin:0 auto;padding:0 56px}
+.ey{display:inline-flex;align-items:center;gap:6px;font-family:var(--fu);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--i600);margin-bottom:16px}
+.el{width:20px;height:1.5px;background:var(--i400);border-radius:2px}
+.rv{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s cubic-bezier(.22,1,.36,1)}
+.rv.in{opacity:1;transform:translateY(0)}
+@keyframes fu2{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pl{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.st{font-family:var(--fs);font-size:clamp(34px,4.5vw,52px);font-weight:400;letter-spacing:-.5px;line-height:1.1;color:var(--s900)}
+.st em{font-style:italic;color:var(--i600)}
+.sb2{font-family:var(--fu);font-size:16px;color:var(--s500);line-height:1.7;margin-top:14px}
+.btn-p{font-family:var(--fu);font-size:15px;font-weight:600;color:var(--w);background:var(--gm);border:none;cursor:pointer;padding:14px 30px;border-radius:10px;text-decoration:none;transition:all .2s;box-shadow:var(--si);display:inline-flex;align-items:center;gap:8px}
+.btn-p:hover{transform:translateY(-2px);box-shadow:var(--sil);opacity:.93}
+.btn-s{font-family:var(--fu);font-size:15px;font-weight:500;color:var(--s700);background:var(--w);border:1.5px solid var(--s200);cursor:pointer;padding:13px 24px;border-radius:10px;text-decoration:none;transition:all .2s;box-shadow:var(--sx);display:inline-flex;align-items:center;gap:8px}
+.btn-s:hover{border-color:var(--i300);color:var(--i600);transform:translateY(-1px);box-shadow:var(--sm)}
+
+/* ── HERO ── */
+.ch{padding:140px 56px 0;background:linear-gradient(180deg,var(--s50),var(--w));position:relative;overflow:hidden;text-align:center}
+.ch::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,rgba(99,102,241,.12) 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(ellipse 80% 70% at 50% 0%,black 40%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 0%,black 40%,transparent 100%)}
+.ch::after{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:700px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.07),transparent 70%);pointer-events:none}
+.kk{display:inline-flex;align-items:center;gap:8px;font-family:var(--fu);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--i600);background:var(--i50);border:1px solid var(--i200);padding:5px 14px;border-radius:100px;margin-bottom:28px;position:relative;z-index:1;animation:fu2 .5s ease both}
+.kd{width:6px;height:6px;border-radius:50%;background:var(--i500);animation:pl 2s ease-in-out infinite}
+.hh{font-family:var(--fs);font-size:clamp(50px,7vw,88px);font-weight:400;line-height:1.04;letter-spacing:-2px;color:var(--s900);position:relative;z-index:1;animation:fu2 .55s .08s ease both;max-width:900px;margin:0 auto}
+.hh em{font-style:italic;color:var(--i600)}
+.hs{margin-top:20px;font-family:var(--fu);font-size:18px;color:var(--s500);max-width:580px;line-height:1.7;margin-left:auto;margin-right:auto;position:relative;z-index:1;animation:fu2 .55s .16s ease both}
+.h-btns{display:flex;gap:12px;justify-content:center;margin-top:40px;flex-wrap:wrap;position:relative;z-index:1;animation:fu2 .55s .24s ease both}
+.h-trust{display:flex;gap:8px;justify-content:center;margin-top:24px;flex-wrap:wrap;position:relative;z-index:1;animation:fu2 .55s .32s ease both}
+.ht{display:inline-flex;align-items:center;gap:6px;font-family:var(--fu);font-size:12px;font-weight:600;color:var(--s600);background:var(--w);border:1px solid var(--s200);padding:5px 12px;border-radius:100px;box-shadow:var(--sx)}
+
+/* Hero visual — curriculum preview card */
+.hero-preview{margin-top:60px;position:relative;z-index:1;max-width:900px;margin-left:auto;margin-right:auto;animation:fu2 .7s .4s ease both}
+.hp-card{background:var(--w);border:1px solid var(--s200);border-radius:20px;overflow:hidden;box-shadow:var(--xl);animation:hpFloat 6s ease-in-out infinite}
+@keyframes hpFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.hp-top{display:flex;align-items:center;gap:7px;padding:12px 18px;background:var(--s50);border-bottom:1px solid var(--s200)}
+.hp-dot{width:10px;height:10px;border-radius:50%}
+.hpdr{background:#FF5F57}.hpdy{background:#FEBC2E}.hpdg{background:#28C840}
+.hp-url{margin:0 auto;font-family:var(--fu);font-size:11px;color:var(--s400);background:var(--w);padding:3px 14px;border-radius:5px;border:1px solid var(--s200)}
+.hp-body{display:grid;grid-template-columns:200px 1fr;min-height:280px}
+.hp-sidebar{background:var(--s50);border-right:1px solid var(--s200);padding:16px}
+.hp-sidebar-title{font-family:var(--fu);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--s400);margin-bottom:10px;padding:0 6px}
+.hp-item{display:flex;align-items:center;gap:8px;padding:8px 8px;border-radius:8px;font-size:12px;font-weight:500;color:var(--s500);margin-bottom:2px;cursor:default;transition:all .15s}
+.hp-item.ac{background:var(--i600);color:var(--w);box-shadow:0 3px 10px rgba(99,102,241,.3)}
+.hp-item:not(.ac):hover{background:var(--s200);color:var(--s700)}
+.hp-main{padding:20px;display:flex;flex-direction:column;gap:14px}
+.hp-week-row{display:flex;align-items:center;justify-content:space-between}
+.hp-week-title{font-family:var(--fn);font-size:14px;font-weight:700;color:var(--s800)}
+.hp-week-badge{font-family:var(--fu);font-size:10px;font-weight:700;color:var(--i700);background:var(--i50);border:1px solid var(--i100);padding:3px 9px;border-radius:5px}
+.hp-lessons{display:flex;flex-direction:column;gap:8px}
+.hp-lesson{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s50);border:1px solid var(--s200);border-radius:10px;transition:all .15s}
+.hp-lesson:hover{border-color:var(--i200);background:var(--i50)}
+.hpl-icon{width:30px;height:30px;border-radius:8px;background:var(--i50);border:1px solid var(--i100);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hpl-title{font-family:var(--fu);font-size:12px;font-weight:600;color:var(--s700)}
+.hpl-meta{font-family:var(--fu);font-size:10px;color:var(--s400)}
+.hpl-prog{margin-left:auto;display:flex;align-items:center;gap:7px}
+.hpl-track{width:48px;height:4px;background:var(--s200);border-radius:2px;overflow:hidden}
+.hpl-fill{height:100%;border-radius:2px;background:var(--gm)}
+.hpl-pct{font-family:var(--fu);font-size:10px;font-weight:700;color:var(--i600);min-width:24px}
+.hp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hp-stat{background:var(--s50);border:1px solid var(--s200);border-radius:9px;padding:10px 12px;text-align:center}
+.hps-val{font-family:var(--fn);font-size:18px;font-weight:800;letter-spacing:-.5px;color:var(--i600)}
+.hps-lbl{font-family:var(--fu);font-size:9px;color:var(--s400);margin-top:2px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+
+/* ── SOCIAL PROOF BAND ── */
+.proof-band{padding:40px 0;background:var(--w);border-top:1px solid var(--s100)}
+.proof-inner{max-width:1100px;margin:0 auto;padding:0 56px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--s200);border-radius:18px;overflow:hidden;box-shadow:var(--sx)}
+.proof-item{padding:28px 24px;text-align:center;position:relative}
+.proof-item+.proof-item::before{content:'';position:absolute;left:0;top:20%;height:60%;width:1px;background:var(--s200)}
+.proof-num{font-family:var(--fn);font-size:36px;font-weight:800;letter-spacing:-1px;color:var(--i600);display:block;margin-bottom:4px}
+.proof-lbl{font-family:var(--fu);font-size:12px;color:var(--s500);font-weight:500}
+
+/* ── THREE PILLARS ── */
+.pillars-sec{padding:100px 0;background:var(--s50)}
+.pillars-header{text-align:center;margin-bottom:64px}
+.pillars-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.pillar-card{background:var(--w);border:1.5px solid var(--s200);border-radius:24px;overflow:hidden;cursor:default;transition:all .3s cubic-bezier(.22,1,.36,1);box-shadow:var(--sx)}
+.pillar-card:hover{transform:translateY(-6px);box-shadow:var(--lg);border-color:var(--i200)}
+.pc-head{padding:32px;position:relative;overflow:hidden;display:flex;align-items:flex-end;min-height:160px}
+.pc-head::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.1) 1px,transparent 1px);background-size:18px 18px}
+.pc-head-icon{position:relative;z-index:1}
+.pc-head-num{position:absolute;top:16px;right:20px;font-family:var(--fn);font-size:56px;font-weight:900;color:rgba(255,255,255,.12);letter-spacing:-3px;line-height:1;z-index:0}
+.pc-head-1{background:linear-gradient(145deg,#1E1B4B,#3730A3)}
+.pc-head-2{background:linear-gradient(145deg,#14532D,#15803D)}
+.pc-head-3{background:linear-gradient(145deg,#0C4A6E,#0369A1)}
+.pc-body2{padding:28px}
+.pc-body2-title{font-family:var(--fn);font-size:20px;font-weight:800;color:var(--s900);letter-spacing:-.4px;margin-bottom:8px}
+.pc-body2-desc{font-family:var(--fu);font-size:14px;color:var(--s500);line-height:1.65;margin-bottom:16px}
+.pc-chips{display:flex;gap:6px;flex-wrap:wrap}
+.pchip{font-family:var(--fu);font-size:11px;font-weight:600;color:var(--i700);background:var(--i50);border:1px solid var(--i100);padding:4px 10px;border-radius:6px}
+
+/* ── CURRICULUM DEEP DIVE ── */
+.curric-sec{padding:100px 0;background:var(--w)}
+.curric-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;margin-top:0}
+.curric-tabs{display:flex;flex-direction:column;gap:10px;margin-top:32px}
+.ctab{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px;cursor:pointer;transition:all .2s;border:1.5px solid transparent;background:var(--s50)}
+.ctab:hover{background:var(--i50);border-color:var(--i200)}
+.ctab.ac{background:var(--w);border-color:var(--i300);box-shadow:var(--md)}
+.ctab-icon{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--i50),var(--i100));border:1px solid var(--i200);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.ctab.ac .ctab-icon{background:var(--i600);border-color:var(--i700);box-shadow:0 4px 12px rgba(99,102,241,.3)}
+.ctab.ac .ctab-icon svg{stroke:white}
+.ctab-title{font-family:var(--fn);font-size:14px;font-weight:700;color:var(--s700)}
+.ctab.ac .ctab-title{color:var(--s900)}
+.ctab-desc{font-family:var(--fu);font-size:12px;color:var(--s400);margin-top:1px}
+.ctab-arrow{margin-left:auto;color:var(--s300);transition:all .2s;flex-shrink:0}
+.ctab.ac .ctab-arrow{color:var(--i500);transform:translateX(4px)}
+
+/* Subject detail panel */
+.curric-panel{background:var(--s50);border:1.5px solid var(--s200);border-radius:20px;padding:32px;position:sticky;top:88px}
+.panel-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--fu);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--i700);background:var(--i50);border:1px solid var(--i200);padding:4px 10px;border-radius:6px;margin-bottom:16px}
+.panel-title{font-family:var(--fs);font-size:26px;font-weight:400;color:var(--s900);letter-spacing:-.3px;margin-bottom:10px}
+.panel-title em{font-style:italic;color:var(--i600)}
+.panel-desc{font-family:var(--fu);font-size:14px;color:var(--s500);line-height:1.7;margin-bottom:24px}
+.panel-milestones{margin-bottom:24px}
+.pm-title{font-family:var(--fu);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--s400);margin-bottom:10px}
+.pm-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.pm-check{width:18px;height:18px;border-radius:5px;background:var(--i50);border:1px solid var(--i200);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.pm-text{font-family:var(--fu);font-size:13px;color:var(--s600);font-weight:500;line-height:1.45}
+.panel-agegroups{display:flex;gap:8px;flex-wrap:wrap}
+.ag{font-family:var(--fu);font-size:11px;font-weight:700;padding:5px 12px;border-radius:8px;border:1.5px solid var(--s200);color:var(--s600)}
+.ag.ac{background:var(--i50);border-color:var(--i300);color:var(--i700)}
+
+/* ── TRAINING SECTION ── */
+.training-sec{padding:100px 0;background:var(--s50)}
+.training-intro{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end;margin-bottom:60px}
+.training-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tr-card{background:var(--w);border:1.5px solid var(--s200);border-radius:20px;padding:28px;cursor:default;transition:all .3s cubic-bezier(.22,1,.36,1);box-shadow:var(--sx);position:relative;overflow:hidden}
+.tr-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--gm);opacity:0;transition:opacity .3s}
+.tr-card:hover{transform:translateY(-5px);box-shadow:var(--lg);border-color:var(--i200)}
+.tr-card:hover::after{opacity:1}
+.tr-icon{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--i50),var(--i100));border:1px solid var(--i200);display:flex;align-items:center;justify-content:center;margin-bottom:16px;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.tr-card:hover .tr-icon{transform:rotate(-5deg) scale(1.1);background:linear-gradient(135deg,var(--i100),var(--i50));box-shadow:0 6px 18px rgba(99,102,241,.2)}
+.tr-role{font-family:var(--fu);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--i600);margin-bottom:6px}
+.tr-title{font-family:var(--fn);font-size:16px;font-weight:700;color:var(--s800);margin-bottom:8px;letter-spacing:-.2px}
+.tr-desc{font-family:var(--fu);font-size:13px;color:var(--s500);line-height:1.6;margin-bottom:14px}
+.tr-modules{display:flex;flex-direction:column;gap:7px}
+.tr-mod{display:flex;align-items:center;gap:8px;font-family:var(--fu);font-size:12px;color:var(--s600);font-weight:500}
+.tr-mod-dot{width:5px;height:5px;border-radius:50%;background:var(--i400);flex-shrink:0}
+.tr-stat{margin-top:16px;padding-top:14px;border-top:1px solid var(--s100);display:flex;align-items:center;gap:8px}
+.tr-stat-num{font-family:var(--fn);font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--i600)}
+.tr-stat-lbl{font-family:var(--fu);font-size:11px;color:var(--s400)}
+
+/* ── SOPS ── */
+.sops-sec{padding:100px 0;background:var(--w)}
+.sops-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.sops-list{display:flex;flex-direction:column;gap:12px;margin-top:28px}
+.sop-row{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--s50);border:1px solid var(--s200);border-radius:14px;cursor:default;transition:all .2s}
+.sop-row:hover{border-color:var(--i200);background:var(--i50);transform:translateX(4px)}
+.sop-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--i50),var(--i100));border:1px solid var(--i200);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sop-title{font-family:var(--fn);font-size:14px;font-weight:700;color:var(--s800);margin-bottom:2px}
+.sop-desc{font-family:var(--fu);font-size:12px;color:var(--s400)}
+.sop-count{margin-left:auto;font-family:var(--fn);font-size:16px;font-weight:800;color:var(--i600);flex-shrink:0}
+.sops-visual{background:var(--s50);border:1.5px solid var(--s200);border-radius:24px;padding:32px;box-shadow:var(--md)}
+.sv-label{font-family:var(--fu);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--s400);margin-bottom:18px}
+.sv-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--w);border:1px solid var(--s200);border-radius:10px;margin-bottom:8px;transition:all .15s}
+.sv-item:hover{border-color:var(--i200)}
+.sv-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sv-name{font-family:var(--fu);font-size:12px;font-weight:600;color:var(--s700);flex:1}
+.sv-tag{font-family:var(--fu);font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px}
+.sv-tag.live{background:#DCFCE7;color:#16A34A}
+.sv-tag.upd{background:var(--i50);color:var(--i700)}
+.sv-feature-chips{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--s200)}
+.svc{background:var(--w);border:1px solid var(--s200);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px;transition:all .2s}
+.svc:hover{border-color:var(--i200)}
+.svc-icon{width:24px;height:24px;border-radius:6px;background:var(--i50);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.svc-text{font-family:var(--fu);font-size:11px;font-weight:600;color:var(--s600)}
+
+/* ── OUTCOMES ── */
+.outcomes-sec{padding:100px 0;background:var(--s50)}
+.outcomes-header{text-align:center;margin-bottom:64px}
+.outcomes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.oc-card{background:var(--w);border:1.5px solid var(--s200);border-radius:20px;padding:30px 26px;cursor:default;transition:all .25s cubic-bezier(.22,1,.36,1);box-shadow:var(--sx)}
+.oc-card:hover{transform:translateY(-5px);box-shadow:var(--md);border-color:var(--i200)}
+.oc-num{font-family:var(--fn);font-size:42px;font-weight:800;letter-spacing:-1.5px;color:var(--i600);line-height:1;margin-bottom:8px}
+.oc-title{font-family:var(--fn);font-size:16px;font-weight:700;color:var(--s800);margin-bottom:8px;letter-spacing:-.2px}
+.oc-desc{font-family:var(--fu);font-size:13px;color:var(--s500);line-height:1.65}
+.oc-icon{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--i50),var(--i100));border:1px solid var(--i200);display:flex;align-items:center;justify-content:center;margin-bottom:16px;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.oc-card:hover .oc-icon{transform:rotate(-4deg) scale(1.1);box-shadow:0 4px 14px rgba(99,102,241,.2)}
+
+/* ── GLOBAL PEDIGREE ── */
+.global-sec{padding:100px 0;background:var(--w)}
+.global-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.global-visual{background:var(--gd);border-radius:24px;padding:40px;position:relative;overflow:hidden;box-shadow:var(--xl)}
+.global-visual::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(129,140,248,.6),transparent)}
+.global-visual::after{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.3),transparent 70%);pointer-events:none}
+.gv-title{font-family:var(--fu);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:20px;position:relative;z-index:1}
+.gv-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;margin-bottom:8px;position:relative;z-index:1;transition:all .15s}
+.gv-row:hover{background:rgba(255,255,255,.1)}
+.gv-flag{font-size:20px;flex-shrink:0}
+.gv-name{font-family:var(--fn);font-size:13px;font-weight:700;color:var(--w)}
+.gv-role{font-family:var(--fu);font-size:11px;color:rgba(255,255,255,.45)}
+.gv-badge{margin-left:auto;font-family:var(--fu);font-size:10px;font-weight:700;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:2px 8px;border-radius:5px;flex-shrink:0}
+.gv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px;position:relative;z-index:1}
+.gvs{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;text-align:center}
+.gvs-num{font-family:var(--fn);font-size:22px;font-weight:800;color:var(--w);letter-spacing:-.5px}
+.gvs-lbl{font-family:var(--fu);font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
+
+/* ── JOURNEY ── */
+.journey-sec{padding:100px 0;background:var(--s50)}
+.journey-header{text-align:center;margin-bottom:64px}
+.journey-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative}
+.journey-grid::before{content:'';position:absolute;top:44px;left:10%;right:10%;height:1.5px;background:linear-gradient(90deg,var(--i200),var(--i400),var(--i200));z-index:0}
+.journey-item{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 16px;position:relative;z-index:1}
+.ji-num{width:52px;height:52px;border-radius:50%;background:var(--w);border:2px solid var(--i200);display:flex;align-items:center;justify-content:center;font-family:var(--fn);font-size:18px;font-weight:800;color:var(--i600);margin-bottom:16px;box-shadow:var(--sm);transition:all .3s}
+.journey-item:hover .ji-num{background:var(--i600);color:var(--w);border-color:var(--i700);box-shadow:var(--si);transform:scale(1.1)}
+.ji-title{font-family:var(--fn);font-size:15px;font-weight:700;color:var(--s800);margin-bottom:6px}
+.ji-desc{font-family:var(--fu);font-size:13px;color:var(--s500);line-height:1.6}
+
+/* ── TESTIMONIAL PULLQUOTE ── */
+.tq-sec{padding:80px 0;background:var(--w)}
+.tq-inner{max-width:820px;margin:0 auto;text-align:center}
+.tq-stars{display:flex;gap:4px;justify-content:center;margin-bottom:20px}
+.tq-star{font-size:22px;color:#F59E0B}
+.tq-text{font-family:var(--fs);font-size:clamp(20px,2.8vw,28px);font-weight:400;color:var(--s800);line-height:1.45;font-style:italic;letter-spacing:-.3px;margin-bottom:28px}
+.tq-author{display:flex;align-items:center;gap:14px;justify-content:center}
+.tq-av{width:48px;height:48px;border-radius:14px;background:var(--gm);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;font-family:var(--fu);box-shadow:0 3px 10px rgba(99,102,241,.3)}
+.tq-name{font-family:var(--fn);font-size:15px;font-weight:700;color:var(--s800);text-align:left}
+.tq-role{font-family:var(--fu);font-size:12px;color:var(--s400);text-align:left}
+.tq-school{font-family:var(--fu);font-size:11px;font-weight:600;color:var(--i600);background:var(--i50);border:1px solid var(--i100);padding:2px 8px;border-radius:5px;margin-top:3px;display:inline-block}
+
+/* ── CTA ── */
+.cta-sec{padding:100px 56px;background:var(--s50)}
+.cta-inner{max-width:780px;margin:0 auto;background:var(--gd);border-radius:32px;padding:72px 60px;text-align:center;position:relative;overflow:hidden;box-shadow:var(--xl)}
+.cta-inner::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:500px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.3),transparent 70%);pointer-events:none}
+.cta-inner::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(129,140,248,.6),transparent)}
+.ce{display:inline-flex;align-items:center;gap:6px;font-family:var(--fu);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--i400);margin-bottom:20px}
+.ctit{font-family:var(--fs);font-size:clamp(32px,4vw,50px);font-weight:400;color:var(--w);letter-spacing:-.5px;line-height:1.1;margin-bottom:18px}
+.ctit em{font-style:italic;color:var(--i400)}
+.csu{font-family:var(--fu);font-size:15px;color:rgba(255,255,255,.5);line-height:1.7;max-width:440px;margin:0 auto 34px}
+.cbs{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:26px}
+.cw{font-family:var(--fu);font-size:15px;font-weight:700;cursor:pointer;color:var(--s900);background:var(--w);border:none;padding:14px 30px;border-radius:10px;text-decoration:none;transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.15);display:inline-flex;align-items:center;gap:8px}
+.cw:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(0,0,0,.2)}
+.cgh{font-family:var(--fu);font-size:15px;font-weight:500;cursor:pointer;color:rgba(255,255,255,.7);background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);padding:13px 24px;border-radius:10px;text-decoration:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.cgh:hover{background:rgba(255,255,255,.14);color:var(--w);transform:translateY(-1px)}
+.ct2{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+.cti{display:flex;align-items:center;gap:6px;font-family:var(--fu);font-size:12px;color:rgba(255,255,255,.35);font-weight:500}
+
+/* FOOTER */
+footer{background:var(--s900);padding:56px 56px 36px}
+.fg{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+.flo{display:flex;align-items:center;gap:9px;text-decoration:none;margin-bottom:12px}
+.flm{width:30px;height:30px;border-radius:8px;background:var(--gm);display:flex;align-items:center;justify-content:center}
+.fln{font-family:var(--fn);font-size:16px;font-weight:700;color:var(--w)}
+.fd{font-family:var(--fu);font-size:13px;color:rgba(255,255,255,.35);line-height:1.65;max-width:220px}
+.fct{font-family:var(--fu);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:14px}
+.fli{display:flex;flex-direction:column;gap:9px}
+.fli a{font-family:var(--fu);font-size:13px;color:rgba(255,255,255,.35);text-decoration:none;transition:color .15s}
+.fli a:hover{color:rgba(255,255,255,.7)}
+.fb{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding-top:20px;border-top:1px solid rgba(255,255,255,.07);font-family:var(--fu);font-size:12px;color:rgba(255,255,255,.25);flex-wrap:wrap;gap:10px}
+
+@media(max-width:960px){
+  nav{padding:0 24px}.nv{display:none}
+  .ch{padding:110px 24px 0}.wrap{padding:0 24px}
+  .proof-inner{grid-template-columns:1fr 1fr;padding:0 24px}
+  .pillars-grid{grid-template-columns:1fr}
+  .curric-grid,.sops-grid,.global-grid,.training-intro{grid-template-columns:1fr;gap:40px}
+  .training-grid{grid-template-columns:1fr}
+  .outcomes-grid{grid-template-columns:1fr 1fr}
+  .journey-grid{grid-template-columns:1fr 1fr;gap:32px}
+  .journey-grid::before{display:none}
+  .hp-body{grid-template-columns:1fr}.hp-sidebar{display:none}
+  .fg{grid-template-columns:1fr 1fr}
+  .cta-sec{padding:80px 24px}.cta-inner{padding:48px 28px}
+  footer{padding:40px 24px 28px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mn">
+  <a href="/" class="nl">
+    <div class="lm"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+    <span class="le">Bodhi<em>board</em></span>
+  </a>
+  <div class="nv">
+    <a href="/">Home</a>
+    <a href="/product">Platform</a>
+    <a href="/curriculum" class="ac">Curriculum</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/about">About</a>
+    <a href="/blog">Blog</a>
+  </div>
+  <div class="nr">
+    <a href="/login" class="bg2">Sign in</a>
+    <a href="/signup" class="bc">Start free trial</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="ch">
+  <div class="kk"><div class="kd"></div>Expert-Designed · Research-Backed · India-First</div>
+  <h1 class="hh">The curriculum your school<br>needs to <em>launch with confidence</em></h1>
+  <p class="hs">200+ ready-to-teach lesson plans, structured staff training for every role, and living SOPs — all built into the platform your team uses every single day.</p>
+  <div class="h-btns">
+    <a href="/signup" class="btn-p">Explore the curriculum <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+    <a href="/contact" class="btn-s"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Talk to an educator</a>
+  </div>
+  <div class="h-trust">
+    <div class="ht"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Oxford-level pedagogy</div>
+    <div class="ht"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>200+ lesson plans included</div>
+    <div class="ht"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Ready from day one</div>
+    <div class="ht"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>5 role-based training paths</div>
+  </div>
+
+  <!-- Dashboard Preview -->
+  <div class="hero-preview">
+    <div class="hp-card">
+      <div class="hp-top">
+        <div class="hp-dot hpdr"></div><div class="hp-dot hpdy"></div><div class="hp-dot hpdg"></div>
+        <div class="hp-url">app.bodhiboard.in / curriculum / week-12</div>
+      </div>
+      <div class="hp-body">
+        <div class="hp-sidebar">
+          <div class="hp-sidebar-title">Curriculum</div>
+          <div class="hp-item ac"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>&nbsp;Lesson Plans</div>
+          <div class="hp-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>&nbsp;Outcomes</div>
+          <div class="hp-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>&nbsp;Progress</div>
+          <div class="hp-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>&nbsp;Training</div>
+          <div class="hp-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>&nbsp;SOPs</div>
+        </div>
+        <div class="hp-main">
+          <div class="hp-week-row">
+            <div class="hp-week-title">Week 12 — Nature & Seasons</div>
+            <div class="hp-week-badge">PP1 · Term 2</div>
+          </div>
+          <div class="hp-lessons">
+            <div class="hp-lesson">
+              <div class="hpl-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/></svg></div>
+              <div><div class="hpl-title">Seasons Walk — Outdoor Exploration</div><div class="hpl-meta">Mon–Wed · 45 min · Language + Science</div></div>
+              <div class="hpl-prog"><div class="hpl-track"><div class="hpl-fill" style="width:100%"></div></div><span class="hpl-pct" style="color:#16A34A">Done</span></div>
+            </div>
+            <div class="hp-lesson">
+              <div class="hpl-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+              <div><div class="hpl-title">Leaf Prints Art Activity</div><div class="hpl-meta">Thu · 30 min · Creative + Fine Motor</div></div>
+              <div class="hpl-prog"><div class="hpl-track"><div class="hpl-fill" style="width:75%"></div></div><span class="hpl-pct">75%</span></div>
+            </div>
+            <div class="hp-lesson">
+              <div class="hpl-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></div>
+              <div><div class="hpl-title">Season Storytelling Circle</div><div class="hpl-meta">Fri · 60 min · Language + Social</div></div>
+              <div class="hpl-prog"><div class="hpl-track"><div class="hpl-fill" style="width:0%"></div></div><span class="hpl-pct" style="color:var(--s400)">Due</span></div>
+            </div>
+          </div>
+          <div class="hp-stats">
+            <div class="hp-stat"><div class="hps-val">200+</div><div class="hps-lbl">Lessons</div></div>
+            <div class="hp-stat"><div class="hps-val">40+</div><div class="hps-lbl">Themes</div></div>
+            <div class="hp-stat"><div class="hps-val">6</div><div class="hps-lbl">Age Groups</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF BAND -->
+<div style="padding:40px 56px;background:var(--w);position:relative;z-index:1">
+  <div class="proof-inner rv">
+    <div class="proof-item"><span class="proof-num" data-count="200">0+</span><div class="proof-lbl">Ready-to-teach lesson plans</div></div>
+    <div class="proof-item"><span class="proof-num" data-count="40">0+</span><div class="proof-lbl">Curriculum themes</div></div>
+    <div class="proof-item"><span class="proof-num" data-count="5">0</span><div class="proof-lbl">Role-based training paths</div></div>
+    <div class="proof-item"><span class="proof-num" data-count="100">0+</span><div class="proof-lbl">SOPs built into workflows</div></div>
+  </div>
+</div>
+
+<!-- THREE PILLARS -->
+<section class="pillars-sec">
+  <div class="wrap">
+    <div class="pillars-header rv">
+      <div class="ey" style="justify-content:center"><div class="el"></div>The Three Pillars<div class="el"></div></div>
+      <h2 class="st" style="text-align:center">Not just <em>what to teach</em> —<br>but how, by whom, and consistently</h2>
+      <p class="sb2" style="text-align:center;margin:14px auto 0;max-width:560px">Great schools need great curriculum, great people, and great systems. Bodhiboard delivers all three, woven together.</p>
+    </div>
+    <div class="pillars-grid">
+      <div class="pillar-card rv">
+        <div class="pc-head pc-head-1">
+          <div class="pc-head-num">01</div>
+          <div class="pc-head-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        </div>
+        <div class="pc-body2">
+          <div class="pc-body2-title">Expert Curriculum</div>
+          <div class="pc-body2-desc">200+ lesson plans designed with Oxford-level pedagogy and India-first context. Six learning areas, six age groups, 40+ themes. Open and teach on day one — no planning required.</div>
+          <div class="pc-chips"><span class="pchip">200+ lessons</span><span class="pchip">6 age groups</span><span class="pchip">Activity-based</span><span class="pchip">Play-led</span></div>
+        </div>
+      </div>
+      <div class="pillar-card rv">
+        <div class="pc-head pc-head-2">
+          <div class="pc-head-num">02</div>
+          <div class="pc-head-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        </div>
+        <div class="pc-body2">
+          <div class="pc-body2-title">Role-Based Training</div>
+          <div class="pc-body2-desc">Every team member — owner, teacher, nanny, driver, admin — has a structured induction path. Consistent quality from the first day. No more hoping new hires "figure it out."</div>
+          <div class="pc-chips"><span class="pchip">5 role paths</span><span class="pchip">50+ modules</span><span class="pchip">Progress tracking</span><span class="pchip">Certification</span></div>
+        </div>
+      </div>
+      <div class="pillar-card rv">
+        <div class="pc-head pc-head-3">
+          <div class="pc-head-num">03</div>
+          <div class="pc-head-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        </div>
+        <div class="pc-body2">
+          <div class="pc-body2-title">Living SOPs</div>
+          <div class="pc-body2-desc">100+ standard operating procedures built into daily workflows — not a folder of PDFs nobody reads. Role-based access, instant updates, audit-ready compliance from day one.</div>
+          <div class="pc-chips"><span class="pchip">100+ SOPs</span><span class="pchip">Role-based access</span><span class="pchip">Instant updates</span><span class="pchip">Audit-ready</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CURRICULUM DEEP DIVE -->
+<section class="curric-sec" id="curriculum">
+  <div class="wrap">
+    <div class="curric-grid">
+      <div class="rv">
+        <div class="ey"><div class="el"></div>Six Learning Areas</div>
+        <h2 class="st">Every dimension of<br><em>child development covered</em></h2>
+        <p class="sb2">Each learning area is mapped to developmental milestones and delivered through play-based, activity-led methods that children actually enjoy.</p>
+        <div class="curric-tabs">
+          <div class="ctab ac" onclick="setTab(this,'lang')">
+            <div class="ctab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <div><div class="ctab-title">Language & Communication</div><div class="ctab-desc">Vocabulary, expression, early literacy</div></div>
+            <svg class="ctab-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="ctab" onclick="setTab(this,'num')">
+            <div class="ctab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+            <div><div class="ctab-title">Early Numeracy</div><div class="ctab-desc">Numbers, shapes, patterns, logic</div></div>
+            <svg class="ctab-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="ctab" onclick="setTab(this,'motor')">
+            <div class="ctab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></div>
+            <div><div class="ctab-title">Motor Skill Development</div><div class="ctab-desc">Fine & gross motor, coordination</div></div>
+            <svg class="ctab-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="ctab" onclick="setTab(this,'sensory')">
+            <div class="ctab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div><div class="ctab-title">Sensory Learning</div><div class="ctab-desc">Touch, sight, sound, exploration</div></div>
+            <svg class="ctab-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="ctab" onclick="setTab(this,'social')">
+            <div class="ctab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+            <div><div class="ctab-title">Social & Emotional Growth</div><div class="ctab-desc">Empathy, sharing, self-regulation</div></div>
+            <svg class="ctab-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="ctab" onclick="setTab(this,'creative')">
+            <div class="ctab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+            <div><div class="ctab-title">Creative Exploration</div><div class="ctab-desc">Art, music, storytelling, imagination</div></div>
+            <svg class="ctab-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="rv">
+        <div class="curric-panel" id="currPanel">
+          <div class="panel-badge" id="panelBadge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Language & Communication</div>
+          <div class="panel-title" id="panelTitle">Building <em>confident communicators</em></div>
+          <div class="panel-desc" id="panelDesc">From early babble to confident storytelling — our language curriculum builds vocabulary, listening skills and early literacy through songs, stories, conversations and play.</div>
+          <div class="panel-milestones">
+            <div class="pm-title" id="pmTitle">Key milestones covered</div>
+            <div class="pm-row"><div class="pm-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="pm-text" id="pm1">Vocabulary expansion through contextual learning</div></div>
+            <div class="pm-row"><div class="pm-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="pm-text" id="pm2">Active listening and comprehension skills</div></div>
+            <div class="pm-row"><div class="pm-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="pm-text" id="pm3">Early phonics awareness and letter sounds</div></div>
+            <div class="pm-row"><div class="pm-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="pm-text" id="pm4">Confident self-expression in group settings</div></div>
+          </div>
+          <div style="margin-bottom:16px">
+            <div class="pm-title">Age groups</div>
+            <div class="panel-agegroups" id="panelAges">
+              <div class="ag">Playgroup</div>
+              <div class="ag ac">Nursery</div>
+              <div class="ag ac">LKG</div>
+              <div class="ag ac">UKG</div>
+              <div class="ag">PP1</div>
+              <div class="ag">PP2</div>
+            </div>
+          </div>
+          <div style="background:var(--i50);border:1px solid var(--i100);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:10px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div style="font-family:var(--fu);font-size:12px;color:var(--i700);font-weight:500">Each lesson includes teacher guidance, activity sheets, materials list and expected outcomes — ready to use from day one.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRAINING -->
+<section class="training-sec" id="training">
+  <div class="wrap">
+    <div class="training-intro">
+      <div class="rv">
+        <div class="ey"><div class="el"></div>Role-Based Training</div>
+        <h2 class="st">Great curriculum needs<br><em>great people to deliver it</em></h2>
+        <p class="sb2">Structured training paths for every role in your school. Because consistent quality depends on consistent preparation — not hoping individuals figure it out.</p>
+      </div>
+      <div class="rv">
+        <div style="background:var(--w);border:1.5px solid var(--s200);border-radius:16px;padding:24px;box-shadow:var(--sm)">
+          <div style="font-family:var(--fu);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--s400);margin-bottom:14px">Training completion across your team</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px"><div style="font-family:var(--fu);font-size:12px;font-weight:600;color:var(--s600);width:80px;flex-shrink:0">Teachers</div><div style="flex:1;height:6px;background:var(--s100);border-radius:3px;overflow:hidden"><div style="width:92%;height:100%;border-radius:3px;background:var(--gm)"></div></div><div style="font-family:var(--fu);font-size:11px;font-weight:700;color:var(--i600);width:32px;text-align:right">92%</div></div>
+            <div style="display:flex;align-items:center;gap:10px"><div style="font-family:var(--fu);font-size:12px;font-weight:600;color:var(--s600);width:80px;flex-shrink:0">Nannies</div><div style="flex:1;height:6px;background:var(--s100);border-radius:3px;overflow:hidden"><div style="width:78%;height:100%;border-radius:3px;background:var(--gm)"></div></div><div style="font-family:var(--fu);font-size:11px;font-weight:700;color:var(--i600);width:32px;text-align:right">78%</div></div>
+            <div style="display:flex;align-items:center;gap:10px"><div style="font-family:var(--fu);font-size:12px;font-weight:600;color:var(--s600);width:80px;flex-shrink:0">Drivers</div><div style="flex:1;height:6px;background:var(--s100);border-radius:3px;overflow:hidden"><div style="width:85%;height:100%;border-radius:3px;background:var(--gm)"></div></div><div style="font-family:var(--fu);font-size:11px;font-weight:700;color:var(--i600);width:32px;text-align:right">85%</div></div>
+            <div style="display:flex;align-items:center;gap:10px"><div style="font-family:var(--fu);font-size:12px;font-weight:600;color:var(--s600);width:80px;flex-shrink:0">Admin</div><div style="flex:1;height:6px;background:var(--s100);border-radius:3px;overflow:hidden"><div style="width:100%;height:100%;border-radius:3px;background:var(--gm)"></div></div><div style="font-family:var(--fu);font-size:11px;font-weight:700;color:#16A34A;width:32px;text-align:right">Done</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="training-grid">
+      <div class="tr-card rv">
+        <div class="tr-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <div class="tr-role">Owner & Management</div>
+        <div class="tr-title">Leadership Induction</div>
+        <div class="tr-desc">Vision alignment, academic oversight, admissions leadership, staff management and SOP-driven operations — for school owners and principals.</div>
+        <div class="tr-modules">
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Vision & culture alignment</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Academic oversight & quality</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Admissions leadership</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Team building & accountability</div>
+        </div>
+        <div class="tr-stat"><div class="tr-stat-num">30+</div><div class="tr-stat-lbl">leadership modules</div></div>
+      </div>
+      <div class="tr-card rv">
+        <div class="tr-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+        <div class="tr-role">Teachers</div>
+        <div class="tr-title">Classroom Excellence</div>
+        <div class="tr-desc">Deep curriculum understanding, classroom execution, child psychology, observation techniques and meaningful parent communication — for every educator.</div>
+        <div class="tr-modules">
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Curriculum mastery</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Classroom management</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Child psychology & learning styles</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Parent communication</div>
+        </div>
+        <div class="tr-stat"><div class="tr-stat-num">50+</div><div class="tr-stat-lbl">teaching modules</div></div>
+      </div>
+      <div class="tr-card rv">
+        <div class="tr-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <div class="tr-role">Nannies & Caregivers</div>
+        <div class="tr-title">Childcare Standards</div>
+        <div class="tr-desc">Child safety, hygiene protocols, emotional sensitivity, routine handling and emergency response — ensuring every caregiver meets your school's highest standards.</div>
+        <div class="tr-modules">
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Safety & hygiene protocols</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Emotional sensitivity</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Emergency response</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Classroom support routines</div>
+        </div>
+        <div class="tr-stat"><div class="tr-stat-num">30+</div><div class="tr-stat-lbl">hours of training</div></div>
+      </div>
+      <div class="tr-card rv">
+        <div class="tr-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg></div>
+        <div class="tr-role">Drivers</div>
+        <div class="tr-title">Safe Transport</div>
+        <div class="tr-desc">Child safety standards, pick-up and drop-off discipline, emergency handling, professional conduct and daily vehicle checks — every driver trained to your standards.</div>
+        <div class="tr-modules">
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Child transportation safety</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Pick-up & drop discipline</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Emergency first response</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Professional conduct</div>
+        </div>
+        <div class="tr-stat"><div class="tr-stat-num">20+</div><div class="tr-stat-lbl">safety protocols</div></div>
+      </div>
+      <div class="tr-card rv">
+        <div class="tr-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        <div class="tr-role">Admin & Office</div>
+        <div class="tr-title">Operational Excellence</div>
+        <div class="tr-desc">Admissions workflows, fee handling, communication etiquette, ERP best practices and parent relationship building — for every admin team member.</div>
+        <div class="tr-modules">
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Admissions & lead management</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Fee collection workflows</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>ERP system mastery</div>
+          <div class="tr-mod"><div class="tr-mod-dot"></div>Parent interaction standards</div>
+        </div>
+        <div class="tr-stat"><div class="tr-stat-num">25+</div><div class="tr-stat-lbl">admin modules</div></div>
+      </div>
+      <div class="tr-card rv" style="background:var(--gd);border-color:transparent">
+        <div style="position:relative;z-index:1">
+          <div style="font-family:var(--fu);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:12px">Training isn't a one-time event.</div>
+          <div style="font-family:var(--fs);font-size:22px;font-weight:400;color:var(--w);line-height:1.35;letter-spacing:-.3px;margin-bottom:14px;font-style:italic">"It's the foundation of your school's culture, consistency and capacity to scale."</div>
+          <div style="font-family:var(--fu);font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:20px">Ongoing modules, refreshers, and new content keep every team member sharp — automatically updated whenever the curriculum evolves.</div>
+          <a href="/signup" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--fu);font-size:13px;font-weight:700;color:var(--s900);background:var(--w);padding:11px 20px;border-radius:9px;text-decoration:none;transition:all .2s;box-shadow:0 4px 14px rgba(0,0,0,.15)">Start training your team <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOPS -->
+<section class="sops-sec">
+  <div class="wrap">
+    <div class="sops-grid">
+      <div class="rv">
+        <div class="ey"><div class="el"></div>Living SOPs</div>
+        <h2 class="st">SOPs built into<br><em>daily workflows</em></h2>
+        <p class="sb2">Not a folder of PDFs nobody reads. Your standard operating procedures are accessible exactly where your team works — updated instantly, followed consistently, audit-ready always.</p>
+        <div class="sops-list">
+          <div class="sop-row"><div class="sop-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="sop-title">Admissions SOPs</div><div class="sop-desc">Inquiry to enrollment, follow-ups, tour scripts</div></div><div class="sop-count">24</div></div>
+          <div class="sop-row"><div class="sop-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><div><div class="sop-title">Classroom Routines</div><div class="sop-desc">Daily schedules, transitions, lesson delivery</div></div><div class="sop-count">18</div></div>
+          <div class="sop-row"><div class="sop-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><div class="sop-title">Parent Communication</div><div class="sop-desc">Update standards, escalation protocols, tone</div></div><div class="sop-count">15</div></div>
+          <div class="sop-row"><div class="sop-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div><div class="sop-title">Safety & Compliance</div><div class="sop-desc">Emergency procedures, regulatory requirements</div></div><div class="sop-count">22</div></div>
+          <div class="sop-row"><div class="sop-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="sop-title">Reporting Standards</div><div class="sop-desc">Progress tracking, parent reports, records</div></div><div class="sop-count">14</div></div>
+        </div>
+      </div>
+      <div class="rv">
+        <div class="sops-visual">
+          <div class="sv-label">SOPs — Live in platform</div>
+          <div class="sv-item"><div class="sv-dot" style="background:var(--i500)"></div><div class="sv-name">Morning Arrival Protocol</div><span class="sv-tag live">Live</span></div>
+          <div class="sv-item"><div class="sv-dot" style="background:var(--i500)"></div><div class="sv-name">Parent Inquiry Response Script</div><span class="sv-tag live">Live</span></div>
+          <div class="sv-item"><div class="sv-dot" style="background:#F59E0B"></div><div class="sv-name">Fee Reminder Sequence</div><span class="sv-tag upd">Updated</span></div>
+          <div class="sv-item"><div class="sv-dot" style="background:var(--i500)"></div><div class="sv-name">Child Injury Emergency Protocol</div><span class="sv-tag live">Live</span></div>
+          <div class="sv-item"><div class="sv-dot" style="background:var(--i500)"></div><div class="sv-name">New Teacher Onboarding Checklist</div><span class="sv-tag live">Live</span></div>
+          <div class="sv-item"><div class="sv-dot" style="background:#F59E0B"></div><div class="sv-name">Term Progress Report Template</div><span class="sv-tag upd">Updated</span></div>
+          <div class="sv-feature-chips">
+            <div class="svc"><div class="svc-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="svc-text">Role-based access</div></div>
+            <div class="svc"><div class="svc-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="svc-text">Instant updates</div></div>
+            <div class="svc"><div class="svc-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="svc-text">Audit-ready</div></div>
+            <div class="svc"><div class="svc-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="svc-text">Always current</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTCOMES -->
+<section class="outcomes-sec">
+  <div class="wrap">
+    <div class="outcomes-header rv">
+      <div class="ey" style="justify-content:center"><div class="el"></div>What Schools Achieve<div class="el"></div></div>
+      <h2 class="st" style="text-align:center">When curriculum, training and<br><em>systems work together</em></h2>
+      <p class="sb2" style="text-align:center;margin:12px auto 0;max-width:520px">Real outcomes reported by schools using Bodhiboard's integrated curriculum and training system.</p>
+    </div>
+    <div class="outcomes-grid">
+      <div class="oc-card rv">
+        <div class="oc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="oc-num">4.9★</div>
+        <div class="oc-title">Consistent teaching quality</div>
+        <div class="oc-desc">Every teacher delivers the same high standard, regardless of experience level. Parents rate the consistency 4.9/5 on average.</div>
+      </div>
+      <div class="oc-card rv">
+        <div class="oc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="oc-num">3 days</div>
+        <div class="oc-title">Faster staff onboarding</div>
+        <div class="oc-desc">New staff members are productive within 3 days, not 3 weeks. Structured paths remove all the guesswork.</div>
+      </div>
+      <div class="oc-card rv">
+        <div class="oc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="oc-num">Zero</div>
+        <div class="oc-title">Dependency on star teachers</div>
+        <div class="oc-desc">Your school isn't reliant on one exceptional individual. Systems carry the quality so any trained teacher can deliver.</div>
+      </div>
+      <div class="oc-card rv">
+        <div class="oc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <div class="oc-num">2×</div>
+        <div class="oc-title">Higher parent trust</div>
+        <div class="oc-desc">Parents see structure, professionalism and consistent child progress. Referral rates double within the first term.</div>
+      </div>
+      <div class="oc-card rv">
+        <div class="oc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="oc-num">1 week</div>
+        <div class="oc-title">Launch a new branch</div>
+        <div class="oc-desc">Curriculum, training and SOPs roll out to a new branch automatically. Consistent quality from day one, not after months of setup.</div>
+      </div>
+      <div class="oc-card rv">
+        <div class="oc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="oc-num">100%</div>
+        <div class="oc-title">Stronger school culture</div>
+        <div class="oc-desc">Shared training creates unified vision, language and expectations across every team member and every branch.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GLOBAL PEDIGREE -->
+<section class="global-sec">
+  <div class="wrap">
+    <div class="global-grid">
+      <div class="rv">
+        <div class="ey"><div class="el"></div>Global Pedigree</div>
+        <h2 class="st">Built with global experts.<br><em>Designed for India.</em></h2>
+        <p class="sb2">Our curriculum is shaped by collaboration with early childhood education specialists from the United Kingdom — including professionals with Oxford-level pedagogical exposure — and adapted specifically for Indian classrooms, culture and context.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">
+          <div style="display:flex;align-items:flex-start;gap:12px"><div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--i50),var(--i100));border:1px solid var(--i200);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div><div style="font-family:var(--fn);font-size:14px;font-weight:700;color:var(--s800);margin-bottom:3px">Research-backed foundations</div><div style="font-family:var(--fu);font-size:13px;color:var(--s500);line-height:1.6">Every learning objective mapped to peer-reviewed child development research and internationally recognised milestone frameworks.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px"><div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--i50),var(--i100));border:1px solid var(--i200);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><div><div style="font-family:var(--fn);font-size:14px;font-weight:700;color:var(--s800);margin-bottom:3px">India-first adaptation</div><div style="font-family:var(--fu);font-size:13px;color:var(--s500);line-height:1.6">Global best practices translated into Indian cultural context — festivals, language, food, family structures — so children see themselves in every lesson.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px"><div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--i50),var(--i100));border:1px solid var(--i200);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div><div style="font-family:var(--fn);font-size:14px;font-weight:700;color:var(--s800);margin-bottom:3px">Real classroom refinement</div><div style="font-family:var(--fu);font-size:13px;color:var(--s500);line-height:1.6">Tested and refined inside Little Chanakyas schools — not theoretical. Every activity has been executed with real children by real teachers.</div></div></div>
+        </div>
+      </div>
+      <div class="rv">
+        <div class="global-visual">
+          <div class="gv-title">International curriculum advisory panel</div>
+          <div class="gv-row"><span class="gv-flag">🇬🇧</span><div><div class="gv-name">United Kingdom</div><div class="gv-role">Oxford-trained educationist · Lead pedagogy</div></div><span class="gv-badge">Lead</span></div>
+          <div class="gv-row"><span class="gv-flag">🇮🇳</span><div><div class="gv-name">India</div><div class="gv-role">Early childhood development · Curriculum design</div></div><span class="gv-badge">Core</span></div>
+          <div class="gv-row"><span class="gv-flag">🇸🇬</span><div><div class="gv-name">Singapore</div><div class="gv-role">STEM integration · Assessment frameworks</div></div><span class="gv-badge">Partner</span></div>
+          <div class="gv-stats">
+            <div class="gvs"><div class="gvs-num">200+</div><div class="gvs-lbl">Lesson plans</div></div>
+            <div class="gvs"><div class="gvs-num">40+</div><div class="gvs-lbl">Themes</div></div>
+            <div class="gvs"><div class="gvs-num">6</div><div class="gvs-lbl">Age groups</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="journey-sec">
+  <div class="wrap">
+    <div class="journey-header rv">
+      <div class="ey" style="justify-content:center"><div class="el"></div>How It Works<div class="el"></div></div>
+      <h2 class="st" style="text-align:center">From signup to <em>first lesson delivered</em><br>in under a week</h2>
+    </div>
+    <div class="journey-grid">
+      <div class="journey-item rv">
+        <div class="ji-num">1</div>
+        <div class="ji-title">Sign up & onboard</div>
+        <div class="ji-desc">Your school is configured, curriculum loaded, and team accounts created — guided setup takes less than an hour.</div>
+      </div>
+      <div class="journey-item rv">
+        <div class="ji-num">2</div>
+        <div class="ji-title">Assign training paths</div>
+        <div class="ji-desc">Each team member gets their role-based induction path automatically. They complete it at their own pace before their start date.</div>
+      </div>
+      <div class="journey-item rv">
+        <div class="ji-num">3</div>
+        <div class="ji-title">Open and teach</div>
+        <div class="ji-desc">Teachers open the week's lesson plans, see activities, materials, objectives and guidance — and walk into class prepared.</div>
+      </div>
+      <div class="journey-item rv">
+        <div class="ji-num">4</div>
+        <div class="ji-title">Track and improve</div>
+        <div class="ji-desc">Observe progress, publish diary updates to parents, generate term reports — all connected, all automatic.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PULL QUOTE -->
+<section class="tq-sec">
+  <div class="wrap">
+    <div class="tq-inner rv">
+      <div class="tq-stars"><span class="tq-star">★</span><span class="tq-star">★</span><span class="tq-star">★</span><span class="tq-star">★</span><span class="tq-star">★</span></div>
+      <div class="tq-text">"The curriculum module paid for itself in the first week. We launched our third branch with exactly the same teaching quality as our first — because the systems made it impossible to do otherwise."</div>
+      <div class="tq-author">
+        <div class="tq-av">P</div>
+        <div>
+          <div class="tq-name">Priyanka Mehta</div>
+          <div class="tq-role">Founder & Director</div>
+          <div class="tq-school">Nova Learning Chain — 3 branches</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-sec">
+  <div class="cta-inner rv">
+    <div class="ce">✦ &nbsp;Everything is ready — right now</div>
+    <h2 class="ctit">Build a school that runs on<br><em>knowledge, not guesswork</em></h2>
+    <p class="csu">Expert curriculum, trained people and living SOPs — all included from day one. Start your 30-day free trial today.</p>
+    <div class="cbs">
+      <a href="/signup" class="cw">Start free trial <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+      <a href="/contact" class="cgh"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Talk to an educator</a>
+    </div>
+    <div class="ct2">
+      <div class="cti"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>200+ lessons included</div>
+      <div class="cti"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>5 training paths ready</div>
+      <div class="cti"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Live in under a week</div>
+      <div class="cti"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>No credit card</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="fg">
+    <div>
+      <a href="/" class="flo"><div class="flm"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><span class="fln">Bodhiboard</span></a>
+      <div class="fd">The complete operating system for modern schools. Built by educators, for educators. Made in India.</div>
+    </div>
+    <div><div class="fct">Product</div><div class="fli"><a href="/product">Features</a><a href="/curriculum">Curriculum</a><a href="/pricing">Pricing</a><a href="/solutions">Solutions</a></div></div>
+    <div><div class="fct">Company</div><div class="fli"><a href="/about">About</a><a href="/careers">Careers</a><a href="/blog">Blog</a><a href="/press">Press</a></div></div>
+    <div><div class="fct">Resources</div><div class="fli"><a href="/docs">Docs</a><a href="/help">Help Centre</a><a href="/cases">Case Studies</a><a href="/webinars">Webinars</a></div></div>
+    <div><div class="fct">Legal</div><div class="fli"><a href="mailto:hello@bodhiboard.in">hello@bodhiboard.in</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/gdpr">GDPR</a></div></div>
+  </div>
+  <div class="fb"><div>© 2026 Bodhiboard by Little Chanakyas. All rights reserved.</div><div>Secure · Award-Winning · Cloud-Based</div></div>
+</footer>
+
+<script>
+window.addEventListener('scroll',()=>document.getElementById('mn').classList.toggle('sc',scrollY>30));
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');obs.unobserve(x.target)}})},{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.rv').forEach((el,i)=>{el.style.transitionDelay=(i%5*.07)+'s';obs.observe(el)});
+
+// Count-up
+const cObs=new IntersectionObserver(e=>{e.forEach(x=>{if(!x.isIntersecting)return;const el=x.target,raw=parseFloat(el.dataset.count),suf=el.textContent.replace(/[\d.]/g,''),dec=raw%1!==0;let s=null;const d=1600,ease=t=>1-Math.pow(1-t,3),step=ts=>{if(!s)s=ts;const p=Math.min((ts-s)/d,1);el.textContent=(dec?(raw*ease(p)).toFixed(1):Math.floor(raw*ease(p)))+suf;if(p<1)requestAnimationFrame(step)};requestAnimationFrame(step);cObs.unobserve(el)})},{threshold:.6});
+document.querySelectorAll('[data-count]').forEach(el=>cObs.observe(el));
+
+// Curriculum tabs
+const tabData={
+  lang:{badge:'Language & Communication',title:'Building <em>confident communicators</em>',desc:'From early babble to confident storytelling — our language curriculum builds vocabulary, listening skills and early literacy through songs, stories, conversations and play.',m1:'Vocabulary expansion through contextual learning',m2:'Active listening and comprehension skills',m3:'Early phonics awareness and letter sounds',m4:'Confident self-expression in group settings'},
+  num:{badge:'Early Numeracy',title:'Making numbers <em>make sense</em>',desc:'Number recognition, counting, shapes, patterns and logical thinking — all learned through hands-on play activities that make maths feel like exploration, not instruction.',m1:'Number recognition from 1 to 20',m2:'Counting, sorting and simple patterns',m3:'Shape and space awareness',m4:'Basic logical thinking and problem solving'},
+  motor:{badge:'Motor Skill Development',title:'Building bodies that <em>move with confidence</em>',desc:'Fine and gross motor activities develop physical coordination, strength and confidence — from pencil grip to playground play — in a structured, progressive programme.',m1:'Fine motor control for writing readiness',m2:'Gross motor coordination and balance',m3:'Hand-eye coordination activities',m4:'Physical confidence and spatial awareness'},
+  sensory:{badge:'Sensory Learning',title:'Learning through <em>all five senses</em>',desc:'Hands-on exploration through touch, sight, sound, taste and smell. Sensory play builds neural pathways, language and cognitive flexibility in ways no textbook can replicate.',m1:'Tactile exploration through varied textures',m2:'Visual discrimination and colour recognition',m3:'Auditory awareness and sound play',m4:'Multi-sensory integration activities'},
+  social:{badge:'Social & Emotional Growth',title:'Growing children who <em>understand themselves</em>',desc:'Building empathy, sharing, self-regulation and emotional awareness. Our social-emotional curriculum gives children the tools to navigate relationships and their own inner world.',m1:'Identifying and naming emotions',m2:'Empathy and perspective-taking activities',m3:'Conflict resolution and turn-taking',m4:'Self-regulation and calming strategies'},
+  creative:{badge:'Creative Exploration',title:'Unleashing <em>imagination through making</em>',desc:'Art, music, storytelling and imaginative play develop cognitive flexibility, creative thinking and self-expression. Open-ended activities with no right answers and unlimited possibilities.',m1:'Process art with varied materials',m2:'Music, rhythm and movement activities',m3:'Storytelling and dramatic play',m4:'Open-ended imaginative construction'}
+};
+function setTab(el,key){
+  document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('ac'));
+  el.classList.add('ac');
+  const d=tabData[key];
+  document.getElementById('panelBadge').innerHTML='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> '+d.badge;
+  document.getElementById('panelTitle').innerHTML=d.title;
+  document.getElementById('panelDesc').textContent=d.desc;
+  document.getElementById('pm1').textContent=d.m1;
+  document.getElementById('pm2').textContent=d.m2;
+  document.getElementById('pm3').textContent=d.m3;
+  document.getElementById('pm4').textContent=d.m4;
+}
+</script>
+</body>
+</html>

@@ -22,7 +22,28 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import Link from "next/link";
 import { deleteBlogPostAction } from "@/app/actions/cms-actions";
-import { BlogPost } from "@/generated/client"; // Or define interface if needed
+
+// Local type — replaces the broken @/generated/client import
+interface BlogPost {
+    id: string;
+    title: string;
+    slug: string;
+    excerpt?: string | null;
+    content?: string | null;
+    coverImage?: string | null;
+    author?: string | null;
+    category?: string | null;
+    tags?: string | null;
+    status: string;
+    publishedAt?: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    schoolId?: string | null;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    readTime?: number | null;
+}
+
 
 // Types
 interface BlogSection {

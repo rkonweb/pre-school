@@ -13,7 +13,7 @@ export default async function AccountsDashboard(props: { params: Promise<{ slug:
 
     const schoolId = school.id;
     const years = await getFinancialYears(schoolId);
-    const activeYear = years.find(y => y.isActive) || years[0];
+    const activeYear = years.find((y: any) => y.isActive) || years[0];
 
     const summary = await getFinancialSummary(schoolId, activeYear?.id);
     const recentTxns = await getTransactionsEnhanced(slug, activeYear?.id);

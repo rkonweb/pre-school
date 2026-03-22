@@ -11,7 +11,7 @@ export default async function StudentProfileLayout({
     params,
 }: {
     children: React.ReactNode;
-    params: { slug: string; id: string };
+    params: Promise<{ slug: string; id: string }>;
 }) {
     // Fetch minimal header data securely on the server
     const { slug, id } = await params;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 export default function GlobalError({
     error,
@@ -11,7 +11,18 @@ export default function GlobalError({
     reset: () => void;
 }) {
     useEffect(() => {
-        // Log the error to an error reporting service
+        // "Server Action was not found" = stale cached Action IDs after a server restart.
+        // Auto hard-reload to fetch fresh IDs — user won't even see this screen.
+        const msg = error?.message ?? "";
+        if (
+            msg.includes("was not found on the server") ||
+            msg.includes("failed-to-find-server-action") ||
+            msg.includes("NEXT_NOT_FOUND") ||
+            error?.digest?.startsWith("NEXT_ACTION")
+        ) {
+            window.location.reload();
+            return;
+        }
         console.error("Global Error:", error);
     }, [error]);
 
@@ -28,8 +39,9 @@ export default function GlobalError({
                     </p>
                     <button
                         onClick={() => reset()}
-                        className="w-full py-3 px-4 bg-blue-600 hover:bg-black text-white font-bold rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full py-3 px-4 bg-blue-600 hover:bg-black text-white font-bold rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                     >
+                        <RefreshCw className="h-4 w-4" />
                         Try again
                     </button>
                     {error.digest && (

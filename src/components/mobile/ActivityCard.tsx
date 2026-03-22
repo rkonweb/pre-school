@@ -13,11 +13,12 @@ import {
     Paperclip,
     User,
     Star,
-    AlertCircle
+    AlertCircle,
+    Eye
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { acknowledgeDiaryEntryAction } from "@/app/actions/parent-actions";
+import { acknowledgeDiaryEntryAction } from "@/app/actions/diary-actions";
 import { toast } from "sonner";
 
 export type ActivityType = "DIARY" | "ATTENDANCE" | "HOMEWORK";
@@ -146,7 +147,7 @@ export const ActivityCard = ({
                                 if (!studentId) return;
                                 setIsAcknowledgeLoading(true);
                                 try {
-                                    const res = await acknowledgeDiaryEntryAction(slug, id, studentId);
+                                    const res = await acknowledgeDiaryEntryAction(id, studentId || "");
                                     if (res.success) {
                                         toast.success("Successfully acknowledged");
                                     } else {

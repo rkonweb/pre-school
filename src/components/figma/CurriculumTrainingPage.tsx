@@ -40,11 +40,11 @@ import {
   ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { Footer } from "./Footer";
 
 export function CurriculumTrainingPage() {
-  const navigate = useNavigate();
+  const navigate = useRouter();
 
   const curriculumDifferentiators = [
     {
@@ -934,7 +934,7 @@ export function CurriculumTrainingPage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Button
-                  onClick={() => navigate("/signup")}
+                  onClick={() => navigate.push("/signup")}
                   size="lg"
                   className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-900 hover:from-amber-500 hover:to-yellow-600 px-12 py-8 text-xl font-bold rounded-full shadow-2xl shadow-amber-500/30"
                 >

@@ -82,11 +82,11 @@ export function PayFeeDialog({ fee, isOpen, onClose, onSuccess, currency, slug }
                 <div className="mb-6 p-4 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
                     <div>
                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Remaining Balance</p>
-                        <p className="text-lg font-black text-zinc-900">{getCurrencySymbol(currency)}{remainingBalance.toLocaleString()}</p>
+                        <p className="text-lg font-black text-zinc-900">{getCurrencySymbol(currency ?? "USD")}{remainingBalance.toLocaleString()}</p>
                     </div>
                     <div className="text-right">
                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Total Fee</p>
-                        <p className="text-sm font-bold text-zinc-500">{getCurrencySymbol(currency)}{fee.amount.toLocaleString()}</p>
+                        <p className="text-sm font-bold text-zinc-500">{getCurrencySymbol(currency ?? "USD")}{fee.amount.toLocaleString()}</p>
                     </div>
                 </div>
 
@@ -105,7 +105,7 @@ export function PayFeeDialog({ fee, isOpen, onClose, onSuccess, currency, slug }
                                 required
                             />
                             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">
-                                {getCurrencySymbol(currency)}
+                                {getCurrencySymbol(currency ?? "USD")}
                             </div>
                         </div>
                     </div>

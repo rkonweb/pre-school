@@ -1,27 +1,35 @@
-"use client";
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import Script from 'next/script';
 
-import { HeroSection } from "@/components/figma/HeroSection";
-import { SocialProofStrip } from "@/components/figma/SocialProofStrip";
-import { ProblemSolutionSection } from "@/components/figma/ProblemSolutionSection";
-import { CoreValuePropositionSection } from "@/components/figma/CoreValuePropositionSection";
-import { WhoIsItForSection } from "@/components/figma/WhoIsItForSection";
-import { ProductEcosystemSection } from "@/components/figma/ProductEcosystemSection";
-import { PricingSection } from "@/components/figma/PricingSection";
-import { BuiltByEducatorsSection } from "@/components/figma/BuiltByEducatorsSection";
-import { FinalCTASection } from "@/components/figma/FinalCTASection";
+export default function HomePage() {
+    const html = readFileSync(join(process.cwd(), 'public/home.html'), 'utf-8');
 
-export default function Home() {
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    const rawBody = bodyMatch ? bodyMatch[1] : '';
+    const bodyContent = rawBody.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+
+    const styleBlocks = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)]
+        .map(m => m[1])
+        .join('\n');
+
+    const scriptBlocks = [...html.matchAll(/<script(?![^>]*src)[^>]*>([\s\S]*?)<\/script>/gi)]
+        .map(m => m[1])
+        .join('\n');
+
     return (
-        <main className="min-h-screen">
-            <HeroSection />
-            <SocialProofStrip />
-            <ProblemSolutionSection />
-            <CoreValuePropositionSection />
-            <WhoIsItForSection />
-            <ProductEcosystemSection />
-            <PricingSection />
-            <BuiltByEducatorsSection />
-            <FinalCTASection />
-        </main>
+        <>
+            <link
+                href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+                rel="stylesheet"
+            />
+            <style dangerouslySetInnerHTML={{ __html: styleBlocks }} />
+            <div dangerouslySetInnerHTML={{ __html: bodyContent }} />
+            <Script
+                id="home-inline-script"
+                strategy="afterInteractive"
+                dangerouslySetInnerHTML={{ __html: scriptBlocks }}
+            />
+        </>
     );
 }

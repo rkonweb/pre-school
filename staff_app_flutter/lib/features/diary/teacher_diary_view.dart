@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../core/state/auth_state.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/components/module_popup_shell.dart';
+import '../../shared/components/app_fab.dart';
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const _ink  = Color(0xFF140E28);
@@ -191,6 +192,11 @@ class _TeacherDiaryViewState extends ConsumerState<TeacherDiaryView>
     showModalBottomSheet(
       context: context, isScrollControlled: true,
       backgroundColor: Colors.transparent, barrierColor: Colors.black54,
+      sheetAnimationStyle: AnimationStyle(
+        curve: Curves.easeInOutCubic,
+        duration: const Duration(milliseconds: 380),
+        reverseDuration: const Duration(milliseconds: 260),
+      ),
       builder: (sheetContext) => StatefulBuilder(builder: (ctx, setMs) {
         return _CreateSheet(
           titleCtrl: _titleCtrl, contentCtrl: _contentCtrl,
@@ -281,10 +287,9 @@ class _TeacherDiaryViewState extends ConsumerState<TeacherDiaryView>
     final listAsync = ref.watch(diaryListProvider);
     return ModulePopupShell(
       title: 'Diary',
-      subtitle: 'Record daily student activities',
-      actionLabel: '+ New Entry',
-      onAction: () => _openSheet(),
+      icon: Icons.book_rounded,
       backgroundColor: _bg2,
+      floatingActionButton: _buildFab(),
       body: Column(children: [
         _buildSearchBar(),
         _buildTypeFilter(),
@@ -582,12 +587,7 @@ class _TeacherDiaryViewState extends ConsumerState<TeacherDiaryView>
     ),
   );
 
-  Widget _buildFab() => FloatingActionButton.extended(
-    onPressed: _openSheet, elevation: 4, backgroundColor: _tA,
-    icon: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 20),
-    label: const Text('New Entry', style: TextStyle(
-      fontFamily: 'Cabinet Grotesk', fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5)),
-  );
+  Widget _buildFab() => AppFab(onTap: _openSheet);
 }
 
 // ─── Diary Card ───────────────────────────────────────────────────────────────

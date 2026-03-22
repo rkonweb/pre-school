@@ -647,3 +647,102 @@ export async function getStudentExtracurricularDataAction(studentId: string, pho
         return { success: false, error: error.message || "Failed to fetch extracurricular data" };
     }
 }
+
+export async function getApprovedBroadcastsAction(slug: string) {
+    try {
+        const school = await prisma.school.findUnique({
+            where: { slug },
+            select: { id: true }
+        });
+        if (!school) return { success: false, error: "School not found", broadcasts: [] };
+
+        const broadcasts = await prisma.broadcast.findMany({
+            where: {
+                schoolId: school.id,
+                status: "PUBLISHED"
+            },
+            orderBy: { createdAt: "desc" },
+            take: 20,
+            include: {
+                author: {
+                    select: { firstName: true, lastName: true, avatar: true }
+                }
+            }
+        });
+
+        return { success: true, broadcasts: JSON.parse(JSON.stringify(broadcasts)) };
+    } catch (error: any) {
+        console.error("getApprovedBroadcastsAction Error:", error);
+        return { success: false, error: error.message || "Failed to fetch broadcasts", broadcasts: [] };
+    }
+}
+
+export async function payTransportFeeAction(slug: string, studentId: string) {
+    try {
+        const updated = await prisma.studentTransportProfile.updateMany({
+            where: {
+                studentId,
+                student: { school: { slug } }
+            },
+            data: { status: "ACTIVE" }
+        });
+
+        if (updated.count === 0) {
+            return { success: false, error: "Transport profile not found or already active" };
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("payTransportFeeAction Error:", error);
+        return { success: false, error: error.message || "Failed to process transport payment" };
+    }
+}
+
+export async function acknowledgeDiaryEntryAction(recipientId: string, acknowledgedBy: string) {
+    try {
+        await prisma.diaryRecipient.update({
+            where: { id: recipientId },
+            data: {
+                isAcknowledged: true,
+                acknowledgedAt: new Date(),
+                acknowledgedBy
+            }
+        });
+        return { success: true };
+    } catch (error: any) {
+        console.error("acknowledgeDiaryEntryAction Error:", error);
+        return { success: false, error: error.message || "Failed to acknowledge diary entry" };
+    }
+}
+
+export async function getStudentAcademicDataAction(slug: string, studentId: string, phone?: string) {
+    try {
+        const school = await prisma.school.findUnique({
+            where: { slug },
+            select: { id: true }
+        });
+        if (!school) return { success: false, error: "School not found" };
+        
+        const student = await prisma.student.findFirst({
+            where: {
+                id: studentId,
+                schoolId: school.id,
+                OR: [
+                    { parentMobile: { contains: phone } },
+                    { fatherPhone: { contains: phone } },
+                    { motherPhone: { contains: phone } }
+                ]
+            },
+            include: {
+                classroom: true
+            }
+        });
+        
+        if (!student) return { success: false, error: "Student not found or unauthorized" };
+        
+        return { success: true, data: JSON.parse(JSON.stringify(student)) };
+    } catch (error: any) {
+        console.error("getStudentAcademicDataAction Error:", error);
+        return { success: false, error: error.message || "Failed to fetch academic data" };
+    }
+}

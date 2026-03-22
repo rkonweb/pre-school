@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../../shared/app_calendar.dart';
 import '../../core/state/auth_state.dart';
 import '../../shared/components/module_popup_shell.dart';
+import '../../shared/components/app_fab.dart';
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 
@@ -163,6 +164,11 @@ class _TeacherHomeworkViewState extends ConsumerState<TeacherHomeworkView> {
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black54,
       useRootNavigator: true,
+      sheetAnimationStyle: AnimationStyle(
+        curve: Curves.easeInOutCubic,
+        duration: const Duration(milliseconds: 380),
+        reverseDuration: const Duration(milliseconds: 260),
+      ),
       builder: (_) => StatefulBuilder(builder: (ctx, setMs) {
         return _CreateSheet(
           classroomsAsync: classroomsAsync,
@@ -228,10 +234,9 @@ class _TeacherHomeworkViewState extends ConsumerState<TeacherHomeworkView> {
     final classroomsAsync = ref.watch(homeworkClassroomsProvider);
     return ModulePopupShell(
       title: 'Homework',
-      subtitle: 'Manage assignments for your classes',
-      actionLabel: '+ Create',
-      onAction: () => _openSheet(),
+      icon: Icons.menu_book_rounded,
       backgroundColor: _bg2,
+      floatingActionButton: _buildFab(),
       body: Column(children: [
         _buildFilterStrip(classroomsAsync),
         _buildSummaryRow(homeworkAsync),
@@ -242,35 +247,64 @@ class _TeacherHomeworkViewState extends ConsumerState<TeacherHomeworkView> {
 
   Widget _buildFilterStrip(AsyncValue<List<Map<String, dynamic>>> classroomsAsync) {
     final classrooms = classroomsAsync.value ?? [];
+
+    // Build the items list: "All Classes" + each classroom
+    final items = <Map<String, dynamic?>>[
+      {'id': null, 'name': 'All Classes'},
+      ...classrooms.map((c) => {'id': c['id'] as String?, 'name': c['name'] as String?}),
+    ];
+
+    final selectedName = items
+        .firstWhere((c) => c['id'] == _filterClassId, orElse: () => {'name': 'All Classes'})['name'] as String;
+
     return Container(
       color: Colors.white,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-        child: Row(children: [
-          _filterPill('All Classes', null),
-          ...classrooms.map((c) => _filterPill(c['name'] ?? '', c['id'])),
-        ]),
-      ),
-    );
-  }
-
-  Widget _filterPill(String label, String? classId) {
-    final sel = _filterClassId == classId;
-    return GestureDetector(
-      onTap: () => setState(() => _filterClassId = classId),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-        decoration: BoxDecoration(
-          gradient: sel ? _tGrad : null, color: sel ? null : Colors.white,
-          borderRadius: BorderRadius.circular(100),
-          border: sel ? null : Border.all(color: _line, width: 1.5),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      child: GestureDetector(
+        onTap: () async {
+          final result = await showModalBottomSheet<String?>(
+            context: context,
+            backgroundColor: Colors.transparent,
+            isScrollControlled: true,
+            builder: (_) => _ClassPickerSheet(
+              items: items,
+              selectedId: _filterClassId,
+            ),
+          );
+          if (result != null || result == null && mounted) {
+            setState(() => _filterClassId = result == '__all__' ? null : result);
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: BoxDecoration(
+            color: _bg2,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _line, width: 1.5),
+          ),
+          child: Row(children: [
+            // Gradient icon
+            Container(
+              width: 28, height: 28,
+              decoration: BoxDecoration(
+                gradient: _tGrad,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.class_rounded, color: Colors.white, size: 15),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                selectedName,
+                style: const TextStyle(
+                  fontFamily: 'Satoshi', fontSize: 13,
+                  fontWeight: FontWeight.w700, color: _ink,
+                ),
+              ),
+            ),
+            const Icon(Icons.keyboard_arrow_down_rounded, color: _ink3, size: 20),
+          ]),
         ),
-        child: Text(label, style: TextStyle(fontFamily: 'Satoshi', fontSize: 11,
-            fontWeight: sel ? FontWeight.w800 : FontWeight.w700,
-            color: sel ? Colors.white : _ink3)),
       ),
     );
   }
@@ -370,13 +404,7 @@ class _TeacherHomeworkViewState extends ConsumerState<TeacherHomeworkView> {
         child: const Text('Retry', style: TextStyle(color: _tA, fontWeight: FontWeight.w800)))),
   ]));
 
-  Widget _buildFab() => GestureDetector(
-    onTap: () { HapticFeedback.lightImpact(); _openSheet(); },
-    child: Container(width: 56, height: 56,
-      decoration: BoxDecoration(gradient: _tGrad, borderRadius: BorderRadius.circular(18),
-        boxShadow: [BoxShadow(color: _tA.withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 6))]),
-      child: const Icon(Icons.add_rounded, color: Colors.white, size: 28)),
-  );
+  Widget _buildFab() => AppFab(onTap: _openSheet);
 
   // ── View Sheet ────────────────────────────────────────────────────────────
 
@@ -1024,5 +1052,105 @@ class _HomeworkCardState extends State<_HomeworkCard> with SingleTickerProviderS
       if (diff < 0) return '${-diff}d overdue';
       return '${d.day}/${d.month}/${d.year}';
     } catch (_) { return iso; }
+  }
+}
+
+// ─── Class Picker Bottom Sheet ────────────────────────────────────────────────
+
+class _ClassPickerSheet extends StatelessWidget {
+  final List<Map<String, dynamic?>> items;
+  final String? selectedId;
+
+  const _ClassPickerSheet({required this.items, required this.selectedId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          const SizedBox(height: 12),
+          Container(
+            width: 36, height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5E2EE),
+              borderRadius: BorderRadius.circular(100),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Title
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(children: [
+              Container(
+                width: 32, height: 32,
+                decoration: BoxDecoration(
+                  gradient: _tGrad,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.class_rounded, color: Colors.white, size: 17),
+              ),
+              const SizedBox(width: 10),
+              const Text('Select Class',
+                style: TextStyle(fontFamily: 'Clash Display', fontSize: 17,
+                  fontWeight: FontWeight.w800, color: _ink),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: _line),
+
+          // Items list
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.55,
+            ),
+            child: ListView.separated(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const Divider(height: 1, color: _line, indent: 20, endIndent: 20),
+              itemBuilder: (_, i) {
+                final item = items[i];
+                final id = item['id'] as String?;
+                final name = item['name'] as String? ?? '';
+                final isSelected = id == selectedId;
+                return InkWell(
+                  onTap: () => Navigator.pop(context, id ?? '__all__'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    child: Row(children: [
+                      Expanded(
+                        child: Text(name,
+                          style: TextStyle(
+                            fontFamily: 'Satoshi', fontSize: 14,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                            color: isSelected ? _tA : _ink,
+                          ),
+                        ),
+                      ),
+                      if (isSelected)
+                        ShaderMask(
+                          shaderCallback: (b) => _tGrad.createShader(b),
+                          child: const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                        ),
+                    ]),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Bottom safe area padding
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 12),
+        ],
+      ),
+    );
   }
 }

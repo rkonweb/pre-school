@@ -79,7 +79,8 @@ export default function MarketingNewTemplatePage() {
 
         const res = await uploadFileAction(formData);
         if (res.success) {
-            setForm({ ...form, baseImageUrl: res.url, previewUrl: res.url });
+            const uploadedUrl = (res as { success: true; url: string }).url;
+            setForm({ ...form, baseImageUrl: uploadedUrl, previewUrl: uploadedUrl });
             setStep(2);
             toast.success("Base image uploaded successfully");
         } else {

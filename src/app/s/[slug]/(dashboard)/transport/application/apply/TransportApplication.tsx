@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { MapPin, Navigation } from "lucide-react";
 import { applyForTransportAction } from "@/app/actions/transport-actions";
 
-export default function TransportApplication({ studentId, existingProfile }: any) {
+export default function TransportApplication({ studentId, existingProfile, slug }: any) {
     const [address, setAddress] = useState(existingProfile?.applicationAddress || "");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -19,7 +19,7 @@ export default function TransportApplication({ studentId, existingProfile }: any
         const mockLat = 28.6139;
         const mockLng = 77.2090;
 
-        const res = await applyForTransportAction(studentId, {
+        const res = await applyForTransportAction(slug, studentId, {
             address,
             lat: mockLat,
             lng: mockLng

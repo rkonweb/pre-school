@@ -231,7 +231,10 @@ export async function createSubscriptionPlanAction(data: CreateSubscriptionPlanI
         });
 
         if (data.additionalStaffPrice) {
-            await prisma.$executeRaw`UPDATE SubscriptionPlan SET additionalStaffPrice = ${data.additionalStaffPrice} WHERE id = ${newPlan.id}`;
+            await prisma.subscriptionPlan.update({
+                where: { id: newPlan.id },
+                data: { additionalStaffPrice: data.additionalStaffPrice }
+            });
         }
 
         revalidatePath("/admin/subscriptions");
@@ -244,33 +247,46 @@ export async function createSubscriptionPlanAction(data: CreateSubscriptionPlanI
 
 export async function updateSubscriptionPlanAction(id: string, data: Partial<SubscriptionPlanType>) {
     try {
-        // Prepare update data
-        const updateData: any = { ...data };
+        // Build a whitelist of only fields that exist in the Prisma schema.
+        // Never spread `data` directly — it may contain type-only fields
+        // (billingPeriod, slug, id, createdAt, limits, addonUserTiers…) that
+        // Prisma will reject as unknown, causing a runtime "unexpected response".
+        const updateData: Record<string, any> = {};
 
-        // Handle nested or special fields
-        if (data.features) updateData.features = JSON.stringify(data.features);
+        if (data.name             !== undefined) updateData.name             = data.name;
+        if (data.description      !== undefined) updateData.description      = data.description;
+        if (data.price            !== undefined) updateData.price            = data.price;
+        if (data.currency         !== undefined) updateData.currency         = data.currency;
+        if (data.tier             !== undefined) updateData.tier             = data.tier;
+        if (data.isPopular        !== undefined) updateData.isPopular        = data.isPopular;
+        if (data.isActive         !== undefined) updateData.isActive         = data.isActive;
+        if (data.supportLevel     !== undefined) updateData.supportLevel     = data.supportLevel;
+        if (data.sortOrder        !== undefined) updateData.sortOrder        = data.sortOrder;
+
+        // JSON fields
+        if (data.features)       updateData.features       = JSON.stringify(data.features);
         if (data.includedModules) updateData.includedModules = JSON.stringify(data.includedModules);
         if (data.addonUserTiers) updateData.addonUserTiers = JSON.stringify(data.addonUserTiers);
 
-        // Remove additionalStaffPrice from updateData to prevent client error
-        if ('additionalStaffPrice' in updateData) {
-            delete updateData.additionalStaffPrice;
-        }
-
+        // Flatten limits → top-level columns
         if (data.limits) {
-            if (data.limits.maxStudents !== undefined) updateData.maxStudents = data.limits.maxStudents;
-            if (data.limits.maxStaff !== undefined) updateData.maxStaff = data.limits.maxStaff;
+            if (data.limits.maxStudents  !== undefined) updateData.maxStudents  = data.limits.maxStudents;
+            if (data.limits.maxStaff     !== undefined) updateData.maxStaff     = data.limits.maxStaff;
             if (data.limits.maxStorageGB !== undefined) updateData.maxStorageGB = data.limits.maxStorageGB;
-            delete updateData.limits;
         }
 
         await prisma.subscriptionPlan.update({
             where: { id },
-            data: updateData
+            data: updateData,
         });
 
+        // additionalStaffPrice is a separate update (kept isolated to avoid
+        // Prisma validation issues with decimal/int coercion)
         if (data.additionalStaffPrice !== undefined) {
-            await prisma.$executeRaw`UPDATE SubscriptionPlan SET additionalStaffPrice = ${data.additionalStaffPrice} WHERE id = ${id}`;
+            await prisma.subscriptionPlan.update({
+                where: { id },
+                data: { additionalStaffPrice: data.additionalStaffPrice },
+            });
         }
 
         revalidatePath("/admin/subscriptions");
@@ -642,6 +658,38 @@ export async function buyAdditionalUsersAction(schoolSlug: string, count: number
         };
     } catch (error: any) {
         console.error("buyAdditionalUsersAction Error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+// ── Free Trial Period (global, common to all plans) ───────────────────────────
+
+export async function getTrialDaysAction(): Promise<number> {
+    try {
+        const settings = await prisma.systemSettings.findUnique({ where: { id: "global" } });
+        if (settings) return settings.trialDays;
+        // Auto-create the global row if it doesn't exist yet
+        const created = await prisma.systemSettings.create({
+            data: { id: "global" }
+        });
+        return created.trialDays;
+    } catch (error: any) {
+        console.error("getTrialDaysAction Error:", error);
+        return 30;
+    }
+}
+
+export async function updateTrialDaysAction(days: number): Promise<{ success: boolean; error?: string }> {
+    try {
+        await prisma.systemSettings.upsert({
+            where:  { id: "global" },
+            update: { trialDays: days },
+            create: { id: "global", trialDays: days },
+        });
+        revalidatePath("/admin/subscriptions");
+        return { success: true };
+    } catch (error: any) {
+        console.error("updateTrialDaysAction Error:", error);
         return { success: false, error: error.message };
     }
 }

@@ -305,7 +305,7 @@ export default function RolesClient({
                             if (!confirmed) return;
                             const res = await seedDefaultRolesAction(schoolSlug);
                             if (res.success) {
-                                toast.success(`Done: ${res.created} created, ${res.updated || 0} updated`);
+                                toast.success(`Done: ${(res as any).created ?? 0} created, ${(res as any).updated || 0} updated`);
                                 router.refresh();
                             } else {
                                 toast.error(res.error || "Failed to seed roles");

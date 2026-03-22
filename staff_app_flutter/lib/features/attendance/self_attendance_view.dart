@@ -216,7 +216,7 @@ class _StaffSelfAttendanceViewState extends ConsumerState<StaffSelfAttendanceVie
 
     return ModulePopupShell(
       title: 'My Attendance',
-      subtitle: 'Punch in and out daily',
+      icon: Icons.fingerprint_rounded,
       actionIcon: Icons.refresh_rounded,
       onActionIcon: () {
         ref.invalidate(_calendarProvider);

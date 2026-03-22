@@ -85,9 +85,9 @@ export async function getBooksAction(
         const whereClause: any = {
             school: { slug: schoolSlug },
             OR: [
-                { title: { contains: query } },
-                { author: { contains: query } },
-                { isbn: { contains: query } }
+                { title: { contains: query, mode: 'insensitive' } },
+                { author: { contains: query, mode: 'insensitive' } },
+                { isbn: { contains: query, mode: 'insensitive' } }
             ]
         };
 
@@ -338,6 +338,37 @@ export async function getStaffLibraryHistoryAction(slug: string, staffId: string
         return { success: false, error: error.message };
     }
 }
+
+export async function getBookActivityAction(slug: string, bookId: string) {
+    try {
+        const auth = await validateUserSchoolAction(slug);
+        if (!auth.success) return { success: false, error: auth.error };
+
+        const transactions = await prisma.libraryTransaction.findMany({
+            where: { bookId },
+            include: {
+                student: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        admissionNumber: true,
+                        classroom: { select: { id: true, name: true } },
+                    },
+                },
+                staff: {
+                    select: { id: true, firstName: true, lastName: true, role: true },
+                },
+            },
+            orderBy: { issuedDate: 'desc' },
+        });
+
+        return { success: true, data: JSON.parse(JSON.stringify(transactions)) };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
 
 export async function updateBookCoverAction(schoolSlug: string, bookId: string, formData: FormData) {
     try {

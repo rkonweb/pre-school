@@ -108,7 +108,7 @@ class ModuleRegistry {
     ),
     ModuleItem(
       key: 'communication',
-      label: 'Communication',
+      label: 'Circulars',
       icon: Icons.campaign_rounded,
       color: Color(0xFFF43F5E),
       route: '/circular',
@@ -250,6 +250,13 @@ class ModuleRegistry {
         FormFieldConfig(key: 'allowBio', label: 'Enable Biometric Login', type: FormFieldType.toggle, initialValue: 'true'),
         FormFieldConfig(key: 'maintenanceMode', label: 'Maintenance Mode', type: FormFieldType.toggle, initialValue: 'false'),
       ],
+    ),
+    ModuleItem(
+      key: 'calendar',
+      label: 'School Calendar',
+      icon: Icons.calendar_month_rounded,
+      color: Color(0xFF0EA5E9),
+      route: '/calendar',
     ),
     ModuleItem(
       key: 'self_attendance',

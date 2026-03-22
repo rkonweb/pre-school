@@ -23,6 +23,10 @@ import '../homework/teacher_homework_view.dart';
 import '../leave/teacher_leave_view.dart';
 import '../../shared/components/module_popup_shell.dart';
 import '../ptm/staff_ptm_view.dart';
+import '../circular/circular_list_view.dart';
+import '../calendar/teacher_calendar_view.dart';
+import '../library/staff_library_view.dart';
+import '../../shared/components/birthday_section.dart';
 
 // Placeholder empty views
 Widget _mockView(String title) => Scaffold(
@@ -33,16 +37,48 @@ Widget _mockView(String title) => Scaffold(
 
 final hasSeenTeacherHintProvider = StateProvider<bool>((ref) => false);
 
-class TeacherDashboardView extends ConsumerWidget {
+class TeacherDashboardView extends ConsumerStatefulWidget {
   const TeacherDashboardView({super.key});
+  @override
+  ConsumerState<TeacherDashboardView> createState() => _TeacherDashboardViewState();
+}
+
+class _TeacherDashboardViewState extends ConsumerState<TeacherDashboardView> {
+  OverlayEntry? _hintEntry;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!ref.read(hasSeenTeacherHintProvider)) {
+        ref.read(hasSeenTeacherHintProvider.notifier).state = true;
+        _showHintBanner();
+      }
+      ref.read(quickActionsProvider.notifier).loadDefaultsForRole('TEACHER');
+    });
+  }
+
+  void _showHintBanner() {
+    _hintEntry = OverlayEntry(
+      builder: (_) => _HintBanner(onDismiss: _dismissHintBanner),
+    );
+    Overlay.of(context).insert(_hintEntry!);
+  }
+
+  void _dismissHintBanner() {
+    _hintEntry?.remove();
+    _hintEntry = null;
+  }
+
+  @override
+  void dispose() {
+    _hintEntry?.remove();
+    _hintEntry = null;
+    super.dispose();
+  }
 
   void _showAllModulesMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const AllModulesOverlay(),
-    );
+    showAllModulesMenu(context);
   }
 
   void _handleNavigation(BuildContext context, String route) {
@@ -73,6 +109,15 @@ class TeacherDashboardView extends ConsumerWidget {
       case '/ptm':
         targetView = const StaffPTMView();
         break;
+      case '/circular':
+        targetView = const CircularListView();
+        break;
+      case '/calendar':
+        targetView = const TeacherCalendarView();
+        break;
+      case '/library':
+        targetView = const StaffLibraryView();
+        break;
       default:
         context.push(route);
         return;
@@ -90,7 +135,7 @@ class TeacherDashboardView extends ConsumerWidget {
     
     if (user.permissions.isEmpty) {
       if (role == 'TEACHER' || role == 'STAFF') {
-        const teacherModules = ['dashboard', 'attendance', 'self_attendance', 'homework', 'schedule', 'communication', 'leave', 'diary', 'ptm'];
+        const teacherModules = ['dashboard', 'attendance', 'self_attendance', 'homework', 'schedule', 'communication', 'leave', 'diary', 'ptm', 'calendar', 'library'];
         return teacherModules.contains(moduleKey);
       }
       if (role == 'DRIVER') {
@@ -183,22 +228,7 @@ class TeacherDashboardView extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!ref.read(hasSeenTeacherHintProvider)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('New: Access all your modules easily via "All Modules" quick action!'),
-            action: SnackBarAction(label: 'GOT IT', textColor: Colors.white, onPressed: () {}),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-        ref.read(hasSeenTeacherHintProvider.notifier).state = true;
-      }
-      ref.read(quickActionsProvider.notifier).loadDefaultsForRole('TEACHER');
-    });
-
+  Widget build(BuildContext context) {
     final activeQuickActionKeys = ref.watch(quickActionsProvider);
     final allModulesMap = {for (var m in ModuleRegistry.allModules) m.key: m};
     final user = ref.watch(userProfileProvider);
@@ -384,8 +414,14 @@ class TeacherDashboardView extends ConsumerWidget {
             }),
           ],
         ),
-        
+
         const SizedBox(height: 18),
+
+        // ── 🎂 Today's Birthdays ────────────────────────────────────────────
+        const BirthdaySection(),
+
+        const SizedBox(height: 18),
+
         // Section header Today's Timetable
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -559,5 +595,128 @@ class TeacherDashboardView extends ConsumerWidget {
     if (diff.inDays == 0) return 'Today';
     if (diff.inDays == 1) return 'Yesterday';
     return '${date.day}/${date.month}';
+  }
+}
+
+// ─── Animated hint banner (slide-up appear, slide-down dismiss) ─────────────
+class _HintBanner extends StatefulWidget {
+  final VoidCallback onDismiss;
+  const _HintBanner({required this.onDismiss});
+  @override
+  State<_HintBanner> createState() => _HintBannerState();
+}
+
+class _HintBannerState extends State<_HintBanner> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<Offset> _slide;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+    _slide = Tween<Offset>(begin: const Offset(0, 1.5), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    _fade = Tween<double>(begin: 0, end: 1)
+        .animate(CurvedAnimation(parent: _ctrl, curve: const Interval(0, 0.5)));
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _dismiss() async {
+    await _ctrl.animateTo(
+      0,
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeInCubic,
+    );
+    widget.onDismiss();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 16,
+      right: 16,
+      bottom: MediaQuery.of(context).padding.bottom + 20,
+      child: SlideTransition(
+        position: _slide,
+        child: FadeTransition(
+          opacity: _fade,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF5733), Color(0xFFFF006E), Color(0xFFC77DFF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF5733).withOpacity(0.4),
+                    blurRadius: 28,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Row(children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.apps_rounded, color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Tip: Use "All Modules" to access everything quickly!',
+                    style: TextStyle(
+                      fontFamily: 'Satoshi',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: _dismiss,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(11),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2)),
+                      ],
+                    ),
+                    child: const Text(
+                      'GOT IT',
+                      style: TextStyle(
+                        fontFamily: 'Satoshi',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFFF5733),
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

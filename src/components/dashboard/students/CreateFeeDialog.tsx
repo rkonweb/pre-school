@@ -75,6 +75,7 @@ export function CreateFeeDialog({ slug, studentId, academicYearId, isOpen, onClo
         setIsSubmitting(true);
         try {
             const res = await createFeeAction(
+                slug,
                 studentId,
                 title,
                 parseFloat(amount),

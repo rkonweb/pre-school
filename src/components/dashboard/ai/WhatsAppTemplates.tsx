@@ -44,7 +44,7 @@ export function WhatsAppTemplates({
         if (!template) return;
 
         setIsDrafting(true);
-        const res = await getAIDraftResponseAction(leadId, template.category);
+        const res = await getAIDraftResponseAction(slug, leadId, template.category);
         if (res.success) {
             setAiDraft(res.draft!);
         }

@@ -123,7 +123,7 @@ export function StudentAnalyticsPage({ studentId }: StudentAnalyticsPageProps) {
                                     subjects={analytics.academic.subjects}
                                     overallPercentage={analytics.academic.overallPercentage}
                                     overallGrade={analytics.academic.overallGrade}
-                                    trend={analytics.academic.trend}
+                                    trend={analytics.academic.trend.toLowerCase() as 'improving' | 'declining' | 'stable'}
                                 />
                             </div>
                             <div>

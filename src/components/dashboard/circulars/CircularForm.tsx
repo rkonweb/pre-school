@@ -95,6 +95,12 @@ export function CircularForm({ slug, initialData, onSubmit }: CircularFormProps)
     };
 
     return (
+        <div className="flex flex-col gap-6">
+            <SectionHeader
+                title={initialData ? "Edit Circular" : "Create New Circular"}
+                subtitle="Draft and broadcast a new announcement to your school community."
+                icon={Bell}
+            />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 flex flex-col gap-6">
                 <ErpCard title="Main Information">
@@ -143,7 +149,7 @@ export function CircularForm({ slug, initialData, onSubmit }: CircularFormProps)
                                             key={role}
                                             onClick={() => setForm(f => {
                                                 const current = f.targetRoles;
-                                                const next = current.includes(role) ? current.filter(r => r !== role) : [...current, role];
+                                                const next = current.includes(role) ? current.filter((r: string) => r !== role) : [...current, role];
                                                 return { ...f, targetRoles: next };
                                             })}
                                             type="button"
@@ -269,6 +275,7 @@ export function CircularForm({ slug, initialData, onSubmit }: CircularFormProps)
                     </div>
                 </ErpCard>
             </div>
+        </div>
         </div>
     );
 }

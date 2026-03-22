@@ -23,6 +23,7 @@ interface StandardActionButtonProps extends React.ButtonHTMLAttributes<HTMLButto
     asChild?: boolean;
     href?: string;
     size?: string;
+    loadingLabel?: string;
 }
 
 export const StandardActionButton = React.forwardRef<HTMLButtonElement, StandardActionButtonProps>(

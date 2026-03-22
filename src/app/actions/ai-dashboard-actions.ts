@@ -270,7 +270,7 @@ async function getExpandedSchoolData(slug: string) {
             // ── Transport ──
             prisma.transportRoute.findMany({
                 where: { schoolId },
-                select: { name: true, type: true, _count: { select: { stops: true } } },
+                select: { name: true, description: true, _count: { select: { stops: true } } },
                 take: 20
             }),
             prisma.transportVehicle.findMany({
@@ -286,16 +286,14 @@ async function getExpandedSchoolData(slug: string) {
             prisma.homework.findMany({
                 where: { schoolId, createdAt: { gte: sevenDaysAgo } },
                 select: {
-                    title: true, subject: true, dueDate: true, status: true,
-                    classroom: { select: { name: true } },
+                    title: true, subject: true, dueDate: true,
+                    classroomId: true,
                     _count: { select: { submissions: true } }
                 },
                 orderBy: { createdAt: 'desc' }, take: 10
             }),
-            prisma.homeworkSubmission.groupBy({
-                by: ['status'],
-                where: { homework: { schoolId, createdAt: { gte: sevenDaysAgo } } },
-                _count: { id: true }
+            prisma.homeworkSubmission.count({
+                where: { homework: { schoolId, createdAt: { gte: sevenDaysAgo } } }
             }),
 
             // ── Diary ──
@@ -313,7 +311,7 @@ async function getExpandedSchoolData(slug: string) {
             }),
             prisma.broadcast.findMany({
                 where: { schoolId },
-                select: { title: true, channel: true, status: true, scheduledAt: true },
+                select: { title: true, content: true, status: true },
                 orderBy: { createdAt: 'desc' }, take: 5
             }),
 
@@ -349,7 +347,7 @@ async function getExpandedSchoolData(slug: string) {
             // ── Canteen ──
             prisma.canteenPackage.findMany({
                 where: { schoolId },
-                select: { name: true, price: true, validity: true, isActive: true },
+                select: { name: true, monthlyFee: true, yearlyFee: true, isActive: true } as any,
                 take: 10
             }),
             prisma.canteenSubscription.count({
@@ -359,18 +357,18 @@ async function getExpandedSchoolData(slug: string) {
             // ── Hostel ──
             prisma.hostel.findMany({
                 where: { schoolId },
-                select: { name: true, capacity: true, type: true }
+                select: { name: true, capacity: true, gender: true }
             }),
 
             // ── Extracurricular ──
             prisma.activity.findMany({
                 where: { schoolId },
-                select: { name: true, type: true, status: true, maxCapacity: true },
+                select: { name: true, category: true, maxStudents: true },
                 take: 20
             }),
             prisma.club.findMany({
                 where: { schoolId },
-                select: { name: true, type: true, status: true, maxMembers: true },
+                select: { name: true, description: true, capacity: true },
                 take: 20
             }),
             prisma.activityEnrollment.count({
@@ -467,7 +465,7 @@ async function getExpandedSchoolData(slug: string) {
 
             transport: {
                 totalRoutes: routes.length,
-                routes: routes.map(r => ({ name: r.name, type: r.type, stops: r._count.stops })),
+                routes: routes.map(r => ({ name: r.name, stops: r._count.stops })),
                 activeVehicles: vehicles.map(v => ({
                     registration: v.registrationNumber,
                     capacity: v.capacity,
@@ -480,12 +478,11 @@ async function getExpandedSchoolData(slug: string) {
                 recentAssignments: recentHomework.map(h => ({
                     title: h.title,
                     subject: h.subject,
-                    class: h.classroom?.name || 'N/A',
+                    classroomId: h.classroomId,
                     dueDate: h.dueDate?.toLocaleDateString() || 'N/A',
-                    status: h.status,
                     submissions: h._count.submissions
                 })),
-                submissionStats: homeworkSubmissionStats.map(s => `${s.status}: ${s._count.id}`)
+                submittedTotal: homeworkSubmissionStats
             },
 
             diary: {
@@ -506,7 +503,6 @@ async function getExpandedSchoolData(slug: string) {
                 })),
                 recentBroadcasts: recentBroadcasts.map(b => ({
                     title: b.title,
-                    channel: b.channel,
                     status: b.status
                 }))
             },
@@ -546,7 +542,8 @@ async function getExpandedSchoolData(slug: string) {
             canteen: {
                 packages: canteenPackages.map(p => ({
                     name: p.name,
-                    price: `${schoolData.currency || 'INR'} ${p.price}`,
+                    monthlyFee: `${schoolData.currency || 'INR'} ${p.monthlyFee}`,
+                    yearlyFee: `${schoolData.currency || 'INR'} ${p.yearlyFee}`,
                     active: p.isActive
                 })),
                 activeSubscriptions: canteenSubscriptions
@@ -556,22 +553,20 @@ async function getExpandedSchoolData(slug: string) {
                 facilities: hostels.map(h => ({
                     name: h.name,
                     capacity: h.capacity,
-                    type: h.type
+                    gender: h.gender
                 }))
             },
 
             extracurricular: {
                 activities: activities.map(a => ({
                     name: a.name,
-                    type: a.type,
-                    status: a.status,
-                    capacity: a.maxCapacity
+                    category: a.category,
+                    maxStudents: a.maxStudents
                 })),
                 clubs: clubs.map(c => ({
                     name: c.name,
-                    type: c.type,
-                    status: c.status,
-                    maxMembers: c.maxMembers
+                    description: c.description,
+                    capacity: c.capacity
                 })),
                 totalEnrollments: activityEnrollments
             }

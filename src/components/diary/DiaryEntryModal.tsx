@@ -82,7 +82,7 @@ export function DiaryEntryModal({ schoolSlug, classrooms, initialData, selectedC
 
             setIsFetchingStudents(true);
             try {
-                const res = await getClassroomAction(formData.classroomId);
+                const res = await getClassroomAction(formData.classroomId, schoolSlug);
                 if (res.success && res.classroom) {
                     setStudents(res.classroom.students || []);
                 }
